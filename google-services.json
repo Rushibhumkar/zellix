@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "561913769393",
+    "project_id": "axpproperty",
+    "storage_bucket": "axpproperty.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:561913769393:android:792fc942259c1b50292190",
+        "android_client_info": {
+          "package_name": "com.axp.axproperty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHr0yYhIR_4B43V1Lba0F7Knjj6h-A0sY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
