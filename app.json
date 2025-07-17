@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "axproperty",
-    "slug": "axproperty",
+    "name": "zellix",
+    "slug": "zellix",
     "version": "1.3.7",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
@@ -15,7 +15,7 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.ax.property",
+      "bundleIdentifier": "com.zellix",
       "bundleNumber": "1.0.0",
       "supportsTablet": true,
       "buildNumber": "56",
@@ -23,12 +23,12 @@
         "READ_CALL_LOG"
       ],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Allow AxProperty to access your location for scheduling and attending meetings efficiently.",
-        "NSLocationAlwaysUsageDescription": "Allow AxProperty to access your location in the background to support location-based meeting features."
+        "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
+        "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features."
       }
     },
     "android": {
-      "package": "com.axp.axproperty",
+      "package": "com.zellix",
       "versionCode": 53,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",

@@ -81,9 +81,9 @@ android {
 
     compileSdkVersion 34
 
-    namespace 'com.axp.axproperty'
+    namespace 'com.zellix'
     defaultConfig {
-        applicationId 'com.axp.axproperty'
+        applicationId 'com.zellix'
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 53
