@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "561913769393",
-    "project_id": "axpproperty",
-    "storage_bucket": "axpproperty.appspot.com"
+    "project_number": "222971094342",
+    "project_id": "zellix-75b90",
+    "storage_bucket": "zellix-75b90.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:561913769393:android:792fc942259c1b50292190",
+        "mobilesdk_app_id": "1:222971094342:android:289f52a697c19d06683147",
         "android_client_info": {
-          "package_name": "com.axp.axproperty"
+          "package_name": "com.skg.zellix"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCHr0yYhIR_4B43V1Lba0F7Knjj6h-A0sY"
+          "current_key": "AIzaSyCgy2dmE12jcMElbBkeERfL0IjDlVW9cUQ"
         }
       ],
       "services": {
