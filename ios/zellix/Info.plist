@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>axproperty</string>
+    <string>Zellix</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -53,9 +53,9 @@
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to use your location for conduct meeting.</string>
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>Allow AxProperty to access your location in the background to support location-based meeting features.</string>
+    <string>Allow Zellix to access your location in the background to support location-based meeting features.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Allow AxProperty to access your location for scheduling and attending meetings efficiently.</string>
+    <string>Allow Zellix to access your location for scheduling and attending meetings efficiently.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSPhotoLibraryUsageDescription</key>
