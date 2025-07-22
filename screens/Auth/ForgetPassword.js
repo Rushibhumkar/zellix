@@ -15,6 +15,7 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { forgetPassword } from "../../services/rootApi/api";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
+import { color } from "../../const/color";
 
 const ForgetPassword = () => {
   const navigation = useNavigation();
@@ -107,7 +108,7 @@ const ForgetPassword = () => {
                     <Text
                       style={{
                         textAlign: "center",
-                        color: "#FFC857",
+                        color: "#2D67C6",
                         fontSize: 20,
                         fontWeight: "600",
                       }}
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "70%",
     margin: "auto",
     alignSelf: "center",

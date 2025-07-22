@@ -177,7 +177,7 @@ export default function GraphData({
 const styles = StyleSheet.create({
   mainContainer: {
     borderWidth: 1,
-    borderColor: "#FFC857",
+    borderColor: "#2D67C6",
     padding: 10,
     borderRadius: 8,
   },

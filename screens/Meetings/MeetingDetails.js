@@ -433,7 +433,7 @@ const MeetingDetails = () => {
                           <Feather
                             name="map-pin"
                             size={25}
-                            color="#FFC857"
+                            color="#2D67C6"
                             // onPress={() => toggleMapViewModal(el?.coordinates)}
                             onPress={() => {
                               // getAddressFromCoordinates(el?.coordinates)
@@ -494,7 +494,7 @@ const MeetingDetails = () => {
                               <Feather
                                 name="map-pin"
                                 size={25}
-                                color="#FFC857"
+                                color="#2D67C6"
                                 // onPress={() => toggleMapViewModal(el?.conductCoordinates)}
                                 onPress={() =>
                                   navigateToMapApp(el?.conductCoordinates)

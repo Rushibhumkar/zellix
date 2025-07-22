@@ -142,7 +142,7 @@ const LoginScreen = () => {
                         <Text
                           onPress={() => navigation.navigate("ForgetPassword")}
                           style={{
-                            color: "#FFC857",
+                            color: "#2D67C6",
                             fontSize: 18,
                             fontWeight: 600,
                             width: "55%",
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   // },
 
   // loginbtn: {
-  //   backgroundColor: "#FFC857",
+  //   backgroundColor: "#2D67C6",
   //   padding: 14,
   //   marginTop: 50,
   //   width: "100%",

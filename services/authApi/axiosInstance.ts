@@ -1,21 +1,11 @@
 import axios from "axios";
 import { getData } from "../../hooks/useAsyncStorage";
 
-// export let baseURL = "https://axproperty-backend.onrender.com"
-let localURL = `http://192.168.0.127:5001`;
-let testURL = "https://axproperty-api-permission.onrender.com";
-// let testURL = "https://axproperty-api-new.onrender.com";
-// let testURL = "https://axproperty-backend.onrender.com";
-// let testURL = "https://axproperty-api-project-branch.onrender.com";
-// axproperty-api-project-branch.onrender.com
+let testURL = "https://zellix-backend.onrender.com";
+
 const isLive = false;
+
 export let baseURL = isLive ? "https://api.crmaxproperty.com" : testURL;
-// export let baseURL = "http://10.5.50.156:2000";
-// let baseURL = "https://293b-2409-4085-879f-e246-818-2c67-2651-66a.ngrok-free.app"
-// let baseURL = "https://axproperty-api-new.onrender.com"
-// let baseURL = "https://axp-improvement-branch.onrender.com"
-// let babaseURLseURL = `http://localhost:2000`
-// let baseURL = `https://axproperty-api-merge.onrender.com`
 
 const axiosInstance = axios.create({
   baseURL,

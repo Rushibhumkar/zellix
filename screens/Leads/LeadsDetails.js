@@ -56,6 +56,7 @@ import CancelIcon from "../../assets/svg/CancelIcon";
 import {sendFollowUpNotification} from '../../services/rootApi/notificationApi'
 import { checkPermission } from "../../utils/commonFunctions";
 import {useGetUserPermission} from '../../services/rootApi/permissionApi'
+import { color } from "../../const/color";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -748,7 +749,7 @@ const styles=StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#FFD700',
+    backgroundColor: color.saffronMango,
     paddingVertical: 12,
     borderRadius: 5,
     alignItems: 'center',

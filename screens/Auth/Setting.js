@@ -188,7 +188,7 @@ const Setting = () => {
                 {isLoading && (
                   <ActivityIndicator
                     style={{ marginStart: 10 }}
-                    color="#FFC857"
+                    color="#2D67C6"
                   />
                 )}
               </View>

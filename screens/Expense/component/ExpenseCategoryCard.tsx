@@ -19,7 +19,7 @@ const ExpenseCategoryCard = ({ item, onPress }: TExpenseCategoryCard) => {
         borderWidth: 1,
         padding: 13,
         borderRadius: 10,
-        borderColor: "#FFC857",
+        borderColor: "#2D67C6",
         marginHorizontal: 20,
       }}
     >

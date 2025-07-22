@@ -1,5 +1,5 @@
-import * as React from "react"
-import Svg, { Rect, Path, Circle } from "react-native-svg"
+import * as React from "react";
+import Svg, { Rect, Path, Circle } from "react-native-svg";
 
 function Notification(props) {
   return (
@@ -11,7 +11,7 @@ function Notification(props) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <Rect y={0.5} width={38} height={38} rx={19} fill="#FFC857" />
+      <Rect y={0.5} width={38} height={38} rx={19} fill="#2D67C6" />
       <Path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -20,7 +20,7 @@ function Notification(props) {
       />
       <Circle cx={27.668} cy={16.1666} r={4} fill="#D80027" />
     </Svg>
-  )
+  );
 }
 
-export default Notification
+export default Notification;

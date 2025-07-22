@@ -1,5 +1,5 @@
-import * as React from "react"
-import Svg, { Rect, Path } from "react-native-svg"
+import * as React from "react";
+import Svg, { Rect, Path } from "react-native-svg";
 
 function Setting(props) {
   return (
@@ -9,9 +9,10 @@ function Setting(props) {
       viewBox="0 0 38 39"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      {...props}s
+      {...props}
+      s
     >
-      <Rect y={0.5} width={38} height={38} rx={19} fill="#FFC857" />
+      <Rect y={0.5} width={38} height={38} rx={19} fill="#2D67C6" />
       <Path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -19,7 +20,7 @@ function Setting(props) {
         fill="#fff"
       />
     </Svg>
-  )
+  );
 }
 
-export default Setting
+export default Setting;

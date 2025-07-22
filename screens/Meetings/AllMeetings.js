@@ -361,7 +361,7 @@ const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
 
 const styles = StyleSheet.create({
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "100%",
     margin: "auto",
     alignSelf: "center",
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 13,
     borderRadius: 11,
-    borderColor: "#FFC857",
+    borderColor: "#2D67C6",
     flexDirection: "row",
     justifyContent: "space-between",
     marginHorizontal: 20,

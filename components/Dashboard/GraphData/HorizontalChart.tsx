@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   barFill: {
     position: "absolute",
     height: "100%",
-    backgroundColor: "#FFC857", // Golden Fill
+    backgroundColor: "#2D67C6", // Golden Fill
   },
   label: {
     position: "absolute",

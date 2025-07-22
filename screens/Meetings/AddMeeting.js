@@ -350,7 +350,7 @@ const AddMeeting = () => {
                 {values?.coordinates?.lng && <Feather
                   name="map-pin"
                   size={20}
-                  color="#FFC857"
+                  color="#2D67C6"
                   style={{ padding: 5 }}
                   onPress={() => navigateToMapApp(values?.coordinates)}
                 // onPress={toggleMapViewModal}

@@ -546,7 +546,7 @@ const LeadRowItem = ({
 
 const styles = StyleSheet.create({
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "100%",
     margin: "auto",
     alignSelf: "center",
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 13,
     borderRadius: 10,
-    borderColor: "#FFC857",
+    borderColor: "#2D67C6",
     marginHorizontal: 20,
     ...shadow1,
   },

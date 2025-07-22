@@ -62,12 +62,12 @@ const TitleWithAddDelete = ({
               }}
               onPress={!!onPressToNavigate ? onPressToNavigate : undefined}
             >
-              <AntDesign name="plussquareo" size={30} color="#FFC857" />
+              <AntDesign name="plussquareo" size={30} color="#2D67C6" />
               <View>
                 <Text
                   style={{
                     fontSize: 18,
-                    color: "#FFC857",
+                    color: "#2D67C6",
                     fontWeight: "700",
                     textDecorationLine: "underline",
                   }}

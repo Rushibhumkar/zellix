@@ -22,6 +22,7 @@ const Header = ({ title, onBack }) => {
           onPress={() => onBack ? onBack() : goBack()}>
           <Image
             style={{ marginTop: 8 }}
+            tintColor={color.saffronMango}
             source={require("../assets/Backicon.png")} />
         </TouchableOpacity>
         <View>

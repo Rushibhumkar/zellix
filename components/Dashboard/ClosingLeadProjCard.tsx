@@ -12,6 +12,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useGetClosingLeadProjectWise } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
+import { color } from "../../const/color";
 
 const ClosingLeadProjCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -49,7 +50,7 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
         item.projectName.length > 10
           ? item.projectName.slice(0, 10) + "..."
           : item.projectName,
-      frontColor: "#FFB200",
+      frontColor: color.saffronMango,
       spacing: 20,
     })) || [];
 
@@ -76,7 +77,7 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
           barWidth={35}
           noOfSections={5}
           barBorderRadius={6}
-          frontColor="#FFB200"
+          frontColor={color.saffronMango}
           data={transformedData}
           yAxisThickness={1}
           xAxisThickness={1}

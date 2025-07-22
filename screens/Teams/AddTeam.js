@@ -224,7 +224,7 @@ export default AddTeam;
 
 const styles = StyleSheet.create({
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "60%",
     margin: "auto",
     borderBottomWidth: 0.3,

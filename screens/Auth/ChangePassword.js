@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   // },
   // submitbtn: {
   //   marginTop: 50,
-  //   backgroundColor: "#FFC857",
+  //   backgroundColor: "#2D67C6",
   //   padding: 12,
   //   width: "95%",
   //   borderRadius: 10,

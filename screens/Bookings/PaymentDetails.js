@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "100%",
     borderBottomWidth: 0.5,
     marginTop: 10,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   submitbtn: {
     marginTop: 25,
-    backgroundColor: "#FFC857",
+    backgroundColor: "#2D67C6",
     padding: 12,
     width: "40%",
     borderRadius: 10,

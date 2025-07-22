@@ -11,7 +11,7 @@ import { Root as PopupRootProvider } from 'react-native-popup-confirm-toast';
 import 'react-native-get-random-values';
 import UpdateChecker from './myComponents/UpdateChecker/UpdateChecker';
 import { myConsole } from './hooks/useConsole';
-
+import { LogBox } from 'react-native';
 //
 
 
@@ -86,6 +86,8 @@ export default function App() {
   //   };
   // }, []);
 
+   LogBox.ignoreAllLogs(true);
+   
   return (
     <>
       <PopupRootProvider>

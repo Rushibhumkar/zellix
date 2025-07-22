@@ -41,7 +41,7 @@ const resheduleSchema = Yup.object().shape({
   time: Yup.string().required("time is required"),
   location: Yup.string().required("location is required"),
   remarks: Yup.string().required("remarks is required"),
-})
+});
 
 const MeetingReschedule = () => {
   const queryClient = useQueryClient();
@@ -52,63 +52,65 @@ const MeetingReschedule = () => {
   const [mapLatLng, setMapLatLng] = useState({});
   const [isLoadingMeeting, setIsLoadingMeeting] = useState(false);
   const id = params?.id;
-  const meetings = params?.meetingDetails?.meetings
+  const meetings = params?.meetingDetails?.meetings;
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
 
+  const {
+    handleChange,
+    handleSubmit,
+    values,
+    setFieldValue,
+    resetForm,
+    isValid,
+  } = useFormik({
+    initialValues: {
+      // date: meetings?.[meetings?.length - 1]?.scheduleDate ?? "",
+      // time: meetings?.[meetings?.length - 1]?.scheduleDate ?? "",
+      // location: meetings?.[meetings?.length - 1]?.location ?? "",
+      // remarks: meetings?.[meetings?.length - 1]?.remarks ?? "",
+      // coordinates: meetings?.[meetings?.length - 1]?.coordinates ?? ""
+      date: new Date(),
+      time: new Date(),
+      location: meetings?.[meetings?.length - 1]?.location || "",
+      remarks: "",
+      coordinates: {},
+    },
 
-  const { handleChange, handleSubmit, values, setFieldValue, resetForm, isValid } =
-    useFormik({
-      initialValues: {
-        // date: meetings?.[meetings?.length - 1]?.scheduleDate ?? "",
-        // time: meetings?.[meetings?.length - 1]?.scheduleDate ?? "",
-        // location: meetings?.[meetings?.length - 1]?.location ?? "",
-        // remarks: meetings?.[meetings?.length - 1]?.remarks ?? "",
-        // coordinates: meetings?.[meetings?.length - 1]?.coordinates ?? ""
-        date: new Date(),
-        time: new Date(),
-        location: meetings?.[meetings?.length - 1]?.location || '', remarks: '',
-        coordinates: {}
-      },
-
-      validationSchema: resheduleSchema,
-      onSubmit: async (value) => {
-        try {
-          setIsLoadingMeeting(true);
-          let sendData = {
-            scheduleDate: `${value.date.toString().slice(0, 13)}${value.time
-              .toString()
-              .slice(13)}`,
-            location: value.location,
-            remarks: value.remarks,
-            coordinates: values?.coordinates,
-          };
-          let res = await meetingRescheduled(id, sendData);
-          // setIsVisible(true);
-          // setMessage(res?.data);
-          // await dispatch(getAllMeetingFunc());
-          // setIsLoadingMeeting(false);
-          // navigate(routeMeeting?.AllMeetings);
-          queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getMeetingById, id]
-          })
-          queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getMeeting]
-          })
-          popUpConfToast.successMessage(res?.data)
-          goBack();
-        } catch (error) {
-          myConsole("error", error);
-        } finally {
-          // dispatch(getAllMeetingFunc())
-          setIsLoadingMeeting(false);
-        }
-      },
-    });
-
-
-
-
+    validationSchema: resheduleSchema,
+    onSubmit: async (value) => {
+      try {
+        setIsLoadingMeeting(true);
+        let sendData = {
+          scheduleDate: `${value.date.toString().slice(0, 13)}${value.time
+            .toString()
+            .slice(13)}`,
+          location: value.location,
+          remarks: value.remarks,
+          coordinates: values?.coordinates,
+        };
+        let res = await meetingRescheduled(id, sendData);
+        // setIsVisible(true);
+        // setMessage(res?.data);
+        // await dispatch(getAllMeetingFunc());
+        // setIsLoadingMeeting(false);
+        // navigate(routeMeeting?.AllMeetings);
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getMeetingById, id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getMeeting],
+        });
+        popUpConfToast.successMessage(res?.data);
+        goBack();
+      } catch (error) {
+        myConsole("error", error);
+      } finally {
+        // dispatch(getAllMeetingFunc())
+        setIsLoadingMeeting(false);
+      }
+    },
+  });
 
   const toggleMapViewModal = (v) => {
     setIsMapModalVisible(!isMapModalVisible);
@@ -173,7 +175,7 @@ const MeetingReschedule = () => {
               <Feather
                 name="map-pin"
                 size={20}
-                color="#FFC857"
+                color="#2D67C6"
                 style={{ padding: 5 }}
                 // onPress={() => toggleMapViewModal(values?.coordinates)}
                 onPress={() => navigateToMapApp(values?.coordinates)}
@@ -189,7 +191,6 @@ const MeetingReschedule = () => {
                 lng: details?.geometry?.location?.lng,
               });
             }}
-
           />
           <CustomInput
             label="Remarks"

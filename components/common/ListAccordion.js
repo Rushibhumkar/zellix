@@ -25,7 +25,7 @@ const ListAccordion = ({ title, children}) => {
 const styles = StyleSheet.create({
   header: {
      borderBottomWidth: 1,
-     borderBottomColor: "#FFC857",
+     borderBottomColor: "#2D67C6",
      backgroundColor: "#ECECEC",
      paddingVertical: 0,
     

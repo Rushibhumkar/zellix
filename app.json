@@ -15,10 +15,10 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.zellix",
+      "bundleIdentifier": "com.skg.zellix",
       "bundleNumber": "1.0.0",
       "supportsTablet": true,
-      "buildNumber": "56",
+      "buildNumber": "58",
       "permissions": [
         "READ_CALL_LOG"
       ],
@@ -28,7 +28,7 @@
       }
     },
     "android": {
-      "package": "com.zellix",
+      "package": "com.skg.zellix",
       "versionCode": 53,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -40,21 +40,11 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.READ_CALL_LOG",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ]
     },
     "web": {
       "favicon": "./assets/favicon1.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "9b8838cd-39d5-4148-a221-a81701015be2"
-      }
     },
     "plugins": [
       [
@@ -77,6 +67,11 @@
       "fallbackToCacheTimeout": 0,
       "enabled": true,
       "url": "https://u.expo.dev/9b8838cd-39d5-4148-a221-a81701015be2"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e2a7dab4-4f52-4b2f-92b8-5d31227185a3"
+      }
     }
   }
 }

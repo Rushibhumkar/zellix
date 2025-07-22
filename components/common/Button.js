@@ -12,7 +12,7 @@ const Button = ({ btnText, onPress }) => {
 const styles = StyleSheet.create({
   submitbtn: {
     marginTop: 25,
-    backgroundColor: "#FFC857",
+    backgroundColor: "#2D67C6",
     padding: 10,
     width: "95%",
     borderRadius: 11.7,

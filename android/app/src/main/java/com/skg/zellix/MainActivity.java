@@ -1,4 +1,4 @@
-package com.zellix;
+package com.skg.zellix;
 
 import android.os.Build;
 import android.os.Bundle;

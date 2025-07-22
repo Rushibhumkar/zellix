@@ -87,7 +87,7 @@ const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
                         <Feather
                           name="map-pin"
                           size={25}
-                          color="#FFC857"
+                          color="#2D67C6"
                           onPress={() => {
                             navigateToMapApp(meeting?.coordinates);
                           }}

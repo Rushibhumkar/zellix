@@ -82,7 +82,7 @@ const AddBooking = () => {
 
 const styles = StyleSheet.create({
   divider: {
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     width: "100%",
     borderBottomWidth: 0.5,
     marginTop: 10,

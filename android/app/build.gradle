@@ -81,9 +81,9 @@ android {
 
     compileSdkVersion 34
 
-    namespace 'com.zellix'
+    namespace 'com.skg.zellix'
     defaultConfig {
-        applicationId 'com.zellix'
+        applicationId 'com.skg.zellix'
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 53

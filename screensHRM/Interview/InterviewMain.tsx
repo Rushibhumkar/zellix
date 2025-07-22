@@ -134,8 +134,9 @@ const InterviewMain = () => {
         ? "green"
         : status === "rescheduled"
         ? "red"
-        : "orange";
-
+        : status === "selected"
+        ? "#8e44ad"
+        : color.saffronMango;
     return (
       <View style={styles.card}>
         <TouchableOpacity
@@ -358,10 +359,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff8f0",
+    backgroundColor: `#fff`,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#f5d9ae",
+    borderColor: color.saffronMango,
     padding: 12,
     marginBottom: 20,
     shadowColor: "#000",
@@ -376,7 +377,7 @@ const styles = StyleSheet.create({
     color: "#4a3c1a",
   },
   scheduleButton: {
-    backgroundColor: "#f6b142",
+    backgroundColor: color.saffronMango,
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 8,

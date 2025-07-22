@@ -247,7 +247,7 @@ const LeadsEdit = () => {
 const styles = StyleSheet.create({
   addlead: {
     borderBottomWidth: 1,
-    borderBottomColor: "#FFC857",
+    borderBottomColor: "#2D67C6",
     backgroundColor: "#ECECEC",
     paddingVertical: -10,
   },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   submitbtn: {
     marginTop: 35,
-    backgroundColor: "#FFC857",
+    backgroundColor: "#2D67C6",
     padding: 12,
     width: "95%",
     borderRadius: 10,

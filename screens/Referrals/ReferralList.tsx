@@ -103,7 +103,7 @@ const ReferralList = () => {
             <CardReferral
               index={index}
               item={item}
-              selected={selected?.includes(item._id)}
+              selected={selected?.includes(item?._id)}
               onPress={() =>
                 selected?.length === 0
                   ? navigate(routeReferral.ReferralDetails, { item })

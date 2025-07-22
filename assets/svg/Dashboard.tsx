@@ -1,5 +1,5 @@
-import * as React from "react"
-import Svg, { Rect, Path } from "react-native-svg"
+import * as React from "react";
+import Svg, { Rect, Path } from "react-native-svg";
 
 function DashboardIconFocus(props) {
   return (
@@ -11,7 +11,7 @@ function DashboardIconFocus(props) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <Rect width={40} height={40} rx={20} fill="#FFC857" />
+      <Rect width={40} height={40} rx={20} fill="#2D67C6" />
       <Path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -19,7 +19,7 @@ function DashboardIconFocus(props) {
         fill="#000"
       />
     </Svg>
-  )
+  );
 }
 
-export default DashboardIconFocus
+export default DashboardIconFocus;

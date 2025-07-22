@@ -12,6 +12,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useGetLeadProjectWise } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
+import { color } from "../../const/color";
 
 const LeadProjectCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -75,7 +76,7 @@ const LeadProjectCard = ({ onRefresh }) => {
         <LineChart
           data={transformedData}
           thickness={2}
-          color="#FFB200"
+          color={color.saffronMango}
           curved
           hideRules={false}
           yAxisColor="#ccc"

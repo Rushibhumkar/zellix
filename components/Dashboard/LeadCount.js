@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1,
     borderRadius: 7,
-    borderColor: "#FFC857",
+    borderColor: "#2D67C6",
   },
   title: {
     fontSize: 19,
