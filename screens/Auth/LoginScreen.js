@@ -10,7 +10,8 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  Platform
+  Platform,
+  StatusBar
 } from "react-native";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -75,6 +76,7 @@ const LoginScreen = () => {
   return (
     <>
       <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor={'#fff'} barStyle="dark-content"/>
         <ImageBackground
           source={require("../../assets/AuthBack.png")}
           style={styles.background}
@@ -99,7 +101,7 @@ const LoginScreen = () => {
                           style={styles.authlogo}
                         />
                       </View>
-                      <View style={{ flex: 1, textAlign: "center" }}>
+                      <View style={{ flex: 1, textAlign: "center",marginTop:12 }}>
                         <Pressable
                           onLongPress={async () => {
                             const deviceId = await getData('deviceId');
@@ -251,7 +253,9 @@ const styles = StyleSheet.create({
   //   textAlign: "center",
   //   fontSize: 16,
   // },
-  authlogo: {},
+  authlogo: {
+    height:60,width:140
+  },
   errorText: {
     color: "red",
     marginTop: -30,
