@@ -3,9 +3,9 @@ import { getData } from "../../hooks/useAsyncStorage";
 
 let testURL = "https://zellix-backend.onrender.com";
 
-const isLive = false;
+const isLive = true;
 
-export let baseURL = isLive ? "https://api.crmaxproperty.com" : testURL;
+export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 
 const axiosInstance = axios.create({
   baseURL,
