@@ -86,8 +86,8 @@ android {
         applicationId 'com.skg.zellix'
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 60
-        versionName "1.1.9"
+        versionCode 62
+        versionName "1.2.1"
 
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
     }
