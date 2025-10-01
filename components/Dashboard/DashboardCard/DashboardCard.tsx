@@ -177,23 +177,13 @@ export default function DashboardCard({ title = "" }) {
 
 const styles = StyleSheet.create({
   mainContainer: {
-    borderWidth: 1,
+    borderWidth: 0.6,
     borderColor: color.goldenYellow,
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 10,
+    paddingHorizontal: 16,
     margin: 20,
     backgroundColor: "#FCFAFA",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
   },
   textContainer: {
     alignSelf: "flex-start",
@@ -220,8 +210,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 20,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: color.gray,
+    borderWidth: 0.6,
+    borderColor: color.primaryColor,
   },
   headerRow: {
     flexDirection: "row",
@@ -243,7 +233,7 @@ const styles = StyleSheet.create({
     paddingRight: 5,
   },
   line: {
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.8,
     borderStyle: Platform.OS === "ios" ? "solid" : "dashed",
     width: "100%",
     marginVertical: 10,

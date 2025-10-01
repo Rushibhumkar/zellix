@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { color } from "../../const/color";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 interface TUserRowItem {
   serialNo: number;
   userName: string;
@@ -77,16 +77,16 @@ export default UserRowItem;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1.5,
-    borderRadius: 10,
+    borderWidth: 0.8,
+    borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: 15,
-    borderColor: color.saffronMango,
+    borderColor: color.primaryColor,
     // backgroundColor: color.white,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 85,
-    ...shadow1,
+    ...shadowPrimaryColor,
   },
   box1: {
     width: "10%",

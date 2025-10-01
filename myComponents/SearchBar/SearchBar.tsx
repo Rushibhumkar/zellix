@@ -6,29 +6,37 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { AntDesign, Entypo } from "@expo/vector-icons";
+import { color } from "../../const/color";
 
 interface TSearchBar {
   onClickCancel: () => void;
   onChangeText: () => void;
   containerStyle: StyleProp<ViewStyle>;
-  value: string
+  value: string;
 }
 
-const SearchBar = ({ onClickCancel, onChangeText, containerStyle, value }: TSearchBar) => {
+const SearchBar = ({
+  onClickCancel,
+  onChangeText,
+  containerStyle,
+  value,
+}: TSearchBar) => {
+  const [isFocused, setIsFocused] = useState(false);
   return (
     <View
       style={[
         {
-          borderWidth: 0.5,
+          borderWidth: 1,
+          borderColor: isFocused ? color.primaryColor : "#ccc",
           flexDirection: "row",
           borderRadius: 20,
           alignItems: "center",
           paddingHorizontal: 10,
           paddingVertical: 10,
           marginHorizontal: 25,
-          height: 40
+          height: 40,
         },
         containerStyle,
       ]}
@@ -39,6 +47,8 @@ const SearchBar = ({ onClickCancel, onChangeText, containerStyle, value }: TSear
         placeholder="Search..."
         onChangeText={onChangeText}
         value={value}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
       {!!value && <Entypo name="cross" size={20} onPress={onClickCancel} />}
     </View>

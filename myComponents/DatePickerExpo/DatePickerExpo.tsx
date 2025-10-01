@@ -110,11 +110,11 @@ const DatePickerExpo = ({
         <TouchableOpacity
           activeOpacity={0.5}
           style={{
-            height: 37.5,
-            borderColor: "#000000",
-            backgroundColor: "#FCFAFA",
-            borderWidth: 0.5,
-            borderRadius: 10,
+            height: 39.5,
+            borderColor: color.primaryColor,
+            backgroundColor: "#ecf2f9ff",
+            borderWidth: 0.6,
+            borderRadius: 12,
             padding: 10,
             width: "100%",
             justifyContent: "space-between",

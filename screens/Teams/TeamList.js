@@ -195,9 +195,9 @@ const TeamListHeading = () => {
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#3E3E3E",
+        backgroundColor:color.primary200,
         marginHorizontal: 20,
-        borderRadius: 10,
+        borderRadius: 12,
         paddingHorizontal: 10,
         marginTop: 15,
         paddingVertical: 10,

@@ -15,14 +15,14 @@ import { color } from "../const/color";
 const Header = ({ title, onBack }) => {
   const { goBack } = useNavigation();
   return (
-    <SafeAreaView style={{ backgroundColor: color.darkBlack }}>
-      <StatusBar style="light" />
+    <SafeAreaView style={{ backgroundColor: color.primary200 }}>
+      <StatusBar style="dark" />
       <View style={styles.container}>
         <TouchableOpacity
           onPress={() => onBack ? onBack() : goBack()}>
           <Image
             style={{ marginTop: 8 }}
-            tintColor={color.saffronMango}
+            tintColor={color.white}
             source={require("../assets/Backicon.png")} />
         </TouchableOpacity>
         <View>
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: color.darkBlack,
+    backgroundColor: color.primary200,
     flexDirection: 'row',
     paddingTop: Platform.OS === 'ios' ? 20 : 50,
     paddingBottom: 20,

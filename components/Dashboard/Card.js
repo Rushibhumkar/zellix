@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: color.paleGrey,
     ...shadowLight,
-    borderRadius: 5,
-    borderWidth: 0.8,
+    borderRadius: 12,
+    borderWidth: 0.6,
     borderColor: color.saffronMango,
     width: '48%',
     // minHeight: 65

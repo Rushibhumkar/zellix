@@ -378,7 +378,10 @@ const AdvanceSearch = () => {
                   {!onlyBooking && (
                     <DropdownRNE
                       arrOfObj={mobileCodeWithIdKey || []}
-                      containerStyle={{ width: 150, marginEnd: 10 }}
+                      containerStyle={{
+                        width: 150,
+                        marginEnd: 10,
+                      }}
                       placeholder="+91"
                       onChange={(v) => setFieldValue("code", v)}
                       initialValue={values?.code}

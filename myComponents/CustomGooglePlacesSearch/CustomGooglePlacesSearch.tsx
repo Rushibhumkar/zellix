@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import React, { useRef, useEffect } from "react";
 import CustomText from "../CustomText/CustomText";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
@@ -7,17 +13,17 @@ import { color } from "../../const/color";
 
 const dynamicStyles = {
   textInputContainer: {
-    width: '100%',
-    backgroundColor: 'pink',
+    width: "100%",
+    backgroundColor: "pink",
   },
   textInput: {
     height: 40,
-    borderColor: 'red',
-    borderWidth: 1,
+    borderColor: color.primaryColor,
+    borderWidth: 0.6,
     borderRadius: 8,
     paddingLeft: 10,
-    backgroundColor: 'red',
-    color: 'pink',
+    backgroundColor: "pink",
+    color: "pink",
     fontSize: 16,
   },
   listView: {
@@ -25,10 +31,10 @@ const dynamicStyles = {
     // maxHeight: 600, // Control the height of the dropdown list
     minHeight: 250,
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: 'white',
+    borderColor: color.primaryColor,
+    backgroundColor: "white",
     // marginBottom: 20,
-    marginTop: 50
+    marginTop: 50,
     // position: 'absolute',
     // top: 45,
     // left: 0,
@@ -36,11 +42,11 @@ const dynamicStyles = {
     // zIndex: 1000,
   },
   description: {
-    color: 'black',
+    color: "black",
   },
   cancelButton: {
     fontSize: 14,
-    color: '#1faadb',
+    color: "#1faadb",
     paddingRight: 10,
   },
 };
@@ -66,92 +72,98 @@ const CustomGooglePlacesSearch = ({
   }, [defaultValue]);
 
   const chooseLocation = () => {
-
     const spSheet = SPSheet;
     spSheet.show({
-      component: () => <View
-        style={{ margin: 20 }}
-      >
-        <View >
-          <GooglePlacesAutocomplete
-            placeholder="Search meeting location..."
-            debounce={200}
-            query={{
-              key: keyValue,
-              language: "en",
-            }}
-            keyboardShouldPersistTaps="handled"
-            onPress={(data, details) => {
-              onPress(data, details);
-              spSheet.hide();
-              //   setFieldValue('location', data.description)
-              //   setFieldValue('coordinates', {
-              //     lat: details?.geometry?.location?.lat,
-              //     lng: details?.geometry?.location?.lng
-              //   })
-            }}
-            //
-            nearbyPlacesAPI="GooglePlacesSearch"
-            // currentLocation={true}
-            listViewDisplayed="auto"
-            minLength={2}
-            enablePoweredByContainer={false}
-            // currentLocationLabel="Current location"
-            fetchDetails={true}
-            ref={textInput2}
-            disableScroll={true}
-            styles={{
-              textInputContainer: dynamicStyles.textInputContainer,
-              textInput: dynamicStyles.textInput,
-              listView: dynamicStyles.listView,
-              description: dynamicStyles.description,
-            }}
-            // autoFocus={false}
-            // styles={{
-            //   container: {
-            //     borderWidth: 0.5,
-            //     borderRadius: 10,
-            //     padding: 2,
-            //     marginBottom: 15,
-            //     backgroundColor: 'red'
-            //   },
-            // }}
-            textInputProps={{
-              style: {
-                backgroundColor: 'white',
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                height: 40,
-                color: 'black',
-                fontSize: 15,
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                borderRadius: 8,
-                borderWidth: 0.5
-              },
-              // onBlur: handleBlur("location"),
-              onBlur: handleBlur,
-              // defaultValue: defaultValue,
-              // value: values?.location,
-            }}
-
-          />
+      component: () => (
+        <View style={{ margin: 20 }}>
+          <View>
+            <GooglePlacesAutocomplete
+              placeholder="Search meeting location..."
+              debounce={200}
+              query={{
+                key: keyValue,
+                language: "en",
+              }}
+              keyboardShouldPersistTaps="handled"
+              onPress={(data, details) => {
+                onPress(data, details);
+                spSheet.hide();
+                //   setFieldValue('location', data.description)
+                //   setFieldValue('coordinates', {
+                //     lat: details?.geometry?.location?.lat,
+                //     lng: details?.geometry?.location?.lng
+                //   })
+              }}
+              //
+              nearbyPlacesAPI="GooglePlacesSearch"
+              // currentLocation={true}
+              listViewDisplayed="auto"
+              minLength={2}
+              enablePoweredByContainer={false}
+              // currentLocationLabel="Current location"
+              fetchDetails={true}
+              ref={textInput2}
+              disableScroll={true}
+              styles={{
+                textInputContainer: dynamicStyles.textInputContainer,
+                textInput: dynamicStyles.textInput,
+                listView: dynamicStyles.listView,
+                description: dynamicStyles.description,
+              }}
+              // autoFocus={false}
+              // styles={{
+              //   container: {
+              //     borderWidth: 0.5,
+              //     borderRadius: 10,
+              //     padding: 2,
+              //     marginBottom: 15,
+              //     backgroundColor: 'red'
+              //   },
+              // }}
+              textInputProps={{
+                style: {
+                  backgroundColor: "white",
+                  paddingVertical: 5,
+                  paddingHorizontal: 10,
+                  height: 40,
+                  color: "black",
+                  fontSize: 15,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  borderRadius: 8,
+                  borderWidth: 0.5,
+                },
+                // onBlur: handleBlur("location"),
+                onBlur: handleBlur,
+                // defaultValue: defaultValue,
+                // value: values?.location,
+              }}
+            />
+          </View>
         </View>
-      </View>,
+      ),
       height: 350,
-      keyboardHeightAdjustment: true
+      keyboardHeightAdjustment: true,
     });
-  }
+  };
 
   return (
     <TouchableOpacity
-      style={{ borderWidth: 0.5, minHeight: 38, borderRadius: 10, padding: 10, justifyContent: 'center', marginBottom: 15 }}
+      style={{
+        borderWidth: 0.5,
+        minHeight: 40,
+        borderRadius: 10,
+        padding: 11,
+        justifyContent: "center",
+        marginBottom: 15,
+        borderColor: color.primaryColor,
+      }}
       onPress={chooseLocation}
     >
-      <CustomText
-        color={!defaultValue ? 'gray' : 'black'}
-      >{defaultValue || 'Meeting location'}</CustomText>
+      <CustomText color={!defaultValue ? "gray" : "black"}>
+        {defaultValue || "Meeting location"}
+      </CustomText>
     </TouchableOpacity>
   );
 };

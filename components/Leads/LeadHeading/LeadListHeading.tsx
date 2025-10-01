@@ -37,6 +37,7 @@
 import { Text, StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import React from "react";
 import Container from "../../../myComponents/Container/Container";
+import { color } from "../../../const/color";
 
 interface LeadListHeadingProps {
   noText: string;
@@ -51,30 +52,22 @@ const LeadListHeading: React.FC<LeadListHeadingProps> = ({
   nameText,
   typeText,
   statusText,
-  containerStyle
+  containerStyle,
 }) => {
   return (
     <Container style={[{ paddingHorizontal: 20 }, containerStyle]}>
       <View style={styles.headingContainer}>
         <View style={{ width: "10%" }}>
-          <Text
-            style={[styles.headingText]}>{noText}
-          </Text>
+          <Text style={[styles.headingText]}>{noText}</Text>
         </View>
         <View style={{ width: "36%" }}>
-          <Text
-            style={[styles.headingText]}>{nameText}
-          </Text>
+          <Text style={[styles.headingText]}>{nameText}</Text>
         </View>
-        <View style={{ width: "27%", alignItems: 'center' }}>
-          <Text
-            style={[styles.headingText]}>{typeText}
-          </Text>
+        <View style={{ width: "27%", alignItems: "center" }}>
+          <Text style={[styles.headingText]}>{typeText}</Text>
         </View>
-        <View style={{ width: "27%", alignItems: 'center' }}>
-          <Text
-            style={[styles.headingText]}>{statusText}
-          </Text>
+        <View style={{ width: "27%", alignItems: "center" }}>
+          <Text style={[styles.headingText]}>{statusText}</Text>
         </View>
       </View>
     </Container>
@@ -83,7 +76,7 @@ const LeadListHeading: React.FC<LeadListHeadingProps> = ({
 
 const styles = StyleSheet.create({
   headingContainer: {
-    backgroundColor: "#3E3E3E",
+    backgroundColor: color.primary200,
     flexDirection: "row",
     padding: 10,
     borderRadius: 11,
@@ -100,4 +93,3 @@ const styles = StyleSheet.create({
 });
 
 export default LeadListHeading;
-

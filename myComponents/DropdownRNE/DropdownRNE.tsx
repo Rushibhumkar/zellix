@@ -103,7 +103,7 @@ const DropdownRNE = ({
   isAdvanceSearch = false,
   isSearch = false,
   mode = "auto",
-  maxHeight = 200,
+  maxHeight = 220,
   onEndReached,
   onEndReachedThreshold,
   ListFooterComponent,
@@ -320,12 +320,12 @@ export default DropdownRNE;
 
 const styles = StyleSheet.create({
   dropdown: {
-    height: 37,
-    borderWidth: 0.5,
-    borderRadius: 10,
-    paddingVertical: 10,
+    height: 40,
+    borderWidth: 0.6,
+    borderRadius: 12,
+    paddingVertical: 6,
     paddingHorizontal: 15,
-    borderColor: "#131313",
+    borderColor: color.primary200,
     // backgroundColor: color.white
   },
   icon: {

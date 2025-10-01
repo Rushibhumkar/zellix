@@ -8,7 +8,8 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
+import { color } from "../../const/color";
 
 interface TCustomInput {
   value: string | number;
@@ -41,15 +42,27 @@ const CustomInput = ({
   multiline,
   numberOfLines,
 }: TCustomInput) => {
+  const [isFocused, setIsFocused] = useState(false);
   return (
     <View style={[{ marginBottom }, containerStyle]}>
       {label && <Text style={styles.inputlable}>{label ?? "label"}</Text>}
       <TextInput
         value={typeof value === "number" ? value.toString() : value}
         onChangeText={onChangeText}
-        style={[styles.input, inputStyle]}
+        style={[
+          styles.input,
+          inputStyle,
+          {
+            borderColor: isFocused ? color.primaryColor : color.primary200, // ⬅️ add
+            borderWidth: isFocused ? 1 : 0.5, // ⬅️ add
+          },
+        ]}
         placeholder={placeholder ? placeholder : label ? label : "placeholder"}
-        onBlur={onBlur}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          onBlur && onBlur();
+        }}
         multiline={multiline}
         numberOfLines={numberOfLines}
         editable={editable}
@@ -72,12 +85,12 @@ const styles = StyleSheet.create({
   input: {
     // marginTop: 10,
     // height: 37.5,
-    borderColor: "#000000",
+    borderColor: color.primary200,
     backgroundColor: "#FFFFFF",
     borderWidth: 0.5,
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "ios" ? 10 : 5,
+    paddingVertical: Platform.OS === "ios" ? 10 : 6,
     //width: "100%",
   },
   errorText: {

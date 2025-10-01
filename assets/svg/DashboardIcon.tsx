@@ -1,5 +1,6 @@
 import * as React from "react";
 import Svg, { Rect, Path } from "react-native-svg";
+import { color } from "../../const/color";
 const DashboardIcon = (props) => (
   <Svg
     width={40}
@@ -9,7 +10,7 @@ const DashboardIcon = (props) => (
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <Rect y={0.220093} width={40} height={40} rx={20} fill="#2D2D2D" />
+    <Rect y={0.220093} width={40} height={40} rx={20} fill={color.primary50} />
     <Path
       fillRule="evenodd"
       clipRule="evenodd"

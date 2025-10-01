@@ -16,6 +16,7 @@ import { StatusBar } from "expo-status-bar";
 import Notification from "../../assets/svg/Notification";
 import Setting from "../../assets/svg/Setting";
 import { userTypes } from "../../utils/data";
+import { textPrimaryShadow, textSecondaryShadow } from "../../const/globalStyle";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
@@ -31,10 +32,10 @@ const DashbordHeader = () => {
   return (
     <SafeAreaView
       style={{
-        backgroundColor: color.darkBlack,
+        backgroundColor: color.primary200,
       }}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <View
         style={{
           flexDirection: "row",
@@ -52,18 +53,21 @@ const DashbordHeader = () => {
                 color: "#fff",
                 fontSize: 20,
                 fontWeight: "500",
+                ...textSecondaryShadow
               }}
+
             >
               {user?.name}
             </Text>
             <Text
               numberOfLines={1}
               style={{
-                color: "rgb(191, 191, 191)",
+                color: "rgba(216, 216, 216, 1)",
                 fontSize: 12,
                 marginTop: 5,
                 fontWeight: "400",
-                flex: 1
+                flex: 1,
+                ...textSecondaryShadow
               }}>{types[user?.role]}</Text>
           </View>
           <Text
@@ -71,6 +75,7 @@ const DashbordHeader = () => {
               color: "#fff",
               fontSize: 15,
               fontWeight: "400",
+              ...textSecondaryShadow
             }}
           >
             {user?.email}
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
   iconscontainer: {
     flexDirection: "row",
     flex: 1,
-    color: "#fff",
+    color: "#000",
     fontSize: 15,
     gap: 15,
   },

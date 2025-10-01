@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal';
+import CountryPicker, {
+  Country,
+  CountryCode,
+} from "react-native-country-picker-modal";
 import { mobileCode, mobileCodeWithIdKey } from "../../utils/data";
 import CustomInput from "../CustomInput/CustomInput";
 import CustomText from "../CustomText/CustomText";
@@ -15,14 +18,14 @@ interface TMobileInput {
 }
 
 interface TOnSelect {
-  country?: Country,
-  numb?: string
+  country?: Country;
+  numb?: string;
 }
 
 interface TPhone {
   number: string;
   countryCode: string;
-  countryCodeAlphabet: CountryCode
+  countryCodeAlphabet: CountryCode;
 }
 
 const MobileInput = ({
@@ -33,11 +36,11 @@ const MobileInput = ({
   onBlur,
 }: TMobileInput) => {
   const [number, setNumber] = useState({
-    pin: value ? value?.split('-')[0] : "",
-    phone: value ? value?.split('-')[1] : "",
+    pin: value ? value?.split("-")[0] : "",
+    phone: value ? value?.split("-")[1] : "",
   });
   const handleChangeMobile = (e: string, key: "pin" | "phone") => {
-    if (!!e || e === '') {
+    if (!!e || e === "") {
       setNumber((prev) => {
         return { ...prev, [key]: e };
       });
@@ -50,133 +53,137 @@ const MobileInput = ({
   }, [number]);
   //////////////////////////////////////////////
   const [phone, setPhone] = useState<TPhone>({
-    number: '',
-    countryCode: '+91',
-    countryCodeAlphabet: 'IN'
+    number: "",
+    countryCode: "+91",
+    countryCodeAlphabet: "IN",
   });
   const [isInitial, setIsInitial] = useState(!value ? false : true);
-  const onSelect = ({
-    country,
-    numb
-  }: TOnSelect) => {
+  const onSelect = ({ country, numb }: TOnSelect) => {
     //country code in alphabet because country picker need
     if (!!country?.cca2) {
       setPhone((prev) => {
         let temp = {
           ...prev,
           countryCode: `+${country.callingCode}`,
-          countryCodeAlphabet: country.cca2
-        }
-        !!onChange && onChange(temp)
-        return temp
-      })
+          countryCodeAlphabet: country.cca2,
+        };
+        !!onChange && onChange(temp);
+        return temp;
+      });
     }
-    if ((!!numb || numb === '')) {
+    if (!!numb || numb === "") {
       setPhone((prev) => {
         let temp = {
           ...prev,
-          number: numb?.trim()
-        }
-        !!onChange && onChange(temp)
-        return temp
-      })
+          number: numb?.trim(),
+        };
+        !!onChange && onChange(temp);
+        return temp;
+      });
     }
-  }
+  };
 
   const pressForEdit = () => {
-    setIsInitial(!isInitial)
-  }
-
+    setIsInitial(!isInitial);
+  };
 
   return (
     <>
-      {!isCountryPicker && <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: 'center',
-          marginTop: 8,
-          marginBottom: 15
-        }}
-      >
-        <DropdownRNE
-          placeholderStyle={"#a9a9a9"}
-          dropdownStyle={{ height: 30 }}
-          containerStyle={{ width: "38%" }}
-          placeholder="+91"
-          arrOfObj={mobileCodeWithIdKey}
-          keyValueGetOnSelect="_id"
-          keyValueShowInBox="name"
-          onChange={(e) => handleChangeMobile(e, "pin")}
-          initialValue={number?.pin}
-          mode="modal"
-          isSearch
-          dpWidth={250}
-        />
-        <CustomInput
-          placeholder="Mobile Number"
-          containerStyle={{ width: "60%" }}
-          onChangeText={(e) => handleChangeMobile(e, "phone")}
-          props={{
-            keyboardType: "number-pad",
-          }}
-          value={number?.phone}
-        />
-      </View>}
-      {isCountryPicker && <>
+      {!isCountryPicker && (
         <View
           style={{
-            borderWidth: 0.5,
-            borderRadius: 8,
-            paddingHorizontal: 5,
-            ...(!error && { marginBottom: 10 }),
-            marginTop: 5
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 8,
+            marginBottom: 15,
           }}
         >
-          {!isInitial && <View
+          <DropdownRNE
+            placeholderStyle={"#a9a9a9"}
+            dropdownStyle={{ height: 34 }}
+            containerStyle={{ width: "38%" }}
+            placeholder="+91"
+            arrOfObj={mobileCodeWithIdKey}
+            keyValueGetOnSelect="_id"
+            keyValueShowInBox="name"
+            onChange={(e) => handleChangeMobile(e, "pin")}
+            initialValue={number?.pin}
+            mode="modal"
+            isSearch
+            dpWidth={250}
+          />
+          <CustomInput
+            placeholder="Mobile Number"
+            containerStyle={{ width: "60%" }}
+            onChangeText={(e) => handleChangeMobile(e, "phone")}
+            props={{
+              keyboardType: "number-pad",
+            }}
+            value={number?.phone}
+          />
+        </View>
+      )}
+      {isCountryPicker && (
+        <>
+          <View
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: 'center'
+              borderWidth: 0.5,
+              borderRadius: 8,
+              paddingHorizontal: 5,
+              ...(!error && { marginBottom: 10 }),
+              marginTop: 5,
             }}
           >
-            <CountryPicker
-              countryCode={phone.countryCodeAlphabet}
-              withCallingCodeButton
-              onSelect={(v) => onSelect({ country: v })}
-              withFilter
-              withAlphaFilter
-              withCallingCode
-              withCloseButton
-            />
-            <TextInput
-              onChangeText={(v) => onSelect({ numb: v })}
-              value={phone?.number}
-              style={{
-                flex: 1,
-                fontSize: 16,
-                paddingHorizontal: 10
-              }}
-              onBlur={onBlur}
-            />
-          </View>}
-          {isInitial &&
-            <TouchableOpacity
-              onPress={pressForEdit}
-              style={{ height: 35, justifyContent: 'center', paddingHorizontal: 5 }}
-            >
-              <CustomText>{value}</CustomText>
-            </TouchableOpacity>
-          }
-        </View>
-        {error && <CustomText
-          marginBottom={10}
-          color={'red'}
-        >
-          {error}
-        </CustomText>}
-      </>}
-
+            {!isInitial && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <CountryPicker
+                  countryCode={phone.countryCodeAlphabet}
+                  withCallingCodeButton
+                  onSelect={(v) => onSelect({ country: v })}
+                  withFilter
+                  withAlphaFilter
+                  withCallingCode
+                  withCloseButton
+                />
+                <TextInput
+                  onChangeText={(v) => onSelect({ numb: v })}
+                  value={phone?.number}
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    paddingHorizontal: 10,
+                  }}
+                  onBlur={onBlur}
+                />
+              </View>
+            )}
+            {isInitial && (
+              <TouchableOpacity
+                onPress={pressForEdit}
+                style={{
+                  height: 35,
+                  justifyContent: "center",
+                  paddingHorizontal: 5,
+                }}
+              >
+                <CustomText>{value}</CustomText>
+              </TouchableOpacity>
+            )}
+          </View>
+          {error && (
+            <CustomText marginBottom={10} color={"red"}>
+              {error}
+            </CustomText>
+          )}
+        </>
+      )}
     </>
   );
 };

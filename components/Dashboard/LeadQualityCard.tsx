@@ -11,6 +11,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
+import { color } from "../../const/color";
+import {
+  shadowPrimaryColor,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 
 const LeadQualityCard = ({ onRefresh }) => {
   const {
@@ -154,54 +159,60 @@ export default LeadQualityCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 18,
     marginHorizontal: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    elevation: 6,
+    shadowColor: "#3A57E8",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     position: "relative",
+    marginBottom: 8,
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "800",
+    color: "#1E293B",
   },
   dropdown: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
+    borderWidth: 0.8,
+    borderColor: color.primary200,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    zIndex: 10,
   },
   dropdownText: {
-    marginRight: 5,
-    color: "#333",
+    marginRight: 6,
+    color: "#334155",
+    fontWeight: "500",
   },
   dropdownList: {
     position: "absolute",
     right: 0,
-    top: 40,
-    backgroundColor: "#fff",
-    borderRadius: 6,
+    top: 32,
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e2e8f0",
     zIndex: 10,
-    elevation: 5,
+    elevation: 6,
+    ...shadowSecondaryColor,
   },
   dropdownItem: {
-    padding: 10,
+    padding: 8,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#f1f5f9",
   },
   centerLabel: {
     alignItems: "center",

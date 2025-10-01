@@ -1,4 +1,15 @@
 export const color = {
+  primaryColor: "#2D67C6",
+  secondaryColor: "#411970",
+  primary200: "#73A3E6",
+  secondary200: "#7D5DA3",
+  primary50: "#b0c8e9ff",
+  secondary50: "#a08fb5ff",
+  primary800: "#1E4583",
+  secondary800: "#2B114A",
+  primaryFade: "#ecf2f9ff",
+  secondaryFade: "#f3ecf9ff",
+
   saffronMango: "#2D67C6",
   darkBlack: "#010006",
   white: "#FFFFFF",
@@ -8,7 +19,7 @@ export const color = {
   grayBtn: "#BFBFBF",
   placeholderGrey: "#d3d3d3",
   green: "rgba(3, 161, 0, 1)",
-  selectedBg: "rgba(252, 244, 227, 1)",
+  selectedBg: "rgba(227, 237, 252, 1)",
   listCardBg: "#FCFAFA",
   hrmHeaderText: "#463812",
   hrmYellowText: "#2D67C6",
@@ -21,5 +32,4 @@ export const color = {
   prussianBlue: "#002E6B",
   dullRed: "#C10404",
   goldenYellow: "#2D67C6",
-  secondaryColor: "#411970",
 };

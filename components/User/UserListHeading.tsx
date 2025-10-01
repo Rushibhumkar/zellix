@@ -1,5 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import React from "react";
+import { color } from "../../const/color";
 
 const UserListHeading = () => {
   return (
@@ -21,19 +22,19 @@ const UserListHeading = () => {
         </View>
       </View>
 
-      <Text style={[styles.headingText,{marginLeft:20}]}>Email</Text>
+      <Text style={[styles.headingText, { marginLeft: 20 }]}>Email</Text>
     </View>
   );
 };
 export default UserListHeading;
 const styles = StyleSheet.create({
   headingContainer: {
-    backgroundColor: "#3E3E3E",
+    backgroundColor: color.primary200,
     flexDirection: "row",
     paddingHorizontal: 15,
     padding: 10,
-    borderRadius: 11,
-    gap: 100
+    borderRadius: 16,
+    gap: 100,
   },
   headingText: {
     fontSize: 14,

@@ -1,5 +1,6 @@
-import * as React from "react"
-import Svg, { Rect, Path } from "react-native-svg"
+import * as React from "react";
+import Svg, { Rect, Path } from "react-native-svg";
+import { color } from "../../const/color";
 
 function LeadIcons(props) {
   return (
@@ -11,7 +12,7 @@ function LeadIcons(props) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <Rect width={40} height={40} rx={20} fill="#000" />
+      <Rect width={40} height={40} rx={20} fill={color.primary50} />
       <Path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -19,7 +20,7 @@ function LeadIcons(props) {
         fill="#fff"
       />
     </Svg>
-  )
+  );
 }
 
-export default LeadIcons
+export default LeadIcons;

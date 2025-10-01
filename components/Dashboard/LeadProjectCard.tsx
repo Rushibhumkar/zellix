@@ -13,6 +13,10 @@ import { useGetLeadProjectWise } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
+import {
+  shadowPrimaryColor,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 
 const LeadProjectCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -155,16 +159,12 @@ export default LeadProjectCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
     position: "relative",
+    ...shadowPrimaryColor,
   },
   header: {
     flexDirection: "row",
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
     right: 16,
     backgroundColor: "#fff",
     padding: 12,
-    borderRadius: 10,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    elevation: 6,
+    borderRadius: 12,
+    borderColor: color.primaryColor,
+    borderWidth: 0.6,
     zIndex: 20,
     width: 250,
+    ...shadowSecondaryColor,
   },
   dateLabel: {
     fontSize: 14,
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   dateBox: {
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 0.6,
+    borderColor: color.primaryColor,
     borderRadius: 8,
     padding: 10,
     flexDirection: "row",

@@ -1,5 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import React from "react";
+import { color } from "../../const/color";
 
 const MeetingListHeading = () => {
   return (
@@ -52,7 +53,7 @@ const MeetingListHeading = () => {
 export default MeetingListHeading;
 const styles = StyleSheet.create({
   headingContainer: {
-    backgroundColor: "#3E3E3E",
+    backgroundColor: color.primary200,
     flexDirection: "row",
     padding: 10,
     borderRadius: 11,

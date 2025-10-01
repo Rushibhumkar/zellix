@@ -1,5 +1,6 @@
 import * as React from "react";
 import Svg, { Path, SvgProps } from "react-native-svg";
+import { color } from "../../const/color";
 const DownArrow = (props: SvgProps) => (
   <Svg
     width={12}
@@ -15,7 +16,7 @@ const DownArrow = (props: SvgProps) => (
     />
     <Path
       d="M1.625 0.973694L6.3125 5.66119L11 0.973694"
-      stroke="#BFBFBF"
+      stroke={color.primary200}
       strokeWidth={1.40625}
       strokeLinecap="round"
       strokeLinejoin="round"

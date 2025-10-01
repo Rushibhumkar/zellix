@@ -13,6 +13,10 @@ import { useGetClosingLeadProjectWise } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
+import {
+  shadowPrimaryColor,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 
 const ClosingLeadProjCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -143,16 +147,12 @@ export default ClosingLeadProjCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
     position: "relative",
+    ...shadowPrimaryColor,
   },
   header: {
     flexDirection: "row",

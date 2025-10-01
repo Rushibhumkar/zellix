@@ -16,6 +16,7 @@ import DatePickerExpo from "../../../myComponents/DatePickerExpo/DatePickerExpo"
 import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { myConsole } from "../../../hooks/useConsole";
+import { textPrimaryShadow, textWhiteShadow } from "../../../const/globalStyle";
 
 export default function GraphData({
   header,
@@ -176,10 +177,10 @@ export default function GraphData({
 
 const styles = StyleSheet.create({
   mainContainer: {
-    borderWidth: 1,
+    borderWidth: 0.6,
     borderColor: "#2D67C6",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 16,
   },
   rowContainer: {
     flexDirection: "row",

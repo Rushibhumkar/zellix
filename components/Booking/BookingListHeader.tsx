@@ -1,5 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import React from "react";
+import { color } from "../../const/color";
 
 const BookingListHeading = () => {
   return (
@@ -7,10 +8,14 @@ const BookingListHeading = () => {
       <View style={styles.headingContainer}>
         <View style={{ flexDirection: "row", gap: 5 }}>
           <Text style={styles.headingText}>No</Text>
-          <Text numberOfLines={1} style={styles.headingText}>Project Name</Text>
+          <Text numberOfLines={1} style={styles.headingText}>
+            Project Name
+          </Text>
         </View>
         <Text style={styles.headingText}>Status</Text>
-        <Text numberOfLines={1} style={styles.headingText}>Project Details</Text>
+        <Text numberOfLines={1} style={styles.headingText}>
+          Project Details
+        </Text>
       </View>
     </View>
   );
@@ -18,7 +23,7 @@ const BookingListHeading = () => {
 export default BookingListHeading;
 const styles = StyleSheet.create({
   headingContainer: {
-    backgroundColor: "#3E3E3E",
+    backgroundColor: color.primary200,
     flexDirection: "row",
     padding: 10,
     borderRadius: 11,
