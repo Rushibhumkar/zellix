@@ -109,7 +109,7 @@ const TeamList = () => {
     <Container>
       <Header title={"Teams"} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
-      {false ? (
+      {true ? (
         <View>
           {user?.role !== "sr_manager" && user?.role !== "manager" && user?.role !== "team_lead" &&<TitleWithAddDelete
             arrLength={!!selectedTeam?._id ? 1 : 0}
