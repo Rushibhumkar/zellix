@@ -41,6 +41,7 @@ import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import useModal from "../../hooks/useModal";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { sizes } from "../../const";
 
 let bookingStatus = [
   { value: '', label: 'All' },
@@ -270,7 +271,7 @@ myConsole('canAddBooking',canAddBooking)
       }
       ListHeaderComponentStyle={{ paddingTop: 5 }}
       ListEmptyComponent={
-        loading ? <SkeletonLoadingBooking /> : <NoDataFound />
+        loading ? <SkeletonLoadingBooking /> : <NoDataFound style={{marginTop:sizes.height/5}} showTxt />
       }
       onEndReached={onEndReach}
       onEndReachedThreshold={0.5}

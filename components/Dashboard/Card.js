@@ -1,140 +1,144 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSelector } from "react-redux";
-import { color } from "../../const/color";
-import { shadowLight } from "../../const/globalStyle";
-import { selectUser } from "../../redux/userSlice";
 import { useNavigation } from "@react-navigation/native";
+import { color } from "../../const/color";
+import { shadowLight, shadowPrimaryColor } from "../../const/globalStyle";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 
-const Card = ({
-  item,
-  loading
-}) => {
-  // const { team, lead, bookings, meeting, allUsers } = useSelector(selectUser)
-  const { navigate } = useNavigation()
+const Card = ({ item, loading }) => {
+  const { navigate } = useNavigation();
 
-  const SingleCard = ({
-    count,
-    title,
-    onPress,
-    isLoading,
-  }) => {
-    return <>
-      {!isLoading ? <TouchableOpacity
-        style={styles.cardcontainer}
-        onPress={onPress}
-        activeOpacity={0.5}
-      >
-        <Text
-          style={{
-            fontSize: 24,
-            textAlign: "center",
-            color: "#000000",
-            fontWeight: "900",
-          }}
-        >
-          {count}
-        </Text>
-        <Text
-          style={{
-            fontSize: 15,
-            textAlign: "center",
-            color: "#131313",
-            fontWeight: "600",
-          }}
-        >
-          {title}
-        </Text>
-      </TouchableOpacity> :
-        <TouchableOpacity
-          style={[styles.cardcontainer, { justifyContent: 'center' }]}
-          activeOpacity={1}
-        >
-          <SkeletonRow />
-        </TouchableOpacity>
-      }
-    </>
-  }
+  /* ----------------------------------------
+     SingleCard: Reusable mini card component
+  ---------------------------------------- */
+  const SingleCard = ({ count, title, onPress, isLoading }) => {
+    return (
+      <>
+        {!isLoading ? (
+          <TouchableOpacity
+            style={styles.cardContainer}
+            onPress={onPress}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.countText}>{count}</Text>
+            <Text style={styles.titleText}>{title}</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.cardContainer, { justifyContent: "center" }]}
+            activeOpacity={1}
+          >
+            <SkeletonRow />
+          </TouchableOpacity>
+        )}
+      </>
+    );
+  };
 
   return (
-    <>
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginBottom: 5
-      }}>
+    <View style={styles.wrapper}>
+      <View style={styles.row}>
         <SingleCard
           count={item?.leads ?? 0}
-          title={'Leads'}
+          title={"Leads"}
           onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
         <SingleCard
           count={item?.meetings ?? 0}
-          title={'Meeting'}
+          title={"Meetings"}
           onPress={() => navigate(routeMeeting.MeetingsNavigator)}
           isLoading={loading}
         />
       </View>
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%'
-      }}>
+
+      <View style={styles.row}>
         <SingleCard
           count={item?.bookings ?? 0}
-          title={'Bookings'}
+          title={"Bookings"}
           onPress={() => navigate(routeBooking.bookingNavigator)}
           isLoading={loading}
         />
         <SingleCard
           count={item?.users ?? 0}
-          title={'Employees'}
-          onPress={() => navigate('usermanagement')}
+          title={"Employees"}
+          onPress={() => navigate("usermanagement")}
           isLoading={loading}
         />
       </View>
-    </>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  cardcontainer: {
-    padding: 10,
-    backgroundColor: color.paleGrey,
-    ...shadowLight,
-    borderRadius: 12,
-    borderWidth: 0.6,
-    borderColor: color.saffronMango,
-    width: '48%',
-    // minHeight: 65
-  },
-});
-
-export default Card;
-
-
+/* ----------------------------------------
+   Skeleton Loader for Loading State
+---------------------------------------- */
 const SkeletonRow = () => {
   return (
-    <View style={{ justifyContent: "center", alignItems: "center", paddingBottom: 10 }}>
+    <View style={styles.skeletonWrapper}>
       <SkeletonView
         wrapperStyle={{
-          width: 20,
-          height: 20,
-          borderRadius: 15,
+          width: 32,
+          height: 32,
+          borderRadius: 16,
         }}
       />
       <SkeletonView
         wrapperStyle={{
-          width: 80,
+          width: 90,
           height: 10,
-          borderRadius: 15,
-          marginTop: 10,
+          borderRadius: 8,
+          marginTop: 12,
         }}
       />
     </View>
   );
-}
+};
+
+/* ----------------------------------------
+   Styles
+---------------------------------------- */
+const styles = StyleSheet.create({
+  wrapper: {
+    width: "100%",
+    paddingVertical: 6,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  cardContainer: {
+    width: "48%",
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadowPrimaryColor,
+  },
+  countText: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: color.primary ?? "#1E1E1E",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  titleText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#555",
+    textAlign: "center",
+  },
+  skeletonWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 10,
+  },
+});
+
+export default Card;

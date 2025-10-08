@@ -5,17 +5,14 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
 import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
-import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
-import {
-  shadowPrimaryColor,
-  shadowSecondaryColor,
-} from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const LeadQualityCard = ({ onRefresh }) => {
   const {
@@ -36,7 +33,7 @@ const LeadQualityCard = ({ onRefresh }) => {
   const chartData = [
     {
       value: selectedData?.Qualified || 0,
-      color: "#3A57E8",
+      color: "#4C8BFE",
       label: "Qualified",
       text: `${Math.round(
         ((selectedData?.Qualified || 0) / (selectedData?.Total || 1)) * 100
@@ -44,7 +41,7 @@ const LeadQualityCard = ({ onRefresh }) => {
     },
     {
       value: selectedData?.Disqualified || 0,
-      color: "#FEC9C9",
+      color: "#FF8A80",
       label: "Disqualified",
       text: `${Math.round(
         ((selectedData?.Disqualified || 0) / (selectedData?.Total || 1)) * 100
@@ -52,7 +49,7 @@ const LeadQualityCard = ({ onRefresh }) => {
     },
     {
       value: selectedData?.Pending || 0,
-      color: "#FFA629",
+      color: "#FFC047",
       label: "Pending",
       text: `${Math.round(
         ((selectedData?.Pending || 0) / (selectedData?.Total || 1)) * 100
@@ -63,13 +60,12 @@ const LeadQualityCard = ({ onRefresh }) => {
   const total = selectedData?.Total || 0;
 
   useEffect(() => {
-    if (onRefresh) {
-      refetchLeadQuality();
-    }
+    if (onRefresh) refetchLeadQuality();
   }, [onRefresh]);
 
   return (
     <View style={styles.card}>
+      {/* ---------- Header ---------- */}
       <View style={styles.header}>
         <Text style={styles.title}>Lead Quality</Text>
 
@@ -78,7 +74,7 @@ const LeadQualityCard = ({ onRefresh }) => {
           style={styles.dropdown}
         >
           <Text style={styles.dropdownText}>{selectedOption}</Text>
-          <Ionicons name="chevron-down" size={16} color="#333" />
+          <Ionicons name="chevron-down" size={16} color={color.primary700} />
         </TouchableOpacity>
 
         {showDropdown && (
@@ -92,61 +88,55 @@ const LeadQualityCard = ({ onRefresh }) => {
                 }}
                 style={styles.dropdownItem}
               >
-                <Text>{option}</Text>
+                <Text style={styles.dropdownOption}>{option}</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
       </View>
 
+      {/* ---------- Content ---------- */}
       {loadingLeadQuality ? (
-        <ActivityIndicator style={{ height: 270 }} size="large" color="#000" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={color.primary} />
+        </View>
       ) : errorLeadQuality ? (
-        <NoDataFound width={250} height={280} />
+        <NoDataFound width={220} height={250} />
       ) : (
         <>
-          <View style={{ alignItems: "center", marginVertical: 10 }}>
+          {/* Pie Chart */}
+          <View style={styles.chartContainer}>
             <PieChart
               data={chartData}
               donut
-              radius={80}
-              innerRadius={40}
+              radius={90}
+              innerRadius={45}
               showText
-              textColor="white"
+              textColor="#fff"
               textSize={12}
               centerLabelComponent={() => (
                 <View style={styles.centerLabel}>
-                  <Text
-                    style={{
-                      color: "#FEC9C9",
-                      fontSize: 14,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Total
-                  </Text>
-                  <Text
-                    style={{ fontSize: 18, fontWeight: "bold", color: "#000" }}
-                  >
-                    {total}
-                  </Text>
+                  <Text style={styles.totalText}>Total</Text>
+                  <Text style={styles.totalValue}>{total}</Text>
                 </View>
               )}
             />
           </View>
 
-          <View style={styles.labelContainer}>
+          {/* Legends */}
+          <View style={styles.legendContainer}>
             {chartData.map((item, index) => (
-              <View key={index} style={styles.labelRow}>
+              <View key={index} style={styles.legendRow}>
                 <View style={[styles.dot, { backgroundColor: item.color }]} />
-                <Text style={styles.labelText}>{item.label}</Text>
-                <Text style={styles.labelValue}>{item.value}</Text>
+                <Text style={styles.legendLabel}>{item.label}</Text>
+                <Text style={styles.legendValue}>{item.value}</Text>
               </View>
             ))}
-            <View style={styles.labelRow}>
+
+            <View style={styles.legendRow}>
               <View style={[styles.dot, { backgroundColor: "#B30000" }]} />
-              <Text style={styles.labelText}>Lost</Text>
-              <Text style={styles.labelValue}>{selectedData?.Lost || 0}</Text>
+              <Text style={styles.legendLabel}>Lost</Text>
+              <Text style={styles.legendValue}>{selectedData?.Lost || 0}</Text>
             </View>
           </View>
         </>
@@ -157,86 +147,124 @@ const LeadQualityCard = ({ onRefresh }) => {
 
 export default LeadQualityCard;
 
+/* ------------------------------------
+   Modern Dashboard Styling
+------------------------------------ */
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 18,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 22,
+    padding: 20,
     marginHorizontal: 16,
-    elevation: 6,
-    shadowColor: "#3A57E8",
-    shadowOpacity: 0.15,
+    marginTop: 10,
+    elevation: 4,
+    shadowColor: "#1E293B",
+    shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 6,
+    ...shadowPrimaryColor,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     position: "relative",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#1E293B",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0F172A",
+    letterSpacing: 0.3,
+    fontFamily: "System",
   },
   dropdown: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 0.8,
-    borderColor: color.primary200,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
     backgroundColor: "#fff",
-    zIndex: 10,
+    borderWidth: 0.8,
+    borderColor: "#CBD5E1",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
   dropdownText: {
+    fontSize: 13,
+    fontWeight: "600",
     marginRight: 6,
     color: "#334155",
-    fontWeight: "500",
+    fontFamily: "System",
   },
   dropdownList: {
     position: "absolute",
     right: 0,
-    top: 32,
+    top: 36,
     backgroundColor: "#ffffff",
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#E2E8F0",
     zIndex: 10,
-    elevation: 6,
-    ...shadowSecondaryColor,
+    elevation: 5,
+    overflow: "hidden",
   },
   dropdownItem: {
-    padding: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    borderBottomColor: "#F1F5F9",
+  },
+  dropdownOption: {
+    fontSize: 14,
+    color: "#1E293B",
+    fontWeight: "500",
+  },
+  loadingContainer: {
+    height: 260,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chartContainer: {
+    alignItems: "center",
+    marginVertical: 16,
   },
   centerLabel: {
     alignItems: "center",
   },
-  labelContainer: {
-    marginTop: 12,
+  totalText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6B7280",
   },
-  labelRow: {
+  totalValue: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginTop: 4,
+  },
+  legendContainer: {
+    marginTop: 8,
+    paddingHorizontal: 8,
+  },
+  legendRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 2,
+    marginVertical: 3,
   },
   dot: {
-    height: 10,
     width: 10,
+    height: 10,
     borderRadius: 5,
     marginRight: 8,
   },
-  labelText: {
+  legendLabel: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
+    color: "#0F172A",
+    fontWeight: "500",
   },
-  labelValue: {
-    fontSize: 14,
-    fontWeight: "600",
+  legendValue: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111827",
   },
 });

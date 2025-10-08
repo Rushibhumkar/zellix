@@ -19,6 +19,7 @@ import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import SkeletonLoadingUser from "../../components/User/SkeletonLoadingUser";
 import { myConsole } from "../../hooks/useConsole";
 import { routeTeam } from "../../utils/routes";
+import { sizes } from "../../const";
 
 const TeamList = () => {
   const isFocused = useIsFocused();
@@ -108,7 +109,7 @@ const TeamList = () => {
     <Container>
       <Header title={"Teams"} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
-      {true ? (
+      {false ? (
         <View>
           {user?.role !== "sr_manager" && user?.role !== "manager" && user?.role !== "team_lead" &&<TitleWithAddDelete
             arrLength={!!selectedTeam?._id ? 1 : 0}
@@ -165,12 +166,12 @@ const TeamList = () => {
             ListHeaderComponentStyle={{ marginBottom: 10, marginTop: -20 }}
             // ListEmptyComponent={<SkeletonLoadingLead isTeam />}
             ListEmptyComponent={
-              loading?.team ? <SkeletonLoadingUser /> : <NoDataFound />
+              loading?.team ? <SkeletonLoadingUser /> : <NoDataFound style={{marginTop:sizes.height/4}} showTxt/>
             }
           />
         </View>
       ) : (
-        <NoDataFound />
+        <NoDataFound style={{marginTop:sizes.height/4}} showTxt/>
       )}
       {/* modal delete */}
       <DeleteModel

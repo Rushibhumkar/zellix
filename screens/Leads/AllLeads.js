@@ -20,7 +20,7 @@ import Container from "../../myComponents/Container/Container";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import { deleteLead } from "../../services/rootApi/leadApi";
 import { getAllLeadFunc } from "../../redux/action";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
@@ -42,9 +42,11 @@ import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
 import { checkPermission } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import {useGetUserPermission} from '../../services/rootApi/permissionApi'
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { sizes } from "../../const";
 let bgByStatus = {
-  assign: "#FECBA6",
-  new: "#D6E5FD",
+  assign: "#dfe9faff", // soft blue tint for assigned
+  new: "#C9DCFA",    // lighter blue for new
 };
 
 // Debounce function
@@ -400,7 +402,7 @@ const AllLeads = () => {
           />
         </Container>
       ) : (
-        <NoDataFound />
+        <NoDataFound style={{marginTop:sizes.height/4}} showTxt />
       )}
       <DeleteModel
         isLoading={isLoading}
@@ -454,7 +456,7 @@ const LeadRowItem = ({
         styles.mainlistcontainer,
         {
           backgroundColor: selected
-            ? "rgba(252, 244, 227, 1)"
+            ? color.primary200
             : bgColor
               ? bgColor
               : "white",
@@ -560,7 +562,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: "#2D67C6",
     marginHorizontal: 20,
-    ...shadow1,
+    ...shadowPrimaryColor,
   },
 });
 

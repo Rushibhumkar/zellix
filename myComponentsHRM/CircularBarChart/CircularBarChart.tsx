@@ -4,7 +4,12 @@ import React, { useEffect, useState } from "react";
 import { PieChart } from "react-native-gifted-charts";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
-import { shadow1, shadow2, shadowLight } from "../../const/globalStyle";
+import {
+  shadow1,
+  shadow2,
+  shadowLight,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 import {
   useGetAttendanceChart,
   useGetLeaveChart,
@@ -150,10 +155,10 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
         padding: 16,
         borderRadius: 10,
         backgroundColor: color.listCardBg,
-        borderWidth: 0.5,
-        borderColor: color.saffronMango,
+        borderWidth: 0.8,
+        borderColor: color.secondaryColor,
         marginBottom: 15,
-        ...shadow2,
+        ...shadowSecondaryColor,
       }}
     >
       <CustomText

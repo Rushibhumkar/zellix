@@ -37,12 +37,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
 import { myConsole } from "../../hooks/useConsole";
 import { queryKeyCRM } from "../../utils/queryKeys";
+import { sizes } from "../../const";
 
 let bgByStatus = {
-  reschedule: "#FECBA6",
-  schedule: "#D6E5FD",
-  conducted: "rgb(236, 255, 220)",
+  reschedule: "#A8C4F5", // soft blue tint
+  schedule: "#C9DCFA",   // lighter blue for planned
+  conducted: "#E4EEFC",  // pale bluish-white for done
 };
+
 
 const AllMeetings = () => {
   const queryClient = useQueryClient();
@@ -272,7 +274,7 @@ const AllMeetings = () => {
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
             ListEmptyComponent={
-              loading ? <SkeletonLoadingMeeting /> : <NoDataFound />
+              loading ? <SkeletonLoadingMeeting /> : <NoDataFound style={{marginTop:sizes.height/5}} showTxt/>
             }
             onEndReached={onEndReach}
             onEndReachedThreshold={0.5}
@@ -287,7 +289,7 @@ const AllMeetings = () => {
           />
         </View>
       ) : (
-        <NoDataFound />
+        <NoDataFound showTxt />
       )}
       <DeleteModel
         isLoading={isLoading}
