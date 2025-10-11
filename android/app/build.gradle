@@ -79,13 +79,13 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 android {
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion 35
+    compileSdkVersion 33
 
     namespace 'com.skg.zellix'
     defaultConfig {
         applicationId 'com.skg.zellix'
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 33
         versionCode 64
         versionName "1.2.3"
 
