@@ -59,9 +59,9 @@ const CustomInput = ({
         ]}
         placeholder={placeholder ? placeholder : label ? label : "placeholder"}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => {
+        onBlur={(e) => {
           setIsFocused(false);
-          onBlur && onBlur();
+          onBlur && onBlur(e);
         }}
         multiline={multiline}
         numberOfLines={numberOfLines}
