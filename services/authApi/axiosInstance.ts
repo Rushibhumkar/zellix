@@ -3,7 +3,7 @@ import { getData } from "../../hooks/useAsyncStorage";
 
 let testURL = "https://zellix-backend.onrender.com";
 
-const isLive = true;
+const isLive = false;
 
 export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 

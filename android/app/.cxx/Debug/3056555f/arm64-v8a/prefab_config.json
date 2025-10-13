@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "prefabPath": "/Users/macbookpro/.gradle/caches/modules-2/files-2.1/com.google.prefab/cli/2.1.0/aa32fec809c44fa531f01dcfb739b5b3304d3050/cli-2.1.0-all.jar",
+  "packages": [
+    "/Users/macbookpro/.gradle/caches/8.14.3/transforms/dbd321cb4171913d8fc606c1c77d0a54/transformed/react-android-0.81.4-debug/prefab",
+    "/Users/macbookpro/.gradle/caches/8.14.3/transforms/bad0042fd7bbfb5b4aeb10c007e08098/transformed/hermes-android-0.81.4-debug/prefab",
+    "/Users/macbookpro/.gradle/caches/8.14.3/transforms/33bbe2fd917fbc01118c1353e729ebb9/transformed/fbjni-0.7.0/prefab"
+  ]
+}

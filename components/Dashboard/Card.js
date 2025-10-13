@@ -5,6 +5,7 @@ import { color } from "../../const/color";
 import { shadowLight, shadowPrimaryColor } from "../../const/globalStyle";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
+import { myConsole } from "../../hooks/useConsole";
 
 const Card = ({ item, loading }) => {
   const { navigate } = useNavigation();
@@ -35,7 +36,6 @@ const Card = ({ item, loading }) => {
       </>
     );
   };
-
   return (
     <View style={styles.wrapper}>
       <View style={styles.row}>
@@ -45,10 +45,16 @@ const Card = ({ item, loading }) => {
           onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
-        <SingleCard
+        {/* <SingleCard
           count={item?.meetings ?? 0}
           title={"Meetings"}
           onPress={() => navigate(routeMeeting.MeetingsNavigator)}
+          isLoading={loading}
+        /> */}
+        <SingleCard
+          count={item?.callingData ?? 0}
+          title={"Calling Data"}
+          onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
       </View>
