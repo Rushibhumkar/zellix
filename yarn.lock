@@ -2997,7 +2997,7 @@ expo-manifests@~1.0.8:
     "@expo/config" "~12.0.8"
     expo-json-utils "~0.15.0"
 
-expo-modules-autolinking@3.0.15:
+expo-modules-autolinking@3.0.15, expo-modules-autolinking@^3.0.15:
   version "3.0.15"
   resolved "https://registry.yarnpkg.com/expo-modules-autolinking/-/expo-modules-autolinking-3.0.15.tgz#15e8483a30733d18f0709a64d282a03610c418a7"
   integrity sha512-B6c+x664ImrWd+PknEy5454gtY6P0cMxj4P50fvLYP4HimbYj9SzwoHqZ/Rxh9NwxnUkT2nappk/USYIcPoS/A==

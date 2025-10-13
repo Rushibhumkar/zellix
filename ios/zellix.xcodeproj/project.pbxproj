@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		309B45A1849A2EA329F19228 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB3CA2DEDABEE9D8B3A880 /* ExpoModulesProvider.swift */; };
+		1D42B9E9394741083EA9EA6E /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B267E121F4DFEDC84F5BA165 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		9F54CC73139F1A4D6ED36CF1 /* libPods-zellix.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D3A050F0CAE95366FEB4775 /* libPods-zellix.a */; };
+		5D7E6A44218766F278389AA6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7A52D7CAFB7F1872A5CFC80A /* PrivacyInfo.xcprivacy */; };
+		72581E1848ADAB3EC5A036B7 /* libPods-zellix.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF329455DD40C512EF1E0AB /* libPods-zellix.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		CFBB1F24FCCA2BD10F145C4F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E06E986C536C361B0FD54592 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* zellix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = zellix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = zellix/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = zellix/Info.plist; sourceTree = "<group>"; };
-		2D3A050F0CAE95366FEB4775 /* libPods-zellix.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-zellix.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		323326DB8B9676BBB8F56B9B /* Pods-zellix.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.release.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.release.xcconfig"; sourceTree = "<group>"; };
-		65FB3CA2DEDABEE9D8B3A880 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-zellix/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		7A52D7CAFB7F1872A5CFC80A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = zellix/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7DF329455DD40C512EF1E0AB /* libPods-zellix.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-zellix.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9FEB0F9459C5C54148A8EED5 /* Pods-zellix.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.release.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = zellix/SplashScreen.storyboard; sourceTree = "<group>"; };
+		ADAF14442F568FB6BE0A1FDD /* Pods-zellix.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.debug.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.debug.xcconfig"; sourceTree = "<group>"; };
+		B267E121F4DFEDC84F5BA165 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-zellix/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E06E986C536C361B0FD54592 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = zellix/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = zellix/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* zellix-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "zellix-Bridging-Header.h"; path = "zellix/zellix-Bridging-Header.h"; sourceTree = "<group>"; };
-		F4A0E012781D50EA5D401FA0 /* Pods-zellix.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.debug.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9F54CC73139F1A4D6ED36CF1 /* libPods-zellix.a in Frameworks */,
+				72581E1848ADAB3EC5A036B7 /* libPods-zellix.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				E06E986C536C361B0FD54592 /* PrivacyInfo.xcprivacy */,
+				7A52D7CAFB7F1872A5CFC80A /* PrivacyInfo.xcprivacy */,
 			);
 			name = zellix;
 			sourceTree = "<group>";
@@ -62,27 +62,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				2D3A050F0CAE95366FEB4775 /* libPods-zellix.a */,
+				7DF329455DD40C512EF1E0AB /* libPods-zellix.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		6A74DA06C7E04E48B109AC9D /* Pods */ = {
+		68DA225668C3674C19067C2B /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				F4A0E012781D50EA5D401FA0 /* Pods-zellix.debug.xcconfig */,
-				323326DB8B9676BBB8F56B9B /* Pods-zellix.release.xcconfig */,
+				D9F5946AE390C39050957743 /* zellix */,
 			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		6B2779A4B704C6A493DC38F7 /* zellix */ = {
-			isa = PBXGroup;
-			children = (
-				65FB3CA2DEDABEE9D8B3A880 /* ExpoModulesProvider.swift */,
-			);
-			name = zellix;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -99,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				6A74DA06C7E04E48B109AC9D /* Pods */,
-				8D7910C34DA7193517CB4C63 /* ExpoModulesProviders */,
+				D9B54502DE80BF8B39BE6835 /* Pods */,
+				68DA225668C3674C19067C2B /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,14 +105,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8D7910C34DA7193517CB4C63 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				6B2779A4B704C6A493DC38F7 /* zellix */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +112,24 @@
 			);
 			name = Supporting;
 			path = zellix/Supporting;
+			sourceTree = "<group>";
+		};
+		D9B54502DE80BF8B39BE6835 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				ADAF14442F568FB6BE0A1FDD /* Pods-zellix.debug.xcconfig */,
+				9FEB0F9459C5C54148A8EED5 /* Pods-zellix.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		D9F5946AE390C39050957743 /* zellix */ = {
+			isa = PBXGroup;
+			children = (
+				B267E121F4DFEDC84F5BA165 /* ExpoModulesProvider.swift */,
+			);
+			name = zellix;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "zellix" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				1BB5C760F76EC219BF623881 /* [Expo] Configure project */,
+				6911C9E0FBF1E7EDDB983035 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				7F85BE44D857918D23FC0DAD /* [CP] Embed Pods Frameworks */,
+				96D2E4B251918416BBE35735 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				CFBB1F24FCCA2BD10F145C4F /* PrivacyInfo.xcprivacy in Resources */,
+				5D7E6A44218766F278389AA6 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +242,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1BB5C760F76EC219BF623881 /* [Expo] Configure project */ = {
+		6911C9E0FBF1E7EDDB983035 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -265,28 +265,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-zellix/expo-configure-project.sh\"\n";
-		};
-		7F85BE44D857918D23FC0DAD /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-zellix/Pods-zellix-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-zellix/Pods-zellix-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -330,6 +308,28 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-zellix/Pods-zellix-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		96D2E4B251918416BBE35735 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-zellix/Pods-zellix-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-zellix/Pods-zellix-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -338,7 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				309B45A1849A2EA329F19228 /* ExpoModulesProvider.swift in Sources */,
+				1D42B9E9394741083EA9EA6E /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,7 +347,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4A0E012781D50EA5D401FA0 /* Pods-zellix.debug.xcconfig */;
+			baseConfigurationReference = ADAF14442F568FB6BE0A1FDD /* Pods-zellix.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -383,7 +383,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 323326DB8B9676BBB8F56B9B /* Pods-zellix.release.xcconfig */;
+			baseConfigurationReference = 9FEB0F9459C5C54148A8EED5 /* Pods-zellix.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
