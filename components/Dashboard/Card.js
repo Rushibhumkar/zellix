@@ -45,10 +45,16 @@ const Card = ({ item, loading }) => {
           onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
-        <SingleCard
+          {/* <SingleCard
           count={item?.meetings ?? 0}
           title={"Meetings"}
           onPress={() => navigate(routeMeeting.MeetingsNavigator)}
+          isLoading={loading}
+        /> */}
+        <SingleCard
+          count={item?.callingData ?? 0}
+          title={"Calling Data"}
+          onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
       </View>

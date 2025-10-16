@@ -60,7 +60,7 @@ const LoginScreen = () => {
         );
       })
       .catch((err) => {
-        myConsole('err', err)
+        myConsole('errssss', err)
         setSnackBar({
           visible: true,
           text: err?.response?.data,

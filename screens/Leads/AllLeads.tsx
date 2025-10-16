@@ -41,12 +41,12 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
 import { checkPermission } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
-import {useGetUserPermission} from '../../services/rootApi/permissionApi'
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { sizes } from "../../const";
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
-  new: "#C9DCFA",    // lighter blue for new
+  new: "#C9DCFA", // lighter blue for new
 };
 
 // Debounce function
@@ -252,66 +252,61 @@ const AllLeads = () => {
     }
   };
   const { data: permission = {} } = useGetUserPermission(user?._id);
-    const canAddLead = checkPermission(
-      permission,
-      "Leads",
-      "add",
-      user?.role
-    );
+  const canAddLead = checkPermission(permission, "Leads", "add", user?.role);
 
-    const canDeleteLead = checkPermission(
-      permission,
-      "Leads",
-      "delete",
-      user?.role
-    );
-    const canAssignLead = checkPermission(
-      permission,
-      "Leads",
-      "assign",
-      user?.role
-    );
-    const canLeadPoolManagement = checkPermission(
-      permission,
-      "Leads",
-      "leadPoolManagement",
-      user?.role
-    );
-    const canViewProjects = checkPermission(
-      permission,
-      "Leads",
-      "viewProjects",
-      user?.role
-    );
-    myConsole('permissionnnn',permission)
+  const canDeleteLead = checkPermission(
+    permission,
+    "Leads",
+    "delete",
+    user?.role
+  );
+  const canAssignLead = checkPermission(
+    permission,
+    "Leads",
+    "assign",
+    user?.role
+  );
+  const canLeadPoolManagement = checkPermission(
+    permission,
+    "Leads",
+    "leadPoolManagement",
+    user?.role
+  );
+  const canViewProjects = checkPermission(
+    permission,
+    "Leads",
+    "viewProjects",
+    user?.role
+  );
+  myConsole("permissionnnn", permission);
   return (
     <>
-      <Header title={"All Leads"} onBack={() => navigate('dashboard')} />
+      <Header title={"All Leads"} onBack={() => navigate("dashboard")} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <Container>
           <TitleWithAddDelete
             arrLength={selected?.length}
             title="Leads"
-    onPressToNavigate={() => {
-  if (canAddLead) {
-    navigate("AddLeads");
-  } else {
-    popUpConfToast.errorMessage(
-      "You are not authorized to add new leads. Please contact your administrator."
-    );
-  }
-}}
-
+            onPressToNavigate={() => {
+              if (canAddLead) {
+                navigate("AddLeads");
+              } else {
+                popUpConfToast.errorMessage(
+                  "You are not authorized to add new leads. Please contact your administrator."
+                );
+              }
+            }}
             onPressToDelete={
-              canDeleteLead &&
-              user?.role === roleEnum.sub_admin ||
-                user?.role === roleEnum.sup_admin
+              (canDeleteLead && user?.role === roleEnum.sub_admin) ||
+              user?.role === roleEnum.sup_admin
                 ? toggleModal
                 : false
             }
             onPressToAssignLead={
-             canAssignLead && user?.role === "agent" ? false : () => toggleModalAssignLead()
+              canAssignLead && user?.role === "agent"
+                ? false
+                : () => toggleModalAssignLead()
             }
             onPressToFilter={() => navigate("AdvanceSearch", { type: "lead" })}
             onCloseSearch={
@@ -402,7 +397,7 @@ const AllLeads = () => {
           />
         </Container>
       ) : (
-        <NoDataFound style={{marginTop:sizes.height/4}} showTxt />
+        <NoDataFound style={{ marginTop: sizes.height / 4 }} showTxt />
       )}
       <DeleteModel
         isLoading={isLoading}
@@ -458,8 +453,8 @@ const LeadRowItem = ({
           backgroundColor: selected
             ? color.primary200
             : bgColor
-              ? bgColor
-              : "white",
+            ? bgColor
+            : "white",
         },
       ]}
       onPress={onPress}

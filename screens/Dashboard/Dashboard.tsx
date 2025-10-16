@@ -40,7 +40,7 @@ import SkeletonLoadingDashboard from "../../components/Dashboard/SkeletonLoading
 import BookingMeetingLoader from "../../myComponents/Loader/BookingMeetingLoader";
 import useInternetConnectivity from "../../hooks/useInternetConnectivity";
 import { baseURL } from "../../services/authApi/axiosInstance";
-import CallDetectorManager from "react-native-call-detection";
+// import CallDetectorManager from "react-native-call-detection";
 import * as Device from "expo-device";
 import moment from "moment";
 import { leadCallTrack } from "../../services/rootApi/leadApi";
@@ -405,71 +405,71 @@ const Dashboard = () => {
         let startTime;
         let endTime;
 
-        const callDetector = new CallDetectorManager(
-          async (event, phoneNumber) => {
-            const lead_id = callDetect?.leadId;
-            // Handle call events here
-            console.log(`Event@@@@@: ${event} - Phone number: ${phoneNumber}`);
-            if (!!callDetect?.isCall) {
-              console.log(
-                `Event@@@@@: ${event} - Phone number: ${phoneNumber}`
-              );
-              if (event === "Offhook") {
-                //for android
-                startTime = moment();
+        // const callDetector = new CallDetectorManager(
+        //   async (event, phoneNumber) => {
+        //     const lead_id = callDetect?.leadId;
+        //     // Handle call events here
+        //     console.log(`Event@@@@@: ${event} - Phone number: ${phoneNumber}`);
+        //     if (!!callDetect?.isCall) {
+        //       console.log(
+        //         `Event@@@@@: ${event} - Phone number: ${phoneNumber}`
+        //       );
+        //       if (event === "Offhook") {
+        //         //for android
+        //         startTime = moment();
 
-                console.log("call connected", startTime);
-              } else if (event === "Dialing") {
-                //for ios
-                startTime = moment();
-              } else if (event === "Connected") {
-                //for ios
-                // startTime = moment();
-              } else if (event === "Disconnected") {
-                try {
-                  await dispatch(
-                    setCallDetect({
-                      isCall: false,
-                      leadId: null,
-                    })
-                  );
-                  endTime = moment();
-                  let diffInSec = moment(endTime).diff(
-                    moment(startTime),
-                    "seconds"
-                  );
-                  const sendData = {
-                    callTime: startTime,
-                    duration: diffInSec,
-                    // leadId: callDetect?.leadId
-                  };
-                  console.log("sendData", sendData);
-                  console.log("callDetect?.leadId", callDetect?.leadId);
-                  let leadCallTrackRes = await leadCallTrack({
-                    data: sendData,
-                    // id: callDetect?.leadId
-                    id: lead_id,
-                  });
-                  myConsole("leadCallTrackRes", leadCallTrackRes?.data);
-                  queryClient.invalidateQueries(["getLeadDetailById", lead_id]);
-                  // await dispatch(getAllLeadFunc());
-                  // await navigate(routeLead.allLead);
-                } catch (err) {
-                  console.log("error in call disconnect", err);
-                }
-              }
-            }
-          },
-          true,
-          (p) => {
-            console.log("permision", p);
-          },
-          {
-            title: "Phone State Permission",
-            message:
-              "This app needs access to your phone state in order to track call duration.",
-          }
-        );
+        //         console.log("call connected", startTime);
+        //       } else if (event === "Dialing") {
+        //         //for ios
+        //         startTime = moment();
+        //       } else if (event === "Connected") {
+        //         //for ios
+        //         // startTime = moment();
+        //       } else if (event === "Disconnected") {
+        //         try {
+        //           await dispatch(
+        //             setCallDetect({
+        //               isCall: false,
+        //               leadId: null,
+        //             })
+        //           );
+        //           endTime = moment();
+        //           let diffInSec = moment(endTime).diff(
+        //             moment(startTime),
+        //             "seconds"
+        //           );
+        //           const sendData = {
+        //             callTime: startTime,
+        //             duration: diffInSec,
+        //             // leadId: callDetect?.leadId
+        //           };
+        //           console.log("sendData", sendData);
+        //           console.log("callDetect?.leadId", callDetect?.leadId);
+        //           let leadCallTrackRes = await leadCallTrack({
+        //             data: sendData,
+        //             // id: callDetect?.leadId
+        //             id: lead_id,
+        //           });
+        //           myConsole("leadCallTrackRes", leadCallTrackRes?.data);
+        //           queryClient.invalidateQueries(["getLeadDetailById", lead_id]);
+        //           // await dispatch(getAllLeadFunc());
+        //           // await navigate(routeLead.allLead);
+        //         } catch (err) {
+        //           console.log("error in call disconnect", err);
+        //         }
+        //       }
+        //     }
+        //   },
+        //   true,
+        //   (p) => {
+        //     console.log("permision", p);
+        //   },
+        //   {
+        //     title: "Phone State Permission",
+        //     message:
+        //       "This app needs access to your phone state in order to track call duration.",
+        //   }
+        // );
 
         return () => {
           // Cleanup or unsubscribe when the component is unmounted

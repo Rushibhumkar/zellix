@@ -35,7 +35,6 @@ const DeleteModel = ({
                 flexDirection: "row",
                 gap: 10,
                 marginBottom: 20,
-                textAlign: "center",
               }}
             >
               <View
@@ -55,7 +54,9 @@ const DeleteModel = ({
                 />
               </View>
               <View style={{ marginTop: 5 }}>
-                <Text style={{ textAlign: "center", fontSize: 16, fontWeight:600 }}>
+                <Text
+                  style={{ textAlign: "center", fontSize: 16, fontWeight: 600 }}
+                >
                   Are you Sure, You Want to Delete {selectedUser}
                 </Text>
 

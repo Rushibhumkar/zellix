@@ -36,7 +36,7 @@ import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import { myConsole } from "../../hooks/useConsole";
 import { meetingRescheduled } from "../../services/rootApi/meetingApi";
-import ConfirmationCodeInput from "react-native-confirmation-code-input";
+// import ConfirmationCodeInput from "react-native-confirmation-code-input";
 import { meetingOtpGenerate } from "../../services/rootApi/meetingApi";
 import { meetingConduct } from "../../services/rootApi/meetingApi";
 import { meetingOtpVerify } from "../../services/rootApi/meetingApi";
@@ -615,7 +615,7 @@ const MeetingDetails = () => {
                     The session will expire 5 min
                   </Text>
                   <View style={{ marginBottom: 40 }}>
-                    <ConfirmationCodeInput
+                    {/* <ConfirmationCodeInput
                       codeInputStyle={{
                         fontSize: 20,
                         fontWeight: "600",
@@ -635,7 +635,7 @@ const MeetingDetails = () => {
                       activeColor="#000000"
                       inactiveColor="#CCCCCC"
                       onFulfill={(code) => handleChange("otp")(code)}
-                    />
+                    /> */}
                   </View>
 
                   <CustomBtn

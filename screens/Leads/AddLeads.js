@@ -19,7 +19,7 @@ const AddLeads = () => {
   //
   const [openLeadField, setOpenLeadField] = useState({
     bulk: false,
-    single: !!data ? true : false
+    single: !!data ? true : true
   })
 
   const handleOpenField = (key) => {

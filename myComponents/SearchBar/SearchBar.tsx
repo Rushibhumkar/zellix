@@ -12,7 +12,7 @@ import { color } from "../../const/color";
 
 interface TSearchBar {
   onClickCancel: () => void;
-  onChangeText: () => void;
+  onChangeText: (text: string) => void;
   containerStyle: StyleProp<ViewStyle>;
   value: string;
 }
@@ -33,15 +33,14 @@ const SearchBar = ({
           flexDirection: "row",
           borderRadius: 20,
           alignItems: "center",
-          paddingHorizontal: 10,
-          paddingVertical: 10,
+          paddingHorizontal: 12,
           marginHorizontal: 25,
-          height: 40,
+          height: 45,
         },
         containerStyle,
       ]}
     >
-      <AntDesign name="search1" size={20} />
+      <AntDesign name="search" size={20} color={color.primary200} />
       <TextInput
         style={{ flex: 1, paddingHorizontal: 10 }}
         placeholder="Search..."
