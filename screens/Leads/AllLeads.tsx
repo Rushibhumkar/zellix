@@ -228,11 +228,10 @@ const AllLeads = () => {
     debounceSearch(v);
   };
 
-  const handleLeadTypeSelect = (key) => {
+  const handleLeadTypeSelect = (key, shouldToggle = true) => {
     setSelectLeadType(key);
-    toggleLeadTypeModal();
+    if (shouldToggle) toggleLeadTypeModal();
   };
-
   const onEndReach = () => {
     if (hasNextPage && !loading && leadData?.length > 0) {
       fetchNextPage && fetchNextPage();
@@ -278,6 +277,18 @@ const AllLeads = () => {
     "viewProjects",
     user?.role
   );
+
+  useEffect(() => {
+    if (isFocused) {
+      const currentRoute = navigate?.getState?.()?.routes?.slice(-1)[0]?.name;
+      if (currentRoute === "allLeads2") {
+        handleLeadTypeSelect("calling_data", false);
+      } else {
+        handleLeadTypeSelect("lead", false);
+      }
+    }
+  }, [isFocused]);
+
   myConsole("permissionnnn", permission);
   return (
     <>

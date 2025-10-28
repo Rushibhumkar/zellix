@@ -84,8 +84,19 @@ const CustomGooglePlacesSearch = ({
                 key: keyValue,
                 language: "en",
               }}
+              requestUrl={{
+                useOnPlatform: "all",
+                url: "https://maps.googleapis.com/maps/api", // ✅ ensures it uses correct endpoint
+              }}
+              predefinedPlaces={[]}
               keyboardShouldPersistTaps="handled"
               onPress={(data, details) => {
+                // console.log("📍 Selected Location Data:", {
+                //   description: data?.description,
+                //   place_id: data?.place_id,
+                //   coordinates: details?.geometry?.location,
+                //   fullResponse: { data, details },
+                // });
                 onPress(data, details);
                 spSheet.hide();
                 //   setFieldValue('location', data.description)
@@ -94,6 +105,7 @@ const CustomGooglePlacesSearch = ({
                 //     lng: details?.geometry?.location?.lng
                 //   })
               }}
+              timeout={15000}
               //
               nearbyPlacesAPI="GooglePlacesSearch"
               // currentLocation={true}

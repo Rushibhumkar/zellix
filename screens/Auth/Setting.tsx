@@ -35,8 +35,11 @@ import IncentiveSvg from "../../assets/svg/IncentiveSvg";
 import ReferralSvg from "../../assets/svg/ReferralSvg";
 import { checkPermission } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
-import {useGetUserPermission} from '../../services/rootApi/permissionApi'
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { myConsole } from "../../hooks/useConsole";
+import UserIcon from "../../assets/svg/UserIcon";
+import UsersManagement from "../Users/UsersManagement";
+import { UsersNavigator } from "../../navigation/StackNavigation";
 
 const Setting = () => {
   const dispatch = useDispatch();
@@ -46,7 +49,8 @@ const Setting = () => {
     user?.role === roleEnum?.sup_admin ||
     user?.role === roleEnum?.sr_manager;
   const isAgent = user?.role === roleEnum?.agent;
-  const isSubSup = user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin
+  const isSubSup =
+    user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin;
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,18 +75,18 @@ const Setting = () => {
   };
 
   const { data: permission = {} } = useGetUserPermission(user?._id);
-      const canViewExpenses = checkPermission(
-      permission,
-      "Expenses",
-      "viewList",
-      user?.role
-    );
-      const canViewInvoices = checkPermission(
-      permission,
-      "Invoices",
-      "viewList",
-      user?.role
-    );
+  const canViewExpenses = checkPermission(
+    permission,
+    "Expenses",
+    "viewList",
+    user?.role
+  );
+  const canViewInvoices = checkPermission(
+    permission,
+    "Invoices",
+    "viewList",
+    user?.role
+  );
   return (
     <>
       <Header title={"Setting"} />
@@ -94,18 +98,18 @@ const Setting = () => {
             roleEnum.sup_admin,
           ].includes(user?.role) ||
             user?.status === statusEnum.approved) && (
-              <Pressable
-                style={[styles.fdRow]}
-                onPress={() => navigation.navigate("HRManagementStack")}
+            <Pressable
+              style={[styles.fdRow]}
+              onPress={() => navigation.navigate("HRManagementStack")}
+            >
+              <CRMLogoIcon />
+              <Text
+                style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
-                <CRMLogoIcon />
-                <Text
-                  style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
-                >
-                  HRMS
-                </Text>
-              </Pressable>
-            )}
+                HRMS
+              </Text>
+            </Pressable>
+          )}
 
           {isSubSupSrMng && (
             <Pressable
@@ -135,9 +139,7 @@ const Setting = () => {
           </Pressable>
           <Pressable
             style={styles.fdRow}
-            onPress={() =>
-              navigation.navigate(routeReferral.ReferralNavigator)
-            }
+            onPress={() => navigation.navigate(routeReferral.ReferralNavigator)}
           >
             <ReferralSvg />
 
@@ -158,16 +160,33 @@ const Setting = () => {
               </Text>
             </Pressable>
           )}
-          {true && <Pressable
-            style={styles.fdRow}
-            onPress={() => navigation.navigate(routeExpense.ExpenseNavigator)}
-          >
-            <ExpenseSvg />
-            <Text style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
-              Expense
-            </Text>
-          </Pressable>}
+          {true && (
+            <Pressable
+              style={styles.fdRow}
+              onPress={() => navigation.navigate(routeExpense.ExpenseNavigator)}
+            >
+              <ExpenseSvg />
+              <Text
+                style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
+              >
+                Expense
+              </Text>
+            </Pressable>
+          )}
           {/* 88888888888888 */}
+          {!isAgent && (
+            <Pressable
+              style={styles.fdRow}
+              onPress={() => navigation.navigate("UsersNavigator")}
+            >
+              <UserIcon />
+              <Text
+                style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
+              >
+                User Management
+              </Text>
+            </Pressable>
+          )}
 
           <Pressable
             style={styles.fdRow}

@@ -31,6 +31,16 @@ Notifications.setNotificationHandler({
 
 export const queryClient = new QueryClient();
 export default function App() {
+
+
+  if (Platform.OS === "android") {
+  const originalFetch = global.fetch;
+  global.fetch = (uri, options = {}) => {
+    const opts = { timeout: 15000, ...options }; // ✅ ensure timeout is always a number
+    return originalFetch(uri, opts);
+  };
+}
+
   //
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);

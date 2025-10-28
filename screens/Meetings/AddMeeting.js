@@ -322,15 +322,6 @@ const AddMeeting = () => {
             {errors.clientCountry && touched.clientCountry && (
               <Text style={styles.errorText}>{errors.clientCountry}</Text>
             )}
-
-            {/* <CustomInput
-              label="Meeting Location"
-              placeholder="Meeting Location"
-              containerStyle={{ marginBottom: 15 }}
-              onChangeText={handleChange("location")}
-              onBlur={handleBlur("location")}
-              value={values?.location}
-            /> */}
             <View
             >
               <View
@@ -357,7 +348,7 @@ const AddMeeting = () => {
                 />}
               </View>
               <CustomGooglePlacesSearch
-                handleBlur={handleBlur('location')}
+               handleBlur={() => handleBlur('location')}
                 onPress={(data, details) => {
                   setFieldValue('location', data.description)
                   setFieldValue('coordinates', {
@@ -367,49 +358,6 @@ const AddMeeting = () => {
                 }}
                 defaultValue={values?.location}
               />
-              {/* <GooglePlacesAutocomplete
-                placeholder="Search meeting location..."
-                debounce={500}
-                query={{
-                  key: `AIzaSyAT8kOHt32jptCSfEC0yvIfPj8X57QPp-4`,
-                  language: 'en'
-                }}
-                onPress={(data, details) => {
-                  setFieldValue('location', data.description)
-                  setFieldValue('coordinates', {
-                    lat: details?.geometry?.location?.lat,
-                    lng: details?.geometry?.location?.lng
-                  })
-                }}
-                //
-                nearbyPlacesAPI="GooglePlacesSearch"
-                // currentLocation={true}
-                listViewDisplayed="auto"
-                minLength={2}
-                enablePoweredByContainer={false}
-                // currentLocationLabel="Current location"
-                fetchDetails={true}
-                ref={textInput2}
-                disableScroll={true}
-                autoFocus={false}
-                styles={{
-                  container: {
-                    borderWidth: 0.5,
-                    borderRadius: 10,
-                    padding: 2,
-                    marginBottom: 15
-                  }
-                }}
-                textInputProps={{
-                  style: {
-                    backgroundColor: 'white',
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                  },
-                  onBlur: handleBlur("location"),
-                  // value: values?.location,
-                }}
-              /> */}
             </View>
             {errors.location && touched.location && (
               <Text style={styles.errorText}>{errors.location}</Text>
@@ -451,12 +399,7 @@ const AddMeeting = () => {
             {errors.status && touched.status && (
               <Text style={styles.errorText}>{errors.status}</Text>
             )}
-            {/* <DatePickerExpo
-              boxContainerStyle={{ marginBottom: 15 }}
-              onSelect={(a) => setFieldValue("scheduleDate", a)}
-              initialValue={values?.scheduleDate}
-              title={"Schedule Date"}
-            /> */}
+      
             <View
               style={{
                 flexDirection: "row",

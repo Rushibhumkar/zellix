@@ -60,6 +60,7 @@ interface TDropdownRNE {
   placeholder?: string;
   error?: string;
   containerStyle: StyleProp<ViewStyle>;
+  dropdownStyle: StyleProp<ViewStyle>;
   keyName:
     | "agent"
     | "sr_manager"
@@ -111,6 +112,7 @@ const DropdownRNE = ({
   onChangeText,
   isLoading = false,
   dpWidth,
+  dropdownStyle,
   onSelect,
 }: TDropdownRNE) => {
   //
@@ -170,7 +172,7 @@ const DropdownRNE = ({
         <Dropdown
           mode={mode}
           search={isSearch}
-          style={styles.dropdown}
+          style={[styles.dropdown, dropdownStyle]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
@@ -248,7 +250,7 @@ const DropdownRNE = ({
       ) : (
         <MultiSelect
           mode={mode}
-          style={styles.dropdown}
+          style={[styles.dropdown, dropdownStyle]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={[styles.selectedTextStyle]}
           inputSearchStyle={styles.inputSearchStyle}

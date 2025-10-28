@@ -23,8 +23,6 @@ export const bookingEntryStatusObj = {
   rejected: "Rejected",
 };
 
-
-
 export const meetingStatus = {
   schedule: "Meeting Scheduled",
   conducted: "Meeting Conducted",
@@ -38,7 +36,7 @@ export const userTypes = {
   manager: "Manager",
   team_lead: "Team Lead",
   agent: "Agent",
-  assistant_manager: "Assistant Manager"
+  assistant_manager: "Assistant Manager",
 };
 
 export const roleEnum = {
@@ -48,7 +46,7 @@ export const roleEnum = {
   agent: "agent",
   sup_admin: "sup_admin",
   sub_admin: "sub_admin",
-  assistant_manager: "assistant_manager"
+  assistant_manager: "assistant_manager",
 };
 
 export const statusEnum = {
@@ -103,13 +101,42 @@ export const status = [
     name: "Spam/Wrong contact details",
   },
   { value: "broker", label: "Broker", _id: "broker", name: "Broker" },
-  { value: "Not Able to Connect", label: "Not Able to Connect", _id: "not_able_to_connect", name: "Not Able to Connect" },
-  { value: "Follow Up Required", label: "Follow Up Required", _id: "follow_up_required", name: "Follow Up Required" },
-  { value: "Disqualified", label: "Disqualified", _id: "disqualified", name: "Disqualified" },
-  { value: "Not Interested", label: "Not Interested", _id: "not_interested", name: "Not Interested" },
-  { value: "Deal Booked", label: "Deal Booked", _id: "deal_booked", name: "Deal Booked" },
-  { value: "Deal Cancelled", label: "Deal Cancelled", _id: "deal_cancelled", name: "Deal Cancelled" },
-
+  {
+    value: "Not Able to Connect",
+    label: "Not Able to Connect",
+    _id: "not_able_to_connect",
+    name: "Not Able to Connect",
+  },
+  {
+    value: "Follow Up Required",
+    label: "Follow Up Required",
+    _id: "follow_up_required",
+    name: "Follow Up Required",
+  },
+  {
+    value: "Disqualified",
+    label: "Disqualified",
+    _id: "disqualified",
+    name: "Disqualified",
+  },
+  {
+    value: "Not Interested",
+    label: "Not Interested",
+    _id: "not_interested",
+    name: "Not Interested",
+  },
+  {
+    value: "Deal Booked",
+    label: "Deal Booked",
+    _id: "deal_booked",
+    name: "Deal Booked",
+  },
+  {
+    value: "Deal Cancelled",
+    label: "Deal Cancelled",
+    _id: "deal_cancelled",
+    name: "Deal Cancelled",
+  },
 ];
 
 export const statusObj = {
@@ -195,13 +222,13 @@ export const inputStatusOptions = [
   { _id: "eoi_picked", name: "EOI Picked" },
   { _id: "partial_dp_complete", name: "Partial DP Completed" },
   { _id: "204complete_spa_pending", name: "20% + 4% Complete SPA Pending" },
-  { _id: "eoi_canceled", name: "EOI Cancelled" }
+  { _id: "eoi_canceled", name: "EOI Cancelled" },
 ];
 
 export const PaymentStatus = [
   { name: "Pending", _id: "pending" },
   { name: "Received", _id: "received" },
-  { name: "Not Received", _id: "not_received" }
+  { name: "Not Received", _id: "not_received" },
 ];
 //BookingStatus, mode of payment,Token,
 export const ModeOfPayment = [
@@ -363,34 +390,33 @@ export const mobileCode = [
   { code: "966", country: "Saudi Arabia" },
   { code: "971", country: "United Arab Emirates" },
   // Add more as needed for additional countries.
-]
+];
 
 export const mobileCodeWithIdKey = mobileCode?.map((el) => {
-  return { ...el, _id: `${el?.code}`, name: `+ ${el?.code} ${el?.country}` }
-})
-
-
+  return { ...el, _id: `${el?.code}`, name: `+ ${el?.code}` };
+  // return { ...el, _id: `${el?.code}`, name: `+ ${el?.code} ${el?.country}` }
+});
 
 export const inBookingStatus = [
   { _id: "approved", name: "Approved" },
   { _id: "pending", name: "Pending" },
   { _id: "rejected", name: "Rejected" },
-]
+];
 
 export const inMeetingStatus = [
   {
     name: "Schedule",
-    _id: "schedule"
+    _id: "schedule",
   },
   {
     name: "Conducted",
-    _id: "conducted"
+    _id: "conducted",
   },
   {
     name: "Reschedule",
-    _id: "reschedule"
+    _id: "reschedule",
   },
-]
+];
 
 export const inLeadStatus = [
   { _id: "assign", name: "Assigned" },
@@ -419,11 +445,19 @@ export const leadTypeInAS = [
 ];
 
 export const monthsStatic = [
-  "Jan", "Feb", "Mar", "Apr", "May", "June", "July",
-  "Aug", "Sept", "Oct", "Nov", "Dec"
-]
-
-
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "June",
+  "July",
+  "Aug",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 export const summaryList = [
   { value: "confirm_business", name: "Confirmed Business" },
@@ -431,9 +465,6 @@ export const summaryList = [
   { value: "eoi", name: "Expression of Interest" },
   { value: "cancel_business", name: "Cancel Business" },
 ];
-
-
-
 
 export const confirmedBusinessList = [
   { value: "total", name: "Sum of Value of Property" },
@@ -450,6 +481,3 @@ export const ExpressionOfInterestList = [
   { value: "brokerReferral", name: "Sum of Broker" },
   { value: "netCommission", name: "Sum of Net Revenue" },
 ];
-
-
-

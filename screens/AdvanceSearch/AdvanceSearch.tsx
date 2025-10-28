@@ -379,9 +379,10 @@ const AdvanceSearch = () => {
                     <DropdownRNE
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{
-                        width: 150,
+                        width: 80,
                         marginEnd: 10,
                       }}
+                      dropdownStyle={{ height: 32 }}
                       placeholder="+91"
                       onChange={(v) => setFieldValue("code", v)}
                       initialValue={values?.code}

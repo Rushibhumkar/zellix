@@ -87,6 +87,11 @@ const MobileInput = ({
     setIsInitial(!isInitial);
   };
 
+  const formattedCodes = mobileCodeWithIdKey.map((item) => ({
+    ...item,
+    displayName: `+${item.code} ${item.country}`,
+  }));
+
   return (
     <>
       {!isCountryPicker && (
@@ -101,12 +106,14 @@ const MobileInput = ({
         >
           <DropdownRNE
             placeholderStyle={"#a9a9a9"}
-            dropdownStyle={{ height: 34 }}
-            containerStyle={{ width: "38%" }}
+            dropdownStyle={{ height: 30, paddingTop: 4, borderRadius: 12 }}
+            containerStyle={{
+              width: "28%",
+            }}
             placeholder="+91"
-            arrOfObj={mobileCodeWithIdKey}
+            arrOfObj={formattedCodes}
             keyValueGetOnSelect="_id"
-            keyValueShowInBox="name"
+            keyValueShowInBox="displayName"
             onChange={(e) => handleChangeMobile(e, "pin")}
             initialValue={number?.pin}
             mode="modal"
@@ -115,7 +122,7 @@ const MobileInput = ({
           />
           <CustomInput
             placeholder="Mobile Number"
-            containerStyle={{ width: "60%" }}
+            containerStyle={{ width: "70%" }}
             onChangeText={(e) => handleChangeMobile(e, "phone")}
             props={{
               keyboardType: "number-pad",
