@@ -9,6 +9,7 @@ import {
 } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetAttendanceChart } from "../../hooks/useGetQuerryHRM";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 interface TCardHRM {
   title?: string;
@@ -76,7 +77,7 @@ export const SingleCard = ({ number, title }) => {
       // onPress={onPress}
       activeOpacity={0.9}
     >
-      <Text
+      <CustomText
         style={{
           fontSize: 24,
           textAlign: "center",
@@ -85,8 +86,8 @@ export const SingleCard = ({ number, title }) => {
         }}
       >
         {number ?? "0"}
-      </Text>
-      <Text
+      </CustomText>
+      <CustomText
         style={{
           fontSize: 12,
           textAlign: "center",
@@ -95,7 +96,7 @@ export const SingleCard = ({ number, title }) => {
         }}
       >
         {title ?? "-"}
-      </Text>
+      </CustomText>
     </TouchableOpacity>
   );
 };

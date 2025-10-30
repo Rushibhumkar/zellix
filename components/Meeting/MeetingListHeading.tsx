@@ -1,14 +1,15 @@
 import { Text, StyleSheet, View } from "react-native";
 import React from "react";
 import { color } from "../../const/color";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const MeetingListHeading = () => {
   return (
     <View style={{ paddingHorizontal: 20 }}>
       <View style={styles.headingContainer}>
         <View style={{ flexDirection: "column", gap: 2 }}>
-          <Text style={styles.headingText}>Client Name</Text>
-          <Text
+          <CustomText style={styles.headingText}>Client Name</CustomText>
+          <CustomText
             style={{
               fontSize: 12,
               fontWeight: "400",
@@ -17,11 +18,11 @@ const MeetingListHeading = () => {
             }}
           >
             ProductPitch
-          </Text>
+          </CustomText>
         </View>
         <View>
-          <Text style={styles.headingText}>Status</Text>
-          <Text
+          <CustomText style={styles.headingText}>Status</CustomText>
+          <CustomText
             style={{
               fontSize: 12,
               fontWeight: "400",
@@ -30,12 +31,12 @@ const MeetingListHeading = () => {
             }}
           >
             Created By
-          </Text>
+          </CustomText>
         </View>
 
         <View style={{ flexDirection: "column", gap: 2 }}>
-          <Text style={styles.headingText}>Scheduled</Text>
-          <Text
+          <CustomText style={styles.headingText}>Scheduled</CustomText>
+          <CustomText
             style={{
               fontSize: 12,
               fontWeight: "400",
@@ -44,7 +45,7 @@ const MeetingListHeading = () => {
             }}
           >
             ScheduleDate
-          </Text>
+          </CustomText>
         </View>
       </View>
     </View>

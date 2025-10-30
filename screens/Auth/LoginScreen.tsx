@@ -11,7 +11,7 @@ import {
   Pressable,
   Alert,
   Platform,
-  StatusBar
+  StatusBar,
 } from "react-native";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -39,12 +39,12 @@ const LoginScreen = () => {
   });
 
   const handleFormSubmit = async (values) => {
-    const deviceId = await getData('deviceId');
+    const deviceId = await getData("deviceId");
     setIsLoading(true);
     let data = {
       email: values?.email,
       password: values?.password,
-      ...(typeof (deviceId) === 'string' && { deviceId: deviceId })
+      ...(typeof deviceId === "string" && { deviceId: deviceId }),
     };
 
     login(data)
@@ -60,7 +60,7 @@ const LoginScreen = () => {
         );
       })
       .catch((err) => {
-        myConsole('errssss', err)
+        myConsole("errssss", err);
         setSnackBar({
           visible: true,
           text: err?.response?.data,
@@ -72,11 +72,10 @@ const LoginScreen = () => {
       });
   };
 
-
   return (
     <>
       <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={'#fff'} barStyle="dark-content"/>
+        <StatusBar backgroundColor={"#fff"} barStyle="dark-content" />
         <ImageBackground
           source={require("../../assets/AuthBack.png")}
           style={styles.background}
@@ -92,7 +91,14 @@ const LoginScreen = () => {
                 validationSchema={LoginSchema}
                 onSubmit={handleFormSubmit}
               >
-                {({ handleChange, handleSubmit, values, errors, handleBlur, touched }) => {
+                {({
+                  handleChange,
+                  handleSubmit,
+                  values,
+                  errors,
+                  handleBlur,
+                  touched,
+                }) => {
                   return (
                     <View style={styles.logincontainer}>
                       <View style={{ flex: 1, alignItems: "center" }}>
@@ -101,11 +107,13 @@ const LoginScreen = () => {
                           style={styles.authlogo}
                         />
                       </View>
-                      <View style={{ flex: 1, textAlign: "center",marginTop:12 }}>
+                      <View
+                        style={{ flex: 1, textAlign: "center", marginTop: 12 }}
+                      >
                         <Pressable
                           onLongPress={async () => {
-                            const deviceId = await getData('deviceId');
-                            Alert.alert('deviceId', deviceId ?? 'null')
+                            const deviceId = await getData("deviceId");
+                            Alert.alert("deviceId", deviceId ?? "null");
                           }}
                         >
                           <Text style={styles.loginheader}>Login</Text>
@@ -117,7 +125,7 @@ const LoginScreen = () => {
                           value={values.email}
                           onChangeText={handleChange("email")}
                           placeholder="Email Address "
-                          onBlur={handleBlur('email')}
+                          onBlur={handleBlur("email")}
                         />
                         {errors.email && touched?.email && (
                           <Text style={styles.errorText}>{errors.email}</Text>
@@ -128,8 +136,7 @@ const LoginScreen = () => {
                           onChangeText={handleChange("password")}
                           placeholder="Password "
                           containerStyle={{ marginBottom: 15 }}
-                          onBlur={handleBlur('password')}
-
+                          onBlur={handleBlur("password")}
                           props={{
                             secureTextEntry: true,
                           }}
@@ -167,35 +174,35 @@ const LoginScreen = () => {
             </KeyboardAvoidingView>
           </ScrollView>
           <Pressable
-            onLongPress={() => Alert.alert('Base URL(Plz click on Cancel)', `${baseURL}`, [
-              {
-                text: 'Cancel',
-                onPress: () => console.log('Ask me later pressed'),
-              },
-              {
-                text: 'Live Url',
-                onPress: () => setBaseUrl('https://api.crmaxproperty.com'),
-                style: 'cancel',
-              },
-              {
-                text: 'Test Url', onPress: () =>
-                  // setBaseUrl('https://axproperty-backend.onrender.com') 
-                  setBaseUrl(`https://axproperty-api-new.onrender.com`)
-              },
-
-            ])}
-
+            onLongPress={() =>
+              Alert.alert("Base URL(Plz click on Cancel)", `${baseURL}`, [
+                {
+                  text: "Cancel",
+                  onPress: () => console.log("Ask me later pressed"),
+                },
+                {
+                  text: "Live Url",
+                  onPress: () => setBaseUrl("https://api.crmaxproperty.com"),
+                  style: "cancel",
+                },
+                {
+                  text: "Test Url",
+                  onPress: () =>
+                    // setBaseUrl('https://axproperty-backend.onrender.com')
+                    setBaseUrl(`https://axproperty-api-new.onrender.com`),
+                },
+              ])
+            }
             style={{
               // backgroundColor: 'red',
               width: 50,
               height: 50,
-              position: 'absolute',
+              position: "absolute",
               // top: 20,
               // right: 20,
               // borderRadius: 25,
             }}
-          >
-          </Pressable>
+          ></Pressable>
         </ImageBackground>
       </SafeAreaView>
     </>
@@ -254,7 +261,8 @@ const styles = StyleSheet.create({
   //   fontSize: 16,
   // },
   authlogo: {
-    height:60,width:140
+    height: 60,
+    width: 140,
   },
   errorText: {
     color: "red",

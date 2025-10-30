@@ -54,9 +54,9 @@ import {
   useGetCommissionCount,
   useGetDashboardCount,
   useGetMeetingCount,
-useGetLeadQuality,
-useGetClosingLeadProjectWise,
-useGetLeadProjectWise
+  useGetLeadQuality,
+  useGetClosingLeadProjectWise,
+  useGetLeadProjectWise,
 } from "../../hooks/useCRMgetQuerry";
 import GraphData from "../../components/Dashboard/GraphData/GraphData";
 import DashboardCard from "../../components/Dashboard/DashboardCard/DashboardCard";
@@ -91,8 +91,9 @@ const Dashboard = () => {
   // const { isOffline, checkInternetConnectivity } = useInternetConnectivity();
   const [user, setUser] = useState({});
 
-  const isShowGraphs = ["sup_admin", "sub_admin", "manager"].includes(user?.role);
-
+  const isShowGraphs = ["sup_admin", "sub_admin", "manager"].includes(
+    user?.role
+  );
 
   //rect query
   const {
@@ -366,12 +367,9 @@ const Dashboard = () => {
     };
   }, []);
 
-
-
-    // const { user } = useSelector(selectUser);
-    const { data: permission = {} } = useGetUserPermission(user?._id);
-    myConsole('permissions',permission)
-
+  // const { user } = useSelector(selectUser);
+  const { data: permission = {} } = useGetUserPermission(user?._id);
+  // myConsole('permissions',permission)
 
   useEffect(() => {
     console.log("callDetect", callDetect);
@@ -514,11 +512,11 @@ const Dashboard = () => {
                 <Card item={dashboardCount} loading={loadingDashboardCount} />
               </View>
               {isShowGraphs && (
-              <>
-                <LeadQualityCard onRefresh={refreshing} />
-                <LeadProjectCard onRefresh={refreshing} />
-                <ClosingLeadProjCard onRefresh={refreshing} />
-              </>
+                <>
+                  <LeadQualityCard onRefresh={refreshing} />
+                  <LeadProjectCard onRefresh={refreshing} />
+                  <ClosingLeadProjCard onRefresh={refreshing} />
+                </>
               )}
 
               <GraphData header={"Confirmed Business"} />
@@ -532,7 +530,7 @@ const Dashboard = () => {
               {!loadingMeetingCount ? (
                 <MeetingCard
                   item={meetingCount}
-                // isLoading={loadingMeetingCount}
+                  // isLoading={loadingMeetingCount}
                 />
               ) : (
                 <BookingMeetingLoader />

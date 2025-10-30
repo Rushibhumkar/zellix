@@ -11,6 +11,7 @@ import {
   View
 } from "react-native";
 import { color } from "../const/color";
+import CustomText from "../myComponents/CustomText/CustomText";
 
 const Header = ({ title, onBack }) => {
   const { goBack } = useNavigation();
@@ -26,11 +27,11 @@ const Header = ({ title, onBack }) => {
             source={require("../assets/Backicon.png")} />
         </TouchableOpacity>
         <View>
-          <Text
+          <CustomText
             style={{ color: "#FFFFFF", fontSize: 22, fontWeight: "600" }}
           >
             {title}
-          </Text>
+          </CustomText>
         </View>
         <View></View>
       </View>

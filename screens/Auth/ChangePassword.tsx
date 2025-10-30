@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -19,6 +18,7 @@ import Header from "../../components/Header";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const ChangePassword = () => {
   const { user } = useSelector(selectUser);
@@ -44,7 +44,6 @@ const ChangePassword = () => {
           behavior={Platform.OS === "ios" ? 30 : 30}
           style={styles.container}
         >
-
           <Formik
             initialValues={initialValues}
             validationSchema={ChangePasswordSchema}
@@ -66,36 +65,44 @@ const ChangePassword = () => {
               setIsLoading(false);
             }}
           >
-            {({ handleChange, handleSubmit, values, errors, touched, handleBlur }) => (
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              handleBlur,
+            }) => (
               <View>
                 <View>
-
                   <CustomInput
                     label="OldPassword"
                     value={values.oldPassword}
                     onChangeText={handleChange("oldPassword")}
                     placeholder="Enter the old Password "
-                    onBlur={handleBlur('oldPassword')}
+                    onBlur={handleBlur("oldPassword")}
                   />
                   {errors.oldPassword && touched?.oldPassword && (
-                    <Text style={styles.errorText}>{errors.oldPassword}</Text>
+                    <CustomText style={styles.errorText}>
+                      {errors.oldPassword}
+                    </CustomText>
                   )}
                 </View>
                 <View style={{ marginTop: 17 }}>
-
                   <CustomInput
                     label="NewPassword"
                     value={values.newPassword}
                     onChangeText={handleChange("newPassword")}
                     placeholder="Enter new password "
-                    onBlur={handleBlur('newPassword')}
+                    onBlur={handleBlur("newPassword")}
                   />
                   {errors.newPassword && touched?.newPassword && (
-                    <Text style={styles.errorText}>{errors.newPassword}</Text>
+                    <CustomText style={styles.errorText}>
+                      {errors.newPassword}
+                    </CustomText>
                   )}
                 </View>
                 <View style={{ marginTop: 17 }}>
-
                   <CustomInput
                     label="ConfirmPassword"
                     value={values.confirmPassword}
@@ -103,9 +110,9 @@ const ChangePassword = () => {
                     placeholder="Confirm your password "
                   />
                   {errors.confirmPassword && touched?.confirmPassword && (
-                    <Text style={styles.errorText}>
+                    <CustomText style={styles.errorText}>
                       {errors.confirmPassword}
-                    </Text>
+                    </CustomText>
                   )}
                 </View>
                 <CustomBtn

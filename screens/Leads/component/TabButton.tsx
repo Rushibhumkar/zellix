@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { color } from "../../../const/color";
+import CustomText from "../../../myComponents/CustomText/CustomText";
 
 interface TTabButton {
   onTabPress?: (v: number) => void;
@@ -35,43 +36,43 @@ const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
           style={[styles.tab, activeTab === 1 && styles.activeTab]}
           onPress={() => handlePress(1)}
         >
-          <Text
+          <CustomText
             style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
           >
             Lead Info
-          </Text>
+          </CustomText>
         </Pressable>
 
         <Pressable
           style={[styles.tab, activeTab === 2 && styles.activeTab]}
           onPress={() => handlePress(2)}
         >
-          <Text
+          <CustomText
             style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
           >
             User Info
-          </Text>
+          </CustomText>
         </Pressable>
 
         <Pressable
           style={[styles.tab, activeTab === 3 && styles.activeTab]}
           onPress={() => handlePress(3)}
         >
-          <Text
+          <CustomText
             style={[styles.tabText, activeTab === 3 && styles.activeTabText]}
           >
             Logs Info
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === 4 && styles.activeTab]}
           onPress={() => handlePress(4)}
         >
-          <Text
+          <CustomText
             style={[styles.tabText, activeTab === 4 && styles.activeTabText]}
           >
             Meeting Info
-          </Text>
+          </CustomText>
         </Pressable>
       </ScrollView>
     </View>

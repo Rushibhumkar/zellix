@@ -123,7 +123,9 @@ const PostIntProcess = () => {
             />
           </View>
           {formik.touched.offerAccepted && formik.errors.offerAccepted && (
-            <Text style={styles.errorText}>{formik.errors.offerAccepted}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.offerAccepted}
+            </CustomText>
           )}
 
           <CustomInput
@@ -154,7 +156,9 @@ const PostIntProcess = () => {
             minimumDate={new Date()}
           />
           {formik.touched.joiningDate && formik.errors.joiningDate && (
-            <Text style={styles.errorText}>{formik.errors.joiningDate}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.joiningDate}
+            </CustomText>
           )}
 
           <DropdownRNE
@@ -180,7 +184,9 @@ const PostIntProcess = () => {
             }
           />
           {formik.touched.pnl && formik.errors.pnl && (
-            <Text style={styles.errorText}>{formik.errors.pnl}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.pnl}
+            </CustomText>
           )}
 
           <DropdownRNE
@@ -206,7 +212,9 @@ const PostIntProcess = () => {
             }
           />
           {formik.touched.manager && formik.errors.manager && (
-            <Text style={styles.errorText}>{formik.errors.manager}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.manager}
+            </CustomText>
           )}
 
           <ExpoImagePicker
@@ -225,7 +233,9 @@ const PostIntProcess = () => {
             onBlur={formik.handleBlur("offerLetter")}
           />
           {formik.errors.offerLetter && formik.touched.offerLetter && (
-            <Text style={styles.errorText}>{formik.errors.offerLetter}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.offerLetter}
+            </CustomText>
           )}
           <ExpoImagePicker
             label="CV After Interview"
@@ -243,9 +253,9 @@ const PostIntProcess = () => {
             onBlur={formik.handleBlur("postInterviewCV")}
           />
           {formik.errors.postInterviewCV && formik.touched.postInterviewCV && (
-            <Text style={styles.errorText}>
+            <CustomText style={styles.errorText}>
               {formik.errors.postInterviewCV}
-            </Text>
+            </CustomText>
           )}
 
           <CustomInput

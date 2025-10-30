@@ -25,6 +25,7 @@ import { routeBooking } from "../../utils/routes";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 function percent(total = 1, value = 0) {
   // if (typeof value !== "number" || typeof total !== "number" || total === 0) {
@@ -41,55 +42,61 @@ function percent(total = 1, value = 0) {
 }
 
 const aasa = {
-  "developer": "65d2ecb72a78bb71bbe5b99b",
-  "relationshipManager": "Revari",
-  "meeting": "67efb9dcdac8c307353ca6f6",
-  "projectName": "bhiwani",
-  "clientName": "shukla ji",
-  "clientMobile": "917838131522",
-  "clientEmail": "dev4@swavishtek.com",
-  "ownership": "single",
-  "unit": "32",
-  "areaSQFT": 43334,
-  "total": 54333,
-  "propertyDetails": "Just for testing",
-  "paymentPlan": "cash",
-  "paymentMode": "cheque",
-  "token": false,
-  "bookingAmount": 0,
-  "clientLoyalty": 2173.32,
-  "clientLoyaltyPerc": 4,
-  "brokerReferral": 1629.99,
-  "brokerReferralPerc": 3,
-  "commission": -1086.66,
-  "commissionPerc": -2,
-  "netCommission": -4889.97,
-  "date": "2025-03-11T06:14:03.802Z",
-  "inputStatus": "deal_cancelled",
-  "paymentStatus": "",
-  "remarks": "hii i have received",
-  "passportNumber": "98765567876543",
-  "dateOfBirth": "2025-03-11T06:14:03.802Z",
-  "typeOfProperty": "Individual",
-  "address": "",
-  "agents": [
+  developer: "65d2ecb72a78bb71bbe5b99b",
+  relationshipManager: "Revari",
+  meeting: "67efb9dcdac8c307353ca6f6",
+  projectName: "bhiwani",
+  clientName: "shukla ji",
+  clientMobile: "917838131522",
+  clientEmail: "dev4@swavishtek.com",
+  ownership: "single",
+  unit: "32",
+  areaSQFT: 43334,
+  total: 54333,
+  propertyDetails: "Just for testing",
+  paymentPlan: "cash",
+  paymentMode: "cheque",
+  token: false,
+  bookingAmount: 0,
+  clientLoyalty: 2173.32,
+  clientLoyaltyPerc: 4,
+  brokerReferral: 1629.99,
+  brokerReferralPerc: 3,
+  commission: -1086.66,
+  commissionPerc: -2,
+  netCommission: -4889.97,
+  date: "2025-03-11T06:14:03.802Z",
+  inputStatus: "deal_cancelled",
+  paymentStatus: "",
+  remarks: "hii i have received",
+  passportNumber: "98765567876543",
+  dateOfBirth: "2025-03-11T06:14:03.802Z",
+  typeOfProperty: "Individual",
+  address: "",
+  agents: [
     {
-      "_id": "663c964c2478c575ec463175",
-      "commission": -146.7,
-      "commissionPerc": 3
-    }
+      _id: "663c964c2478c575ec463175",
+      commission: -146.7,
+      commissionPerc: 3,
+    },
   ],
-  "paymentProofArr": [
+  paymentProofArr: [
     "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf"
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
   ],
-  "passport": "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-  "visa": "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-  "visa2": "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-  "emiratesID": "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-  "bookingForm": "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
-  "otherDocs": ["https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf"]
-}
+  passport:
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  visa: "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  visa2:
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  emiratesID:
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  bookingForm:
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  otherDocs: [
+    "https://res.cloudinary.com/dlq7quc4f/image/upload/v1744006955/Payment_proof/dtrhqekjqv6vjejww0xo.pdf",
+  ],
+};
 
 const Agents = () => {
   const queryClient = useQueryClient();
@@ -105,11 +112,7 @@ const Agents = () => {
     return { ...el, commissionPerc: percent(total, el?.commission) };
   });
   //
-  const [values, setValues] = useState(
-    !!agentUpdateArr
-      ? agentUpdateArr
-      : []
-  );
+  const [values, setValues] = useState(!!agentUpdateArr ? agentUpdateArr : []);
   const [loader, setLoader] = useState(false);
 
   const handleFormChange = (index, key, value) => {
@@ -151,8 +154,6 @@ const Agents = () => {
     }
   };
 
-
-
   const handleSubmit = async () => {
     const ios = Platform.OS === "ios" ? true : false;
     setLoader(true);
@@ -169,14 +170,13 @@ const Agents = () => {
         paymentProofArr,
         paymentImgIndex,
         otherDocs,
-        otherDocsIndex
+        otherDocsIndex,
       } = params;
       const { initialValues, paymentProof, paymentProof2, ...restObj } = data;
       const isUpdate = !!initialValues?._id;
       let sendData = { ...restObj, date, agents: values };
 
       // myConsole("otherDocsIndex@@", otherDocsIndex);
-
 
       //////////////
       const formData = new FormData();
@@ -203,7 +203,9 @@ const Agents = () => {
         formData.append("paymentProof", {
           uri: ios ? paymentProof?.uri : paymentProof?.uri,
           type: ios ? paymentProof?.type : mime.getType(paymentProof?.uri),
-          name: ios ? paymentProof?.fileName : paymentProof?.uri?.split("/").pop(),
+          name: ios
+            ? paymentProof?.fileName
+            : paymentProof?.uri?.split("/").pop(),
         });
       }
 
@@ -212,7 +214,9 @@ const Agents = () => {
         formData.append("paymentProof2", {
           uri: ios ? paymentProof2?.uri : paymentProof2?.uri,
           type: ios ? paymentProof2?.type : mime.getType(paymentProof2?.uri),
-          name: ios ? paymentProof2?.fileName : paymentProof2?.uri?.split("/").pop(),
+          name: ios
+            ? paymentProof2?.fileName
+            : paymentProof2?.uri?.split("/").pop(),
         });
       }
 
@@ -259,11 +263,9 @@ const Agents = () => {
           formData.append("paymentProofArr", {
             uri: ios ? el?.uri : el?.uri,
             type: ios ? el?.type : mime.getType(el?.uri),
-            name: ios
-              ? el?.fileName
-              : el?.uri?.split("/").pop(),
+            name: ios ? el?.fileName : el?.uri?.split("/").pop(),
           });
-        })
+        });
         // paymentProofArr.forEach((el) => {
         //   formData.append("paymentProofArr", {
         //     uri: el?.uri,
@@ -273,7 +275,7 @@ const Agents = () => {
         // })
       }
       if (isUpdate) {
-        formData.append("imageIndex", JSON.stringify(paymentImgIndex))
+        formData.append("imageIndex", JSON.stringify(paymentImgIndex));
       }
       // otherDocs,
       // otherDocsIndex
@@ -282,47 +284,52 @@ const Agents = () => {
           formData.append("otherDocs", {
             uri: ios ? el?.uri : el?.uri,
             type: ios ? el?.type : mime.getType(el?.uri),
-            name: ios
-              ? el?.fileName
-              : el?.uri?.split("/").pop(),
+            name: ios ? el?.fileName : el?.uri?.split("/").pop(),
           });
-        })
+        });
       }
 
       if (isUpdate) {
-        formData.append("otherDocsIndex", JSON.stringify(otherDocsIndex))
+        formData.append("otherDocsIndex", JSON.stringify(otherDocsIndex));
       }
 
-      let isFromMeeting = params?.data?.initialValues?.isFromMeeting
+      let isFromMeeting = params?.data?.initialValues?.isFromMeeting;
       if (isUpdate) {
         await updateBooking({
           id: initialValues?._id,
           data: formData,
           onSuccess: () => {
-            setLoader(false)
+            setLoader(false);
             queryClient.invalidateQueries({
-              queryKey: [queryKeyCRM.getBooking]
-            })
-            navigate(isFromMeeting ? routeBooking.bookingNavigator : routeBooking?.allBookings);
-          }
+              queryKey: [queryKeyCRM.getBooking],
+            });
+            navigate(
+              isFromMeeting
+                ? routeBooking.bookingNavigator
+                : routeBooking?.allBookings
+            );
+          },
         });
       } else {
         await addBooking({
           data: formData,
           onSuccess: () => {
-            setLoader(false)
+            setLoader(false);
             queryClient.invalidateQueries({
-              queryKey: [queryKeyCRM.getBooking]
-            })
+              queryKey: [queryKeyCRM.getBooking],
+            });
             queryClient.invalidateQueries({
-              queryKey: [queryKeyCRM.getDashboardCount]
-            })
-            navigate(isFromMeeting ? routeBooking.bookingNavigator : routeBooking?.allBookings);
-          }
+              queryKey: [queryKeyCRM.getDashboardCount],
+            });
+            navigate(
+              isFromMeeting
+                ? routeBooking.bookingNavigator
+                : routeBooking?.allBookings
+            );
+          },
         });
       }
     } catch (error) {
-
     } finally {
       setLoader(false);
     }
@@ -347,66 +354,73 @@ const Agents = () => {
         }
       }
     }
-  }, [])
-  let forUpdate = !!params?.data?.initialValues?._id
+  }, []);
+  let forUpdate = !!params?.data?.initialValues?._id;
 
   const handleSubmit2 = async () => {
     setLoader(true);
     let bookingId = params?.data?.initialValues?._id;
     let paramData = { ...params?.data };
     delete paramData.initialValues;
-    console.log('bookingId1', bookingId);
+    console.log("bookingId1", bookingId);
 
     try {
       if (!bookingId) {
         const sendData = {
           ...paramData,
           agents: values,
-          ownerShipDetails: paramData?.clients || []
-        }
+          ownerShipDetails: paramData?.clients || [],
+        };
         delete sendData.clients;
-        myConsole('sendData2', sendData)
-        const res = await axiosInstance.post('/api/booking/V2', sendData)
-        popUpConfToast.successMessage(res?.data || 'Booking Added Successfully')
+        myConsole("sendData2", sendData);
+        const res = await axiosInstance.post("/api/booking/V2", sendData);
+        popUpConfToast.successMessage(
+          res?.data || "Booking Added Successfully"
+        );
         queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getBooking]
-        })
-        navigate(routeBooking?.allBookings)
+          queryKey: [queryKeyCRM.getBooking],
+        });
+        navigate(routeBooking?.allBookings);
       } else {
         const sendData = {
           ...paramData,
           agents: values,
           _id: bookingId,
-          ownerShipDetails: paramData?.clients || []
-        }
+          ownerShipDetails: paramData?.clients || [],
+        };
         delete sendData.clients;
-        myConsole('sendData2', sendData)
-        const res = await axiosInstance.post(`/api/booking/updateBookingByIdV2/${bookingId}`, sendData)
-        popUpConfToast.successMessage(res?.data || 'Booking Update Successfully..')
+        myConsole("sendData2", sendData);
+        const res = await axiosInstance.post(
+          `/api/booking/updateBookingByIdV2/${bookingId}`,
+          sendData
+        );
+        popUpConfToast.successMessage(
+          res?.data || "Booking Update Successfully.."
+        );
         queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getBooking]
-        })
+          queryKey: [queryKeyCRM.getBooking],
+        });
         queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getBookingById, bookingId]
-        })
+          queryKey: [queryKeyCRM.getBookingById, bookingId],
+        });
         queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getDashboardCount]
-        })
-        navigate(routeBooking?.allBookings)
+          queryKey: [queryKeyCRM.getDashboardCount],
+        });
+        navigate(routeBooking?.allBookings);
       }
-    }
-    catch (e) {
-      myConsole('eeeee', e)
-      popUpConfToast.errorMessage(e?.response?.data?.message || e?.message || 'Something went wrong')
-    }
-    finally {
+    } catch (e) {
+      myConsole("eeeee", e);
+      popUpConfToast.errorMessage(
+        e?.response?.data?.message || e?.message || "Something went wrong"
+      );
+    } finally {
       setLoader(false);
     }
-  }
+  };
 
   return (
     <>
-      <Header title={forUpdate ? 'Update Booking' : "Add Booking"} />
+      <Header title={forUpdate ? "Update Booking" : "Add Booking"} />
       <Container>
         <ScrollViewWithKeyboardAvoid>
           <CustomModelMessage
@@ -429,7 +443,7 @@ const Agents = () => {
             >
               <MainTitle
                 title="Agents"
-              // containerStyle={{ marginBottom: 20 }}
+                // containerStyle={{ marginBottom: 20 }}
               />
               <CustomBtn
                 title="Add Agents"
@@ -473,7 +487,7 @@ const Agents = () => {
                       label="Revenue %"
                       containerStyle={{
                         flex: 1,
-                        marginEnd: 20
+                        marginEnd: 20,
                       }}
                       value={!!el.commissionPerc ? el.commissionPerc : 0}
                       onChangeText={(v) => handlePercentage(i, v, "per")}
@@ -513,7 +527,7 @@ const Agents = () => {
               containerStyle={{ margin: 20 }}
               onPress={handleSubmit2}
               isLoading={loader}
-            // disabled={values?.length === 0 ? false : !isValidate}
+              // disabled={values?.length === 0 ? false : !isValidate}
             />
           </View>
         </ScrollViewWithKeyboardAvoid>
@@ -538,7 +552,7 @@ const RoundAddBtn = ({ onPress }) => {
         borderRadius: 37.5 / 2,
       }}
     >
-      <Text style={{ fontSize: 25, fontWeight: "500" }}>-</Text>
+      <CustomText style={{ fontSize: 25, fontWeight: "500" }}>-</CustomText>
     </TouchableOpacity>
   );
 };

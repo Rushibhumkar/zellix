@@ -4,6 +4,7 @@ import CustomModal from "./CustomModal/CustomModal";
 import { color } from "../const/color";
 import { AntDesign } from "@expo/vector-icons";
 import CustomBtn from "./CustomBtn/CustomBtn";
+import CustomText from "./CustomText/CustomText";
 
 const DeleteModel = ({
   modalVisible,
@@ -54,11 +55,11 @@ const DeleteModel = ({
                 />
               </View>
               <View style={{ marginTop: 5 }}>
-                <Text
+                <CustomText
                   style={{ textAlign: "center", fontSize: 16, fontWeight: 600 }}
                 >
                   Are you Sure, You Want to Delete {selectedUser}
-                </Text>
+                </CustomText>
 
                 <View
                   style={{

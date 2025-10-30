@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import {
-  StyleSheet
-} from "react-native";
+import { StyleSheet } from "react-native";
 import Header from "../../components/Header";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const meetingstatus = [
   { label: "Meeting Schedule", value: "Meeting Schedule" },
@@ -34,13 +33,13 @@ const AddBooking = () => {
       {/* <View style={{ padding: 20 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View>
-            <Text style={{ fontSize: 20, fontWeight: "500", color: "#000000" }}>
+            <CustomText style={{ fontSize: 20, fontWeight: "500", color: "#000000" }}>
               Agents
-            </Text>
+            </CustomText>
             <View style={styles.divider}></View>
           </View>
         </View>
-        <Text
+        <CustomText
           style={{
             color: "#000000",
             fontSize: 16,
@@ -49,7 +48,7 @@ const AddBooking = () => {
           }}
         >
           Add Agents
-        </Text>
+        </CustomText>
         <BasicDropdown
           selectData={meetingstatus}
           setValue={setAgent}
@@ -57,7 +56,7 @@ const AddBooking = () => {
           placeholder={"Select The Agent"}
         />
 
-        <Text style={styles.inputlable}>Commission</Text>
+        <CustomText style={styles.inputlable}>Commission</CustomText>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <TextInput
             name="commission"

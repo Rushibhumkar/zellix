@@ -36,10 +36,10 @@
 //         ...style
 //     };
 //     return (
-//         <Text
+//         <CustomText
 //             style={textStyle}
 //         >{children}
-//         </Text>
+//         </CustomText>
 //     )
 // }
 
@@ -60,10 +60,10 @@ interface CustomTextProps {
 }
 
 const CustomText: React.FC<CustomTextProps> = ({
-  fontSize,
+  fontSize = 14,
   children,
-  fontWeight,
-  color,
+  fontWeight = "400",
+  color = "#000",
   marginBottom,
   numberOfLines,
   style,
@@ -77,9 +77,9 @@ const CustomText: React.FC<CustomTextProps> = ({
   };
 
   return (
-    <Text style={textStyle} numberOfLines={numberOfLines}>
+    <CustomText style={textStyle} numberOfLines={numberOfLines}>
       {children}
-    </Text>
+    </CustomText>
   );
 };
 

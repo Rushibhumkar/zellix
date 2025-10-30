@@ -7,6 +7,7 @@ import {
   shadowPrimaryColor,
 } from "../../const/globalStyle";
 import { string } from "yup";
+import CustomText from "../CustomText/CustomText";
 
 interface TeamRowItem {
   serial: number;
@@ -43,24 +44,24 @@ const TeamRowItem = ({
       onLongPress={!!onLongPress ? onLongPress : undefined}
     >
       {typeof serial === "string" ? (
-        <Text numberOfLines={2} style={styles.box1}>
+        <CustomText numberOfLines={2} style={styles.box1}>
           {serial}
-        </Text>
+        </CustomText>
       ) : (
-        <Text numberOfLines={2} style={styles.box1}>
+        <CustomText numberOfLines={2} style={styles.box1}>
           {serial < 10 && "0"}
           {serial}
-        </Text>
+        </CustomText>
       )}
-      <Text numberOfLines={2} style={styles.box2}>
+      <CustomText numberOfLines={2} style={styles.box2}>
         {teamName}
-      </Text>
-      <Text numberOfLines={2} style={styles.box3}>
+      </CustomText>
+      <CustomText numberOfLines={2} style={styles.box3}>
         {managerName}
-      </Text>
-      <Text numberOfLines={2} style={styles.box4}>
+      </CustomText>
+      <CustomText numberOfLines={2} style={styles.box4}>
         {teamLeadName}
-      </Text>
+      </CustomText>
     </TouchableOpacity>
   );
 };

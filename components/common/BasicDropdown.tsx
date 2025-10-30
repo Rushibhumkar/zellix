@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {StyleSheet, View} from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 
 const BasicDropdown = ({ selectData, placeholder, setValue, value }) => {
@@ -9,6 +9,8 @@ const BasicDropdown = ({ selectData, placeholder, setValue, value }) => {
       <Dropdown
         style={[styles.dropdown, isFocus && { borderColor: "#000000" }]}
         data={selectData}
+        itemTextStyle={{ color: "#000000" }}
+        placeholderStyle={{ color: "grey" }}
         maxHeight={300}
         labelField="label"
         valueField="value"

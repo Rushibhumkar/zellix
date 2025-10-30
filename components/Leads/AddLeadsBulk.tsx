@@ -1,40 +1,35 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-} from "react-native";
+import { View, Text, StyleSheet, TextInput } from "react-native";
 
 import BasicDocumentPicker from "../common/BasicDocumentPicker";
 import ListAccordion from "../common/ListAccordion";
 import Button from "../common/Button";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const AddLeadsBulk = () => {
   const [expanded, setExpanded] = React.useState(true);
   const [selectFile, setSelectFile] = useState(null);
   const handlePress = () => setExpanded(!expanded);
 
- 
   return (
     <>
-      <ListAccordion
-        title="Add Leads in Bulk"
-      >
+      <ListAccordion title="Add Leads in Bulk">
         <View style={{ marginTop: 20 }}>
           <View>
-            <Text style={{ fontSize: 16, color: "#000000", fontWeight: "500" }}>
+            <CustomText
+              style={{ fontSize: 16, color: "#000000", fontWeight: "500" }}
+            >
               Choose a File
-            </Text>
+            </CustomText>
           </View>
-         <BasicDocumentPicker
-           onDocumentPick={setSelectFile}
-           placeholder={"Choose a file"}
+          <BasicDocumentPicker
+            onDocumentPick={setSelectFile}
+            placeholder={"Choose a file"}
           />
         </View>
-         <View style={{marginTop: 10}}>
-         <Button  btnText={"Submit"}/>
-         </View>
+        <View style={{ marginTop: 10 }}>
+          <Button btnText={"Submit"} />
+        </View>
       </ListAccordion>
     </>
   );

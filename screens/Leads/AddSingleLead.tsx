@@ -10,7 +10,10 @@ import { useNavigation } from "@react-navigation/native";
 import userSlice, { selectUser } from "../../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllLeadFunc } from "../../redux/action";
-import { addSingleLeadSchema, addSingleLeadWithSrManagerSchema } from "../../utils/validation";
+import {
+  addSingleLeadSchema,
+  addSingleLeadWithSrManagerSchema,
+} from "../../utils/validation";
 import MobileInput from "../../myComponents/MobileInput/MobileInput";
 import CustomModelMessage from "../../myComponents/CustomModelMessage";
 import { myConsole } from "../../hooks/useConsole";
@@ -38,7 +41,9 @@ const AddSingleLead = ({ data }) => {
     touched,
     setFieldValue,
   } = useFormik({
-    validationSchema: user?.isAdmin ? addSingleLeadWithSrManagerSchema : addSingleLeadSchema,
+    validationSchema: user?.isAdmin
+      ? addSingleLeadWithSrManagerSchema
+      : addSingleLeadSchema,
     initialValues: {
       name: data?.name ?? "",
       clientName: data?.clientName ?? "",
@@ -78,12 +83,12 @@ const AddSingleLead = ({ data }) => {
           // setMessage("Updated Successfully");
           // await dispatch(getAllLeadFunc());
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getLeadDetailById, data?._id]
-          })
+            queryKey: [queryKeyCRM.getLeadDetailById, data?._id],
+          });
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getLead]
-          })
-          popUpConfToast.successMessage(updateLeadRes)
+            queryKey: [queryKeyCRM.getLead],
+          });
+          popUpConfToast.successMessage(updateLeadRes);
           goBack();
         } else {
           let addLeadRes = await addLead({
@@ -95,16 +100,16 @@ const AddSingleLead = ({ data }) => {
           // setMessage("Lead saved successfully");
           // await dispatch(getAllLeadFunc());
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getLead]
+            queryKey: [queryKeyCRM.getLead],
           });
-          popUpConfToast.successMessage('Lead Add Successfully');
+          popUpConfToast.successMessage("Lead Add Successfully");
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getDashboardCount]
+            queryKey: [queryKeyCRM.getDashboardCount],
           });
           navigate("allLead");
         }
       } catch (err) {
-        popUpConfToast.errorMessage(err?.response?.data || err)
+        popUpConfToast.errorMessage(err?.response?.data || err);
         // setLoading(false);
         // Alert.alert("Error ", `${err?.response?.data || err}`, [
         //   {
@@ -149,11 +154,9 @@ const AddSingleLead = ({ data }) => {
           });
         }
       });
-      setFieldValue("srManager", srManager)
+      setFieldValue("srManager", srManager);
     }
-
-
-  }, [!!data])
+  }, [!!data]);
 
   return (
     <View>
@@ -175,7 +178,7 @@ const AddSingleLead = ({ data }) => {
         onBlur={handleBlur("name")}
       />
       {errors.name && touched.name && (
-        <Text style={styles.errorText}>{errors.name}</Text>
+        <CustomText style={styles.errorText}>{errors.name}</CustomText>
       )}
       <CustomInput
         label="Client Name"
@@ -186,11 +189,11 @@ const AddSingleLead = ({ data }) => {
         onBlur={handleBlur("clientName")}
       />
       {errors.clientName && touched.clientName && (
-        <Text style={styles.errorText}>{errors.clientName}</Text>
+        <CustomText style={styles.errorText}>{errors.clientName}</CustomText>
       )}
-      <Text style={{ fontSize: 16, fontWeight: 500 }}>
+      <CustomText style={{ fontSize: 16, fontWeight: 500 }}>
         Client Mobile Number
-      </Text>
+      </CustomText>
       <MobileInput
         onChange={(a) => setFieldValue("clientMobile", a)}
         value={values?.clientMobile}
@@ -205,7 +208,7 @@ const AddSingleLead = ({ data }) => {
       /> */}
 
       {errors.clientMobile && touched.clientMobile && (
-        <Text style={styles.errorText}>{errors.clientMobile}</Text>
+        <CustomText style={styles.errorText}>{errors.clientMobile}</CustomText>
       )}
       <CustomInput
         label="Client Email"
@@ -216,7 +219,7 @@ const AddSingleLead = ({ data }) => {
         onBlur={handleBlur("clientEmail")}
       />
       {errors.clientEmail && touched.clientEmail && (
-        <Text style={styles.errorText}>{errors.clientEmail}</Text>
+        <CustomText style={styles.errorText}>{errors.clientEmail}</CustomText>
       )}
 
       <DropdownRNE
@@ -234,11 +237,9 @@ const AddSingleLead = ({ data }) => {
         initialValue={values?.type}
       />
       {errors.type && touched.type && (
-        <Text style={styles.errorText}>{errors.type}</Text>
+        <CustomText style={styles.errorText}>{errors.type}</CustomText>
       )}
-      <CustomText fontSize={16} fontWeight="500"
-        marginBottom={10}
-      >
+      <CustomText fontSize={16} fontWeight="500" marginBottom={10}>
         WhatsApp number
         <CustomText
           fontSize={12}
@@ -265,7 +266,7 @@ const AddSingleLead = ({ data }) => {
         
       /> */}
       {errors.whatsapp && touched.whatsapp && (
-        <Text style={styles.errorText}>{errors.whatsapp}</Text>
+        <CustomText style={styles.errorText}>{errors.whatsapp}</CustomText>
       )}
 
       {user?.isAdmin && (
@@ -283,7 +284,7 @@ const AddSingleLead = ({ data }) => {
         />
       )}
       {user?.isAdmin && errors.srManager && touched.srManager && (
-        <Text style={styles.errorText}>{errors.srManager}</Text>
+        <CustomText style={styles.errorText}>{errors.srManager}</CustomText>
       )}
 
       <CustomBtn

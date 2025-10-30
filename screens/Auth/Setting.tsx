@@ -103,11 +103,11 @@ const Setting = () => {
               onPress={() => navigation.navigate("HRManagementStack")}
             >
               <CRMLogoIcon />
-              <Text
+              <CustomText
                 style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
                 HRMS
-              </Text>
+              </CustomText>
             </Pressable>
           )}
 
@@ -117,11 +117,11 @@ const Setting = () => {
               onPress={() => navigation.navigate(routeProject.ProjectNavigator)}
             >
               <ProjectIcon />
-              <Text
+              <CustomText
                 style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
                 Project
-              </Text>
+              </CustomText>
             </Pressable>
           )}
           {/* 88888888888888 */}
@@ -133,9 +133,11 @@ const Setting = () => {
           >
             <IncentiveSvg />
 
-            <Text style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
+            <CustomText
+              style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
+            >
               Incentive
-            </Text>
+            </CustomText>
           </Pressable>
           <Pressable
             style={styles.fdRow}
@@ -143,9 +145,11 @@ const Setting = () => {
           >
             <ReferralSvg />
 
-            <Text style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
+            <CustomText
+              style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
+            >
               Referrals
-            </Text>
+            </CustomText>
           </Pressable>
           {true && (
             <Pressable
@@ -153,11 +157,11 @@ const Setting = () => {
               onPress={() => navigation.navigate(routeInvoice.InvoiceNavigator)}
             >
               <InvoiceSvg />
-              <Text
+              <CustomText
                 style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
                 Invoice
-              </Text>
+              </CustomText>
             </Pressable>
           )}
           {true && (
@@ -166,11 +170,11 @@ const Setting = () => {
               onPress={() => navigation.navigate(routeExpense.ExpenseNavigator)}
             >
               <ExpenseSvg />
-              <Text
+              <CustomText
                 style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
                 Expense
-              </Text>
+              </CustomText>
             </Pressable>
           )}
           {/* 88888888888888 */}
@@ -180,11 +184,11 @@ const Setting = () => {
               onPress={() => navigation.navigate("UsersNavigator")}
             >
               <UserIcon />
-              <Text
+              <CustomText
                 style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
               >
                 User Management
-              </Text>
+              </CustomText>
             </Pressable>
           )}
 
@@ -193,9 +197,11 @@ const Setting = () => {
             onPress={() => navigation.navigate("ChangePassword")}
           >
             <ChangePassLogo />
-            <Text style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
+            <CustomText
+              style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}
+            >
               Change Password
-            </Text>
+            </CustomText>
           </Pressable>
           <View style={styles.fdRow}>
             <LogoutLogo />

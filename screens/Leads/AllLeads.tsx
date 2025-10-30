@@ -2,6 +2,7 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -51,7 +52,7 @@ let bgByStatus = {
 
 // Debounce function
 
-const AllLeads = () => {
+const AllLeads = ({ route }) => {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   // let lead = []
@@ -63,8 +64,24 @@ const AllLeads = () => {
   const [copyLead, setCopyLead] = useState([]);
 
   const { navigate } = useNavigation();
+  const navigation = useNavigation();
+  const parent = navigation.getParent();
+
   const isFocused = useIsFocused();
 
+  // ✅ Android hardware back button handler
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigate("dashboard");
+        return true;
+      }
+    );
+    return () => {
+      subscription?.remove?.(); // ✅ compatible with RN 0.81 & Expo SDK 54
+    };
+  }, [navigate]);
   const dispatch = useDispatch();
   //
   const [filteredData, setFilteredData] = useState(copyLead);
@@ -277,19 +294,24 @@ const AllLeads = () => {
     "viewProjects",
     user?.role
   );
-
   useEffect(() => {
-    if (isFocused) {
-      const currentRoute = navigate?.getState?.()?.routes?.slice(-1)[0]?.name;
-      if (currentRoute === "allLeads2") {
+    if (isFocused && parent) {
+      const parentState = parent.getState();
+      const parentRoute = parentState?.routes?.[parentState.index]?.name;
+      // console.log("📍 Parent Tab Route:", parentRoute);
+
+      if (parentRoute === "allLeads2") {
+        // console.log("✅ Setting selectLeadType to 'calling_data'");
         handleLeadTypeSelect("calling_data", false);
-      } else {
+      } else if (parentRoute === "allLeads") {
+        // console.log("✅ Setting selectLeadType to 'lead'");
         handleLeadTypeSelect("lead", false);
+      } else {
+        // console.log("⚠️ Unrecognized parent route:", parentRoute);
       }
     }
-  }, [isFocused]);
+  }, [isFocused, parent]);
 
-  myConsole("permissionnnn", permission);
   return (
     <>
       <Header title={"All Leads"} onBack={() => navigate("dashboard")} />
@@ -340,7 +362,9 @@ const AllLeads = () => {
                 zIndex: 5,
               }}
             >
-              <Text style={{ color: "white", fontWeight: 800 }}></Text>
+              <CustomText
+                style={{ color: "white", fontWeight: 800 }}
+              ></CustomText>
               <LeadPoolIcon width={60} height={60} />
             </TouchableOpacity>
           )}
@@ -474,7 +498,7 @@ const LeadRowItem = ({
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "10%", paddingEnd: 3 }}>
           {index === "S.No" ? (
-            <Text
+            <CustomText
               style={{
                 color: "#000000",
                 fontWeight: "500",
@@ -482,9 +506,9 @@ const LeadRowItem = ({
               }}
             >
               No.
-            </Text>
+            </CustomText>
           ) : (
-            <Text
+            <CustomText
               style={{
                 color: "#000000",
                 fontWeight: "500",
@@ -493,11 +517,11 @@ const LeadRowItem = ({
             >
               {index < 9 && `0`}
               {index + 1}
-            </Text>
+            </CustomText>
           )}
         </View>
         <View style={{ width: "36%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -507,8 +531,8 @@ const LeadRowItem = ({
             }}
           >
             {item?.clientName}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -518,10 +542,10 @@ const LeadRowItem = ({
             }}
           >
             {item?.clientMobile}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "27%", paddingEnd: 3, alignItems: "center" }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -531,10 +555,10 @@ const LeadRowItem = ({
             }}
           >
             {item?.assign?.name}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "27%", alignItems: "flex-end", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={2}
             style={{
               color: "#000000",
@@ -545,7 +569,7 @@ const LeadRowItem = ({
             }}
           >
             {statusObj[item?.status]}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </TouchableOpacity>

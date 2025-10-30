@@ -3,6 +3,7 @@ import React from "react";
 import { shadow1 } from "../../../const/globalStyle";
 import moment from "moment";
 import { myConsole } from "../../../hooks/useConsole";
+import CustomText from "../../../myComponents/CustomText/CustomText";
 
 const CardReferral = ({
   item,
@@ -29,22 +30,22 @@ const CardReferral = ({
       <View style={{ flexDirection: "row" }}>
         {/* Left Column: Client Info */}
         <View style={{ width: "40%", paddingEnd: 3 }}>
-          <Text numberOfLines={1} style={styles.labelText}>
+          <CustomText numberOfLines={1} style={styles.labelText}>
             {item?.clientName || "N/A"}
-          </Text>
-          <Text numberOfLines={1} style={styles.valueText}>
+          </CustomText>
+          <CustomText numberOfLines={1} style={styles.valueText}>
             {item?.email || "N/A"}
-          </Text>
+          </CustomText>
         </View>
 
         {/* Middle Column: Amount and Status */}
         <View style={{ width: "40%", paddingEnd: 3, paddingStart: 12 }}>
-          <Text numberOfLines={1} style={styles.labelText}>
+          <CustomText numberOfLines={1} style={styles.labelText}>
             ₹ {item?.referralAmount || 0}
-          </Text>
-          <Text numberOfLines={1} style={styles.valueText}>
+          </CustomText>
+          <CustomText numberOfLines={1} style={styles.valueText}>
             {item?.status || "N/A"}
-          </Text>
+          </CustomText>
         </View>
 
         {/* Right Column: Date */}
@@ -54,9 +55,9 @@ const CardReferral = ({
             alignItems: "flex-end",
           }}
         >
-          <Text numberOfLines={1} style={styles.dateText}>
+          <CustomText numberOfLines={1} style={styles.dateText}>
             {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </TouchableOpacity>
@@ -70,15 +71,15 @@ export const HeaderReferralList = () => {
   return (
     <View style={styles.headingContainer}>
       <View style={{ width: "40%", paddingEnd: 3 }}>
-        <Text style={styles.headingText}>Client</Text>
-        <Text style={styles.headingText}>Email</Text>
+        <CustomText style={styles.headingText}>Client</CustomText>
+        <CustomText style={styles.headingText}>Email</CustomText>
       </View>
       <View style={{ width: "40%", paddingEnd: 3 }}>
-        <Text style={styles.headingText}>Amount</Text>
-        <Text style={styles.headingText}>Status</Text>
+        <CustomText style={styles.headingText}>Amount</CustomText>
+        <CustomText style={styles.headingText}>Status</CustomText>
       </View>
       <View style={{ width: "20%" }}>
-        <Text style={styles.headingText}>Date</Text>
+        <CustomText style={styles.headingText}>Date</CustomText>
       </View>
     </View>
   );

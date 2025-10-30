@@ -339,11 +339,11 @@ myConsole('canEditLead',canEditLead)
           )}
          <ModalWithBlur visible={showNotiPopup} onClose={() => setShowNotiPopup(false)}>
       <View style={styles.modalContent}>
-        <Text style={styles.title}>Send follow up notification</Text>
+        <CustomText style={styles.title}>Send follow up notification</CustomText>
         <TouchableOpacity style={{position:'absolute',top:0,right:-16,marginTop:4}} onPress={()=>setShowNotiPopup(false)}>
 <CancelIcon/>
 </TouchableOpacity>
-        <Text style={styles.label}>Message</Text>
+        <CustomText style={styles.label}>Message</CustomText>
         <TextInput
           style={styles.input}
           multiline
@@ -362,7 +362,7 @@ placeholderTextColor={'grey'}
   {isNotificationLoading ? (
     <ActivityIndicator color="white" />
   ) : (
-    <Text style={styles.buttonText}>Submit</Text>
+    <CustomText style={styles.buttonText}>Submit</CustomText>
   )}
 </TouchableOpacity>
 
@@ -444,7 +444,7 @@ placeholderTextColor={'grey'}
                         isMailAvail ? openMail(detail?.clientEmail) : null
                       }
                     >
-                      <Text numberOfLines={1}>{detail?.clientEmail}</Text>
+                      <CustomText numberOfLines={1}>{detail?.clientEmail}</CustomText>
                     </TouchableOpacity>
                   ) : (
                     <CustomText>{"N/A"}</CustomText>
@@ -483,7 +483,7 @@ placeholderTextColor={'grey'}
                       mode="auto"
                     />
                   ) : (
-                    <Text>{statusObj[detail?.status]}</Text>
+                    <CustomText>{statusObj[detail?.status]}</CustomText>
                   )
                 }
               />
@@ -507,26 +507,7 @@ placeholderTextColor={'grey'}
                     </View>
                   }
                 />}
-              {/* <RowItem
-            title="Status Information"
-            value=""
-            containerStyle={{ marginBottom: 10 }}
-            component={sta
-              isAdminOrAssigne ? (
-                <CustomInput
-                  placeholder=" "
-                  value={fields.statusInfo}
-                  onChangeText={(v) => onChange("statusInfo", v)}
-                  props={{
-                    multiline: true,
-                  }}
-                  inputStyle={{ height: 100 }}
-                />
-              ) : (
-                <Text>{detail?.statusInfo}</Text>
-              )
-            }
-          /> */}
+             
               <RowItem
                 title="Comments"
                 value=""
@@ -540,12 +521,12 @@ placeholderTextColor={'grey'}
                       props={{
                         multiline: true,
                         textAlignVertical: 'top',
-                        editable: false
+                        editable: true
                       }}
                       inputStyle={{ height: 100 }}
                     />
                   ) : (
-                    <Text>{fields?.comments}</Text>
+                    <CustomText>{fields?.comments}</CustomText>
                   )
                 }
               />

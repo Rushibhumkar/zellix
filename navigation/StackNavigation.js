@@ -79,6 +79,8 @@ import ExpenseForm from "../screens/Expense/ExpenseForm";
 import ReferralList from "../screens/Referrals/ReferralList";
 import AddReferrals from "../screens/Referrals/AddReferrals";
 import ReferralDetails from "../screens/Referrals/ReferralDetails";
+import CallingFocus from "../assets/svg/CallingFocus";
+import CallingInfocus from "../assets/svg/CallingInfocus";
 
 ////
 const Stack = createNativeStackNavigator();
@@ -92,8 +94,6 @@ export const navigate = (name, params) => {
 }
 
 const BottomTabs = () => {
-  const { user } = useSelector(selectUser);
-  const isAgent = user?.role === "agent";
 
   return (
     <Tab.Navigator
@@ -147,6 +147,22 @@ const BottomTabs = () => {
             ),
         }}
       />
+       <Tab.Screen
+        name="allLeads2"
+        component={LeadsNavigator}
+        options={{
+          tabBarLabel: "",
+          tableBarShowLable: false,
+          tabBarLabelStyle: false,
+          headerShown: false,
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <CallingFocus style={styles.iconPosition} />
+              ) : (
+                <CallingInfocus style={styles.iconPosition} />
+              ),
+          }}
+        />
       <Tab.Screen
         name="allLeads"
         component={LeadsNavigator}
@@ -179,24 +195,6 @@ const BottomTabs = () => {
             ),
         }}
       />
-      {!isAgent ? (
-        <Tab.Screen
-          name="usermanagement"
-          component={UsersNavigator}
-          options={{
-            tabBarLabel: "",
-            tableBarShowLable: false,
-            tabBarLabelStyle: false,
-            headerShown: false,
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <UserFocus style={styles.iconPosition} />
-              ) : (
-                <UserIcon style={styles.iconPosition} />
-              ),
-          }}
-        />
-      ) : null}
     </Tab.Navigator>
   );
 };
@@ -347,7 +345,7 @@ const BookingNavigator = () => {
   );
 };
 
-const UsersNavigator = () => {
+export const UsersNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -618,7 +616,12 @@ const StackNavigation = () => {
           component={ReferralNavigator}
           options={{ headerShown: false }}
         />
-      </Stack.Navigator>
+<Stack.Screen
+   name="UsersNavigator"
+   component={UsersNavigator}
+   options={{ headerShown: false }}
+ />
+     </Stack.Navigator>
     </NavigationContainer>
   );
 };

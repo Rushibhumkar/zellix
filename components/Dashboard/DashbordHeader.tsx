@@ -16,12 +16,15 @@ import { StatusBar } from "expo-status-bar";
 import Notification from "../../assets/svg/Notification";
 import Setting from "../../assets/svg/Setting";
 import { userTypes } from "../../utils/data";
-import { textPrimaryShadow, textSecondaryShadow } from "../../const/globalStyle";
+import {
+  textPrimaryShadow,
+  textSecondaryShadow,
+} from "../../const/globalStyle";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
   const { navigate } = useNavigation();
-
 
   const types = {
     ...userTypes,
@@ -47,19 +50,20 @@ const DashbordHeader = () => {
         }}
       >
         <View style={{ flex: 1, marginEnd: 7 }}>
-          <View style={{ flexDirection: "row", gap: 5, alignItems: 'baseline' }}>
-            <Text
+          <View
+            style={{ flexDirection: "row", gap: 5, alignItems: "baseline" }}
+          >
+            <CustomText
               style={{
                 color: "#fff",
                 fontSize: 20,
                 fontWeight: "500",
-                ...textSecondaryShadow
+                ...textSecondaryShadow,
               }}
-
             >
               {user?.name}
-            </Text>
-            <Text
+            </CustomText>
+            <CustomText
               numberOfLines={1}
               style={{
                 color: "rgba(216, 216, 216, 1)",
@@ -67,19 +71,22 @@ const DashbordHeader = () => {
                 marginTop: 5,
                 fontWeight: "400",
                 flex: 1,
-                ...textSecondaryShadow
-              }}>{types[user?.role]}</Text>
+                ...textSecondaryShadow,
+              }}
+            >
+              {types[user?.role]}
+            </CustomText>
           </View>
-          <Text
+          <CustomText
             style={{
               color: "#fff",
               fontSize: 15,
               fontWeight: "400",
-              ...textSecondaryShadow
+              ...textSecondaryShadow,
             }}
           >
             {user?.email}
-          </Text>
+          </CustomText>
         </View>
         <View>
           <View style={styles.iconscontainer}>

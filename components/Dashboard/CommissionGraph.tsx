@@ -91,9 +91,9 @@ const CommissionGraph = ({ isLoading, item }) => {
         label: el?.dayOfWeek,
         frontColor: "#177AD5",
         topLabelComponent: () => (
-          <Text style={{ color: "blue", marginBottom: 6, fontSize: 12 }}>
+          <CustomText style={{ color: "blue", marginBottom: 6, fontSize: 12 }}>
             {el?.totalCommission / 100000}
-          </Text>
+          </CustomText>
         ),
       };
     });
@@ -110,9 +110,11 @@ const CommissionGraph = ({ isLoading, item }) => {
           label: el?.dayOfWeek,
           frontColor: "#177AD5",
           topLabelComponent: () => (
-            <Text style={{ color: "blue", marginBottom: 6, fontSize: 12 }}>
+            <CustomText
+              style={{ color: "blue", marginBottom: 6, fontSize: 12 }}
+            >
               {el?.totalCommission / 100000}
-            </Text>
+            </CustomText>
           ),
         };
       });
@@ -124,9 +126,11 @@ const CommissionGraph = ({ isLoading, item }) => {
           label: el?.month,
           frontColor: "#177AD5",
           topLabelComponent: () => (
-            <Text style={{ color: "blue", marginBottom: 6, fontSize: 12 }}>
+            <CustomText
+              style={{ color: "blue", marginBottom: 6, fontSize: 12 }}
+            >
               {el?.totalCommission / 100000}
-            </Text>
+            </CustomText>
           ),
         };
       });
@@ -138,9 +142,11 @@ const CommissionGraph = ({ isLoading, item }) => {
           label: el?.year,
           frontColor: "#177AD5",
           topLabelComponent: () => (
-            <Text style={{ color: "blue", marginBottom: 6, fontSize: 12 }}>
+            <CustomText
+              style={{ color: "blue", marginBottom: 6, fontSize: 12 }}
+            >
               {el?.totalCommission / 100000}
-            </Text>
+            </CustomText>
           ),
         };
       });

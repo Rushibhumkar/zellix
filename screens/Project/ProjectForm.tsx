@@ -25,6 +25,7 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { routeProject } from "../../utils/routes";
 import { addProjectSchema } from "../../utils/validation";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const source = [
   { _id: "tiktok", name: "Tik Tok" },
@@ -130,7 +131,9 @@ const ProjectForm = () => {
             onBlur={formik?.handleBlur("projectName")}
           />
           {formik.errors.projectName && formik.touched.projectName && (
-            <Text style={styles.errorText}>{formik.errors.projectName}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.projectName}
+            </CustomText>
           )}
           <CustomInput
             label="Form ID"
@@ -140,7 +143,9 @@ const ProjectForm = () => {
             onBlur={formik?.handleBlur("formId")}
           />
           {formik.errors.formId && formik.touched.formId && (
-            <Text style={styles.errorText}>{formik.errors.formId}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.formId}
+            </CustomText>
           )}
           <CustomInput
             placeholder="Page Name"
@@ -151,7 +156,9 @@ const ProjectForm = () => {
             onBlur={formik?.handleBlur("pageName")}
           />
           {formik.errors.pageName && formik.touched.pageName && (
-            <Text style={styles.errorText}>{formik.errors.pageName}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.pageName}
+            </CustomText>
           )}
 
           <DropdownRNE
@@ -166,7 +173,9 @@ const ProjectForm = () => {
             mode="modal"
           />
           {formik.errors.srManager && formik.touched.srManager && (
-            <Text style={styles.errorText}>{formik.errors.srManager}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.srManager}
+            </CustomText>
           )}
 
           <DropdownRNE
@@ -179,7 +188,9 @@ const ProjectForm = () => {
             mode="modal"
           />
           {formik.errors.source && formik.touched.source && (
-            <Text style={styles.errorText}>{formik.errors.source}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.source}
+            </CustomText>
           )}
           <DropdownRNE
             arrOfObj={userListQuery?.data || []}
@@ -208,7 +219,9 @@ const ProjectForm = () => {
           />
 
           {formik.errors.members && formik.touched.members && (
-            <Text style={styles.errorText}>{formik.errors.members}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.members}
+            </CustomText>
           )}
           <CustomBtn
             title="Submit"

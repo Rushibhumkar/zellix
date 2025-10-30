@@ -45,9 +45,9 @@ const RowItem = ({
           width: "35%",
         }}
       >
-        <Text numberOfLines={2} style={styles.text}>
+        <CustomText numberOfLines={2} style={styles.text}>
           {title ?? "N/A"}
-        </Text>
+        </CustomText>
       </View>
       <View
         style={{
@@ -55,7 +55,7 @@ const RowItem = ({
           paddingHorizontal: 3,
         }}
       >
-        <Text
+        <CustomText
           style={{
             color: color.darkBlack,
             fontWeight: "600",
@@ -63,7 +63,7 @@ const RowItem = ({
           }}
         >
           :
-        </Text>
+        </CustomText>
       </View>
       {!!component ? (
         <View
@@ -80,12 +80,12 @@ const RowItem = ({
           }}
         >
           {!!value && (
-            <Text
+            <CustomText
               style={styles.text2}
               //numberOfLines={1}
             >
               {!!value ? value : "N/A"}
-            </Text>
+            </CustomText>
           )}
           {icon && (
             <TouchableOpacity style={{ width: 30 }} onPress={onPressIcon}>

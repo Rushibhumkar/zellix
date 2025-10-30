@@ -5,6 +5,7 @@ import { color } from "../../const/color";
 import { shadowLight, shadowPrimaryColor } from "../../const/globalStyle";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const Card = ({ item, loading }) => {
   const { navigate } = useNavigation();
@@ -21,8 +22,8 @@ const Card = ({ item, loading }) => {
             onPress={onPress}
             activeOpacity={0.7}
           >
-            <Text style={styles.countText}>{count}</Text>
-            <Text style={styles.titleText}>{title}</Text>
+            <CustomText style={styles.countText}>{count}</CustomText>
+            <CustomText style={styles.titleText}>{title}</CustomText>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -45,7 +46,7 @@ const Card = ({ item, loading }) => {
           onPress={() => navigate(routeLead.leadNavigator)}
           isLoading={loading}
         />
-          {/* <SingleCard
+        {/* <SingleCard
           count={item?.meetings ?? 0}
           title={"Meetings"}
           onPress={() => navigate(routeMeeting.MeetingsNavigator)}

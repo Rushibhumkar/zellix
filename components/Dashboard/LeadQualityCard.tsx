@@ -13,6 +13,7 @@ import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const LeadQualityCard = ({ onRefresh }) => {
   const {
@@ -67,14 +68,14 @@ const LeadQualityCard = ({ onRefresh }) => {
     <View style={styles.card}>
       {/* ---------- Header ---------- */}
       <View style={styles.header}>
-        <Text style={styles.title}>Lead Quality</Text>
+        <CustomText style={styles.title}>Lead Quality</CustomText>
 
         <TouchableOpacity
           onPress={() => setShowDropdown(!showDropdown)}
           style={styles.dropdown}
         >
-          <Text style={styles.dropdownText}>{selectedOption}</Text>
-          <Ionicons name="chevron-down" size={16} color={color.primary700} />
+          <CustomText style={styles.dropdownText}>{selectedOption}</CustomText>
+          <Ionicons name="chevron-down" size={16} color={color.primary800} />
         </TouchableOpacity>
 
         {showDropdown && (
@@ -88,7 +89,7 @@ const LeadQualityCard = ({ onRefresh }) => {
                 }}
                 style={styles.dropdownItem}
               >
-                <Text style={styles.dropdownOption}>{option}</Text>
+                <CustomText style={styles.dropdownOption}>{option}</CustomText>
               </TouchableOpacity>
             ))}
           </View>
@@ -116,8 +117,8 @@ const LeadQualityCard = ({ onRefresh }) => {
               textSize={12}
               centerLabelComponent={() => (
                 <View style={styles.centerLabel}>
-                  <Text style={styles.totalText}>Total</Text>
-                  <Text style={styles.totalValue}>{total}</Text>
+                  <CustomText style={styles.totalText}>Total</CustomText>
+                  <CustomText style={styles.totalValue}>{total}</CustomText>
                 </View>
               )}
             />
@@ -128,15 +129,17 @@ const LeadQualityCard = ({ onRefresh }) => {
             {chartData.map((item, index) => (
               <View key={index} style={styles.legendRow}>
                 <View style={[styles.dot, { backgroundColor: item.color }]} />
-                <Text style={styles.legendLabel}>{item.label}</Text>
-                <Text style={styles.legendValue}>{item.value}</Text>
+                <CustomText style={styles.legendLabel}>{item.label}</CustomText>
+                <CustomText style={styles.legendValue}>{item.value}</CustomText>
               </View>
             ))}
 
             <View style={styles.legendRow}>
               <View style={[styles.dot, { backgroundColor: "#B30000" }]} />
-              <Text style={styles.legendLabel}>Lost</Text>
-              <Text style={styles.legendValue}>{selectedData?.Lost || 0}</Text>
+              <CustomText style={styles.legendLabel}>Lost</CustomText>
+              <CustomText style={styles.legendValue}>
+                {selectedData?.Lost || 0}
+              </CustomText>
             </View>
           </View>
         </>

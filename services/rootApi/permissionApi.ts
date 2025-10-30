@@ -4,7 +4,7 @@ import { myConsole } from "../../hooks/useConsole";
 
 const getUsersPermission = async (id: string) => {
   const res = await axiosInstance.get(`api/permission/getPermissionById/${id}`);
-  myConsole("PERMISSION API RESPONSE ====>", res?.data);
+  // myConsole("PERMISSION API RESPONSE ====>", res?.data);
   return res?.data?.data?.permissions || {};
 };
 

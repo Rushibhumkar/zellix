@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { color } from "../../const/color";
+import CustomText from "../CustomText/CustomText";
 
 interface TCustomInput {
   value: string | number;
@@ -45,7 +46,9 @@ const CustomInput = ({
   const [isFocused, setIsFocused] = useState(false);
   return (
     <View style={[{ marginBottom }, containerStyle]}>
-      {label && <Text style={styles.inputlable}>{label ?? "label"}</Text>}
+      {label && (
+        <CustomText style={styles.inputlable}>{label ?? "label"}</CustomText>
+      )}
       <TextInput
         value={typeof value === "number" ? value.toString() : value}
         onChangeText={onChangeText}
@@ -58,6 +61,7 @@ const CustomInput = ({
           },
         ]}
         placeholder={placeholder ? placeholder : label ? label : "placeholder"}
+        placeholderTextColor={"grey"}
         onFocus={() => setIsFocused(true)}
         onBlur={(e) => {
           setIsFocused(false);
@@ -68,7 +72,7 @@ const CustomInput = ({
         editable={editable}
         {...props}
       />
-      {errors && <Text style={styles.errorText}>{errors}</Text>}
+      {errors && <CustomText style={styles.errorText}>{errors}</CustomText>}
     </View>
   );
 };

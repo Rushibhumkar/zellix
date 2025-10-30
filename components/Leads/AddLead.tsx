@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import BasicDropdown from "../common/BasicDropdown";
 import ListAccordion from "../common/ListAccordion";
 import Button from "../common/Button";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const data = [
   { label: "Lead", value: "Lead" },
@@ -71,7 +72,7 @@ const AddLead = () => {
             <ListAccordion title="Add Single Lead">
               <View style={{ marginTop: 20 }}>
                 <View>
-                  <Text
+                  <CustomText
                     style={{
                       fontSize: 20,
                       color: "#000000",
@@ -79,7 +80,7 @@ const AddLead = () => {
                     }}
                   >
                     name
-                  </Text>
+                  </CustomText>
                 </View>
                 <TextInput
                   name="clientName"
@@ -90,10 +91,12 @@ const AddLead = () => {
                   placeholder="client name"
                 />
                 {errors.clientName && (
-                  <Text style={styles.errorText}>{errors.clientName}</Text>
+                  <CustomText style={styles.errorText}>
+                    {errors.clientName}
+                  </CustomText>
                 )}
                 <View>
-                  <Text style={styles.label}>Mobile Number</Text>
+                  <CustomText style={styles.label}>Mobile Number</CustomText>
                   <View style={{ flexDirection: "row", gap: 10 }}>
                     <TextInput
                       style={styles.countycode}
@@ -113,11 +116,13 @@ const AddLead = () => {
                     />
                   </View>
                   {errors.mobileNumber && (
-                    <Text style={styles.errorText}>{errors.mobileNumber}</Text>
+                    <CustomText style={styles.errorText}>
+                      {errors.mobileNumber}
+                    </CustomText>
                   )}
                 </View>
                 <View>
-                  <Text style={styles.label}>Email Address</Text>
+                  <CustomText style={styles.label}>Email Address</CustomText>
                 </View>
                 <TextInput
                   style={styles.input}
@@ -128,10 +133,12 @@ const AddLead = () => {
                   placeholder="Email Address"
                 />
                 {errors.EmailAddress && (
-                  <Text style={styles.errorText}>{errors.EmailAddress}</Text>
+                  <CustomText style={styles.errorText}>
+                    {errors.EmailAddress}
+                  </CustomText>
                 )}
                 <View>
-                  <Text style={styles.label}>Comments</Text>
+                  <CustomText style={styles.label}>Comments</CustomText>
                 </View>
                 <TextInput
                   style={styles.input}
@@ -142,11 +149,13 @@ const AddLead = () => {
                   placeholder="Comments"
                 />
                 {errors.comment && (
-                  <Text style={styles.errorText}>{errors.comment}</Text>
+                  <CustomText style={styles.errorText}>
+                    {errors.comment}
+                  </CustomText>
                 )}
                 <View style={styles.container}>
                   <View>
-                    <Text style={styles.label}>Lead Type</Text>
+                    <CustomText style={styles.label}>Lead Type</CustomText>
                   </View>
 
                   <BasicDropdown
@@ -157,7 +166,7 @@ const AddLead = () => {
                   />
                 </View>
                 <View>
-                  <Text style={styles.label}>Whatsapp Link</Text>
+                  <CustomText style={styles.label}>Whatsapp Link</CustomText>
                 </View>
                 <TextInput
                   style={styles.input}
@@ -168,10 +177,12 @@ const AddLead = () => {
                   placeholder="Whatsapp Link"
                 />
                 {errors.whatsappLink && (
-                  <Text style={styles.errorText}>{errors.whatsappLink}</Text>
+                  <CustomText style={styles.errorText}>
+                    {errors.whatsappLink}
+                  </CustomText>
                 )}
                 <View>
-                  <Text style={styles.label}>Add Sr.Manager</Text>
+                  <CustomText style={styles.label}>Add Sr.Manager</CustomText>
                 </View>
                 <BasicDropdown
                   selectData={manager}
@@ -180,7 +191,7 @@ const AddLead = () => {
                   placeholder={"Select Sr.Manager"}
                 />
                 <View>
-                  <Text style={styles.label}>Add Agents(s)</Text>
+                  <CustomText style={styles.label}>Add Agents(s)</CustomText>
                 </View>
                 <BasicDropdown
                   selectData={agents}

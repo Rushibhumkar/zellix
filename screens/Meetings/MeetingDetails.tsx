@@ -80,7 +80,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 export const getAddressFromCoordinates = async (coordinates) => {
   const { latitude, longitude } = coordinates;
   try {
-    console.log("latitude", latitude, 'longitude', longitude);
+    console.log("latitude", latitude, "longitude", longitude);
     if (!!latitude) {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDUjsrrYwsQnZZX6ocF7jQcXevrhoK9ruU`
@@ -104,13 +104,13 @@ export const getLocationLatLng = async () => {
     );
     return;
   }
-let currentLocation = await Location.getCurrentPositionAsync({
-  accuracy: Location.Accuracy.Highest, // Change from Highest to BestForNavigation
-  maximumAge: 0, // Force fresh fetch
-  timeout: 20000, // Give 20 seconds to improve GPS lock
-});
+  let currentLocation = await Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.Highest, // Change from Highest to BestForNavigation
+    maximumAge: 0, // Force fresh fetch
+    timeout: 20000, // Give 20 seconds to improve GPS lock
+  });
 
-myConsole('sjlfkjdsklfjldf',currentLocation)
+  myConsole("sjlfkjdsklfjldf", currentLocation);
   let a = await Location.hasServicesEnabledAsync();
   console.log("hasServicesEnabledAsync", a);
   return currentLocation;
@@ -320,7 +320,9 @@ const MeetingDetails = () => {
                     isMailAvail ? openMail(detail?.lead?.clientEmail) : null
                   }
                 >
-                  <Text numberOfLines={1}>{detail?.lead?.clientEmail}</Text>
+                  <CustomText numberOfLines={1}>
+                    {detail?.lead?.clientEmail}
+                  </CustomText>
                 </TouchableOpacity>
               }
               containerStyle={{ marginBottom: 10 }}
@@ -358,8 +360,9 @@ const MeetingDetails = () => {
             />
             <RowItem
               title="Created By"
-              value={`${detail?.createdBy?.name} ${"("} ${userTypes[detail?.createdBy?.role]
-                } ${")"}`}
+              value={`${detail?.createdBy?.name} ${"("} ${
+                userTypes[detail?.createdBy?.role]
+              } ${")"}`}
               containerStyle={{ marginBottom: 10 }}
             />
             <RowItem
@@ -594,7 +597,7 @@ const MeetingDetails = () => {
                       padding: 10,
                     }}
                   >
-                    <Text
+                    <CustomText
                       style={{
                         textAlign: "center",
                         fontSize: 20,
@@ -602,18 +605,18 @@ const MeetingDetails = () => {
                       }}
                     >
                       OTP Verification
-                    </Text>
+                    </CustomText>
                     <TouchableOpacity onPress={toggleModalOtpVerify}>
                       <AntDesign name="close" size={24} color="black" />
                     </TouchableOpacity>
                   </View>
-                  <Text style={{ textAlign: "center" }}>
+                  <CustomText style={{ textAlign: "center" }}>
                     Kindly ask Your/client to provide the otp sent to there
                     mobile Number
-                  </Text>
-                  <Text style={{ textAlign: "center", marginTop: 10 }}>
+                  </CustomText>
+                  <CustomText style={{ textAlign: "center", marginTop: 10 }}>
                     The session will expire 5 min
-                  </Text>
+                  </CustomText>
                   <View style={{ marginBottom: 40 }}>
                     {/* <ConfirmationCodeInput
                       codeInputStyle={{
@@ -726,7 +729,7 @@ const MeetingDetails = () => {
                         Alert.alert("location", location);
                       }}
                     >
-                      <Text
+                      <CustomText
                         style={{
                           textAlign: "center",
                           fontSize: 20,
@@ -734,7 +737,7 @@ const MeetingDetails = () => {
                         }}
                       >
                         Conduct Meeting
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <TouchableOpacity onPress={toggleModalOpenRemark}>
                       <AntDesign name="close" size={24} color="black" />
@@ -749,7 +752,9 @@ const MeetingDetails = () => {
                     containerStyle={{ marginBottom: 15 }}
                   />
                   {errors.remarks && touched.remarks && (
-                    <Text style={{ color: "red" }}>{errors.remarks}</Text>
+                    <CustomText style={{ color: "red" }}>
+                      {errors.remarks}
+                    </CustomText>
                   )}
                   <CustomText fontSize={13} color={color.textGray}>
                     {location?.coords?.latitude
