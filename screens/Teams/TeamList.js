@@ -20,6 +20,7 @@ import SkeletonLoadingUser from "../../components/User/SkeletonLoadingUser";
 import { myConsole } from "../../hooks/useConsole";
 import { routeTeam } from "../../utils/routes";
 import { sizes } from "../../const";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const TeamList = () => {
   const isFocused = useIsFocused();
@@ -204,36 +205,36 @@ const TeamListHeading = () => {
         paddingVertical: 10,
       }}
     >
-      <Text
+      <CustomText
         style={{
           width: '10%',
           color: 'white',
           paddingRight: 3,
         }}
         numberOfLines={1}
-      >No.</Text>
-      <Text
+      >No.</CustomText>
+      <CustomText
         style={{
           width: '30%',
           color: 'white',
           paddingRight: 3,
         }}
-      >Team</Text>
-      <Text
+      >Team</CustomText>
+      <CustomText
         style={{
           width: '30%',
           color: 'white',
           paddingRight: 3,
         }}
         numberOfLines={1}
-      >Manager</Text>
-      <Text
+      >Manager</CustomText>
+      <CustomText
         style={{
           width: '30%',
           color: 'white'
         }}
         numberOfLines={1}
-      >Team Lead</Text>
+      >Team Lead</CustomText>
     </View>
   );
 };

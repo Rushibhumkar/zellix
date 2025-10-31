@@ -17,6 +17,7 @@ import Notification from "../../assets/svg/Notification";
 import Setting from "../../assets/svg/Setting";
 import { userTypes } from "../../utils/data";
 import { textPrimaryShadow, textSecondaryShadow } from "../../const/globalStyle";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
@@ -48,7 +49,7 @@ const DashbordHeader = () => {
       >
         <View style={{ flex: 1, marginEnd: 7 }}>
           <View style={{ flexDirection: "row", gap: 5, alignItems: 'baseline' }}>
-            <Text
+            <CustomText
               style={{
                 color: "#fff",
                 fontSize: 20,
@@ -58,8 +59,8 @@ const DashbordHeader = () => {
 
             >
               {user?.name}
-            </Text>
-            <Text
+            </CustomText>
+            <CustomText
               numberOfLines={1}
               style={{
                 color: "rgba(216, 216, 216, 1)",
@@ -68,9 +69,9 @@ const DashbordHeader = () => {
                 fontWeight: "400",
                 flex: 1,
                 ...textSecondaryShadow
-              }}>{types[user?.role]}</Text>
+              }}>{types[user?.role]}</CustomText>
           </View>
-          <Text
+          <CustomText
             style={{
               color: "#fff",
               fontSize: 15,
@@ -79,7 +80,7 @@ const DashbordHeader = () => {
             }}
           >
             {user?.email}
-          </Text>
+          </CustomText>
         </View>
         <View>
           <View style={styles.iconscontainer}>

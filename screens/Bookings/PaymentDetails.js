@@ -23,14 +23,14 @@ const PaymentDetails = () => {
       >
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: "#000000" }}>
+            <CustomText style={{ fontSize: 18, fontWeight: "700", color: "#000000" }}>
               Payment Details
-            </Text>
+            </CustomText>
             <View style={styles.divider}></View>
           </View>
         </View>
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -38,7 +38,7 @@ const PaymentDetails = () => {
             }}
           >
             Total Price
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="totalprice"
@@ -47,7 +47,7 @@ const PaymentDetails = () => {
           placeholder="Total Price"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -55,7 +55,7 @@ const PaymentDetails = () => {
             }}
           >
             Payment Plan
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="Paymentplan"
@@ -64,7 +64,7 @@ const PaymentDetails = () => {
           placeholder="Payment Plan"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -72,7 +72,7 @@ const PaymentDetails = () => {
             }}
           >
             Payment Plan
-          </Text>
+          </CustomText>
         </View>
         <BasicDropdown
           selectData={paymentModes}
@@ -81,7 +81,7 @@ const PaymentDetails = () => {
           placeholder={"Mode Of Payment"}
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -89,7 +89,7 @@ const PaymentDetails = () => {
             }}
           >
             Booking Amount
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="bookingamount"
@@ -98,7 +98,7 @@ const PaymentDetails = () => {
           placeholder="Booking Amount"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -106,7 +106,7 @@ const PaymentDetails = () => {
             }}
           >
             Kickback/Passback
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="kickbackpassback"
@@ -115,7 +115,7 @@ const PaymentDetails = () => {
           placeholder="Kickback/Passback"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -123,7 +123,7 @@ const PaymentDetails = () => {
             }}
           >
             Kickback/Passback%
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="kickbackpassback%"
@@ -132,7 +132,7 @@ const PaymentDetails = () => {
           placeholder="Kickback/Passback%"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -140,7 +140,7 @@ const PaymentDetails = () => {
             }}
           >
             Commission
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="commission"
@@ -149,7 +149,7 @@ const PaymentDetails = () => {
           placeholder="Commission"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -157,7 +157,7 @@ const PaymentDetails = () => {
             }}
           >
             Commission%
-          </Text>
+          </CustomText>
         </View>
         <TextInput
           name="commission%"
@@ -166,7 +166,7 @@ const PaymentDetails = () => {
           placeholder="Commission%"
         />
         <View style={{ marginTop: 20 }}>
-          <Text
+          <CustomText
             style={{
               fontSize: 16,
               color: "#000000",
@@ -174,7 +174,7 @@ const PaymentDetails = () => {
             }}
           >
             Payment Proof
-          </Text>
+          </CustomText>
         </View>
         <BasicDocumentPicker
           onDocumentPick={setPaymentProof}
@@ -189,13 +189,13 @@ const PaymentDetails = () => {
           }}
         >
           <Pressable style={styles.Previousbtn} onPress={() => navigation.navigate("DeveloperInformation")} >
-            <Text style={styles.btntextpre}> Previous</Text>
+            <CustomText style={styles.btntextpre}> Previous</CustomText>
           </Pressable>
 
           <Pressable style={styles.submitbtn}
             onPress={() => navigation.navigate("clientInformation")}
           >
-            <Text style={styles.btntext}>Next</Text>
+            <CustomText style={styles.btntext}>Next</CustomText>
           </Pressable>
         </View>
       </ScrollView> */}

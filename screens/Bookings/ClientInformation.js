@@ -249,7 +249,7 @@ const ClientInformation = () => {
                 }}
               />
               {errors.passport && (
-                <Text style={styles.errorText}>{errors.passport}</Text>
+                <CustomText style={styles.errorText}>{errors.passport}</CustomText>
               )}
               <ExpoImagePicker
                 label="Passport 2"
@@ -260,7 +260,7 @@ const ClientInformation = () => {
                 }}
               />
               {errors.passport2 && (
-                <Text style={styles.errorText}>{errors.passport2}</Text>
+                <CustomText style={styles.errorText}>{errors.passport2}</CustomText>
               )}
               <ExpoImagePicker
                 label="Emirates ID"
@@ -271,7 +271,7 @@ const ClientInformation = () => {
                 }}
               />
               {errors.emiratesID && (
-                <Text style={styles.errorText}>{errors.emiratesID}</Text>
+                <CustomText style={styles.errorText}>{errors.emiratesID}</CustomText>
               )}
               <ExpoImagePicker
                 label="Emirates ID 2"
@@ -282,7 +282,7 @@ const ClientInformation = () => {
                 }}
               />
               {errors.emiratesID2 && (
-                <Text style={styles.errorText}>{errors.emiratesID2}</Text>
+                <CustomText style={styles.errorText}>{errors.emiratesID2}</CustomText>
               )}
               <ExpoImagePicker
                 label="Visa"
@@ -292,7 +292,7 @@ const ClientInformation = () => {
                   handleFileError('visa', a?.assets[0]?.fileSize)
                 }}
               />
-              {errors.visa && <Text style={styles.errorText}>{errors.visa}</Text>}
+              {errors.visa && <CustomText style={styles.errorText}>{errors.visa}</CustomText>}
               <ExpoImagePicker
                 label="Visa 2"
                 boxContainerStyle={{ marginBottom: 15 }}
@@ -301,7 +301,7 @@ const ClientInformation = () => {
                   handleFileError('visa2', a?.assets[0]?.fileSize)
                 }}
               />
-              {errors?.visa2 && <Text style={styles.errorText}>{errors.visa2}</Text>}
+              {errors?.visa2 && <CustomText style={styles.errorText}>{errors.visa2}</CustomText>}
               <DatePickerExpo
                 title={"Booking Date"}
                 boxContainerStyle={{ marginBottom: 25 }}
@@ -309,9 +309,9 @@ const ClientInformation = () => {
                 initialValue={date}
               />
               {errors.date && (
-                <Text style={{ color: "red", marginTop: -20 }}>
+                <CustomText style={{ color: "red", marginTop: -20 }}>
                   {errors.date}
-                </Text>
+                </CustomText>
               )}
               <>
                 {/* docs */}
@@ -336,7 +336,7 @@ const ClientInformation = () => {
                         onSelect={(a) => onSelectMultiplePayment(a.assets[0], i, 'payment')}
                       />
                       {errors?.payment?.[i] && (
-                        <Text style={styles.errorText}>{errors?.payment?.[0]}</Text>
+                        <CustomText style={styles.errorText}>{errors?.payment?.[0]}</CustomText>
                       )}
                     </View>
                   })}
@@ -362,7 +362,7 @@ const ClientInformation = () => {
                         onSelect={(a) => onSelectMultiplePayment(a.assets[0], i, 'otherDoc')}
                       />
                       {errors?.otherDoc?.[i] && (
-                        <Text style={styles.errorText}>{errors?.otherDoc?.[0]}</Text>
+                        <CustomText style={styles.errorText}>{errors?.otherDoc?.[0]}</CustomText>
                       )}
                     </View>
                   })}

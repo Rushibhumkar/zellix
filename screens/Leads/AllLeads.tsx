@@ -340,7 +340,9 @@ const AllLeads = () => {
                 zIndex: 5,
               }}
             >
-              <Text style={{ color: "white", fontWeight: 800 }}></Text>
+              <CustomText
+                style={{ color: "white", fontWeight: 800 }}
+              ></CustomText>
               <LeadPoolIcon width={60} height={60} />
             </TouchableOpacity>
           )}
@@ -474,7 +476,7 @@ const LeadRowItem = ({
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "10%", paddingEnd: 3 }}>
           {index === "S.No" ? (
-            <Text
+            <CustomText
               style={{
                 color: "#000000",
                 fontWeight: "500",
@@ -482,9 +484,9 @@ const LeadRowItem = ({
               }}
             >
               No.
-            </Text>
+            </CustomText>
           ) : (
-            <Text
+            <CustomText
               style={{
                 color: "#000000",
                 fontWeight: "500",
@@ -493,11 +495,11 @@ const LeadRowItem = ({
             >
               {index < 9 && `0`}
               {index + 1}
-            </Text>
+            </CustomText>
           )}
         </View>
         <View style={{ width: "36%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -507,8 +509,8 @@ const LeadRowItem = ({
             }}
           >
             {item?.clientName}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -518,10 +520,10 @@ const LeadRowItem = ({
             }}
           >
             {item?.clientMobile}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "27%", paddingEnd: 3, alignItems: "center" }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -531,10 +533,10 @@ const LeadRowItem = ({
             }}
           >
             {item?.assign?.name}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "27%", alignItems: "flex-end", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={2}
             style={{
               color: "#000000",
@@ -545,7 +547,7 @@ const LeadRowItem = ({
             }}
           >
             {statusObj[item?.status]}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </TouchableOpacity>

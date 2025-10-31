@@ -24,6 +24,7 @@ import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { myConsole } from "../../hooks/useConsole";
 import { baseURL, setBaseUrl } from "../../services/authApi/axiosInstance";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -108,7 +109,7 @@ const LoginScreen = () => {
                             Alert.alert('deviceId', deviceId ?? 'null')
                           }}
                         >
-                          <Text style={styles.loginheader}>Login</Text>
+                          <CustomText style={styles.loginheader}>Login</CustomText>
                         </Pressable>
                       </View>
                       <View style={styles.inputcontainer}>
@@ -120,7 +121,7 @@ const LoginScreen = () => {
                           onBlur={handleBlur('email')}
                         />
                         {errors.email && touched?.email && (
-                          <Text style={styles.errorText}>{errors.email}</Text>
+                          <CustomText style={styles.errorText}>{errors.email}</CustomText>
                         )}
                         <CustomInput
                           label=""
@@ -135,13 +136,13 @@ const LoginScreen = () => {
                           }}
                         />
                         {errors.password && touched?.password && (
-                          <Text style={{ color: "red", marginTop: -44 }}>
+                          <CustomText style={{ color: "red", marginTop: -44 }}>
                             {errors.password}
-                          </Text>
+                          </CustomText>
                         )}
                       </View>
                       <Pressable>
-                        <Text
+                        <CustomText
                           onPress={() => navigation.navigate("ForgetPassword")}
                           style={{
                             color: "#2D67C6",
@@ -152,7 +153,7 @@ const LoginScreen = () => {
                           }}
                         >
                           Forgot Password?
-                        </Text>
+                        </CustomText>
                       </Pressable>
                       <CustomBtn
                         title="Login"

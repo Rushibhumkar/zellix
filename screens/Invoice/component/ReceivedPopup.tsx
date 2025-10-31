@@ -169,7 +169,7 @@ const CustomModalInvoice = ({ invoiceId, isVisible, onClose, title }) => {
       animationOut="slideOutDown"
     >
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>{title}</Text>
+        <CustomText style={styles.modalTitle}>{title}</CustomText>
 
         {/* Text Input */}
         <CustomInput
@@ -234,10 +234,10 @@ const CustomModalInvoice = ({ invoiceId, isVisible, onClose, title }) => {
             style={styles.closeButton}
             onPress={() => setCloseModal(onClose)}
           >
-            <Text style={styles.closeButtonText}>Cancel</Text>
+            <CustomText style={styles.closeButtonText}>Cancel</CustomText>
           </TouchableOpacity>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.closeButtonText}>Submit</Text>
+            <CustomText style={styles.closeButtonText}>Submit</CustomText>
           </TouchableOpacity>
         </View>
       </View>

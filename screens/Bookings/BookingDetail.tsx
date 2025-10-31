@@ -305,9 +305,9 @@ const BookingDetail = () => {
                               setShowPopup(false);
                           }}
                         >
-                          <Text style={styles.modalText}>
+                          <CustomText style={styles.modalText}>
                             Pay Client Loyalty
-                          </Text>
+                          </CustomText>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.modalOption}
@@ -319,9 +319,9 @@ const BookingDetail = () => {
                               setShowPopup(false);
                           }}
                         >
-                          <Text style={styles.modalText}>
+                          <CustomText style={styles.modalText}>
                             Pay Booking Referral
-                          </Text>
+                          </CustomText>
                         </TouchableOpacity>
                       </View>
                     </CustomModal>
@@ -390,7 +390,7 @@ const BookingDetail = () => {
                         navToCall()
                       }
                     >
-                      <Text>{filterLead?.clientMobile}</Text>
+                      <CustomText>{filterLead?.clientMobile}</CustomText>
                     </TouchableOpacity>
                   ) : (
                     <CustomText>{"N/A"}</CustomText>
@@ -407,7 +407,9 @@ const BookingDetail = () => {
                         isMailAvail ? openMail(filterLead?.clientEmail) : null
                       }
                     >
-                      <Text numberOfLines={1}>{filterLead?.clientEmail}</Text>
+                      <CustomText numberOfLines={1}>
+                        {filterLead?.clientEmail}
+                      </CustomText>
                     </TouchableOpacity>
                   ) : (
                     <CustomText>{"N/A"}</CustomText>

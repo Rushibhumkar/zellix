@@ -226,7 +226,9 @@ const CandidateDetailsScreen = () => {
               borderRadius: 8,
             }}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>Cancel</Text>
+            <CustomText style={{ color: "white", fontWeight: "bold" }}>
+              Cancel
+            </CustomText>
           </Pressable>
 
           <Pressable
@@ -240,9 +242,9 @@ const CandidateDetailsScreen = () => {
               opacity: loadingStatusUpdate ? 0.6 : 1,
             }}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
+            <CustomText style={{ color: "white", fontWeight: "bold" }}>
               {loadingStatusUpdate ? "Submitting..." : "Submit"}
-            </Text>
+            </CustomText>
           </Pressable>
         </View>
       </ModalWithBlur>

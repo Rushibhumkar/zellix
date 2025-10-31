@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const UsersManagement = () => {
   const navigation = useNavigation();
@@ -28,9 +29,9 @@ const UsersManagement = () => {
             }}
             onPress={() => navigation.navigate("users")}
           >
-            <Text style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
+            <CustomText style={{ color: "#000000", fontSize: 18, fontWeight: "600" }}>
               Users
-            </Text>
+            </CustomText>
           </Pressable>}
         {/* <View style={styles.divider}></View> */}
         <Pressable
@@ -41,7 +42,7 @@ const UsersManagement = () => {
           }}
           onPress={() => navigation.navigate("teamList")}
         >
-          <Text
+          <CustomText
             style={{
               color: "#000000",
               fontSize: 18,
@@ -49,7 +50,7 @@ const UsersManagement = () => {
             }}
           >
             Teams
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </View>

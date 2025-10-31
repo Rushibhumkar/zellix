@@ -227,9 +227,9 @@ const AddReferrals = () => {
           />
           {formik.errors.passportDocument &&
             formik.touched.passportDocument && (
-              <Text style={styles.errorText}>
+              <CustomText style={styles.errorText}>
                 {formik.errors.passportDocument}
-              </Text>
+              </CustomText>
             )}
           <ExpoImagePicker
             label="Visa"
@@ -249,7 +249,9 @@ const AddReferrals = () => {
             boxContainerStyle={{ marginTop: 12 }}
           />
           {formik.errors.visaDocument && formik.touched.visaDocument && (
-            <Text style={styles.errorText}>{formik.errors.visaDocument}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.visaDocument}
+            </CustomText>
           )}
           <ExpoImagePicker
             label="EID"
@@ -269,7 +271,9 @@ const AddReferrals = () => {
             boxContainerStyle={{ marginTop: 12 }}
           />
           {formik.errors.eidDocument && formik.touched.eidDocument && (
-            <Text style={styles.errorText}>{formik.errors.eidDocument}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.eidDocument}
+            </CustomText>
           )}
           <CustomBtn
             title="Submit"

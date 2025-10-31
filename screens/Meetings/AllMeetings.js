@@ -38,6 +38,7 @@ import { debounce } from "../../utils/debounce";
 import { myConsole } from "../../hooks/useConsole";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { sizes } from "../../const";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -317,15 +318,15 @@ const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
       onLongPress={onLongPress}
     >
       <View style={{ width: "36%" }}>
-        <Text style={{ color: "#000000", fontWeight: "700", fontSize: 16 }}>
+        <CustomText style={{ color: "#000000", fontWeight: "700", fontSize: 16 }}>
           {item?.lead?.clientName}
-        </Text>
-        <Text style={{ color: "#000000", fontWeight: "300", fontSize: 14 }}>
+        </CustomText>
+        <CustomText style={{ color: "#000000", fontWeight: "300", fontSize: 14 }}>
           {item?.productPitch}
-        </Text>
+        </CustomText>
       </View>
       <View style={{ width: "32%", alignItems: "center" }}>
-        <Text
+        <CustomText
           style={{
             color: "#000000",
             fontWeight: "400",
@@ -334,27 +335,27 @@ const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
           }}
         >
           {item?.meetings[item?.meetings?.length - 1]?.status}
-        </Text>
-        <Text>
-          <Text>
+        </CustomText>
+        <CustomText>
+          <CustomText>
             {`${item?.createdBy?.name} (${item?.createdBy?.role
               ?.replace(/_/g, " ")
               .replace(/\b\w/g, (char) => char.toUpperCase())})`}
-          </Text>
-        </Text>
+          </CustomText>
+        </CustomText>
       </View>
       <View style={{ width: "32%", alignItems: "flex-end" }}>
-        <Text style={{ color: "#000000", fontWeight: "700", fontSize: 12 }}>
+        <CustomText style={{ color: "#000000", fontWeight: "700", fontSize: 12 }}>
           Scheduled
-        </Text>
+        </CustomText>
         {item?.scheduleDate === "Schedule Date" ? (
-          <Text style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
+          <CustomText style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
             Schedule Date
-          </Text>
+          </CustomText>
         ) : (
-          <Text style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
+          <CustomText style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
             {moment(item?.scheduleDate).format("DD/MM/YYYY")}
-          </Text>
+          </CustomText>
         )}
       </View>
     </TouchableOpacity>

@@ -294,9 +294,9 @@ myConsole('canAddBooking',canAddBooking)
       paddingHorizontal: 20,
     }}
   >
-    <Text style={{ textAlign: "center", fontSize: 16, color: "#555" }}>
+    <CustomText style={{ textAlign: "center", fontSize: 16, color: "#555" }}>
       You do not have permission to view booking records. Please contact your administrator.
-    </Text>
+    </CustomText>
   </View>
 )}
 

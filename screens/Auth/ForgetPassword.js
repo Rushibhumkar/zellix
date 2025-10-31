@@ -16,6 +16,7 @@ import { forgetPassword } from "../../services/rootApi/api";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { color } from "../../const/color";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const ForgetPassword = () => {
   const navigation = useNavigation();
@@ -67,7 +68,7 @@ const ForgetPassword = () => {
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <View style={styles.forgetcontainer}>
 
-                  <Text
+                  <CustomText
                     style={{
                       fontSize: 30,
                       textAlign: "center",
@@ -75,12 +76,12 @@ const ForgetPassword = () => {
                     }}
                   >
                     Forget Password
-                  </Text>
-                  <Text
+                  </CustomText>
+                  <CustomText
                     style={{ textAlign: "center", marginTop: 40, fontSize: 22 }}
                   >
                     Email Verification
-                  </Text>
+                  </CustomText>
                   <View style={styles.divider}></View>
                   <View style={styles.forgetinput}>
                     <CustomInput
@@ -90,7 +91,7 @@ const ForgetPassword = () => {
                       placeholder="Please Enter Your Email"
                     />
                     {(errors.email && touched?.email) && (
-                      <Text style={styles.errorText}>{errors.email}</Text>
+                      <CustomText style={styles.errorText}>{errors.email}</CustomText>
                     )}
 
                     <CustomBtn
@@ -105,7 +106,7 @@ const ForgetPassword = () => {
                     onPress={() => navigation.navigate("Login")}
                     style={{ marginTop: 20, width: "40%", alignSelf: "center" }}
                   >
-                    <Text
+                    <CustomText
                       style={{
                         textAlign: "center",
                         color: "#2D67C6",
@@ -114,7 +115,7 @@ const ForgetPassword = () => {
                       }}
                     >
                       Back To Login
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 </View>
               )}

@@ -100,7 +100,7 @@ const AddUsers = () => {
                 }}
               >
                 <View>
-                  <Text
+                  <CustomText
                     style={{
                       fontSize: 18,
                       fontWeight: "700",
@@ -108,7 +108,7 @@ const AddUsers = () => {
                     }}
                   >
                     User Information
-                  </Text>
+                  </CustomText>
                   <View style={styles.divider}></View>
                 </View>
               </View>
@@ -120,7 +120,7 @@ const AddUsers = () => {
                 containerStyle={{ marginBottom: 10 }}
               />
               {errors.name && touched.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
+                <CustomText style={styles.errorText}>{errors.name}</CustomText>
               )}
               <CustomInput
                 label="Email"
@@ -130,7 +130,7 @@ const AddUsers = () => {
                 containerStyle={{ marginBottom: 10 }}
               />
               {errors.email && touched.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <CustomText style={styles.errorText}>{errors.email}</CustomText>
               )}
 
               <DropdownRNE
@@ -144,7 +144,7 @@ const AddUsers = () => {
                 onBlur={handleBlur("role")}
               />
               {errors.role && touched.role && (
-                <Text style={{ color: "red" }}>{errors.role}</Text>
+                <CustomText style={{ color: "red" }}>{errors.role}</CustomText>
               )}
 
               <CustomBtn
@@ -158,8 +158,7 @@ const AddUsers = () => {
         }}
       </Formik>
       </View>
-      </ScrollViewWithKeyboardAvoid
-        >
+      </ScrollViewWithKeyboardAvoid>
     </Container>
   );
 };

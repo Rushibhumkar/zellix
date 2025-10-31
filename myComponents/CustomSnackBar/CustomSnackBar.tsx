@@ -2,15 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text } from "react-native";
 import * as Animatable from "react-native-animatable";
+import CustomText from "../CustomText/CustomText";
 
-
-const CustomSnackBar = ({
-  snackbar,
-  setSnackbar,
-
-}: any) => {
+const CustomSnackBar = ({ snackbar, setSnackbar }: any) => {
   useEffect(() => {
-    if (snackbar?.visible ) {
+    if (snackbar?.visible) {
       setTimeout(() => {
         setSnackbar({ visible: false, text: "", error: false });
       }, 1000);
@@ -34,7 +30,7 @@ const CustomSnackBar = ({
           color={snackbar.error ? "#000" : "#fff"}
           size={20}
         />
-        <Text
+        <CustomText
           style={{
             letterSpacing: 1,
             marginLeft: 10,
@@ -43,8 +39,7 @@ const CustomSnackBar = ({
           }}
         >
           {snackbar?.text}
-         
-        </Text>
+        </CustomText>
       </Animatable.View>
     );
   }
@@ -63,6 +58,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "90%",
     alignSelf: "center",
-    position: 'absolute'
+    position: "absolute",
   },
 });

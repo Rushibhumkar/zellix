@@ -12,6 +12,7 @@ import EditIcon from "../../assets/svg/EditIcon";
 import LeadAssignIcon from "../../assets/svg/LeadAssignIcon";
 import ASFilterIcon from "../../assets/svg/ASFilterIcon";
 import { color } from "../../const/color";
+import CustomText from "../CustomText/CustomText";
 
 interface TTitleWithAddDelete {
   arrLength: number;
@@ -64,7 +65,7 @@ const TitleWithAddDelete = ({
             >
               <AntDesign name="plus-square" size={30} color="#2D67C6" />
               <View>
-                <Text
+                <CustomText
                   style={{
                     fontSize: 18,
                     color: "#2D67C6",
@@ -73,7 +74,7 @@ const TitleWithAddDelete = ({
                   }}
                 >
                   Add {title ?? "title"}
-                </Text>
+                </CustomText>
                 {/* <View style={styles.divider}></View> */}
               </View>
             </TouchableOpacity>
@@ -131,9 +132,9 @@ const TitleWithAddDelete = ({
             paddingTop: 20,
           }}
         >
-          <Text style={{ fontSize: 18, fontWeight: 500 }}>
+          <CustomText style={{ fontSize: 18, fontWeight: 500 }}>
             {arrLength} {title} Selected
-          </Text>
+          </CustomText>
           <View
             style={{ flexDirection: "row", alignItems: "center" }}
             // onPress={handleDeleteBooking}

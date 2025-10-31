@@ -5,6 +5,7 @@ import { color } from "../../const/color";
 import { shadowLight, shadowPrimaryColor } from "../../const/globalStyle";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const Card = ({ item, loading }) => {
   const { navigate } = useNavigation();
@@ -21,8 +22,8 @@ const Card = ({ item, loading }) => {
             onPress={onPress}
             activeOpacity={0.7}
           >
-            <Text style={styles.countText}>{count}</Text>
-            <Text style={styles.titleText}>{title}</Text>
+            <CustomText style={styles.countText}>{count}</CustomText>
+            <CustomText style={styles.titleText}>{title}</CustomText>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 26,
     fontWeight: "900",
-    color: color.primary ?? "#1E1E1E",
+    color: color.primaryColor ?? "#1E1E1E",
     textAlign: "center",
     marginBottom: 4,
   },

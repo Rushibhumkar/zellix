@@ -111,7 +111,7 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
             // marginRight: 10,
           }}
         />
-        {/* <Text style={{ color: 'white' }}>{text}</Text> */}
+        {/* <CustomText style={{ color: 'white' }}>{text}</CustomText> */}
         <CustomText
           fontSize={12}
           fontWeight="300"
@@ -181,11 +181,11 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
           // centerLabelComponent={() => {
           //     return (
           //         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-          //             <Text
+          //             <CustomText
           //                 style={{ fontSize: 22, color: 'white', fontWeight: 'bold' }}>
           //                 47%
-          //             </Text>
-          //             <Text style={{ fontSize: 14, color: 'white' }}>Excellent</Text>
+          //             </CustomText>
+          //             <CustomText style={{ fontSize: 14, color: 'white' }}>Excellent</CustomText>
           //         </View>
           //     );
           // }}

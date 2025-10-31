@@ -152,7 +152,9 @@ const DropdownRNE = ({
   const renderItem = (item) => {
     return (
       <View style={styles.item}>
-        <Text style={styles.textItem}>{item?.[keyValueShowInBox]}</Text>
+        <CustomText style={styles.textItem}>
+          {item?.[keyValueShowInBox]}
+        </CustomText>
         {/* {item.value === value && (
                     <UpDownIcon />
                 )} */}
@@ -166,7 +168,9 @@ const DropdownRNE = ({
   return (
     <View style={[containerStyle]}>
       {label && (
-        <Text style={[styles.label, labelTextStyle]}>{label ?? "label"}</Text>
+        <CustomText style={[styles.label, labelTextStyle]}>
+          {label ?? "label"}
+        </CustomText>
       )}
       {!isMultiSelect ? (
         <Dropdown
@@ -313,7 +317,7 @@ const DropdownRNE = ({
           }}
         />
       )}
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <CustomText style={styles.errorText}>{error}</CustomText>}
     </View>
   );
 };

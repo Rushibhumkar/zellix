@@ -198,9 +198,9 @@ const ScheduleInterview = () => {
           />
 
           {formik.touched.dateTime && formik.errors.dateTime && (
-            <Text style={[styles.errorText, { marginBottom: 14 }]}>
+            <CustomText style={[styles.errorText, { marginBottom: 14 }]}>
               {formik.errors.dateTime}
-            </Text>
+            </CustomText>
           )}
           <DropdownRNE
             label="Referred By"
@@ -253,7 +253,9 @@ const ScheduleInterview = () => {
             onBlur={formik.handleBlur("cvFile")}
           />
           {formik.errors.cvFile && formik.touched.cvFile && (
-            <Text style={styles.errorText}>{formik.errors.cvFile}</Text>
+            <CustomText style={styles.errorText}>
+              {formik.errors.cvFile}
+            </CustomText>
           )}
 
           {loading ? (

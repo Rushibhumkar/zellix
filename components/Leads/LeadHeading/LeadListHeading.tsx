@@ -6,10 +6,10 @@
 //   return (
 //     <Container style={{ paddingHorizontal: 20 }}>
 //       <View style={styles.headingContainer}>
-//         <Text style={styles.headingText}>No</Text>
-//         <Text style={styles.headingText}>Name</Text>
-//         <Text style={styles.headingText}>Type</Text>
-//         <Text style={styles.headingText}>Status</Text>
+//         <CustomText style={styles.headingText}>No</CustomText>
+//         <CustomText style={styles.headingText}>Name</CustomText>
+//         <CustomText style={styles.headingText}>Type</CustomText>
+//         <CustomText style={styles.headingText}>Status</CustomText>
 //       </View>
 //     </Container>
 //   );
@@ -38,6 +38,7 @@ import { Text, StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import React from "react";
 import Container from "../../../myComponents/Container/Container";
 import { color } from "../../../const/color";
+import CustomText from "../../../myComponents/CustomText/CustomText";
 
 interface LeadListHeadingProps {
   noText: string;
@@ -58,16 +59,16 @@ const LeadListHeading: React.FC<LeadListHeadingProps> = ({
     <Container style={[{ paddingHorizontal: 20 }, containerStyle]}>
       <View style={styles.headingContainer}>
         <View style={{ width: "10%" }}>
-          <Text style={[styles.headingText]}>{noText}</Text>
+          <CustomText style={[styles.headingText]}>{noText}</CustomText>
         </View>
         <View style={{ width: "36%" }}>
-          <Text style={[styles.headingText]}>{nameText}</Text>
+          <CustomText style={[styles.headingText]}>{nameText}</CustomText>
         </View>
         <View style={{ width: "27%", alignItems: "center" }}>
-          <Text style={[styles.headingText]}>{typeText}</Text>
+          <CustomText style={[styles.headingText]}>{typeText}</CustomText>
         </View>
         <View style={{ width: "27%", alignItems: "center" }}>
-          <Text style={[styles.headingText]}>{statusText}</Text>
+          <CustomText style={[styles.headingText]}>{statusText}</CustomText>
         </View>
       </View>
     </Container>

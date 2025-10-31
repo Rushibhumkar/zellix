@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, View, Text, Image,StyleSheet } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const BasicDocumentPicker = ({ onDocumentPick,placeholder }) => {
   const [pickedDocument, setPickedDocument] = useState(null);
@@ -29,10 +30,10 @@ const BasicDocumentPicker = ({ onDocumentPick,placeholder }) => {
   return (
     <Pressable onPress={pickDocument} style={styles.input}>
       {pickedDocument ? (
-        <Text>{pickedDocument}</Text>
+        <CustomText>{pickedDocument}</CustomText>
       ) : (
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text>{placeholder}</Text>
+          <CustomText>{placeholder}</CustomText>
           <Image source={require("../../assets/fileicon.png")} />
         </View>
       )}

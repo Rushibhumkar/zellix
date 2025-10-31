@@ -20,6 +20,7 @@ import { routeBooking } from "../../utils/routes";
 import { addBookingSchema } from "../../utils/validation";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { myConsole } from "../../hooks/useConsole";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 // function percent(total, amount) {
 //   return (amount * 100) / total
@@ -260,7 +261,7 @@ const DeveloperInformation = () => {
               maxHeight={300}
             />
             {errors.developer && touched.developer && (
-              <Text style={styles.errorText}>{errors.developer}</Text>
+              <CustomText style={styles.errorText}>{errors.developer}</CustomText>
             )}
             <CustomInput
               label="Relationship Manager"
@@ -271,9 +272,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("relationshipManager")}
             />
             {errors.relationshipManager && touched.relationshipManager && (
-              <Text style={{ color: "red", marginTop: -20 }}>
+              <CustomText style={{ color: "red", marginTop: -20 }}>
                 {errors.relationshipManager}
-              </Text>
+              </CustomText>
             )}
 
             {/* Unit Information */}
@@ -314,7 +315,7 @@ const DeveloperInformation = () => {
               />
             }
             {errors.meeting && touched.meeting && (
-              <Text style={styles.errorText}>{errors.meeting}</Text>
+              <CustomText style={styles.errorText}>{errors.meeting}</CustomText>
             )}
             <CustomInput
               label="Project name"
@@ -325,7 +326,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("projectName")}
             />
             {errors.projectName && touched.projectName && (
-              <Text style={styles.errorText}>{errors.projectName}</Text>
+              <CustomText style={styles.errorText}>{errors.projectName}</CustomText>
             )}
             <CustomInput
               label="Unit Number"
@@ -336,7 +337,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("unit")}
             />
             {errors.unit && touched.unit && (
-              <Text style={styles.errorText}>{errors.unit}</Text>
+              <CustomText style={styles.errorText}>{errors.unit}</CustomText>
             )}
             <CustomInput
               label="Area SQFt"
@@ -350,7 +351,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("areaSQFT")}
             />
             {errors.areaSQFT && touched.areaSQFT && (
-              <Text style={styles.errorText}>{errors.areaSQFT}</Text>
+              <CustomText style={styles.errorText}>{errors.areaSQFT}</CustomText>
             )}
 
             <CustomInput
@@ -365,7 +366,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("total")}
             />
             {errors.total && touched.total && (
-              <Text style={styles.errorText}>{errors.total}</Text>
+              <CustomText style={styles.errorText}>{errors.total}</CustomText>
             )}
 
             <CustomInput
@@ -377,7 +378,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("paymentPlan")}
             />
             {errors.paymentPlan && touched.paymentPlan && (
-              <Text style={styles.errorText}>{errors.paymentPlan}</Text>
+              <CustomText style={styles.errorText}>{errors.paymentPlan}</CustomText>
             )}
 
             <DropdownRNE
@@ -421,7 +422,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("paymentMode")}
             />
             {errors.paymentMode && touched.paymentMode && (
-              <Text style={styles.errorText}>{errors.paymentMode}</Text>
+              <CustomText style={styles.errorText}>{errors.paymentMode}</CustomText>
             )}
             <DropdownRNE
               label="Token"
@@ -452,7 +453,7 @@ const DeveloperInformation = () => {
             {values?.token === true &&
               errors.bookingAmount &&
               touched.bookingAmount && (
-                <Text style={styles.errorText}>{errors.bookingAmount}</Text>
+                <CustomText style={styles.errorText}>{errors.bookingAmount}</CustomText>
               )}
 
             {/* <CustomInput
@@ -466,7 +467,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("passback")}
             />
             {errors.passback && touched.passback && (
-              <Text style={styles.errorText}>{errors.passback}</Text>
+              <CustomText style={styles.errorText}>{errors.passback}</CustomText>
             )}
             <CustomInput
               label="Kickbak/Passback %"
@@ -479,7 +480,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("passbackPerc")}
             />
             {errors.passbackPerc && touched.passbackPerc && (
-              <Text style={styles.errorText}>{errors.passbackPerc}</Text>
+              <CustomText style={styles.errorText}>{errors.passbackPerc}</CustomText>
             )} */}
             {/* New field add start */}
             <CustomInput
@@ -496,7 +497,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("clientLoyalty")}
             />
             {errors.clientLoyalty && touched.clientLoyalty && (
-              <Text style={styles.errorText}>{errors.clientLoyalty}</Text>
+              <CustomText style={styles.errorText}>{errors.clientLoyalty}</CustomText>
             )}
             <CustomInput
               label="Client Loyalty %"
@@ -512,7 +513,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("clientLoyaltyPerc")}
             />
             {errors.clientLoyaltyPerc && touched.clientLoyaltyPerc && (
-              <Text style={styles.errorText}>{errors.clientLoyaltyPerc}</Text>
+              <CustomText style={styles.errorText}>{errors.clientLoyaltyPerc}</CustomText>
             )}
 
             <CustomInput
@@ -529,7 +530,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("brokerReferral")}
             />
             {errors.brokerReferral && touched.brokerReferral && (
-              <Text style={styles.errorText}>{errors.brokerReferral}</Text>
+              <CustomText style={styles.errorText}>{errors.brokerReferral}</CustomText>
             )}
             <CustomInput
               label="Broker Referral %"
@@ -545,7 +546,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("brokerReferralPerc")}
             />
             {errors.brokerReferralPerc && touched.brokerReferralPerc && (
-              <Text style={styles.errorText}>{errors.brokerReferralPerc}</Text>
+              <CustomText style={styles.errorText}>{errors.brokerReferralPerc}</CustomText>
             )}
 
             {/* new field add end */}
@@ -565,7 +566,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("commission")}
             />
             {errors.commission && touched.commission && (
-              <Text style={styles.errorText}>{errors.commission}</Text>
+              <CustomText style={styles.errorText}>{errors.commission}</CustomText>
             )}
             <CustomInput
               label="Commission %"
@@ -581,7 +582,7 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("commissionPerc")}
             />
             {errors.commissionPerc && touched.commissionPerc && (
-              <Text style={styles.errorText}>{errors.commissionPerc}</Text>
+              <CustomText style={styles.errorText}>{errors.commissionPerc}</CustomText>
             )}
 
             <IllusionBox
@@ -603,7 +604,7 @@ const DeveloperInformation = () => {
               inputStyle={{ minHeight: 80 }}
             />
             {errors.propertyDetails && touched.propertyDetails && (
-              <Text style={styles.errorText}>{errors.propertyDetails}</Text>
+              <CustomText style={styles.errorText}>{errors.propertyDetails}</CustomText>
             )}
 
             {/* <ExpoImagePicker
@@ -617,7 +618,7 @@ const DeveloperInformation = () => {
             // onBlur={handleBlur("paymentProof")}
             /> */}
             {/* {errors.paymentProof && (
-              <Text style={{ color: "red" }}>{errors.paymentProof}</Text>
+              <CustomText style={{ color: "red" }}>{errors.paymentProof}</CustomText>
             )} */}
             {/* <ExpoImagePicker
               label="Payment Proof2"
@@ -630,7 +631,7 @@ const DeveloperInformation = () => {
               boxContainerStyle={{ marginVertical: 15 }}
             /> */}
             {/* {errors.paymentProof2 && (
-              <Text style={{ color: "red" }}>{errors.paymentProof2}</Text>
+              <CustomText style={{ color: "red" }}>{errors.paymentProof2}</CustomText>
             )} */}
 
             {/* <DatePickerExpo

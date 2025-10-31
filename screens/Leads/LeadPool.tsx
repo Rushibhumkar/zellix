@@ -212,7 +212,7 @@ const LeadPoolRowItem = ({
     >
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "65%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -222,8 +222,8 @@ const LeadPoolRowItem = ({
             }}
           >
             {item?.name}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -233,10 +233,10 @@ const LeadPoolRowItem = ({
             }}
           >
             {item?.clientName}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "35%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -246,8 +246,8 @@ const LeadPoolRowItem = ({
             }}
           >
             {leadTypeObj?.[item?.type]}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -258,7 +258,7 @@ const LeadPoolRowItem = ({
             }}
           >
             {item?.source || "N/A"}
-          </Text>
+          </CustomText>
         </View>
       </View>
       <CustomBtn
@@ -276,22 +276,24 @@ const LeadPoolHeading = () => {
     <Container style={[{ paddingHorizontal: 20 }]}>
       <View style={styles.headingContainer}>
         <View style={{ width: "65%" }}>
-          <Text style={[styles.headingText]}>{"Project Name"}</Text>
-          <Text style={[styles.headingText, { marginTop: 5 }]}>
+          <CustomText style={[styles.headingText]}>{"Project Name"}</CustomText>
+          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
             {"Client Name"}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "35%" }}>
-          <Text style={[styles.headingText]}>{"Type"}</Text>
-          <Text style={[styles.headingText, { marginTop: 5 }]}>{"Source"}</Text>
+          <CustomText style={[styles.headingText]}>{"Type"}</CustomText>
+          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
+            {"Source"}
+          </CustomText>
         </View>
         {/* <View style={{ width: "32%", alignItems: 'center' }}>
-                    <Text
+                    <CustomText
                         style={[styles.headingText]}>{'Status'}
-                    </Text>
-                    <Text
+                    </CustomText>
+                    <CustomText
                         style={[styles.headingText, { marginTop: 5 }]}>{'Assigned'}
-                    </Text>
+                    </CustomText>
                 </View> */}
       </View>
     </Container>

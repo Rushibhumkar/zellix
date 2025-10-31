@@ -228,11 +228,11 @@ const AddMeeting = () => {
               onPressBtn={() => navigate("AllMeetings")}
             />
 
-            <Text
+            <CustomText
               style={{ fontSize: 20, fontWeight: "bold", marginBottom: 20 }}
             >
               Client{" "}
-            </Text>
+            </CustomText>
 
             {!isUpdateFrom ? <DropdownRNE
               arrOfObj={leadList?.map((el) => {
@@ -275,7 +275,7 @@ const AddMeeting = () => {
             }
 
             {errors?.lead && touched?.lead && (
-              <Text style={styles.errorText}>{errors?.lead}</Text>
+              <CustomText style={styles.errorText}>{errors?.lead}</CustomText>
             )}
             <CustomInput
               label="Product Pitch"
@@ -286,7 +286,7 @@ const AddMeeting = () => {
               value={values?.productPitch}
             />
             {errors.productPitch && touched.productPitch && (
-              <Text style={styles.errorText}>{errors.productPitch}</Text>
+              <CustomText style={styles.errorText}>{errors.productPitch}</CustomText>
             )}
 
             <CustomInput
@@ -297,7 +297,7 @@ const AddMeeting = () => {
               value={values?.clientAddress}
             />
             {errors.clientAddress && touched.clientAddress && (
-              <Text style={styles.errorText}>{errors.clientAddress}</Text>
+              <CustomText style={styles.errorText}>{errors.clientAddress}</CustomText>
             )}
             <CustomInput
               label="Client City"
@@ -308,7 +308,7 @@ const AddMeeting = () => {
               onBlur={handleBlur("clientCity")}
             />
             {errors.clientCity && touched.clientCity && (
-              <Text style={styles.errorText}>{errors.clientCity}</Text>
+              <CustomText style={styles.errorText}>{errors.clientCity}</CustomText>
             )}
 
             <CustomInput
@@ -320,7 +320,7 @@ const AddMeeting = () => {
               value={values?.clientCountry}
             />
             {errors.clientCountry && touched.clientCountry && (
-              <Text style={styles.errorText}>{errors.clientCountry}</Text>
+              <CustomText style={styles.errorText}>{errors.clientCountry}</CustomText>
             )}
             <View
             >
@@ -360,7 +360,7 @@ const AddMeeting = () => {
               />
             </View>
             {errors.location && touched.location && (
-              <Text style={styles.errorText}>{errors.location}</Text>
+              <CustomText style={styles.errorText}>{errors.location}</CustomText>
             )}
 
             <CustomInput
@@ -372,7 +372,7 @@ const AddMeeting = () => {
               value={values?.remarks}
             />
             {errors.remarks && touched.remarks && (
-              <Text style={styles.errorText}>{errors.remarks}</Text>
+              <CustomText style={styles.errorText}>{errors.remarks}</CustomText>
             )}
 
             <DropdownRNE
@@ -397,7 +397,7 @@ const AddMeeting = () => {
               initialValue={values?.status}
             />
             {errors.status && touched.status && (
-              <Text style={styles.errorText}>{errors.status}</Text>
+              <CustomText style={styles.errorText}>{errors.status}</CustomText>
             )}
       
             <View
@@ -436,7 +436,7 @@ const AddMeeting = () => {
               mode="modal"
             />
             {errors.agents && touched.agents && (
-              <Text style={styles.errorText}>{errors.agents}</Text>
+              <CustomText style={styles.errorText}>{errors.agents}</CustomText>
             )}
             <CustomBtn
               title="Submit"

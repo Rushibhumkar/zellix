@@ -17,6 +17,7 @@ import {
   shadowPrimaryColor,
   shadowSecondaryColor,
 } from "../../const/globalStyle";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const LeadProjectCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -64,8 +65,8 @@ const LeadProjectCard = ({ onRefresh }) => {
     <View style={styles.card}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Lead Project Wise</Text>
-          <Text style={styles.totalText}>Total: {total}</Text>
+          <CustomText style={styles.title}>Lead Project Wise</CustomText>
+          <CustomText style={styles.totalText}>Total: {total}</CustomText>
         </View>
         <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
           <Entypo name="dots-three-vertical" size={18} color="#333" />
@@ -109,20 +110,20 @@ const LeadProjectCard = ({ onRefresh }) => {
 
       {showDatePopup && (
         <View style={styles.datePopup}>
-          <Text style={styles.dateLabel}>Start Date</Text>
+          <CustomText style={styles.dateLabel}>Start Date</CustomText>
           <TouchableOpacity
             onPress={() => setShowStartPicker(true)}
             style={styles.dateBox}
           >
-            <Text>{startDate.toLocaleDateString("en-GB")}</Text>
+            <CustomText>{startDate.toLocaleDateString("en-GB")}</CustomText>
           </TouchableOpacity>
 
-          <Text style={styles.dateLabel}>End Date</Text>
+          <CustomText style={styles.dateLabel}>End Date</CustomText>
           <TouchableOpacity
             onPress={() => setShowEndPicker(true)}
             style={styles.dateBox}
           >
-            <Text>{endDate.toLocaleDateString("en-GB")}</Text>
+            <CustomText>{endDate.toLocaleDateString("en-GB")}</CustomText>
           </TouchableOpacity>
 
           {showStartPicker && (

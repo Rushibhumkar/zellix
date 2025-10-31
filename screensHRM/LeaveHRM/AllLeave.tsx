@@ -32,6 +32,7 @@ import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const AllLeave = () => {
   const { user } = useSelector(selectUser);
@@ -185,10 +186,12 @@ const AllLeave = () => {
             paddingHorizontal: 20,
           }}
         >
-          <Text style={{ textAlign: "center", fontSize: 16, color: "#555" }}>
+          <CustomText
+            style={{ textAlign: "center", fontSize: 16, color: "#555" }}
+          >
             You do not have permission to view leave records. Please contact
             your administrator.
-          </Text>
+          </CustomText>
         </View>
       )}
     </ContainerHRM>

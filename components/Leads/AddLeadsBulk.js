@@ -23,9 +23,9 @@ const AddLeadsBulk = () => {
       >
         <View style={{ marginTop: 20 }}>
           <View>
-            <Text style={{ fontSize: 16, color: "#000000", fontWeight: "500" }}>
+            <CustomText style={{ fontSize: 16, color: "#000000", fontWeight: "500" }}>
               Choose a File
-            </Text>
+            </CustomText>
           </View>
          <BasicDocumentPicker
            onDocumentPick={setSelectFile}

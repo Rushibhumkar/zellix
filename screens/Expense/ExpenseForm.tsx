@@ -171,11 +171,11 @@ const ExpenseForm = () => {
                 initialValue={fk.values.expenseCategory}
               />
               {fk.errors.expenseCategory && fk.touched.expenseCategory && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.expenseCategory === "string"
                     ? fk.errors.expenseCategory
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               <DropdownRNE
                 label="Select Expense Sub Category"
@@ -191,11 +191,11 @@ const ExpenseForm = () => {
 
               {fk.errors.expenseSubCategory &&
                 fk.touched.expenseSubCategory && (
-                  <Text style={styles.errorText}>
+                  <CustomText style={styles.errorText}>
                     {typeof fk.errors.expenseSubCategory === "string"
                       ? fk.errors.expenseSubCategory
                       : "Invalid input"}
-                  </Text>
+                  </CustomText>
                 )}
               <CustomInput
                 label="Enter Expense Amount"
@@ -219,11 +219,11 @@ const ExpenseForm = () => {
                 }}
               />
               {fk.errors.expenseAmount && fk.touched.expenseAmount && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.expenseAmount === "string"
                     ? fk.errors.expenseAmount
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               <CustomInput
                 label="Enter VAT %"
@@ -248,11 +248,11 @@ const ExpenseForm = () => {
                 }}
               />
               {fk.errors.vatPercent && fk.touched.vatPercent && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.vatPercent === "string"
                     ? fk.errors.vatPercent
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               <IllusionBox
                 title="VAT Amount"
@@ -275,11 +275,11 @@ const ExpenseForm = () => {
                 onBlur={() => fk.handleBlur("officeName")}
               />
               {fk.errors.officeName && fk.touched.officeName && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.officeName === "string"
                     ? fk.errors.officeName
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               {/* <CustomInput
                             label='Enter Expense Date'
@@ -306,11 +306,11 @@ const ExpenseForm = () => {
                 initialValue={fk.values.responsiblePerson}
               />
               {fk.errors.responsiblePerson && fk.touched.responsiblePerson && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.responsiblePerson === "string"
                     ? fk.errors.responsiblePerson
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               <DropdownRNE
                 label="Select Team"
@@ -324,11 +324,11 @@ const ExpenseForm = () => {
                 onBlur={() => fk.handleBlur("team")}
               />
               {fk.errors.team && fk.touched.team && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.team === "string"
                     ? fk.errors.team
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
               <ExpoImagePicker
                 label="Choose File"
@@ -345,11 +345,11 @@ const ExpenseForm = () => {
                 onBlur={() => fk.handleBlur("remarks")}
               />
               {fk.errors.remarks && fk.touched.remarks && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   {typeof fk.errors.remarks === "string"
                     ? fk.errors.remarks
                     : "Invalid input"}
-                </Text>
+                </CustomText>
               )}
 
               <CustomBtn

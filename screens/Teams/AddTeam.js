@@ -18,6 +18,7 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomModelMessage from "../../myComponents/CustomModelMessage";
 import { routeTeam } from "../../utils/routes";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const AddTeam = () => {
   const navigation = useNavigation();
@@ -108,11 +109,11 @@ const AddTeam = () => {
           return (
             <ScrollViewWithKeyboardAvoid>
               <View style={{ paddingBottom: 70, padding: 25 }}>
-                <Text
+                <CustomText
                   style={{ fontSize: 18, color: "#000000", fontWeight: "700" }}
                 >
                   Team Information
-                </Text>
+                </CustomText>
                 <View style={[styles.divider, { marginBottom: 20 }]}></View>
                 <CustomInput
                   placeholder="Team Name"
@@ -123,7 +124,7 @@ const AddTeam = () => {
                   onBlur={handleBlur("name")}
                 />
                 {errors.name && touched.name && (
-                  <Text style={styles.errorText}>{errors.name}</Text>
+                  <CustomText style={styles.errorText}>{errors.name}</CustomText>
                 )}
                 <DropdownRNE
                   keyValueShowInBox="name"
@@ -137,7 +138,7 @@ const AddTeam = () => {
                   onBlur={handleBlur("srManagerId")}
                 />
                 {errors.srManagerId && touched.srManagerId && (
-                  <Text style={styles.errorText}>{errors.srManagerId}</Text>
+                  <CustomText style={styles.errorText}>{errors.srManagerId}</CustomText>
                 )}
 
 
@@ -153,7 +154,7 @@ const AddTeam = () => {
                   onBlur={handleBlur("managerId")}
                 />
                 {errors.managerId && touched.managerId && (
-                  <Text style={styles.errorText}>{errors.managerId}</Text>
+                  <CustomText style={styles.errorText}>{errors.managerId}</CustomText>
                 )}
 
                 <DropdownRNE
@@ -168,7 +169,7 @@ const AddTeam = () => {
                   onBlur={handleBlur("assistantManagerId")}
                 />
                 {errors.assistantManagerId && touched.assistantManagerId && (
-                  <Text style={styles.errorText}>{errors.assistantManagerId}</Text>
+                  <CustomText style={styles.errorText}>{errors.assistantManagerId}</CustomText>
                 )}
 
                 <DropdownRNE
@@ -183,7 +184,7 @@ const AddTeam = () => {
                   onBlur={handleBlur("teamLeadId")}
                 />
                 {errors.teamLeadId && touched.teamLeadId && (
-                  <Text style={styles.errorText}>{errors.teamLeadId}</Text>
+                  <CustomText style={styles.errorText}>{errors.teamLeadId}</CustomText>
                 )}
 
                 <DropdownRNE
@@ -201,7 +202,7 @@ const AddTeam = () => {
                   dropdownPosition="top"
                 />
                 {errors.agents && touched.agents && (
-                  <Text style={styles.errorText}>{errors.agents}</Text>
+                  <CustomText style={styles.errorText}>{errors.agents}</CustomText>
                 )}
 
 

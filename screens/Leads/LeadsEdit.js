@@ -14,6 +14,7 @@ import { AddLeadSchema } from "../../utils/validation";
 import { Formik } from "formik";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/Header";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const data = [
   { label: "Lead", value: "Lead" },
@@ -78,7 +79,7 @@ const LeadsEdit = () => {
               >
                 <View style={{ marginTop: 20 }}>
                   <View>
-                    <Text
+                    <CustomText
                       style={{
                         fontSize: 20,
                         color: "#000000",
@@ -86,7 +87,7 @@ const LeadsEdit = () => {
                       }}
                     >
                       name
-                    </Text>
+                    </CustomText>
                   </View>
                   <TextInput
                     name="clientName"
@@ -97,10 +98,10 @@ const LeadsEdit = () => {
                     placeholder="client name"
                   />
                   {errors.clientName && (
-                    <Text style={styles.errorText}>{errors.clientName}</Text>
+                    <CustomText style={styles.errorText}>{errors.clientName}</CustomText>
                   )}
                   <View>
-                    <Text style={styles.label}>Mobile Number</Text>
+                    <CustomText style={styles.label}>Mobile Number</CustomText>
                     <View style={{ flexDirection: "row", gap: 10 }}>
                       <TextInput
                         style={styles.countycode}
@@ -120,13 +121,13 @@ const LeadsEdit = () => {
                       />
                     </View>
                     {errors.mobileNumber && (
-                      <Text style={styles.errorText}>
+                      <CustomText style={styles.errorText}>
                         {errors.mobileNumber}
-                      </Text>
+                      </CustomText>
                     )}
                   </View>
                   <View>
-                    <Text style={styles.label}>Email Address</Text>
+                    <CustomText style={styles.label}>Email Address</CustomText>
                   </View>
                   <TextInput
                     style={styles.input}
@@ -137,10 +138,10 @@ const LeadsEdit = () => {
                     placeholder="Email Address"
                   />
                   {errors.EmailAddress && (
-                    <Text style={styles.errorText}>{errors.EmailAddress}</Text>
+                    <CustomText style={styles.errorText}>{errors.EmailAddress}</CustomText>
                   )}
                   <View>
-                    <Text style={styles.label}>Comments</Text>
+                    <CustomText style={styles.label}>Comments</CustomText>
                   </View>
                   <TextInput
                     style={styles.input}
@@ -151,11 +152,11 @@ const LeadsEdit = () => {
                     placeholder="Comments"
                   />
                   {errors.comment && (
-                    <Text style={styles.errorText}>{errors.comment}</Text>
+                    <CustomText style={styles.errorText}>{errors.comment}</CustomText>
                   )}
                   <View style={styles.container}>
                     <View>
-                      <Text style={styles.label}>Lead Type</Text>
+                      <CustomText style={styles.label}>Lead Type</CustomText>
                     </View>
                     <Dropdown
                       style={[
@@ -177,7 +178,7 @@ const LeadsEdit = () => {
                     />
                   </View>
                   <View>
-                    <Text style={styles.label}>Whatsapp Link</Text>
+                    <CustomText style={styles.label}>Whatsapp Link</CustomText>
                   </View>
                   <TextInput
                     style={styles.input}
@@ -188,10 +189,10 @@ const LeadsEdit = () => {
                     placeholder="Whatsapp Link"
                   />
                   {errors.whatsappLink && (
-                    <Text style={styles.errorText}>{errors.whatsappLink}</Text>
+                    <CustomText style={styles.errorText}>{errors.whatsappLink}</CustomText>
                   )}
                   <View>
-                    <Text style={styles.label}>Add Sr.Manager</Text>
+                    <CustomText style={styles.label}>Add Sr.Manager</CustomText>
                   </View>
                   <Dropdown
                     style={[styles.dropdown, { borderColor: "#000000" }]}
@@ -209,7 +210,7 @@ const LeadsEdit = () => {
                     }}
                   />
                   <View>
-                    <Text style={styles.label}>Add Agents(s)</Text>
+                    <CustomText style={styles.label}>Add Agents(s)</CustomText>
                   </View>
                   <Dropdown
                     style={[
@@ -233,7 +234,7 @@ const LeadsEdit = () => {
                 </View>
               </List.Accordion>
               <Pressable style={styles.submitbtn} onPress={handleSubmit}>
-                <Text style={styles.btntext}>Submit</Text>
+                <CustomText style={styles.btntext}>Submit</CustomText>
               </Pressable>
             </View>
           )}

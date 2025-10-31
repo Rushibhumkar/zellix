@@ -19,6 +19,7 @@ import Header from "../../components/Header";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const ChangePassword = () => {
   const { user } = useSelector(selectUser);
@@ -78,7 +79,7 @@ const ChangePassword = () => {
                     onBlur={handleBlur('oldPassword')}
                   />
                   {errors.oldPassword && touched?.oldPassword && (
-                    <Text style={styles.errorText}>{errors.oldPassword}</Text>
+                    <CustomText style={styles.errorText}>{errors.oldPassword}</CustomText>
                   )}
                 </View>
                 <View style={{ marginTop: 17 }}>
@@ -91,7 +92,7 @@ const ChangePassword = () => {
                     onBlur={handleBlur('newPassword')}
                   />
                   {errors.newPassword && touched?.newPassword && (
-                    <Text style={styles.errorText}>{errors.newPassword}</Text>
+                    <CustomText style={styles.errorText}>{errors.newPassword}</CustomText>
                   )}
                 </View>
                 <View style={{ marginTop: 17 }}>
@@ -103,9 +104,9 @@ const ChangePassword = () => {
                     placeholder="Confirm your password "
                   />
                   {errors.confirmPassword && touched?.confirmPassword && (
-                    <Text style={styles.errorText}>
+                    <CustomText style={styles.errorText}>
                       {errors.confirmPassword}
-                    </Text>
+                    </CustomText>
                   )}
                 </View>
                 <CustomBtn

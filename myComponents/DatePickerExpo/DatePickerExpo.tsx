@@ -14,6 +14,7 @@ import {
 import Modal from "react-native-modal";
 import DateIcon from "../../assets/svg/DateIcon";
 import { color } from "../../const/color";
+import CustomText from "../CustomText/CustomText";
 
 interface TDatePickerExpo {
   boxContainerStyle?: StyleProp<ViewStyle>;
@@ -96,7 +97,7 @@ const DatePickerExpo = ({
       {/* box showing code */}
       <View style={[boxContainerStyle]}>
         {title && (
-          <Text
+          <CustomText
             style={{
               color: "#000000",
               marginBottom: 10,
@@ -105,7 +106,7 @@ const DatePickerExpo = ({
             }}
           >
             {title ?? "Date"}
-          </Text>
+          </CustomText>
         )}
         <TouchableOpacity
           activeOpacity={0.5}
@@ -124,7 +125,7 @@ const DatePickerExpo = ({
           }}
           onPress={toggleDatePicker}
         >
-          <Text
+          <CustomText
             style={{
               fontSize: 14,
               fontWeight: "400",
@@ -142,7 +143,7 @@ const DatePickerExpo = ({
               : mode === "date"
               ? "DD/MM/YYYY"
               : "Time"}
-          </Text>
+          </CustomText>
 
           <DateIcon />
         </TouchableOpacity>

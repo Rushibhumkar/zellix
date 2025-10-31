@@ -35,6 +35,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { checkPermission } from "../../utils/commonFunctions";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const InterviewMain = () => {
   const { navigate } = useNavigation();
@@ -143,13 +144,13 @@ const InterviewMain = () => {
           style={{ flex: 1 }}
           onPress={() => navigate("CandidateDetails", { item })}
         >
-          <Text style={styles.name}>{item?.name}</Text>
-          <Text style={styles.email}>{item?.email}</Text>
+          <CustomText style={styles.name}>{item?.name}</CustomText>
+          <CustomText style={styles.email}>{item?.email}</CustomText>
         </TouchableOpacity>
-        <Text style={[styles.status, { color: statusColor }]}>
+        <CustomText style={[styles.status, { color: statusColor }]}>
           {status.charAt(0).toUpperCase() +
             status.slice(1).toLowerCase().replace(/_/g, " ")}
-        </Text>
+        </CustomText>
 
         <TouchableOpacity
           onPress={() => {
@@ -157,7 +158,7 @@ const InterviewMain = () => {
             setShowOptionsModal(true);
           }}
         >
-          <Text style={styles.more}>More</Text>
+          <CustomText style={styles.more}>More</CustomText>
         </TouchableOpacity>
       </View>
     );
@@ -209,9 +210,9 @@ const InterviewMain = () => {
                 borderColor: "#ddd",
               }}
             >
-              <Text style={{ fontSize: 16, textAlign: "center" }}>
+              <CustomText style={{ fontSize: 16, textAlign: "center" }}>
                 {option}
-              </Text>
+              </CustomText>
             </TouchableOpacity>
           )
         )}
@@ -225,7 +226,7 @@ const InterviewMain = () => {
           }}
           onPress={() => setShowOptionsModal(false)}
         >
-          <Text style={{ color: "#fff" }}>Cancel</Text>
+          <CustomText style={{ color: "#fff" }}>Cancel</CustomText>
         </TouchableOpacity>
       </ModalWithBlur>
 
@@ -234,9 +235,9 @@ const InterviewMain = () => {
         onClose={() => setShowRescheduleModal(false)}
       >
         <View style={{ gap: 12 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+          <CustomText style={{ fontSize: 18, fontWeight: "bold" }}>
             Reschedule Time
-          </Text>
+          </CustomText>
           <DatePickerExpo
             title="Enter Date & Time"
             initialValue={rescheduleFormik.values.dateTime}
@@ -246,9 +247,9 @@ const InterviewMain = () => {
           />
           {rescheduleFormik.touched.dateTime &&
             rescheduleFormik.errors.dateTime && (
-              <Text style={[styles.errorText, { marginBottom: 14 }]}>
+              <CustomText style={[styles.errorText, { marginBottom: 14 }]}>
                 {rescheduleFormik.errors.dateTime}
-              </Text>
+              </CustomText>
             )}
           <CustomInput
             label="Remark"
@@ -281,12 +282,12 @@ const InterviewMain = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.headerBox}>
-          <Text style={styles.headerText}>Schedule Interview</Text>
+          <CustomText style={styles.headerText}>Schedule Interview</CustomText>
           <TouchableOpacity
             style={styles.scheduleButton}
             onPress={() => navigate("ScheduleInterview")}
           >
-            <Text style={styles.scheduleButtonText}>Schedule</Text>
+            <CustomText style={styles.scheduleButtonText}>Schedule</CustomText>
           </TouchableOpacity>
         </View>
 
@@ -298,7 +299,7 @@ const InterviewMain = () => {
             marginBottom: 12,
           }}
         >
-          <Text style={styles.subHeading}>Interviews</Text>
+          <CustomText style={styles.subHeading}>Interviews</CustomText>
           <TouchableOpacity activeOpacity={0.6} onPress={() => null}>
             <ExportIcon />
           </TouchableOpacity>

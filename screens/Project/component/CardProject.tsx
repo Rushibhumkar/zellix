@@ -32,7 +32,7 @@ const CardProject = ({
     >
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "45%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -42,8 +42,8 @@ const CardProject = ({
             }}
           >
             {item?.source || "N/A"}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -53,10 +53,10 @@ const CardProject = ({
             }}
           >
             {item?.projectName || "N/A"}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "40%", paddingEnd: 3 }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -66,8 +66,8 @@ const CardProject = ({
             }}
           >
             {item?.pageName || "N/A"}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -78,10 +78,10 @@ const CardProject = ({
             }}
           >
             {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
-          </Text>
+          </CustomText>
         </View>
         <View style={{ width: "15%", paddingEnd: 3, alignItems: "center" }}>
-          <Text
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -91,8 +91,8 @@ const CardProject = ({
             }}
           >
             {item?.totalLeads || "0"}
-          </Text>
-          <Text
+          </CustomText>
+          <CustomText
             numberOfLines={1}
             style={{
               color: "#000000",
@@ -103,7 +103,7 @@ const CardProject = ({
             }}
           >
             {item?.totalMembers || "0"}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </TouchableOpacity>

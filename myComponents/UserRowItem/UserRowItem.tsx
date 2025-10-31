@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { color } from "../../const/color";
 import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
+import CustomText from "../CustomText/CustomText";
 interface TUserRowItem {
   serialNo: number;
   userName: string;
@@ -41,15 +42,15 @@ const UserRowItem = ({
     >
       <View style={{ flexDirection: "row" }}>
         {typeof serialNo !== "string" ? (
-          <Text style={styles.box1}>
+          <CustomText style={styles.box1}>
             {serialNo < 9 && 0}
             {serialNo + 1}
-          </Text>
+          </CustomText>
         ) : (
-          <Text style={styles.box1}>{serialNo}</Text>
+          <CustomText style={styles.box1}>{serialNo}</CustomText>
         )}
         <View style={styles.box2}>
-          <Text
+          <CustomText
             numberOfLines={2}
             style={[
               styles.bold,
@@ -60,14 +61,17 @@ const UserRowItem = ({
             ]}
           >
             {userName ?? "N/A"}
-          </Text>
-          <Text numberOfLines={2} style={styles.lightText}>
+          </CustomText>
+          <CustomText numberOfLines={2} style={styles.lightText}>
             {role ?? "N/A"}
-          </Text>
+          </CustomText>
         </View>
-        <Text numberOfLines={2} style={[styles.box3, { textAlign: "right" }]}>
+        <CustomText
+          numberOfLines={2}
+          style={[styles.box3, { textAlign: "right" }]}
+        >
           {email ?? "N/A"}
-        </Text>
+        </CustomText>
       </View>
     </TouchableOpacity>
   );

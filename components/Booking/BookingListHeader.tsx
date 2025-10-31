@@ -1,21 +1,22 @@
 import { Text, StyleSheet, View } from "react-native";
 import React from "react";
 import { color } from "../../const/color";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const BookingListHeading = () => {
   return (
     <View style={{ paddingHorizontal: 20 }}>
       <View style={styles.headingContainer}>
         <View style={{ flexDirection: "row", gap: 5 }}>
-          <Text style={styles.headingText}>No</Text>
-          <Text numberOfLines={1} style={styles.headingText}>
+          <CustomText style={styles.headingText}>No</CustomText>
+          <CustomText numberOfLines={1} style={styles.headingText}>
             Project Name
-          </Text>
+          </CustomText>
         </View>
-        <Text style={styles.headingText}>Status</Text>
-        <Text numberOfLines={1} style={styles.headingText}>
+        <CustomText style={styles.headingText}>Status</CustomText>
+        <CustomText numberOfLines={1} style={styles.headingText}>
           Project Details
-        </Text>
+        </CustomText>
       </View>
     </View>
   );

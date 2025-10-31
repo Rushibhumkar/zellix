@@ -63,7 +63,7 @@ const CustomText: React.FC<CustomTextProps> = ({
   fontSize,
   children,
   fontWeight,
-  color,
+  color = "#000",
   marginBottom,
   numberOfLines,
   style,

@@ -1,10 +1,11 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Text } from "react-native";
+import CustomText from "../../myComponents/CustomText/CustomText";
 
 const Button = ({ btnText, onPress }) => {
   return (
     <Pressable style={styles.submitbtn} onPress={onPress}>
-      <Text style={styles.btntext}>{btnText}</Text>
+      <CustomText style={styles.btntext}>{btnText}</CustomText>
     </Pressable>
   );
 };

@@ -117,7 +117,7 @@ const Notification = () => {
               fontSize: 10,
             }}
           >
-            <Text
+            <CustomText
               style={{
                 textAlign: "center",
                 position: "relative",
@@ -128,7 +128,7 @@ const Notification = () => {
               }}
             >
               {item?.type?.split("")[0]}
-            </Text>
+            </CustomText>
             {!item?.seen && (
               <MaterialIcons
                 style={{
@@ -148,7 +148,7 @@ const Notification = () => {
             style={{ width: '75%' }}
           >
             <View style={{ flexDirection: "row", justifyContent: 'space-between', marginBottom: 5 }}>
-              <Text
+              <CustomText
                 style={{
                   color: "#000000",
                   fontSize: 18,
@@ -156,8 +156,8 @@ const Notification = () => {
                 }}
               >
                 {item?.type}
-              </Text>
-              <Text
+              </CustomText>
+              <CustomText
                 style={{
                   color: "#000000",
                   fontSize: 14,
@@ -165,9 +165,9 @@ const Notification = () => {
                 }}
               >
                 {moment(item?.time).format("HH:mm A")}
-              </Text>
+              </CustomText>
             </View>
-            <Text
+            <CustomText
               style={{
                 color: "#000000",
                 fontSize: 14,
@@ -176,7 +176,7 @@ const Notification = () => {
               }}
             >
               {item?.message}
-            </Text>
+            </CustomText>
           </View>
         </TouchableOpacity>
         {!isDivider && <View style={styles.dividern}></View>}
@@ -194,7 +194,7 @@ const Notification = () => {
           const [section, data] = item;
           return (
             <View style={{ marginBottom: 20 }}>
-              <Text style={styles.sectionHeader}>{section}</Text>
+              <CustomText style={styles.sectionHeader}>{section}</CustomText>
               <View style={styles.divider}></View>
               <FlatList
                 data={data}
