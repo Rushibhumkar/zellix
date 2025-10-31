@@ -29,7 +29,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 67,
+      "versionCode": 68,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
         "backgroundColor": "#ffffff"

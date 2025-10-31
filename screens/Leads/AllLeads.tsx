@@ -283,13 +283,9 @@ const AllLeads = ({ tabType }) => {
 
   useEffect(() => {
     if (isFocused) {
-      console.log("🧭 Active tabType prop:", tabType);
-
       if (tabType === "calling_data") {
-        console.log("✅ Switching to Calling Data tab");
         handleLeadTypeSelect("calling_data", false);
       } else if (tabType === "lead") {
-        console.log("✅ Switching to Lead tab");
         handleLeadTypeSelect("lead", false);
       } else {
         console.log("⚠️ Unknown tabType prop:", tabType);
