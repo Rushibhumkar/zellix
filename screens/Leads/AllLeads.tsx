@@ -43,6 +43,7 @@ import { checkPermission } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { useRoute } from "@react-navigation/native";
 import { sizes } from "../../const";
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -51,8 +52,9 @@ let bgByStatus = {
 
 // Debounce function
 
-const AllLeads = () => {
+const AllLeads = ({ tabType }) => {
   const queryClient = useQueryClient();
+  const route = useRoute();
   const [refreshing, setRefreshing] = useState(false);
   // let lead = []
   // let loading = false;
@@ -62,7 +64,8 @@ const AllLeads = () => {
   // let copyLead = [];
   const [copyLead, setCopyLead] = useState([]);
 
-  const { navigate } = useNavigation();
+  const navigation = useNavigation();
+
   const isFocused = useIsFocused();
 
   const dispatch = useDispatch();
@@ -280,19 +283,26 @@ const AllLeads = () => {
 
   useEffect(() => {
     if (isFocused) {
-      const currentRoute = navigate?.getState?.()?.routes?.slice(-1)[0]?.name;
-      if (currentRoute === "allLeads2") {
+      console.log("🧭 Active tabType prop:", tabType);
+
+      if (tabType === "calling_data") {
+        console.log("✅ Switching to Calling Data tab");
         handleLeadTypeSelect("calling_data", false);
-      } else {
+      } else if (tabType === "lead") {
+        console.log("✅ Switching to Lead tab");
         handleLeadTypeSelect("lead", false);
+      } else {
+        console.log("⚠️ Unknown tabType prop:", tabType);
       }
     }
-  }, [isFocused]);
+  }, [isFocused, tabType]);
 
-  myConsole("permissionnnn", permission);
   return (
     <>
-      <Header title={"All Leads"} onBack={() => navigate("dashboard")} />
+      <Header
+        title={"All Leads"}
+        onBack={() => navigation.navigate("dashboard")}
+      />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <Container>
@@ -301,7 +311,7 @@ const AllLeads = () => {
             title="Leads"
             onPressToNavigate={() => {
               if (canAddLead) {
-                navigate("AddLeads");
+                navigation.navigate("AddLeads");
               } else {
                 popUpConfToast.errorMessage(
                   "You are not authorized to add new leads. Please contact your administrator."
@@ -319,7 +329,9 @@ const AllLeads = () => {
                 ? false
                 : () => toggleModalAssignLead()
             }
-            onPressToFilter={() => navigate("AdvanceSearch", { type: "lead" })}
+            onPressToFilter={() =>
+              navigation.navigate("AdvanceSearch", { type: "lead" })
+            }
             onCloseSearch={
               leadQueryKey !== null
                 ? () => dispatch(setLeadQueryKey(null))
@@ -331,7 +343,7 @@ const AllLeads = () => {
           />
           {isPoolRestricted === false && canLeadPoolManagement && (
             <TouchableOpacity
-              onPress={() => navigate("LeadPool")}
+              onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}
               style={{
                 position: "absolute",
@@ -358,7 +370,7 @@ const AllLeads = () => {
                   bgColor={bgByStatus[item?.status]}
                   onPress={() =>
                     selected?.length === 0
-                      ? navigate("LeadsDetails", { item })
+                      ? navigation.navigate("LeadsDetails", { item })
                       : handleSelect(item?._id)
                   }
                   onLongPress={

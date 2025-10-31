@@ -39,7 +39,6 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { myConsole } from "../../hooks/useConsole";
 import UserIcon from "../../assets/svg/UserIcon";
 import UsersManagement from "../Users/UsersManagement";
-import { UsersNavigator } from "../../navigation/StackNavigation";
 
 const Setting = () => {
   const dispatch = useDispatch();

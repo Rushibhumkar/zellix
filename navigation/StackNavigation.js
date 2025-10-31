@@ -1,4 +1,7 @@
-import { createNavigationContainerRef, NavigationContainer } from "@react-navigation/native";
+import {
+  createNavigationContainerRef,
+  NavigationContainer,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet } from "react-native";
@@ -79,6 +82,8 @@ import ExpenseForm from "../screens/Expense/ExpenseForm";
 import ReferralList from "../screens/Referrals/ReferralList";
 import AddReferrals from "../screens/Referrals/AddReferrals";
 import ReferralDetails from "../screens/Referrals/ReferralDetails";
+import CallingFocus from "../assets/svg/CallingFocus";
+import CallingInfocus from "../assets/svg/CallingInfocus";
 
 ////
 const Stack = createNativeStackNavigator();
@@ -89,7 +94,7 @@ export const navigate = (name, params) => {
   if (navigationRef.isReady()) {
     navigationRef.navigate(name, params);
   }
-}
+};
 
 const BottomTabs = () => {
   const { user } = useSelector(selectUser);
@@ -147,22 +152,36 @@ const BottomTabs = () => {
             ),
         }}
       />
-      <Tab.Screen
-        name="allLeads"
-        component={LeadsNavigator}
-        options={{
-          tabBarLabel: "",
-          tableBarShowLable: false,
-          tabBarLabelStyle: false,
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <LeadFocus style={styles.iconPosition} />
-            ) : (
-              <LeadIcons style={styles.iconPosition} />
-            ),
-        }}
-      />
+    <Tab.Screen
+  name="allLead"
+  children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
+  options={{
+    tabBarLabel: "",
+    headerShown: false,
+    tabBarIcon: ({ focused }) =>
+      focused ? (
+        <CallingFocus style={styles.iconPosition} />
+      ) : (
+        <CallingInfocus style={styles.iconPosition} />
+      ),
+  }}
+/>
+
+<Tab.Screen
+  name="allLead2"
+  children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
+  options={{
+    tabBarLabel: "",
+    headerShown: false,
+    tabBarIcon: ({ focused }) =>
+      focused ? (
+        <LeadFocus style={styles.iconPosition} />
+      ) : (
+        <LeadIcons style={styles.iconPosition} />
+      ),
+  }}
+/>
+
       <Tab.Screen
         name="BookingNavigator"
         component={BookingNavigator}
@@ -179,24 +198,7 @@ const BottomTabs = () => {
             ),
         }}
       />
-      {!isAgent ? (
-        <Tab.Screen
-          name="usermanagement"
-          component={UsersNavigator}
-          options={{
-            tabBarLabel: "",
-            tableBarShowLable: false,
-            tabBarLabelStyle: false,
-            headerShown: false,
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <UserFocus style={styles.iconPosition} />
-              ) : (
-                <UserIcon style={styles.iconPosition} />
-              ),
-          }}
-        />
-      ) : null}
+ 
     </Tab.Navigator>
   );
 };
@@ -259,12 +261,12 @@ const MeetingsNavigator = () => {
   );
 };
 
-const LeadsNavigator = () => {
+const LeadsNavigator = ({tabType}) => {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="allLead"
-        component={AllLeads}
+       children={() => <AllLeads tabType={tabType} />} 
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -399,8 +401,8 @@ const ProjectNavigator = () => {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 //IncentiveNavigator
 const IncentiveNavigator = () => {
@@ -426,10 +428,9 @@ const IncentiveNavigator = () => {
         component={TeamIncentiveDetail}
         options={{ headerShown: false }}
       />
-
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 //IncentiveNavigator
 const ReferralNavigator = () => {
@@ -451,8 +452,8 @@ const ReferralNavigator = () => {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
-  )
-}
+  );
+};
 //IncentiveNavigator
 const ExpenseNavigator = () => {
   return (
@@ -483,8 +484,8 @@ const ExpenseNavigator = () => {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
-  )
-}
+  );
+};
 //IncentiveNavigator
 const InvoiceNavigator = () => {
   return (
@@ -501,7 +502,6 @@ const InvoiceNavigator = () => {
         options={{ headerShown: false }}
       />
 
-
       {/* <Stack.Screen
         name="ProjectDetail"
         component={ProjectDetail}
@@ -513,8 +513,8 @@ const InvoiceNavigator = () => {
         options={{ headerShown: false }}
       /> */}
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 //
 const StackNavigation = () => {
@@ -606,6 +606,11 @@ const StackNavigation = () => {
         <Tab.Screen
           name="ExpenseNavigator"
           component={ExpenseNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="UsersNavigator"
+          component={UsersNavigator}
           options={{ headerShown: false }}
         />
         <Tab.Screen
