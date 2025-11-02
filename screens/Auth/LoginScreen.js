@@ -167,7 +167,7 @@ const LoginScreen = () => {
               </Formik>
             </KeyboardAvoidingView>
           </ScrollView>
-          <Pressable
+          {/* <Pressable
             onLongPress={() => Alert.alert('Base URL(Plz click on Cancel)', `${baseURL}`, [
               {
                 text: 'Cancel',
@@ -196,7 +196,7 @@ const LoginScreen = () => {
               // borderRadius: 25,
             }}
           >
-          </Pressable>
+          </Pressable> */}
         </ImageBackground>
       </SafeAreaView>
     </>

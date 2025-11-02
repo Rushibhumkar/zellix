@@ -56,11 +56,14 @@ const CustomInput = ({
           styles.input,
           inputStyle,
           {
-            borderColor: isFocused ? color.primaryColor : color.primary200, // ⬅️ add
-            borderWidth: isFocused ? 1 : 0.5, // ⬅️ add
+            borderColor: isFocused ? color.primaryColor : color.primary200,
+            borderWidth: isFocused ? 1 : 0.5,
+            color: "#000", // ✅ force visible
+            fontFamily: Platform.OS === "android" ? "sans-serif" : undefined, // ✅ fix release font issue
           },
         ]}
-        placeholder={placeholder ? placeholder : label ? label : "placeholder"}
+        placeholder={placeholder || label || "placeholder"}
+        placeholderTextColor="#888" // ✅ visible placeholder
         onFocus={() => setIsFocused(true)}
         onBlur={(e) => {
           setIsFocused(false);
@@ -71,6 +74,7 @@ const CustomInput = ({
         editable={editable}
         {...props}
       />
+
       {errors && <CustomText style={styles.errorText}>{errors}</CustomText>}
     </View>
   );
@@ -86,16 +90,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   input: {
-    // marginTop: 10,
-    // height: 37.5,
     borderColor: color.primary200,
     backgroundColor: "#FFFFFF",
     borderWidth: 0.5,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: Platform.OS === "ios" ? 10 : 6,
-    //width: "100%",
+    color: "#000000", // ✅ Explicitly add this
   },
+
   errorText: {
     color: "red",
     marginTop: 0,

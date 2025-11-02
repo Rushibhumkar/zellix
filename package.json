@@ -45,7 +45,6 @@
     "react": "19.1.0",
     "react-native": "0.81.4",
     "react-native-animatable": "^1.4.0",
-    "react-native-call-detection": "^1.9.0",
     "react-native-confirmation-code-input": "^1.0.4",
     "react-native-country-picker-modal": "^2.0.0",
     "react-native-element-dropdown": "^2.10.1",
