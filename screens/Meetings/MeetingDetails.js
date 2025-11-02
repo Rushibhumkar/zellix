@@ -110,7 +110,7 @@ let currentLocation = await Location.getCurrentPositionAsync({
   timeout: 20000, // Give 20 seconds to improve GPS lock
 });
 
-myConsole('sjlfkjdsklfjldf',currentLocation)
+// myConsole('sjlfkjdsklfjldf',currentLocation)
   let a = await Location.hasServicesEnabledAsync();
   console.log("hasServicesEnabledAsync", a);
   return currentLocation;

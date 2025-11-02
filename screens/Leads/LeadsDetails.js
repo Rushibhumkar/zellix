@@ -204,8 +204,7 @@ const LeadsDetails = () => {
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLead],
         });
-        popUpConfToast.successMessage(res);
-
+        popUpConfToast.successMessage(res?.data?.message || 'Operation successful');
         // await dispatch(getAllLeadFunc());
         // setIsVisible(true);
         // setMessage(res?.data);
@@ -280,7 +279,8 @@ const LeadsDetails = () => {
   const [notiMsg, setNotiMsg] = useState('');
  const [showNotiPopup, setShowNotiPopup] = useState(false)
  const [isNotificationLoading, setIsNotificationLoading] = useState(false);
-const handleSubmit = async () => {
+
+ const handleSubmit = async () => {
   try {
     if (!notiMsg.trim()) {
       popUpConfToast.errorMessage('Please enter a message.');
@@ -291,26 +291,43 @@ const handleSubmit = async () => {
 
     let payload = {
       leadId: detail?._id,
-      message: notiMsg
+      message: notiMsg,
     };
 
+    // API call
     let res = await sendFollowUpNotification(payload);
-    popUpConfToast.successMessage('Notification sent successfully!');
+
+    // ✅ Extract proper message from response
+    const successMsg =
+      res?.data?.message ||
+      res?.message ||
+      'Notification sent successfully!';
+
+    popUpConfToast.successMessage(successMsg);
+
     setNotiMsg('');
     setShowNotiPopup(false);
 
-        queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getLead],
-        });
+    queryClient.invalidateQueries({
+      queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [queryKeyCRM.getLead],
+    });
   } catch (err) {
-    popUpConfToast.errorMessage(err?.response?.data ?? 'Failed to send notification');
+    const errMsg =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Failed to send notification';
+    popUpConfToast.errorMessage(errMsg);
   } finally {
     setIsNotificationLoading(false);
+     setNotiMsg('');
+    setShowNotiPopup(false);
   }
 };
+
+
  const { data: permission = {} } = useGetUserPermission(user?._id);
 
     const canEditLead = checkPermission(

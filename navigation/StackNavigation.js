@@ -154,7 +154,7 @@ const BottomTabs = () => {
       />
     <Tab.Screen
   name="allLead"
-  children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
+  children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
   options={{
     tabBarLabel: "",
     headerShown: false,
@@ -169,7 +169,7 @@ const BottomTabs = () => {
 
 <Tab.Screen
   name="allLead2"
-  children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
+  children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
   options={{
     tabBarLabel: "",
     headerShown: false,
