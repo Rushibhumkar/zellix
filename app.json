@@ -16,9 +16,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.4.3",
+      "bundleNumber": "1.4.4",
       "supportsTablet": true,
-      "buildNumber": "63",
+      "buildNumber": "66",
       "permissions": [
         "READ_CALL_LOG"
       ],
