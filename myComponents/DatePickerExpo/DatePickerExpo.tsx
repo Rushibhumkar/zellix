@@ -41,9 +41,13 @@ const DatePickerExpo = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const toggleDatePicker = () => {
-    setShowPicker(!showPicker);
-    // setDate(new Date())
+    if (mode === "time") {
+      setShowTimePicker(true); // directly open time picker
+    } else {
+      setShowPicker(true); // open date picker for date/datetime
+    }
   };
+
   const onChange = (event, selectedDate) => {
     // ✅ Handle CANCEL action on Android
     if (Platform.OS === "android" && event?.type === "dismissed") {
@@ -74,12 +78,13 @@ const DatePickerExpo = ({
         }
       } else {
         setShowPicker(false);
+        setShowTimePicker(false); // ✅ close modal after OK
         setGetDate(selectedDate);
         onSelect && onSelect(selectedDate);
       }
     } else {
-      // ✅ iOS picker
-      setDate(selectedDate);
+      setShowPicker(false);
+      setShowTimePicker(false); // ✅ close modal after OK
       setGetDate(selectedDate);
       onSelect && onSelect(selectedDate);
     }
@@ -187,8 +192,10 @@ const DatePickerExpo = ({
                 <Button
                   title="Ok"
                   onPress={() => {
-                    onSelect && onSelect(date); // <-- make sure this runs
-                    toggleDatePicker();
+                    setGetDate(date);
+                    onSelect && onSelect(date);
+                    setShowPicker(false);
+                    setShowTimePicker(false);
                   }}
                 />
               </>
@@ -198,9 +205,9 @@ const DatePickerExpo = ({
       )}
       {Platform.OS === "android" && (
         <>
-          {showPicker && (
+          {showPicker && mode !== "time" && (
             <DateTimePicker
-              mode="date"
+              mode={mode === "datetime" ? "date" : "date"}
               display="default"
               value={date}
               onChange={onChange}

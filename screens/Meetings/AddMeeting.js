@@ -407,7 +407,7 @@ const AddMeeting = () => {
                 marginTop: 5,
               }}
             >
-              <DatePickerExpo
+             <DatePickerExpo
                 title={"Date"}
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
                 onSelect={(date) => setTempDate(prevState => ({ ...prevState, date }))}

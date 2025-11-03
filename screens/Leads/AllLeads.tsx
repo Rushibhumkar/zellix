@@ -100,30 +100,6 @@ const AllLeads = ({ tabType }) => {
     ...leadQueryKey,
   });
 
-  //
-
-  // useEffect(() => {
-  //   let temp = advanceLead !== null ? advanceLead : lead;
-  //   if (advanceLead === null) {
-  //     let filterTemp = temp?.filter((el) => el?.type === selectLeadType)
-  //     setCopyLead(filterTemp);
-  //     setFilteredData(filterTemp);
-  //   } else {
-  //     setCopyLead(temp);
-  //     setFilteredData(temp);
-  //     setSelectLeadType(advanceLead?.[0]?.type)
-  //   }
-  //   // if (temp?.length > 0) {
-  //   //   let filterTemp = temp.filter((el) => el?.type === leadType)
-  //   //   setCopyLead(filterTemp);
-  //   //   setFilteredData(filterTemp);
-  //   //   if (advanceLead !== null) {
-  //   //     setSelectLeadType(advanceLead?.[0]?.status)
-  //   //   }
-  //   // }
-
-  // }, [lead, selectLeadType, advanceLead]);
-
   const handleSelect = (id) => {
     let temp = [...selected];
     let index = temp.indexOf(id);
@@ -177,22 +153,6 @@ const AllLeads = ({ tabType }) => {
     setOpenLeadTypeModal((prev) => !prev);
   };
 
-  //filterLogic
-  // useEffect(() => {
-  //   if (!!searchValue) {
-  //     let temp = copyLead?.filter((el) => {
-  //       return el?.type?.toLowerCase()?.includes(searchValue?.toLowerCase())
-  //         ||
-  //         el?.name?.toLowerCase()?.includes(searchValue?.toLowerCase())
-  //         ||
-  //         el?.status?.toLowerCase()?.includes(searchValue?.toLowerCase())
-  //         ||
-  //         el?.clientName?.toLowerCase()?.includes(searchValue?.toLowerCase())
-  //     })
-  //     setFilteredData(temp)
-  //   }
-  // }, [searchValue])
-
   const handleFilterTextOnChange = (value) => {
     if (value) {
       setSearchValue(value);
@@ -202,25 +162,6 @@ const AllLeads = ({ tabType }) => {
     }
   };
 
-  // useEffect(() => {
-  //   if (isFocused) {
-  //     setSelected([])
-  //     setSearchValue('')
-  //     let temp = [...copyLead]
-  //     temp?.sort((a, b) => Date.parse(b?.updatedAt) - Date.parse(a?.updatedAt))
-  //     setFilteredData(temp)
-  //   }
-  // }, [isFocused, advanceLead, lead])
-
-  // useEffect(() => {
-  //   if (!assignLeadModal) {
-  //     setSelected([])
-  //     setSearchValue('')
-  //     let temp = [...copyLead]
-  //     temp?.sort((a, b) => Date.parse(b?.updatedAt) - Date.parse(a?.updatedAt))
-  //     setFilteredData(temp)
-  //   }
-  // }, [assignLeadModal])
   const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
     []
@@ -235,6 +176,7 @@ const AllLeads = ({ tabType }) => {
     setSelectLeadType(key);
     if (shouldToggle) toggleLeadTypeModal();
   };
+
   const onEndReach = () => {
     if (hasNextPage && !loading && leadData?.length > 0) {
       fetchNextPage && fetchNextPage();
@@ -296,7 +238,13 @@ const AllLeads = ({ tabType }) => {
   return (
     <>
       <Header
-        title={"All Leads"}
+        title={
+          tabType === "calling_data"
+            ? "Calling Data"
+            : tabType === "lead"
+            ? "All Leads"
+            : ""
+        }
         onBack={() => navigation.navigate("dashboard")}
       />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
@@ -304,7 +252,13 @@ const AllLeads = ({ tabType }) => {
         <Container>
           <TitleWithAddDelete
             arrLength={selected?.length}
-            title="Leads"
+            title={
+              tabType === "calling_data"
+                ? "Calling Data"
+                : tabType === "lead"
+                ? "Leads"
+                : ""
+            }
             onPressToNavigate={() => {
               if (canAddLead) {
                 navigation.navigate("AddLeads");
@@ -333,9 +287,9 @@ const AllLeads = ({ tabType }) => {
                 ? () => dispatch(setLeadQueryKey(null))
                 : false
             }
-            onSelectLeadType={
-              leadQueryKey === null ? () => toggleLeadTypeModal() : false
-            }
+            // onSelectLeadType={
+            //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
+            // }
           />
           {isPoolRestricted === false && canLeadPoolManagement && (
             <TouchableOpacity
@@ -433,13 +387,7 @@ const AllLeads = ({ tabType }) => {
         toggleModal={toggleModalAssignLead}
         setSnackBar={setSnackBar}
       />
-      <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
-        {/* <DropdownRNE
-          arrOfObj={[{
-            name: 'asd',
-            _id: 1212
-          }]}
-        /> */}
+      {/* <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
         <View style={{ gap: 20 }}>
           <CustomCheckBox
             title="Lead"
@@ -452,7 +400,7 @@ const AllLeads = ({ tabType }) => {
             onPress={(v) => v && handleLeadTypeSelect("calling_data")}
           />
         </View>
-      </ModalWithBlur>
+      </ModalWithBlur> */}
     </>
   );
 };
