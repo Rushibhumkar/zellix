@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,6 +23,9 @@ import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import { myConsole } from "../../hooks/useConsole";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { checkPermission } from "../../utils/commonFunctions";
 
 const Notification = () => {
   const { user } = useSelector(selectUser);
@@ -33,20 +37,20 @@ const Notification = () => {
     refetch,
     fetchNextPage,
     isFetchingNextPage,
-    hasNextPage
+    hasNextPage,
   } = useGetNotificationInCRM({ id: user._id });
 
   const [refreshing, setRefreshing] = useState(false);
   const onEndReach = () => {
     if (hasNextPage && !isLoading && notifiData?.length > 0) {
-      fetchNextPage && fetchNextPage()
+      fetchNextPage && fetchNextPage();
     }
-  }
+  };
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
     setRefreshing(false);
-  }
+  };
   const groupNotificationsByDate = (notifications) => {
     const today = moment().startOf("day");
     const yesterday = moment().subtract(1, "days").startOf("day");
@@ -72,12 +76,23 @@ const Notification = () => {
     }, {});
   };
 
+  const { data: permission = {} } = useGetUserPermission(user?._id);
+  // myConsole('permisisons',permission);
+
+  const canViewBookingDetails = checkPermission(
+    permission,
+    "Bookings",
+    "viewDetails",
+    user?.role
+  );
+
+  myConsole("canViewBookingDetails", canViewBookingDetails);
+
   // const groupedNotifications = groupNotificationsByDate(user?.notifications);
   const groupedNotifications = groupNotificationsByDate(notifiData ?? []);
   const handleNotificationSeen = async (item) => {
     // myConsole('item', item)
     try {
-
       if (!item?.seen) {
         await getNotificationSeenById(user?._id, item?._id);
         refetch();
@@ -87,14 +102,20 @@ const Notification = () => {
       } else if (item?.type === "Meeting") {
         navigate(routeMeeting.MeetingsNavigator);
       } else if (item?.type === "Booking") {
-        navigate(routeBooking.bookingNavigator);
+        if (canViewBookingDetails) {
+          navigate(routeBooking.bookingNavigator);
+        } else {
+          Alert.alert(
+            "Access Denied",
+            "You don't have access to view booking details."
+          );
+        }
       }
       // getNotification();
     } catch (err) {
       console.log("err", err);
     }
   };
-
 
   const NotificationList = ({ item, isDivider }) => {
     return (
@@ -144,10 +165,14 @@ const Notification = () => {
               />
             )}
           </View>
-          <View
-            style={{ width: '75%' }}
-          >
-            <View style={{ flexDirection: "row", justifyContent: 'space-between', marginBottom: 5 }}>
+          <View style={{ width: "75%" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 5,
+              }}
+            >
               <CustomText
                 style={{
                   color: "#000000",
@@ -172,7 +197,7 @@ const Notification = () => {
                 color: "#000000",
                 fontSize: 14,
                 fontWeight: "300",
-                textAlign: 'justify'
+                textAlign: "justify",
               }}
             >
               {item?.message}
@@ -214,18 +239,16 @@ const Notification = () => {
         onEndReached={onEndReach}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
-          isFetchingNextPage && <ActivityIndicator
-            size={'small'}
-            color={'#002E6B'}
-          />
+          isFetchingNextPage && (
+            <ActivityIndicator size={"small"} color={"#002E6B"} />
+          )
         }
         ListEmptyComponent={
           <>
             {isLoading && <LoadingCompo />}
-            {notifiData?.length === 0 && <NoDataFound
-              height={200}
-              width={200}
-            />}
+            {notifiData?.length === 0 && (
+              <NoDataFound height={200} width={200} />
+            )}
           </>
         }
         refreshControl={
