@@ -86,8 +86,6 @@ const Notification = () => {
     user?.role
   );
 
-  myConsole("canViewBookingDetails", canViewBookingDetails);
-
   // const groupedNotifications = groupNotificationsByDate(user?.notifications);
   const groupedNotifications = groupNotificationsByDate(notifiData ?? []);
   const handleNotificationSeen = async (item) => {

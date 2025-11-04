@@ -59,38 +59,37 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
   // myConsole('attendanceCount', attendanceCount)
   //
   useEffect(() => {
-    // if (pieData?.length > 0) {
-    //     setPieCirData(pieData)
-    // } else {
-    //     setPieCirData(dummyPieData)
-    // }
+    let temp = [];
     if (type === "userChart") {
-      // let temp = dummyUser?.map((el) => { return { ...el, value: leaveCount[el?.key] } })
-      let temp = dummyUser?.map((el) => {
-        let val =
-          typeof userCount?.[el?.key] === "number" ? userCount?.[el?.key] : 0;
-        return { ...el, value: val };
-      });
-      setPieCirData(temp);
+      temp = dummyUser?.map((el) => ({
+        ...el,
+        value:
+          typeof userCount?.[el?.key] === "number" ? userCount?.[el?.key] : 0,
+      }));
     }
     if (type === "leavesChart") {
-      let temp = dummyLeave?.map((el) => {
-        let val =
-          typeof leaveCount?.[el?.key] === "number" ? leaveCount?.[el?.key] : 0;
-        return { ...el, value: val };
-      });
-      setPieCirData(temp);
+      temp = dummyLeave?.map((el) => ({
+        ...el,
+        value:
+          typeof leaveCount?.[el?.key] === "number" ? leaveCount?.[el?.key] : 0,
+      }));
     }
     if (type === "attendanceChart") {
-      let temp = dummyAttendance?.map((el) => {
-        let val =
+      temp = dummyAttendance?.map((el) => ({
+        ...el,
+        value:
           typeof attendanceCount?.[el?.key] === "number"
             ? attendanceCount?.[el?.key]
-            : 0;
-        return { ...el, value: val };
-      });
-      setPieCirData(temp);
+            : 0,
+      }));
     }
+
+    // 🩹 fallback to dummy data if all values are 0 or empty
+    if (!temp || temp.every((t) => t.value === 0)) {
+      temp = dummyUser; // or whichever dummy set fits type
+    }
+
+    setPieCirData(temp);
   }, [leaveCount, attendanceCount, userCount, type]);
 
   const RenderDot = ({ color, text, value }) => {
@@ -171,7 +170,7 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
       </CustomText>
       <View style={{ flexDirection: "row", gap: 15, alignItems: "center" }}>
         <PieChart
-          data={pieCirData ?? []}
+          data={pieCirData?.length ? pieCirData : dummyUser}
           donut
           showGradient
           sectionAutoFocus
