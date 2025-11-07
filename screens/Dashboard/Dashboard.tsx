@@ -485,12 +485,6 @@ const Dashboard = () => {
     <Container>
       <DashbordHeader />
 
-      {/* <Button title="asas" onPress={() => {
-        return schedulePushNotification({
-          title: 'sdas',
-          body: 'fasdgfa'
-        })
-      }} /> */}
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
