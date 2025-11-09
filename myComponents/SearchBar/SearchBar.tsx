@@ -7,8 +7,9 @@ import {
   Platform,
 } from "react-native";
 import React, { useState } from "react";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, EvilIcons } from "@expo/vector-icons";
 import { color } from "../../const/color";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface TSearchBar {
   onClickCancel: () => void;
@@ -26,30 +27,42 @@ const SearchBar = ({
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          borderColor: isFocused ? color.primaryColor : "#ccc",
-        },
-        containerStyle,
-      ]}
+    <LinearGradient
+      colors={["#2452FA", "#6CA8FF"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{
+        paddingBottom: 21,
+        marginTop: -6,
+        borderBottomLeftRadius: 26,
+        borderBottomRightRadius: 26,
+      }}
     >
-      <AntDesign name="search" size={20} color={color.primary200} />
-      <TextInput
-        style={styles.input}
-        placeholder="Search..."
-        placeholderTextColor="#888" // ✅ visible placeholder on white
-        onChangeText={onChangeText}
-        value={value}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        selectionColor={color.primaryColor}
-      />
-      {!!value && (
-        <Entypo name="cross" size={20} color="#444" onPress={onClickCancel} />
-      )}
-    </View>
+      <View
+        style={[
+          styles.container,
+          {
+            borderColor: isFocused ? color.primaryColor : "#ccc",
+          },
+          containerStyle,
+        ]}
+      >
+        <EvilIcons name="search" size={20} color={"#739FE1"} />
+        <TextInput
+          style={styles.input}
+          placeholder="Search..."
+          placeholderTextColor="#2E67BE" // ✅ visible placeholder on white
+          onChangeText={onChangeText}
+          value={value}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          selectionColor={color.primaryColor}
+        />
+        {!!value && (
+          <Entypo name="cross" size={20} color="#444" onPress={onClickCancel} />
+        )}
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -57,9 +70,8 @@ export default SearchBar;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
     flexDirection: "row",
-    borderRadius: 20,
+    borderRadius: 16,
     alignItems: "center",
     paddingHorizontal: 12,
     marginHorizontal: 25,

@@ -524,48 +524,6 @@ placeholderTextColor={'grey'}
                     </View>
                   }
                 />}
-              {/* <RowItem
-            title="Status Information"
-            value=""
-            containerStyle={{ marginBottom: 10 }}
-            component={sta
-              isAdminOrAssigne ? (
-                <CustomInput
-                  placeholder=" "
-                  value={fields.statusInfo}
-                  onChangeText={(v) => onChange("statusInfo", v)}
-                  props={{
-                    multiline: true,
-                  }}
-                  inputStyle={{ height: 100 }}
-                />
-              ) : (
-                <CustomText>{detail?.statusInfo}</CustomText>
-              )
-            }
-          /> */}
-              {/* <RowItem
-                title="Comments"
-                value=""
-                containerStyle={{ marginBottom: 10 }}
-                component={
-                  true ? (
-                    <CustomInput
-                      placeholder=" "
-                      value={fields.comments}
-                      onChangeText={(v) => onChange("comments", v)}
-                      props={{
-                        multiline: true,
-                        textAlignVertical: 'top',
-                        editable: false
-                      }}
-                      inputStyle={{ height: 100 }}
-                    />
-                  ) : (
-                    <CustomText>{fields?.comments}</CustomText>
-                  )
-                }
-              /> */}
              
               <RowItem
                 title="Comments"
@@ -694,10 +652,6 @@ placeholderTextColor={'grey'}
         hasBackdrop
       >
         <View style={{ backgroundColor: 'white', width: 300, padding: 20, borderRadius: 10 }}>
-          {/* <CustomText
-            fontSize={17}
-            fontWeight="600"
-          >Select Time and Date</CustomText> */}
           <MainTitle
             title="Select Date and Time"
           />
@@ -723,12 +677,6 @@ placeholderTextColor={'grey'}
             }}
             initialValue={tdForFUT.time}
           />
-          {/* <CustomBtn
-            title="Submit"
-            textStyle={{ fontSize: 14 }}
-            containerStyle={{ alignSelf: 'center' }}
-            onPress={handleStatusUpdate}
-          /> */}
           <CustomBtn
             title="Submit"
             containerStyle={{ marginBottom: 20, width: 100, alignSelf: 'center' }}

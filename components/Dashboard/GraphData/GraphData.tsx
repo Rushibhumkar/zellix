@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import DropdownRNE from "../../../myComponents/DropdownRNE/DropdownRNE";
 import HorizontalBarChart from "./HorizontalChart";
@@ -15,8 +21,7 @@ import {
 import DatePickerExpo from "../../../myComponents/DatePickerExpo/DatePickerExpo";
 import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
-import { myConsole } from "../../../hooks/useConsole";
-import { textPrimaryShadow, textWhiteShadow } from "../../../const/globalStyle";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function GraphData({
   header,
@@ -28,6 +33,7 @@ export default function GraphData({
   const [endDate, setEndDate] = useState(moment());
   const [summaryData, setSummaryData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
       console.warn("Invalid date range: Start Date must be before End Date.");
@@ -73,142 +79,145 @@ export default function GraphData({
   };
 
   return (
-    <View style={{ margin: 10, padding: 10 }}>
-      <CustomText
-        style={{
-          fontWeight: "500",
-          fontSize: 20,
-          marginBottom: 20,
+    <View style={styles.cardContainer}>
+      {/* ---------- Header ---------- */}
+      <CustomText style={styles.headerTitle}>{header}</CustomText>
+
+      {/* ---------- Dropdown ---------- */}
+      <DropdownRNE
+        containerStyle={styles.dropdownBox}
+        arrOfObj={dropdownList}
+        keyValueShowInBox="name"
+        keyValueGetOnSelect="value"
+        onChange={(selectedValue) => {
+          setSelectedItem(selectedValue);
         }}
-      >
-        {header}
-      </CustomText>
+        initialValue={"total"}
+      />
 
-      <View style={styles.mainContainer}>
-        <DropdownRNE
-          containerStyle={{ width: "70%" }}
-          arrOfObj={dropdownList}
-          keyValueShowInBox="name"
-          keyValueGetOnSelect="value"
-          onChange={(selectedValue) => {
-            setSelectedItem(selectedValue);
-          }}
-          initialValue={"total"}
+      {/* ---------- Date Pickers ---------- */}
+      <View style={styles.datePickersContainer}>
+        <DatePickerExpo
+          title="Start Date"
+          boxContainerStyle={styles.datePickerBox}
+          onSelect={setStartDate}
+          initialValue={startDate}
         />
+        <DatePickerExpo
+          title="End Date"
+          boxContainerStyle={styles.datePickerBox}
+          onSelect={setEndDate}
+          initialValue={endDate}
+        />
+      </View>
 
-        <View style={styles.datePickersContainer}>
-          <DatePickerExpo
-            title="Start Date"
-            boxContainerStyle={styles.datePickerBox}
-            onSelect={setStartDate}
-            initialValue={startDate}
-          />
-          <DatePickerExpo
-            title="End Date"
-            boxContainerStyle={styles.datePickerBox}
-            onSelect={setEndDate}
-            initialValue={endDate}
+      {/* ---------- Chart ---------- */}
+      {summaryData?.data?.length > 0 && (
+        <View style={{ marginTop: 20 }}>
+          <HorizontalBarChart
+            data={summaryData.data.map((item) => ({
+              label: `${formatLabel(item.status)}: ${item.totalValue}`,
+              value: item.totalValue,
+            }))}
+            maxValue={Math.max(
+              ...summaryData.data.map((item) => item.totalValue),
+              100
+            )}
           />
         </View>
+      )}
 
-        {summaryData?.data?.length > 0 && (
+      {/* ---------- Summary List ---------- */}
+      <View style={styles.summaryContainer}>
+        {summaryData?.data?.length > 0 ? (
+          summaryData?.data?.map((item, index) => (
+            <View key={index} style={styles.rowContainer}>
+              <CustomText style={styles.keyText}>
+                {formatLabel(item.status.substring(0, 25))}
+              </CustomText>
+              <CustomText style={styles.valueText}>
+                {item?.totalValue || "N/A"}
+              </CustomText>
+            </View>
+          ))
+        ) : (
           <>
-            <CustomText
-              style={{ fontSize: 15, color: color.green, fontWeight: "600" }}
-            >
-              Total
-            </CustomText>
-            <CustomText style={{ fontSize: 15, fontWeight: "bold" }}>
-              {summaryData?.data?.reduce(
-                (sum, item) => sum + (item.totalValue || 0),
-                0
-              )}{" "}
-              AED
-            </CustomText>
-
-            <CustomText style={{ fontSize: 15, fontWeight: "600" }}>
-              {startDate
-                ? new Date(startDate).toLocaleString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })
-                : "February 2025"}
-            </CustomText>
-
-            <HorizontalBarChart
-              data={summaryData.data.map((item) => ({
-                label: `${formatLabel(item.status)}: ${item.totalValue}`,
-                value: item.totalValue,
-              }))}
-              maxValue={Math.max(
-                ...summaryData.data.map((item) => item.totalValue),
-                100
-              )}
-            />
+            {isLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <NoDataFound width={200} height={200} />
+            )}
           </>
         )}
-
-        <View style={styles.summaryContainer}>
-          {summaryData?.data?.length > 0 ? (
-            summaryData?.data?.map((item, index) => (
-              <View key={index} style={styles.rowContainer}>
-                <CustomText style={styles.keyText}>
-                  {formatLabel(item.status.substring(0, 25))}
-                </CustomText>
-                <CustomText style={styles.valueText}>
-                  {item?.totalValue || "N/A"}
-                </CustomText>
-              </View>
-            ))
-          ) : (
-            <>
-              {isLoading ? (
-                <ActivityIndicator />
-              ) : (
-                <NoDataFound width={200} height={200} />
-              )}
-            </>
-          )}
-        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    borderWidth: 0.6,
-    borderColor: "#2D67C6",
-    padding: 10,
-    borderRadius: 16,
+  cardContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    marginHorizontal: 14,
+    marginTop: 10,
+    shadowColor: color.primaryColor,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 20,
+    color: "#1E3A8A",
+    marginBottom: 16,
+  },
+  dropdownBox: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+    marginBottom: 18,
+  },
+  datePickersContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  datePickerBox: {
+    width: "48%",
+  },
+  valueCard: {
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    alignItems: "flex-start",
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  summaryContainer: {
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: "#E2E8F0",
+    padding: 12,
+    backgroundColor: "#F8FAFC",
+    marginTop: 10,
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginVertical: 4,
   },
   keyText: {
     fontSize: 14,
-    fontWeight: "400",
+    fontWeight: "500",
+    color: "#1E293B",
   },
   valueText: {
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 14,
-  },
-  datePickerBox: {
-    marginBottom: 20,
-    width: "47%",
-  },
-  datePickersContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-    justifyContent: "space-between",
-  },
-  summaryContainer: {
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: color.gray,
-    padding: 10,
-    backgroundColor: "#FCFAFA",
+    color: "#0F172A",
   },
 });

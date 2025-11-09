@@ -39,6 +39,7 @@ import { myConsole } from "../../hooks/useConsole";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -251,6 +252,7 @@ const AllMeetings = () => {
             }}
             ListHeaderComponent={
               <>
+                
                 <SearchBar
                   onClickCancel={() => {
                     // setSearchValue('')
@@ -260,16 +262,7 @@ const AllMeetings = () => {
                   value={searchValue}
                   onChangeText={(v) => handleSearchChange(v)}
                 />
-                {/* <MeetingRowItem
-                item={{
-                  lead: { clientName: 'Client Name' },
-                  productPitch: 'Product Pitch',
-                  meetings: [{ status: 'Status' }],
-                  scheduleDate: 'Schedule Date'
-                }}
-                bgColor={color.saffronMango}
-
-              /> */}
+            
                 <MeetingListHeading />
               </>
             }

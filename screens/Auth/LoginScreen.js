@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
   Pressable,
@@ -25,6 +24,7 @@ import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { myConsole } from "../../hooks/useConsole";
 import { baseURL, setBaseUrl } from "../../services/authApi/axiosInstance";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
   const navigation = useNavigation();

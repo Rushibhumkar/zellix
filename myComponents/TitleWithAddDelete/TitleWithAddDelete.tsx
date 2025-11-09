@@ -1,6 +1,7 @@
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import React from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +14,8 @@ import LeadAssignIcon from "../../assets/svg/LeadAssignIcon";
 import ASFilterIcon from "../../assets/svg/ASFilterIcon";
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 interface TTitleWithAddDelete {
   arrLength: number;
@@ -40,46 +43,29 @@ const TitleWithAddDelete = ({
   onSelectLeadType,
 }: TTitleWithAddDelete) => {
   return (
-    <>
+    <LinearGradient
+      colors={["#2452FA", "#6CA8FF"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.gradientBackground}
+    >
       {arrLength === 0 && (
         <Pressable
           style={{
             flexDirection: "row",
             gap: 10,
             marginHorizontal: 20,
-            marginTop: 20,
-            paddingBottom: 10,
             alignItems: "center",
             justifyContent: "space-between",
           }}
           // onPress={() => navigate("DeveloperInformation")}
         >
-          {showAddBtn && (
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-              }}
-              onPress={!!onPressToNavigate ? onPressToNavigate : undefined}
-            >
-              <AntDesign name="plus-square" size={30} color="#2D67C6" />
-              <View>
-                <CustomText
-                  style={{
-                    fontSize: 18,
-                    color: "#2D67C6",
-                    fontWeight: "700",
-                    textDecorationLine: "underline",
-                  }}
-                >
-                  Add {title ?? "title"}
-                </CustomText>
-                {/* <View style={styles.divider}></View> */}
-              </View>
-            </TouchableOpacity>
-          )}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
             {!!onSelectLeadType && (
               <TouchableOpacity onPress={onSelectLeadType}>
                 <AntDesign
@@ -95,11 +81,24 @@ const TitleWithAddDelete = ({
             {!!onPressToFilter && (
               <TouchableOpacity
                 onPress={!!onPressToFilter ? onPressToFilter : undefined}
+                style={{
+                  backgroundColor: "#ffffff3d",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 12,
+                  flexDirection: "row",
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#ffffff88",
+                  paddingHorizontal: 16,
+                  paddingVertical: 5,
+                  width: 180,
+                }}
               >
-                <ASFilterIcon width={28} height={28} />
+                <Feather name="filter" color={"#fff"} size={18} />
+                <CustomText style={{ color: "#fff" }}>Filter</CustomText>
               </TouchableOpacity>
             )}
-            {/* onCloseSearch */}
             {!!onCloseSearch && (
               <TouchableOpacity
                 onPress={!!onCloseSearch ? onCloseSearch : undefined}
@@ -112,13 +111,36 @@ const TitleWithAddDelete = ({
                     marginLeft: 10,
                   }}
                 />
-                {/* <ASFilterIcon
-            width={28}
-            height={28}
-          /> */}
               </TouchableOpacity>
             )}
           </View>
+          {showAddBtn && (
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                backgroundColor: "#fff",
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 12,
+                ...shadowPrimaryColor,
+              }}
+              onPress={!!onPressToNavigate ? onPressToNavigate : undefined}
+            >
+              <AntDesign name="plus" size={16} color={color.primaryColor} />
+              <View>
+                <CustomText
+                  style={{
+                    color: color.primaryColor,
+                  }}
+                >
+                  Add {title ?? "title"}
+                </CustomText>
+                {/* <View style={styles.divider}></View> */}
+              </View>
+            </TouchableOpacity>
+          )}
         </Pressable>
       )}
 
@@ -170,10 +192,18 @@ const TitleWithAddDelete = ({
           </View>
         </View>
       )}
-    </>
+    </LinearGradient>
   );
 };
 
 export default TitleWithAddDelete;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  gradientBackground: {
+    width: "100%",
+    // paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
+    paddingBottom: 20,
+    // borderBottomLeftRadius: 24,
+    // borderBottomRightRadius: 24,
+  },
+});

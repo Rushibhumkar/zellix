@@ -15,11 +15,12 @@ import { summary } from "../../../services/hrmApi/userHrmApi";
 import { summaryList } from "../../../utils/data";
 import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
+import { LinearGradient } from "expo-linear-gradient";
 
-// Line component for a horizontal separator
+// Horizontal separator
 const Line = () => <View style={styles.line} />;
 
-// Helper function to format text values
+// Helper for formatting values
 const formatText = (value) => {
   if (typeof value === "number") {
     return new Intl.NumberFormat("en-US").format(value);
@@ -64,26 +65,23 @@ export default function DashboardCard({ title = "" }) {
   }, [startDate, endDate, selectedItem]);
 
   return (
-    <View style={styles.mainContainer}>
-      <View style={styles.textContainer}>
-        <CustomText style={styles?.titleText}>{title}</CustomText>
-      </View>
+    <View style={styles.cardWrapper}>
+      {/* Header */}
+      <CustomText style={styles.titleText}>{title}</CustomText>
 
       {/* Dropdown & Date Pickers */}
-      <View style={styles.dropdownContainer}>
+      <View style={styles.dropdownSection}>
         <DropdownRNE
-          containerStyle={{ width: "100%" }}
-          placeholder="Value"
+          containerStyle={styles.dropdownBox}
+          placeholder="Select Value"
           arrOfObj={summaryList}
           keyValueShowInBox="name"
           keyValueGetOnSelect="value"
-          onChange={(v) => {
-            setSelectedItem(v);
-          }}
+          onChange={(v) => setSelectedItem(v)}
           initialValue={"confirm_business"}
         />
 
-        <View style={styles.datePickersContainer}>
+        <View style={styles.datePickersRow}>
           <DatePickerExpo
             title="Start Date"
             boxContainerStyle={styles.datePickerBox}
@@ -99,24 +97,31 @@ export default function DashboardCard({ title = "" }) {
         </View>
       </View>
 
-      {/* Card Details */}
+      {/* Summary Cards */}
       {summaryData?.data?.length > 0 ? (
         summaryData?.data?.map((item) => (
-          <View key={item?._id} style={styles.cardContainer}>
+          <View key={item?._id} style={styles.innerCard}>
             <View style={styles.headerRow}>
-              <View style={{ width: "40%" }}>
-                <CustomText style={styles.keyStyle}>
-                  Sum of Value of Property
+              <View style={styles.valueBlock}>
+                <CustomText style={styles.labelText}>
+                  Sum of Property Value
                 </CustomText>
-                <CustomText>{formatText(item?.total?.total)}</CustomText>
+                <CustomText style={styles.valueText}>
+                  {formatText(item?.total?.total)}
+                </CustomText>
               </View>
-              <View style={{ width: "40%" }}>
-                <CustomText style={styles.keyStyle}>
+              <View style={styles.valueBlock}>
+                <CustomText style={styles.labelText}>
                   Sum of Gross Revenue
                 </CustomText>
-                <CustomText>{formatText(item?.commission?.total)}</CustomText>
+                <CustomText style={styles.valueText}>
+                  {formatText(item?.commission?.total)}
+                </CustomText>
               </View>
-              <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <TouchableOpacity
+                onPress={() => setIsExpanded(!isExpanded)}
+                style={styles.expandBtn}
+              >
                 <DownArrow
                   width={20}
                   height={20}
@@ -127,32 +132,32 @@ export default function DashboardCard({ title = "" }) {
               </TouchableOpacity>
             </View>
 
-            {/* Expanded Content */}
+            {/* Expanded Section */}
             {isExpanded && (
               <View>
                 <Line />
                 <View style={styles.detailsRow}>
-                  <View style={styles.infoBlock}>
-                    <CustomText style={styles.keyStyle}>
+                  <View style={styles.detailBox}>
+                    <CustomText style={styles.labelText}>
                       Sum of Net Revenue
                     </CustomText>
-                    <CustomText>
+                    <CustomText style={styles.valueText}>
                       {formatText(item?.clientLoyalty?.total)}
                     </CustomText>
                   </View>
-                  <View style={{ width: "30%" }}>
-                    <CustomText style={styles.keyStyle}>
+                  <View style={styles.detailBox}>
+                    <CustomText style={styles.labelText}>
                       Sum of Client Loyalty
                     </CustomText>
-                    <CustomText>
+                    <CustomText style={styles.valueText}>
                       {formatText(item?.netCommission?.total)}
                     </CustomText>
                   </View>
-                  <View style={{ width: "25%" }}>
-                    <CustomText style={styles.keyStyle}>
+                  <View style={styles.detailBox}>
+                    <CustomText style={styles.labelText}>
                       Sum of Broker
                     </CustomText>
-                    <CustomText>
+                    <CustomText style={styles.valueText}>
                       {formatText(item?.brokerReferral?.total)}
                     </CustomText>
                   </View>
@@ -163,9 +168,9 @@ export default function DashboardCard({ title = "" }) {
           </View>
         ))
       ) : (
-        <View style={{ marginVertical: 20 }}>
+        <View style={styles.emptyContainer}>
           {isLoading ? (
-            <ActivityIndicator />
+            <ActivityIndicator size="large" color={color.primaryColor} />
           ) : (
             <NoDataFound width={200} height={200} />
           )}
@@ -176,74 +181,88 @@ export default function DashboardCard({ title = "" }) {
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    borderWidth: 0.6,
-    borderColor: color.goldenYellow,
-    borderRadius: 20,
-    padding: 10,
-    paddingHorizontal: 16,
-    margin: 20,
-    backgroundColor: "#FCFAFA",
-  },
-  textContainer: {
-    alignSelf: "flex-start",
-    borderBottomWidth: 1,
-    borderBottomColor: color.goldenYellow,
-    paddingBottom: 5,
-  },
-  dropdownContainer: {
-    marginTop: 20,
-    justifyContent: "space-between",
-  },
-  datePickersContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-    justifyContent: "space-between",
-  },
-  datePickerBox: {
-    marginBottom: 20,
-    width: "47%",
-  },
-  cardContainer: {
-    backgroundColor: "white",
-    marginVertical: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 20,
-    borderRadius: 10,
-    borderWidth: 0.6,
-    borderColor: color.primaryColor,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "100%",
-    height: 40,
-    marginBottom: 20,
-  },
-  detailsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "100%",
-    marginTop: 10,
-  },
-  infoBlock: {
-    width: "30%",
-    paddingRight: 5,
-  },
-  line: {
-    borderBottomWidth: 0.8,
-    borderStyle: Platform.OS === "ios" ? "solid" : "dashed",
-    width: "100%",
-    marginVertical: 10,
-    borderBottomColor: "lightgrey",
-  },
-  keyStyle: {
-    fontWeight: "600",
+  cardWrapper: {
+    backgroundColor: "#FFFFFF",
+    // borderRadius: 20,
+    padding: 18,
+    marginHorizontal: 16,
+    marginTop: 16,
+    shadowColor: color.primaryColor,
+    shadowOpacity: 0.07,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 3,
   },
   titleText: {
     fontSize: 20,
+    color: "#1E3A8A",
+    marginBottom: 16,
+  },
+  dropdownSection: {
+    marginBottom: 20,
+  },
+  dropdownBox: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+  },
+  datePickersRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  datePickerBox: {
+    width: "48%",
+  },
+  innerCard: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    backgroundColor: "#F8FAFC",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  valueBlock: {
+    width: "40%",
+  },
+  labelText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  valueText: {
+    fontSize: 15,
     fontWeight: "700",
+    color: "#0F172A",
+    marginTop: 2,
+  },
+  expandBtn: {
+    padding: 4,
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  detailBox: {
+    width: "32%",
+  },
+  line: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+    marginVertical: 10,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 30,
   },
 });

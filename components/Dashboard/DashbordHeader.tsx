@@ -112,6 +112,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 50,
     backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "#ffffff29",
+    borderWidth: 2,
   },
   iconBadge: {
     position: "absolute",

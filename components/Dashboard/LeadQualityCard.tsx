@@ -1,3 +1,4 @@
+// LeadQualityCard.tsx
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -5,15 +6,13 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
-  Animated,
 } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
 import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
-import { color } from "../../const/color";
-import { shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 const LeadQualityCard = ({ onRefresh }) => {
   const {
@@ -27,42 +26,47 @@ const LeadQualityCard = ({ onRefresh }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const dropdownOptions = ["Yesterday", "Weekly", "Monthly", "Yearly"];
-
   const formattedKey = selectedOption.toLowerCase();
   const selectedData = leadQuality?.[formattedKey] || {};
+
+  const total = selectedData?.Total || 0;
 
   const chartData = [
     {
       value: selectedData?.Qualified || 0,
-      color: "#4C8BFE",
-      label: "Qualified",
-      text: `${Math.round(
-        ((selectedData?.Qualified || 0) / (selectedData?.Total || 1)) * 100
-      )}%`,
+      color: "#3B82F6", // Blue (Qualified)
     },
     {
       value: selectedData?.Disqualified || 0,
-      color: "#FF8A80",
-      label: "Disqualified",
-      text: `${Math.round(
-        ((selectedData?.Disqualified || 0) / (selectedData?.Total || 1)) * 100
-      )}%`,
+      color: "#60A5FA", // Lighter blue (Disqualified)
     },
     {
       value: selectedData?.Pending || 0,
-      color: "#FFC047",
-      label: "Pending",
-      text: `${Math.round(
-        ((selectedData?.Pending || 0) / (selectedData?.Total || 1)) * 100
-      )}%`,
+      color: "#93C5FD", // Soft blue (Pending)
+    },
+    {
+      value: selectedData?.Lost || 0,
+      color: "#E5E7EB", // Light gray (Lost)
     },
   ];
-
-  const total = selectedData?.Total || 0;
 
   useEffect(() => {
     if (onRefresh) refetchLeadQuality();
   }, [onRefresh]);
+
+  if (loadingLeadQuality)
+    return (
+      <View style={[styles.card, styles.center]}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+
+  if (errorLeadQuality)
+    return (
+      <View style={styles.card}>
+        <NoDataFound width={220} height={250} />
+      </View>
+    );
 
   return (
     <View style={styles.card}>
@@ -96,54 +100,88 @@ const LeadQualityCard = ({ onRefresh }) => {
         )}
       </View>
 
-      {/* ---------- Content ---------- */}
-      {loadingLeadQuality ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={color.primaryColor} />
-        </View>
-      ) : errorLeadQuality ? (
-        <NoDataFound width={220} height={250} />
-      ) : (
-        <>
-          {/* Pie Chart */}
-          <View style={styles.chartContainer}>
-            <PieChart
-              data={chartData}
-              donut
-              radius={90}
-              innerRadius={45}
-              showText
-              textColor="#fff"
-              textSize={12}
-              centerLabelComponent={() => (
-                <View style={styles.centerLabel}>
-                  <CustomText style={styles.totalText}>Total</CustomText>
-                  <CustomText style={styles.totalValue}>{total}</CustomText>
-                </View>
-              )}
-            />
-          </View>
+      {/* ---------- Chart ---------- */}
+      <View style={styles.chartWrapper}>
+        <PieChart
+          data={chartData}
+          donut
+          radius={80}
+          innerRadius={45}
+          showText={false}
+          strokeColor="#F8FAFC"
+          strokeWidth={2}
+          centerLabelComponent={() => (
+            <View style={styles.centerLabel}>
+              <Text style={styles.centerValue}>{total}</Text>
+              <Text style={styles.centerText}>Total</Text>
+            </View>
+          )}
+        />
+      </View>
 
-          {/* Legends */}
-          <View style={styles.legendContainer}>
-            {chartData.map((item, index) => (
-              <View key={index} style={styles.legendRow}>
-                <View style={[styles.dot, { backgroundColor: item.color }]} />
-                <CustomText style={styles.legendLabel}>{item.label}</CustomText>
-                <CustomText style={styles.legendValue}>{item.value}</CustomText>
-              </View>
-            ))}
-
-            <View style={styles.legendRow}>
-              <View style={[styles.dot, { backgroundColor: "#B30000" }]} />
-              <CustomText style={styles.legendLabel}>Lost</CustomText>
-              <CustomText style={styles.legendValue}>
-                {selectedData?.Lost || 0}
-              </CustomText>
+      {/* ---------- Legend ---------- */}
+      <View style={styles.legendContainer}>
+        <View style={styles.legendColumn}>
+          {/* Qualified */}
+          <View style={styles.legendItem}>
+            <View style={[styles.square, { backgroundColor: "#3B82F6" }]} />
+            <View>
+              <Text style={styles.legendLabel}>Qualified</Text>
+              <Text style={styles.legendValue}>
+                {selectedData?.Qualified || 0} (
+                {Math.round(
+                  ((selectedData?.Qualified || 0) / (total || 1)) * 100
+                )}
+                %)
+              </Text>
             </View>
           </View>
-        </>
-      )}
+
+          {/* Pending */}
+          <View style={styles.legendItem}>
+            <View style={[styles.square, { backgroundColor: "#93C5FD" }]} />
+            <View>
+              <Text style={styles.legendLabel}>Pending</Text>
+              <Text style={styles.legendValue}>
+                {selectedData?.Pending || 0} (
+                {Math.round(
+                  ((selectedData?.Pending || 0) / (total || 1)) * 100
+                )}
+                %)
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.legendColumn}>
+          {/* Disqualified */}
+          <View style={styles.legendItem}>
+            <View style={[styles.square, { backgroundColor: "#60A5FA" }]} />
+            <View>
+              <Text style={styles.legendLabel}>Disqualified</Text>
+              <Text style={styles.legendValue}>
+                {selectedData?.Disqualified || 0} (
+                {Math.round(
+                  ((selectedData?.Disqualified || 0) / (total || 1)) * 100
+                )}
+                %)
+              </Text>
+            </View>
+          </View>
+
+          {/* Lost */}
+          <View style={styles.legendItem}>
+            <View style={[styles.square, { backgroundColor: "#E5E7EB" }]} />
+            <View>
+              <Text style={styles.legendLabel}>Lost</Text>
+              <Text style={styles.legendValue}>
+                {selectedData?.Lost || 0} (
+                {Math.round(((selectedData?.Lost || 0) / (total || 1)) * 100)}%)
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
     </View>
   );
 };
@@ -151,35 +189,81 @@ const LeadQualityCard = ({ onRefresh }) => {
 export default LeadQualityCard;
 
 /* ------------------------------------
-   Modern Dashboard Styling
+   STYLES (exact visual fidelity)
 ------------------------------------ */
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 22,
-    padding: 20,
-    marginHorizontal: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginHorizontal: 14,
     marginTop: 10,
-    elevation: 4,
-    shadowColor: "#1E293B",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    ...shadowPrimaryColor,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
+  center: { justifyContent: "center", alignItems: "center" },
   header: {
+    marginBottom: 10,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    position: "relative",
-    marginBottom: 6,
+    justifyContent: "space-between",
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 17,
+    fontWeight: "500",
+    color: color.titleColor,
+  },
+  chartWrapper: {
+    alignItems: "center",
+  },
+  centerLabel: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerValue: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1E3A8A",
+  },
+  centerText: {
+    fontSize: 14,
+    color: "#64748B",
+    marginTop: 2,
+  },
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 14,
+    paddingHorizontal: 8,
+  },
+  legendColumn: {
+    flex: 1,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 6,
+  },
+
+  square: {
+    width: 12,
+    height: 12,
+    marginRight: 8,
+  },
+  legendLabel: {
+    flex: 1,
+    fontSize: 14,
     color: "#0F172A",
-    letterSpacing: 0.3,
-    fontFamily: "System",
+    fontWeight: "500",
+  },
+  legendValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#334155",
   },
   dropdown: {
     flexDirection: "row",
@@ -187,16 +271,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 0.8,
     borderColor: "#CBD5E1",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
   },
   dropdownText: {
     fontSize: 13,
     fontWeight: "600",
     marginRight: 6,
     color: "#334155",
-    fontFamily: "System",
   },
   dropdownList: {
     position: "absolute",
@@ -220,54 +303,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#1E293B",
     fontWeight: "500",
-  },
-  loadingContainer: {
-    height: 260,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  chartContainer: {
-    alignItems: "center",
-    marginVertical: 16,
-  },
-  centerLabel: {
-    alignItems: "center",
-  },
-  totalText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#6B7280",
-  },
-  totalValue: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1E293B",
-    marginTop: 4,
-  },
-  legendContainer: {
-    marginTop: 8,
-    paddingHorizontal: 8,
-  },
-  legendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 3,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
-  },
-  legendLabel: {
-    flex: 1,
-    fontSize: 15,
-    color: "#0F172A",
-    fontWeight: "500",
-  },
-  legendValue: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#111827",
   },
 });

@@ -32,4 +32,5 @@ export const color = {
   prussianBlue: "#002E6B",
   dullRed: "#C10404",
   goldenYellow: "#2D67C6",
+  titleColor: "#3c59a9ff",
 };

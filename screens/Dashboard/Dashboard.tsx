@@ -65,7 +65,6 @@ import LeadQualityCard from "../../components/Dashboard/LeadQualityCard";
 import LeadProjectCard from "../../components/Dashboard/LeadProjectCard";
 import ClosingLeadProjCard from "../../components/Dashboard/ClosingLeadProjCard";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
-//
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export let socket = io(`${baseURL}`);

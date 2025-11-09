@@ -4,51 +4,75 @@ import React from "react";
 import {
   Image,
   Platform,
-  SafeAreaView,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { color } from "../const/color";
 import CustomText from "../myComponents/CustomText/CustomText";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Header = ({ title, onBack }) => {
   const { goBack } = useNavigation();
+
   return (
-    <SafeAreaView style={{ backgroundColor: color.primary200 }}>
-      <StatusBar style="dark" />
-      <View style={styles.container}>
-        <TouchableOpacity
-          onPress={() => onBack ? onBack() : goBack()}>
-          <Image
-            style={{ marginTop: 8 }}
-            tintColor={color.white}
-            source={require("../assets/Backicon.png")} />
-        </TouchableOpacity>
-        <View>
-          <CustomText
-            style={{ color: "#FFFFFF", fontSize: 22, fontWeight: "600" }}
-          >
-            {title}
-          </CustomText>
-        </View>
-        <View></View>
-      </View>
-    </SafeAreaView>
+    <View style={{ backgroundColor: "#2452FA" }}>
+      {/* ✅ Gradient fully covers StatusBar area */}
+      <LinearGradient
+        colors={["#2452FA", "#6CA8FF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBackground}
+      >
+        <StatusBar translucent backgroundColor="transparent" style="light" />
+        <SafeAreaView style={{ backgroundColor: "transparent" }}>
+          <View style={styles.container}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => (onBack ? onBack() : goBack())}
+            >
+              <Image
+                tintColor={color.white}
+                source={require("../assets/Backicon.png")}
+                style={{width:16,height:16}}
+              />
+            </TouchableOpacity>
+
+            <CustomText style={styles.titleText}>{title}</CustomText>
+
+            {/* Placeholder for balance */}
+            <View style={{ width: 36 }} />
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: color.primary200,
-    flexDirection: 'row',
-    paddingTop: Platform.OS === 'ios' ? 20 : 50,
+  gradientBackground: {
+    width: "100%",
+    paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
     paddingBottom: 20,
-    paddingHorizontal: 20
-  }
+  },
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 12,
+    padding: 8,
+    borderColor: "#ffffff29",
+    borderWidth: 2,
+  },
+  titleText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+  },
 });
 
 export default Header;

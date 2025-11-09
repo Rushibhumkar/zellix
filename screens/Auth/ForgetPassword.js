@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   ImageBackground,
   View,
@@ -17,6 +16,7 @@ import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ForgetPassword = () => {
   const navigation = useNavigation();

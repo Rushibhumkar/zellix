@@ -175,8 +175,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#0F172A",
+    color: "#1E3A8A",
     letterSpacing: 0.3,
   },
   totalText: {

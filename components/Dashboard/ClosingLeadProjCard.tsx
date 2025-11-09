@@ -150,7 +150,7 @@ export default ClosingLeadProjCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#F9FAFB",
-    borderRadius: 24,
+    borderRadius: 16,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 16,
@@ -165,8 +165,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#0F172A",
+    color: "#1E3A8A",
     letterSpacing: 0.3,
   },
   totalText: {

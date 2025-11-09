@@ -38,7 +38,7 @@ const Card = ({ item, loading }) => {
             {title === "Leads" && (
               <Feather name="users" size={20} color={iconColor} />
             )}
-            {title === "Calls" && (
+            {title === "Calling Leads" && (
               <Feather name="phone" size={20} color={iconColor} />
             )}
             {title === "Bookings" && (
@@ -56,7 +56,12 @@ const Card = ({ item, loading }) => {
         </View>
 
         {/* Progress Bar */}
-        <View style={[styles.progressBar, { backgroundColor: iconColor }]} />
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: iconColor, width: "65%" },
+          ]}
+        />
       </TouchableOpacity>
     );
   };
@@ -77,7 +82,7 @@ const Card = ({ item, loading }) => {
         />
         <SingleCard
           count={item?.callingData ?? "1.4K"}
-          title="Calls"
+          title="Calling Leads"
           onPress={() => navigate("allLead")}
           isLoading={loading}
         />
@@ -131,8 +136,8 @@ const styles = StyleSheet.create({
   cardContainer: {
     width: "47%",
     backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    paddingVertical: 16,
+    borderRadius: 14,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     shadowColor: "#000",
     shadowOpacity: 0.06,
@@ -164,13 +169,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#1E1E1E",
-    marginTop: 2,
   },
   progressBar: {
     height: 4,
     borderRadius: 2,
-    marginTop: 12,
-    width: "65%",
+    marginTop: 6,
   },
   skeletonWrapper: {
     justifyContent: "center",
