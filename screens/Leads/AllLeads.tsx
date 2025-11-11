@@ -210,12 +210,12 @@ const AllLeads = ({ tabType }) => {
     "assign",
     user?.role
   );
-  const canLeadPoolManagement = checkPermission(
-    permission,
-    "Leads",
-    "leadPoolManagement",
-    user?.role
-  );
+  // const canLeadPoolManagement = checkPermission(
+  //   permission,
+  //   "Leads",
+  //   "leadPoolManagement",
+  //   user?.role
+  // );
   const canViewProjects = checkPermission(
     permission,
     "Leads",
@@ -291,7 +291,7 @@ const AllLeads = ({ tabType }) => {
             //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
             // }
           />
-          {isPoolRestricted === false && canLeadPoolManagement && (
+          {isPoolRestricted === false && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}

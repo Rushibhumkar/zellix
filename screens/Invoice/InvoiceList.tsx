@@ -15,6 +15,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { myConsole } from "../../hooks/useConsole";
+import CustomListPermissionMsg from "../../components/CustomListPermissionMsg";
 
 const InvoiceList = () => {
   const { navigate } = useNavigation();
@@ -31,7 +32,14 @@ const InvoiceList = () => {
     "viewDetails",
     user?.role
   );
-  myConsole("ksjdlfkjdlsf", permission);
+
+  const canViweList = checkPermission(
+    permission,
+    "Invoices",
+    "viewList",
+    user?.role
+  );
+
   // const debounceSearch = useCallback(
   //   debounce((value) => {
   //     console.log("Debounced search:", value);
@@ -57,10 +65,10 @@ const InvoiceList = () => {
         }}
         containerStyle={{ marginTop: 20 }}
       /> */}
-      <InfiniteScroll
-        query={individualIncentive}
-        renderItems={({ item, index }) => {
-          return (
+      {canViweList ? (
+        <InfiniteScroll
+          query={individualIncentive}
+          renderItems={({ item, index }) => (
             <InvoiceCard
               item={item}
               onPress={() => {
@@ -73,9 +81,11 @@ const InvoiceList = () => {
                 }
               }}
             />
-          );
-        }}
-      />
+          )}
+        />
+      ) : (
+        <CustomListPermissionMsg message="You are not authorized to view invoice list." />
+      )}
     </Container>
   );
 };

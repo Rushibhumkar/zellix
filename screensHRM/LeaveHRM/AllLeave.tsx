@@ -71,129 +71,97 @@ const AllLeave = () => {
   };
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
-  const canViewLeaves = checkPermission(
-    permission,
-    "Leaves",
-    "viewLeaves",
-    user?.role
-  );
-
-  const canAddAdvanceLeaves = checkPermission(
-    permission,
-    "Leaves",
-    "addAdvanceLeaves",
-    user?.role
-  );
-
   return (
     <ContainerHRM headingTitle="Leave Module">
-      {canViewLeaves ? (
-        <>
-          {currentDate < 25 && canAddAdvanceLeaves && (
-            <TouchableOpacity
-              onPress={() => navigate(routeLeave?.LeaveApplication)}
-              activeOpacity={0.5}
-              style={{
-                position: "absolute",
-                bottom: Platform.OS === "ios" ? 40 : 70,
-                right: 10,
-                zIndex: 5,
-              }}
-            >
-              <AddIcon />
-            </TouchableOpacity>
-          )}
-
-          <FlatList
-            ListHeaderComponent={
-              <>
-                <CircularBarChart type="leavesChart" />
-                {!isAgent && <CardHRM />}
-                {isAgent && <CircularBarChart type="attendanceChart" />}
-                <TitleHRM
-                  title="Total Leaves"
-                  marginBottom={20}
-                  onPressFilter={() =>
-                    popUpConfToast.plzWait({
-                      bodyComponent: () => (
-                        <SearchBox
-                          onPressSubmit={handleSearchSubmit}
-                          initialValue={searchSubmit}
-                        />
-                      ),
-                    })
-                  }
-                />
-                <HeaderRowLeave />
-              </>
-            }
-            contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
-            data={data}
-            renderItem={({ item }) => {
-              const canViewDetails = checkPermission(
-                permission,
-                "Leaves",
-                "viewLeaveDetails",
-                user?.role
-              );
-
-              return (
-                <RowLeaveInAllList
-                  containerStyle={{ marginBottom: 10 }}
-                  item={item}
-                  onPress={() => {
-                    if (canViewDetails) {
-                      navigate(routeLeave?.LeaveDetail, { item });
-                    } else {
-                      popUpConfToast.errorMessage(
-                        "You are not authorized to view leave details."
-                      );
-                    }
-                  }}
-                />
-              );
+      <>
+        {currentDate < 25 && (
+          <TouchableOpacity
+            onPress={() => navigate(routeLeave?.LeaveApplication)}
+            activeOpacity={0.5}
+            style={{
+              position: "absolute",
+              bottom: Platform.OS === "ios" ? 40 : 70,
+              right: 10,
+              zIndex: 5,
             }}
-            onEndReached={onEndReach}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isFetchingNextPage && (
-                <ActivityIndicator size={"small"} color={"#002E6B"} />
-              )
-            }
-            ListEmptyComponent={
-              <>
-                {isLoading && <LoadingCompo />}
-                {data?.length === 0 && <NoDataFound height={200} width={200} />}
-              </>
-            }
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          />
-          {/* <CustomBtn
+          >
+            <AddIcon />
+          </TouchableOpacity>
+        )}
+
+        <FlatList
+          ListHeaderComponent={
+            <>
+              <CircularBarChart type="leavesChart" />
+              {!isAgent && <CardHRM />}
+              {isAgent && <CircularBarChart type="attendanceChart" />}
+              <TitleHRM
+                title="Total Leaves"
+                marginBottom={20}
+                onPressFilter={() =>
+                  popUpConfToast.plzWait({
+                    bodyComponent: () => (
+                      <SearchBox
+                        onPressSubmit={handleSearchSubmit}
+                        initialValue={searchSubmit}
+                      />
+                    ),
+                  })
+                }
+              />
+              <HeaderRowLeave />
+            </>
+          }
+          contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
+          data={data}
+          renderItem={({ item }) => {
+            const canViewDetails = checkPermission(
+              permission,
+              "Leaves",
+              "viewLeaveDetails",
+              user?.role
+            );
+
+            return (
+              <RowLeaveInAllList
+                containerStyle={{ marginBottom: 10 }}
+                item={item}
+                onPress={() => {
+                  if (canViewDetails) {
+                    navigate(routeLeave?.LeaveDetail, { item });
+                  } else {
+                    popUpConfToast.errorMessage(
+                      "You are not authorized to view leave details."
+                    );
+                  }
+                }}
+              />
+            );
+          }}
+          onEndReached={onEndReach}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage && (
+              <ActivityIndicator size={"small"} color={"#002E6B"} />
+            )
+          }
+          ListEmptyComponent={
+            <>
+              {isLoading && <LoadingCompo />}
+              {data?.length === 0 && <NoDataFound height={200} width={200} />}
+            </>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+        {/* <CustomBtn
                 title='next'
                 disabled={!hasNextPage}
                 onPress={fetchNextPage}
                 isLoading={isFetchingNextPage}
             /> */}
-        </>
-      ) : (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 20,
-          }}
-        >
-          <CustomText
-            style={{ textAlign: "center", fontSize: 16, color: "#555" }}
-          >
-            You do not have permission to view leave records. Please contact
-            your administrator.
-          </CustomText>
-        </View>
-      )}
+      </>
     </ContainerHRM>
   );
 };

@@ -8,11 +8,16 @@ import { StatusBar } from "expo-status-bar";
 import Feather from "react-native-vector-icons/Feather";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { selectUser } from "../../redux/userSlice";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { myConsole } from "../../hooks/useConsole";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
   const { navigate } = useNavigation();
+  const insets = useSafeAreaInsets();
 
   return (
     <LinearGradient
@@ -25,12 +30,15 @@ const DashbordHeader = () => {
         <StatusBar style="light" />
 
         {/* Content Box (no gradient inside) */}
-        <View style={styles.contentBox}>
+        <View
+          style={[
+            styles.contentBox,
+            { marginBottom: insets?.bottom !== 0 ? -28 : insets.top - 20 },
+          ]}
+        >
           {/* Left Side — User Info */}
           <View style={styles.leftContainer}>
-            <CustomText style={styles.userName}>
-              {user?.name || "John Bosco"}
-            </CustomText>
+            <CustomText style={styles.userName}>{user?.name || ""}</CustomText>
             <CustomText style={styles.userRole}>
               {user?.role === "sup_admin"
                 ? "Super Admin"
@@ -41,7 +49,7 @@ const DashbordHeader = () => {
                 : "User"}
             </CustomText>
             <CustomText style={styles.userEmail}>
-              {user?.email || "john.bosco@zellix.com"}
+              {user?.email || ""}
             </CustomText>
           </View>
 
@@ -82,7 +90,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: Platform.OS === "ios" ? 16 : 15,
-    paddingBottom: 8,
+    // paddingBottom: 8,
   },
   leftContainer: {
     flex: 1,

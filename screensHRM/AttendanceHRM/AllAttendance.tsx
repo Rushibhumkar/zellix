@@ -102,189 +102,171 @@ const AllAttendance = () => {
   myConsole("issueAttList", issueAttList?.length);
   return (
     <ContainerHRM headingTitle="Attendance Module">
-      {checkPermission(permission, "HRMS", "viewAttendance", user?.role) ? (
-        <FlatList
-          ListHeaderComponent={
-            <>
-              <CircularBarChart type="attendanceChart" />
-              {!isAgent && <CardHRM />}
-              <FlatList
-                style={{ gap: 10 }}
-                ListHeaderComponent={
-                  <>
-                    <TitleHRM title="Issues" marginBottom={20} />
-                    {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
-                  </>
-                }
-                ListEmptyComponent={
-                  <>
-                    {isLoadingIssue && <LoadingCompo />}
-                    {issueAttList?.length === 0 && (
-                      <NoDataFound height={200} width={200} />
-                    )}
-                  </>
-                }
-                data={issueAttList ?? []}
-                renderItem={({ item }) => {
-                  return !isAgent ? (
-                    <RowAttendance
-                      item={item}
-                      onPress={() => {
-                        const canViewDetails = checkPermission(
-                          permission,
-                          "HRMS",
-                          "viewAttendanceDetails",
-                          user?.role
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <CircularBarChart type="attendanceChart" />
+            {!isAgent && <CardHRM />}
+            <FlatList
+              style={{ gap: 10 }}
+              ListHeaderComponent={
+                <>
+                  <TitleHRM title="Issues" marginBottom={20} />
+                  {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
+                </>
+              }
+              ListEmptyComponent={
+                <>
+                  {isLoadingIssue && <LoadingCompo />}
+                  {issueAttList?.length === 0 && (
+                    <NoDataFound height={200} width={200} />
+                  )}
+                </>
+              }
+              data={issueAttList ?? []}
+              renderItem={({ item }) => {
+                return !isAgent ? (
+                  <RowAttendance
+                    item={item}
+                    onPress={() => {
+                      const canViewDetails = checkPermission(
+                        permission,
+                        "HRMS",
+                        "viewAttendanceDetails",
+                        user?.role
+                      );
+
+                      if (canViewDetails) {
+                        navigate(routeAttendance.AttendanceDetail, { item });
+                      } else {
+                        popUpConfToast.errorMessage(
+                          "You are not authorized to view attendance details."
                         );
+                      }
+                    }}
+                  />
+                ) : (
+                  <RowSingleUserAtt
+                    item={item}
+                    onPress={() => {
+                      const canViewDetails = checkPermission(
+                        permission,
+                        "HRMS",
+                        "viewAttendanceDetails",
+                        user?.role
+                      );
 
-                        if (canViewDetails) {
-                          navigate(routeAttendance.AttendanceDetail, { item });
-                        } else {
-                          popUpConfToast.errorMessage(
-                            "You are not authorized to view attendance details."
-                          );
-                        }
-                      }}
-                    />
-                  ) : (
-                    <RowSingleUserAtt
-                      item={item}
-                      onPress={() => {
-                        const canViewDetails = checkPermission(
-                          permission,
-                          "HRMS",
-                          "viewAttendanceDetails",
-                          user?.role
+                      if (canViewDetails) {
+                        navigate(routeAttendance.AttendanceDetail, { item });
+                      } else {
+                        popUpConfToast.errorMessage(
+                          "You are not authorized to view attendance details."
                         );
-
-                        if (canViewDetails) {
-                          navigate(routeAttendance.AttendanceDetail, { item });
-                        } else {
-                          popUpConfToast.errorMessage(
-                            "You are not authorized to view attendance details."
-                          );
-                        }
+                      }
+                    }}
+                  />
+                );
+              }}
+              ListFooterComponent={
+                <View style={{ marginBottom: 20 }}>
+                  {isFetchingNextPageIssue && (
+                    <ActivityIndicator size={"small"} color={"#002E6B"} />
+                  )}
+                  {issueAttList?.length !== 0 && hasNextPageIssue && (
+                    <CustomBtn
+                      containerStyle={{
+                        width: 80,
+                        alignSelf: "flex-end",
+                        backgroundColor: color.prussianBlue,
                       }}
+                      title="Load More"
+                      textStyle={{ fontSize: 12 }}
+                      onPress={loadMoreIssueList}
                     />
-                  );
-                }}
-                ListFooterComponent={
-                  <View style={{ marginBottom: 20 }}>
-                    {isFetchingNextPageIssue && (
-                      <ActivityIndicator size={"small"} color={"#002E6B"} />
-                    )}
-                    {issueAttList?.length !== 0 && hasNextPageIssue && (
-                      <CustomBtn
-                        containerStyle={{
-                          width: 80,
-                          alignSelf: "flex-end",
-                          backgroundColor: color.prussianBlue,
-                        }}
-                        title="Load More"
-                        textStyle={{ fontSize: 12 }}
-                        onPress={loadMoreIssueList}
-                      />
-                    )}
-                  </View>
-                }
-              />
-              <TitleHRM
-                title="Attendance"
-                marginBottom={20}
-                onPressFilter={() =>
-                  popUpConfToast.plzWait({
-                    bodyComponent: () => (
-                      <SearchBox
-                        onPressSubmit={handleSearchSubmit}
-                        initialValue={searchSubmit}
-                      />
-                    ),
-                  })
-                }
-              />
-              {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
-            </>
-          }
-          // contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
-          data={data?.length > 0 ? data : []}
-          renderItem={({ item }) => {
-            return !isAgent ? (
-              <RowAttendance
-                item={item}
-                onPress={() => {
-                  const canViewDetails = checkPermission(
-                    permission,
-                    "HRMS",
-                    "viewAttendanceDetails",
-                    user?.role
-                  );
+                  )}
+                </View>
+              }
+            />
+            <TitleHRM
+              title="Attendance"
+              marginBottom={20}
+              onPressFilter={() =>
+                popUpConfToast.plzWait({
+                  bodyComponent: () => (
+                    <SearchBox
+                      onPressSubmit={handleSearchSubmit}
+                      initialValue={searchSubmit}
+                    />
+                  ),
+                })
+              }
+            />
+            {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
+          </>
+        }
+        // contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
+        data={data?.length > 0 ? data : []}
+        renderItem={({ item }) => {
+          return !isAgent ? (
+            <RowAttendance
+              item={item}
+              onPress={() => {
+                const canViewDetails = checkPermission(
+                  permission,
+                  "HRMS",
+                  "viewAttendanceDetails",
+                  user?.role
+                );
 
-                  if (canViewDetails) {
-                    navigate(routeAttendance.UserAttendanceList, { item });
-                  } else {
-                    popUpConfToast.errorMessage(
-                      "You are not authorized to view attendance details."
-                    );
-                  }
-                }}
-              />
-            ) : (
-              <RowSingleUserAtt
-                item={item}
-                onPress={() => {
-                  const canViewDetails = checkPermission(
-                    permission,
-                    "HRMS",
-                    "viewAttendanceDetails",
-                    user?.role
+                if (canViewDetails) {
+                  navigate(routeAttendance.UserAttendanceList, { item });
+                } else {
+                  popUpConfToast.errorMessage(
+                    "You are not authorized to view attendance details."
                   );
+                }
+              }}
+            />
+          ) : (
+            <RowSingleUserAtt
+              item={item}
+              onPress={() => {
+                const canViewDetails = checkPermission(
+                  permission,
+                  "HRMS",
+                  "viewAttendanceDetails",
+                  user?.role
+                );
 
-                  if (canViewDetails) {
-                    navigate(routeAttendance.AttendanceDetail, { item });
-                  } else {
-                    popUpConfToast.errorMessage(
-                      "You are not authorized to view attendance details."
-                    );
-                  }
-                }}
-              />
-            );
-          }}
-          contentContainerStyle={{ paddingBottom: 80, padding: 20, gap: 10 }}
-          onEndReached={onEndReach}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isFetchingNextPage && (
-              <ActivityIndicator size={"small"} color={"#002E6B"} />
-            )
-          }
-          ListEmptyComponent={
-            <>
-              {isLoading && <LoadingCompo />}
-              {data?.length === 0 && <NoDataFound height={200} width={200} />}
-            </>
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
-      ) : (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 20,
-          }}
-        >
-          <CustomText
-            style={{ textAlign: "center", fontSize: 16, color: "#555" }}
-          >
-            You do not have permission to view attendance records. Please
-            contact your administrator for access.
-          </CustomText>
-        </View>
-      )}
+                if (canViewDetails) {
+                  navigate(routeAttendance.AttendanceDetail, { item });
+                } else {
+                  popUpConfToast.errorMessage(
+                    "You are not authorized to view attendance details."
+                  );
+                }
+              }}
+            />
+          );
+        }}
+        contentContainerStyle={{ paddingBottom: 80, padding: 20, gap: 10 }}
+        onEndReached={onEndReach}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage && (
+            <ActivityIndicator size={"small"} color={"#002E6B"} />
+          )
+        }
+        ListEmptyComponent={
+          <>
+            {isLoading && <LoadingCompo />}
+            {data?.length === 0 && <NoDataFound height={200} width={200} />}
+          </>
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
     </ContainerHRM>
   );
 };

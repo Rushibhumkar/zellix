@@ -36,6 +36,8 @@ import { roleEnum } from "../utils/data";
 import UserAttendanceList from "../screensHRM/AttendanceHRM/UserAttendanceList";
 import InterviewActiveIcon from "../assets/svgHRM/InterviewActiveIcon";
 import InterviewUnActiveIcon from "../assets/svgHRM/InterviewUnActiveIcon";
+import { useSafeAreaInsets } from "react-native-safe-area-context"; 
+
 
 ////
 const Stack = createNativeStackNavigator();
@@ -46,6 +48,7 @@ export const HRManagementStack = () => {
     const { user } = useSelector(selectUser);
     const isAgent = user?.role === roleEnum.agent
       const isAdmin = user?.role === "sup_admin" || user?.role === "sub_admin";
+       const insets = useSafeAreaInsets(); 
     return (
         <Tab.Navigator
             screenOptions={{
@@ -53,10 +56,9 @@ export const HRManagementStack = () => {
                 headerShown: false,
                 tabBarShowLabel: false,
                 tabBarStyle: {
-                    height: Platform.OS === 'ios' ? 85 : 70,
-                    // backgroundColor: 'green',
-                    // marginBottom: 30,
-                    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+                   height: 84 + insets.bottom / 2,
+                      paddingBottom:insets.bottom+6,
+                    paddingTop: Platform.OS === 'ios' ? 20 : 20,
                 }
 
             }}

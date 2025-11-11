@@ -84,6 +84,7 @@ import AddReferrals from "../screens/Referrals/AddReferrals";
 import ReferralDetails from "../screens/Referrals/ReferralDetails";
 import CallingFocus from "../assets/svg/CallingFocus";
 import CallingInfocus from "../assets/svg/CallingInfocus";
+import { useSafeAreaInsets } from "react-native-safe-area-context"; 
 
 ////
 const Stack = createNativeStackNavigator();
@@ -99,7 +100,8 @@ export const navigate = (name, params) => {
 const BottomTabs = () => {
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === "agent";
-
+   const insets = useSafeAreaInsets(); 
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -109,7 +111,8 @@ const BottomTabs = () => {
         tabBarStyle: {
           backgroundColor: color.white,
           position: "absolute",
-          bottom: Platform.OS === "ios" ? 20 : 10,
+          // bottom: Platform.OS === "ios" ? 20 : 10,
+         bottom: Platform.OS === "ios" ? insets.bottom + 10 : insets.bottom + 5, 
           left: 15,
           right: 15,
           borderRadius: 50,

@@ -13,6 +13,8 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
+import { popUpConfToast } from "../../utils/toastModalByFunction";
+import CustomListPermissionMsg from "../../components/CustomListPermissionMsg";
 
 const ExpenseList = () => {
   const nav = useNavigation();
@@ -33,7 +35,7 @@ const ExpenseList = () => {
   );
   const canViewExpDetail = checkPermission(
     permission,
-    "viewDExpensesetails",
+    "Expenses",
     "viewDetails",
     user?.role
   );
@@ -61,11 +63,24 @@ const ExpenseList = () => {
     "deleteCategory",
     user?.role
   );
+  const canViewCat = checkPermission(
+    permission,
+    "Expenses",
+    "viewCategory",
+    user?.role
+  );
 
   const canViewExpenses = checkPermission(
     permission,
     "Expenses",
     "view",
+    user?.role
+  );
+
+  const canViewExpList = checkPermission(
+    permission,
+    "Expenses",
+    "viewList",
     user?.role
   );
 
@@ -76,9 +91,16 @@ const ExpenseList = () => {
         <TitleWithAddDelete
           arrLength={0}
           title="Expense"
-          onPressToNavigate={() => nav.navigate(routeExpense.ExpenseForm)}
+          onPressToNavigate={
+            canAddExpense
+              ? () => nav.navigate(routeExpense.ExpenseForm)
+              : () =>
+                  popUpConfToast.errorMessage(
+                    "You are not authorized to add expense details."
+                  )
+          }
         />
-        {canViewExpenses && (
+        {canViewCat && (
           <TouchableOpacity
             onPress={() => nav.navigate(routeExpense.ExpenseCategoryList)}
             activeOpacity={0.5}
@@ -92,15 +114,26 @@ const ExpenseList = () => {
             <LeadPoolIcon width={60} height={60} />
           </TouchableOpacity>
         )}
-        <InfiniteScroll
-          query={expenseQuery}
-          renderItems={({ item }) => (
-            <ExpenseCard
-              item={item}
-              onPress={() => nav.navigate("ExpenseDetail", { item })}
-            />
-          )}
-        />
+        {canViewExpList ? (
+          <InfiniteScroll
+            query={expenseQuery}
+            renderItems={({ item }) => (
+              <ExpenseCard
+                item={item}
+                onPress={
+                  canViewExpDetail
+                    ? () => nav.navigate("ExpenseDetail", { item })
+                    : () =>
+                        popUpConfToast.errorMessage(
+                          "You are not authorized to view expense details."
+                        )
+                }
+              />
+            )}
+          />
+        ) : (
+          <CustomListPermissionMsg message="You are not authorized to view expense list." />
+        )}
       </Container>
     </>
   );

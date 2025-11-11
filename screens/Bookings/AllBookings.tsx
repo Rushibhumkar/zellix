@@ -15,7 +15,11 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
-import { selectUser, setAdvanceBooking, setBookingQueryKey } from "../../redux/userSlice";
+import {
+  selectUser,
+  setAdvanceBooking,
+  setBookingQueryKey,
+} from "../../redux/userSlice";
 import DeleteIcon from "../../assets/svg/DeleteIcon";
 import { deleteBookings } from "../../services/rootApi/bookingApi";
 import { getAllBookingFunc } from "../../redux/action";
@@ -44,25 +48,24 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { sizes } from "../../const";
 
 let bookingStatus = [
-  { value: '', label: 'All' },
-  { value: 'confirm_business', label: 'Confirm Business' },
-  { value: 'eoi', label: 'EOI' },
-  { value: 'canceled', label: 'Canceled' },
-  { value: 'eoi_canceled', label: 'EOI Canceled' },
+  { value: "", label: "All" },
+  { value: "confirm_business", label: "Confirm Business" },
+  { value: "eoi", label: "EOI" },
+  { value: "canceled", label: "Canceled" },
+  { value: "eoi_canceled", label: "EOI Canceled" },
 ];
-
 
 const AllBookings = () => {
   const queryClient = useQueryClient();
   const { navigate } = useNavigation();
-  const { user, bookingQueryKey } = useSelector(selectUser)
+  const { user, bookingQueryKey } = useSelector(selectUser);
   // const { bookings, advanceBooking, } = useSelector(selectUser);
   // let copyBooking = advanceBooking !== null ? [...advanceBooking] : [...bookings]
   // const isFocused = useIsFocused();
   const dispatch = useDispatch();
   //
   // const [filteredData, setFilteredData] = useState(copyBooking)
-  const [searchValue, setSearchValue] = useState("")
+  const [searchValue, setSearchValue] = useState("");
   //
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,21 +76,20 @@ const AllBookings = () => {
     error: false,
   });
   const [refreshing, setRefreshing] = React.useState(false);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [businessStatus, setBusinessStatus] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [businessStatus, setBusinessStatus] = useState("");
   const modalBusinessStatus = useModal();
   const {
     data: bookingData,
     isLoading: loading,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = useGetBooking({
     search: debouncedSearch,
     businessStatus,
-    ...bookingQueryKey
-  })
-
+    ...bookingQueryKey,
+  });
 
   const handleSelect = (id) => {
     let temp = [...selectedBookings];
@@ -106,8 +108,8 @@ const AllBookings = () => {
       let res = await deleteBookings(selectedBookings);
       // await dispatch(getAllBookingFunc()); //editkaro
       queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getBooking]
-      })
+        queryKey: [queryKeyCRM.getBooking],
+      });
       setSelectedBookings([]);
       toggleModalClose();
       setSnackBar({
@@ -132,8 +134,8 @@ const AllBookings = () => {
   };
 
   const toggleModalClose = () => {
-    setModalVisible(false)
-  }
+    setModalVisible(false);
+  };
   //
   // useEffect(() => {
   //   if (!!searchValue) {
@@ -180,125 +182,142 @@ const AllBookings = () => {
   };
   const onEndReach = () => {
     if (hasNextPage && !loading && bookingData?.length > 0) {
-      fetchNextPage && fetchNextPage()
+      fetchNextPage && fetchNextPage();
     }
-  }
+  };
 
   const onRefresh = React.useCallback(async () => {
     try {
-      setRefreshing(true)
+      setRefreshing(true);
       await queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getBooking]
-      })
-    }
-    catch (e) {
-      console.log('refreshGetBooking', e)
-    }
-    finally {
-      setRefreshing(false)
+        queryKey: [queryKeyCRM.getBooking],
+      });
+    } catch (e) {
+      console.log("refreshGetBooking", e);
+    } finally {
+      setRefreshing(false);
     }
   }, []);
 
+  const { data: permission = {} } = useGetUserPermission(user?._id);
 
+  const canAddBooking = checkPermission(
+    permission,
+    "Bookings",
+    "add",
+    user?.role
+  );
+  const canViewBookingDetail = checkPermission(
+    permission,
+    "Bookings",
+    "viewDetails",
+    user?.role
+  );
+  const canDeleteBooking = checkPermission(
+    permission,
+    "Bookings",
+    "delete",
+    user?.role
+  );
 
-   const { data: permission = {} } = useGetUserPermission(user?._id);
-
-const canAddBooking = checkPermission(permission, "Bookings", "add", user?.role);
-const canViewBookingDetail = checkPermission(permission, "Bookings", "viewDetails", user?.role);
-const canDeleteBooking = checkPermission(permission, "Bookings", "delete", user?.role);
-const canViewBookings = checkPermission(permission, "Bookings", "view", user?.role);
-
-myConsole('canAddBooking',canAddBooking)
+  myConsole("canAddBooking", canAddBooking);
   return (
     <View style={{ flex: 1 }}>
       <Header title={"All Bookings"} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {/* {isLoading && <ActivityIndicator />} */}
-     {canViewBookings ? (
-  <Container>
-    <TitleWithAddDelete
-      arrLength={selectedBookings?.length}
-      title="Bookings"
-      showAddBtn={canAddBooking}
-      onPressToNavigate={canAddBooking ? () => navigate("DeveloperInformation") : undefined}
-      onPressToDelete={canDeleteBooking && user?.role === roleEnum?.sup_admin ? toggleModal : undefined}
-      onPressToFilter={() => navigate('AdvanceSearch', { type: 'booking' })}
-      onCloseSearch={bookingQueryKey !== null ? () => dispatch(setBookingQueryKey(null)) : undefined}
-      onSelectLeadType={() => {
-        modalBusinessStatus.openModal();
-      }}
-    />
 
-    <FlatList
-      data={bookingData}
-      renderItem={({ item, index }) => {
-        return (
-          <BookingRowItem
-            index={index}
-            item={item}
-            onPress={() =>
-              selectedBookings.length === 0
-                ? canViewBookingDetail
-                  ? navigate("BookingDetail", { item })
-                  : setSnackBar({
-                      visible: true,
-                      text: "You are not authorized to view booking details.",
-                      error: true,
-                    })
-                : handleSelect(item?._id)
-            }
-            onLongPress={
-              user?.role === roleEnum?.sup_admin
-                ? () => handleSelect(item?._id)
-                : undefined
-            }
-            selected={selectedBookings.indexOf(item?._id) !== -1}
-          />
-        );
-      }}
-      keyExtractor={(item) => item?._id}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 100 }}
-      ListHeaderComponent={
-        <>
-          <SearchBar
-            value={searchValue}
-            onClickCancel={() => handleSearchChange("")}
-            onChangeText={(v) => handleSearchChange(v)}
-          />
-          <BookingListHeading />
-        </>
-      }
-      ListHeaderComponentStyle={{ paddingTop: 5 }}
-      ListEmptyComponent={
-        loading ? <SkeletonLoadingBooking /> : <NoDataFound style={{marginTop:sizes.height/5}} showTxt />
-      }
-      onEndReached={onEndReach}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        isFetchingNextPage && (
-          <ActivityIndicator size={"small"} color={"#002E6B"} />
-        )
-      }
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    />
-  </Container>
-) : (
-  <View
-    style={{
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 20,
-    }}
-  >
-    <CustomText style={{ textAlign: "center", fontSize: 16, color: "#555" }}>
-      You do not have permission to view booking records. Please contact your administrator.
-    </CustomText>
-  </View>
-)}
+      <Container>
+        <TitleWithAddDelete
+          arrLength={selectedBookings?.length}
+          title="Bookings"
+          showAddBtn={canAddBooking}
+          onPressToNavigate={
+            canAddBooking
+              ? () => navigate("DeveloperInformation")
+              : () =>
+                  setSnackBar({
+                    visible: true,
+                    text: "You are not authorized to add booking details.",
+                    error: true,
+                  })
+          }
+          onPressToDelete={
+            canDeleteBooking && user?.role === roleEnum?.sup_admin
+              ? toggleModal
+              : undefined
+          }
+          onPressToFilter={() => navigate("AdvanceSearch", { type: "booking" })}
+          onCloseSearch={
+            bookingQueryKey !== null
+              ? () => dispatch(setBookingQueryKey(null))
+              : undefined
+          }
+          onSelectLeadType={() => {
+            modalBusinessStatus.openModal();
+          }}
+        />
+
+        <FlatList
+          data={bookingData}
+          renderItem={({ item, index }) => {
+            return (
+              <BookingRowItem
+                index={index}
+                item={item}
+                onPress={() =>
+                  selectedBookings.length === 0
+                    ? canViewBookingDetail
+                      ? navigate("BookingDetail", { item })
+                      : setSnackBar({
+                          visible: true,
+                          text: "You are not authorized to view booking details.",
+                          error: true,
+                        })
+                    : handleSelect(item?._id)
+                }
+                onLongPress={
+                  user?.role === roleEnum?.sup_admin
+                    ? () => handleSelect(item?._id)
+                    : undefined
+                }
+                selected={selectedBookings.indexOf(item?._id) !== -1}
+              />
+            );
+          }}
+          keyExtractor={(item) => item?._id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          ListHeaderComponent={
+            <>
+              <SearchBar
+                value={searchValue}
+                onClickCancel={() => handleSearchChange("")}
+                onChangeText={(v) => handleSearchChange(v)}
+              />
+              <BookingListHeading />
+            </>
+          }
+          ListHeaderComponentStyle={{ paddingTop: 5 }}
+          ListEmptyComponent={
+            loading ? (
+              <SkeletonLoadingBooking />
+            ) : (
+              <NoDataFound style={{ marginTop: sizes.height / 5 }} showTxt />
+            )
+          }
+          onEndReached={onEndReach}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage && (
+              <ActivityIndicator size={"small"} color={"#002E6B"} />
+            )
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      </Container>
 
       <DeleteModel
         isLoading={isLoading}
@@ -311,13 +330,18 @@ myConsole('canAddBooking',canAddBooking)
         hasBackdrop={true}
         visible={modalBusinessStatus.visible}
         onClose={modalBusinessStatus.closeModal}
-
       >
-        <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: 250 }}>
-          <CustomText
-            fontSize={16}
-            fontWeight="600"
-          >Business Status</CustomText>
+        <View
+          style={{
+            backgroundColor: "white",
+            padding: 20,
+            borderRadius: 10,
+            width: 250,
+          }}
+        >
+          <CustomText fontSize={16} fontWeight="600">
+            Business Status
+          </CustomText>
           <View style={{ height: 15 }} />
           {bookingStatus?.map((item, index) => {
             return (
@@ -326,12 +350,12 @@ myConsole('canAddBooking',canAddBooking)
                 title={item?.label}
                 isCheck={businessStatus === item?.value}
                 onPress={() => {
-                  setBusinessStatus(item?.value)
-                  modalBusinessStatus.closeModal()
+                  setBusinessStatus(item?.value);
+                  modalBusinessStatus.closeModal();
                 }}
                 marginBottom={15}
               />
-            )
+            );
           })}
         </View>
       </CustomModal>
@@ -339,7 +363,14 @@ myConsole('canAddBooking',canAddBooking)
   );
 };
 
-const BookingRowItem = ({ index, item, onPress, onLongPress, selected, bgColor }) => {
+const BookingRowItem = ({
+  index,
+  item,
+  onPress,
+  onLongPress,
+  selected,
+  bgColor,
+}) => {
   let statusColor = {
     approved: color.green,
     rejected: "red",
@@ -351,7 +382,11 @@ const BookingRowItem = ({ index, item, onPress, onLongPress, selected, bgColor }
         styles.mainlistcontainer,
         {
           marginHorizontal: 20,
-          backgroundColor: selected ? "rgba(252, 244, 227, 1)" : bgColor ? bgColor : "#FCFAFA",
+          backgroundColor: selected
+            ? "rgba(252, 244, 227, 1)"
+            : bgColor
+            ? bgColor
+            : "#FCFAFA",
         },
       ]}
       activeOpacity={0.5}
@@ -366,15 +401,19 @@ const BookingRowItem = ({ index, item, onPress, onLongPress, selected, bgColor }
           color={color.green}
         >{item?.status}</CustomText>
       </View> */}
-      <View style={{ flexDirection: "row", }}>
+      <View style={{ flexDirection: "row" }}>
         <View style={{ width: "10%", paddingEnd: 3 }}>
-          {index === 'S.No' ? <CustomText fontSize={14} fontWeight="400">
-            No.
-          </CustomText> : <CustomText fontSize={14} fontWeight="400">
-            {" "}
-            {index < 9 && "0"}
-            {index + 1}
-          </CustomText>}
+          {index === "S.No" ? (
+            <CustomText fontSize={14} fontWeight="400">
+              No.
+            </CustomText>
+          ) : (
+            <CustomText fontSize={14} fontWeight="400">
+              {" "}
+              {index < 9 && "0"}
+              {index + 1}
+            </CustomText>
+          )}
         </View>
         <View style={{ width: "33%", paddingEnd: 3 }}>
           <View>
@@ -403,25 +442,22 @@ const BookingRowItem = ({ index, item, onPress, onLongPress, selected, bgColor }
             // fontSize={12}
             fontWeight="600"
             color={statusColor[item?.status]}
-            style={{ textTransform: 'capitalize' }}
-          >{item?.status}
+            style={{ textTransform: "capitalize" }}
+          >
+            {item?.status}
           </CustomText>
         </View>
-        <View
-          style={{ width: '25%' }}>
-          <View style={{ alignItems: 'flex-end' }}>
-            <CustomText
-              marginBottom={5}
-              numberOfLines={1}
-            > {item?.propertyDetails}
+        <View style={{ width: "25%" }}>
+          <View style={{ alignItems: "flex-end" }}>
+            <CustomText marginBottom={5} numberOfLines={1}>
+              {" "}
+              {item?.propertyDetails}
             </CustomText>
-            <CustomText
-              fontSize={10}
-              fontWeight="300"
-            > {moment(item?.date).format('DD/MM/YYYY')}
+            <CustomText fontSize={10} fontWeight="300">
+              {" "}
+              {moment(item?.date).format("DD/MM/YYYY")}
             </CustomText>
           </View>
-
         </View>
       </View>
     </TouchableOpacity>
