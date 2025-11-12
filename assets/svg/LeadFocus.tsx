@@ -1,6 +1,6 @@
 import * as React from "react";
 import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
-const SVGComponent = (props) => (
+const LeadFocus = (props) => (
   <Svg
     width={42}
     height={40}
@@ -56,4 +56,4 @@ const SVGComponent = (props) => (
     </Defs>
   </Svg>
 );
-export default SVGComponent;
+export default LeadFocus;

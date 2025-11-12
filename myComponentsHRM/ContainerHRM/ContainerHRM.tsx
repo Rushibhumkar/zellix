@@ -6,22 +6,28 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { StatusBar } from "expo-status-bar";
-import { useNavigation } from "@react-navigation/native";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 import Setting from "../../assets/svg/Setting";
 import Notification from "../../assets/svg/Notification";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackIcon from "../../assets/svgHRM/BackIcon";
 import EditIcon from "../../assets/svgHRM/EditIcon";
 import DeleteIcon from "../../assets/svgHRM/DeleteIcon";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import LoadingModal from "../LoadingCompo/LoadingModal";
 import { routeExtra } from "../../utils/routesHRM";
 import ChangeStatus from "../../assets/svg/ChangeStatus";
+import { LinearGradient } from "expo-linear-gradient";
+import HRMMenuModal from "../../screensHRM/DashboardHRM/HRMMenuModal";
+import { removeItemValue } from "../../hooks/useAsyncStorage";
+import { onLogOutEmpty } from "../../redux/action";
+import { logOut } from "../../services/authApi/auth";
+import { Feather } from "@expo/vector-icons";
 
 interface TContainerHRM {
   children: ReactNode;
@@ -55,17 +61,46 @@ const ContainerHRM = ({
 }: TContainerHRM) => {
   const { navigate, goBack } = useNavigation();
   const { user } = useSelector(selectUser);
+  const dispatch = useDispatch();
+  const [logoutLoad, setLogoutLoad] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    try {
+      await logOut(user?._id);
+      await removeItemValue("token");
+      await removeItemValue("userDetail");
+      await dispatch(onLogOutEmpty());
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        })
+      );
+      setLogoutLoad(true);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    } finally {
+      setLogoutLoad(false);
+    }
+  };
+
   //HeaderHRM
   const HeaderHRM = () => {
     return (
-      <View
+      <LinearGradient
+        colors={["#2E67BE", "#4985F2"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: color.paleGrey,
+          paddingTop: 45, // ✅ include StatusBar height
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: 20,
-          paddingVertical: 10,
+          paddingBottom: 10,
         }}
       >
         {!!headingTitle ? (
@@ -74,18 +109,10 @@ const ContainerHRM = ({
           </CustomText>
         ) : (
           <View>
-            <CustomText
-              fontSize={20}
-              fontWeight="400"
-              color={color.hrmHeaderText}
-            >
+            <CustomText fontSize={20} fontWeight="400" color={color.white}>
               {user?.name}
             </CustomText>
-            <CustomText
-              fontSize={14}
-              fontWeight="400"
-              color={color.hrmHeaderText}
-            >
+            <CustomText fontSize={14} fontWeight="400" color={color.white}>
               {user?.email}
             </CustomText>
           </View>
@@ -99,31 +126,41 @@ const ContainerHRM = ({
           }}
         >
           {hasStatusIcon && (
-            <Pressable onPress={onStatusPress}>
+            <Pressable onPress={onStatusPress} style={styles.iconBtn}>
               <ChangeStatus />
             </Pressable>
           )}
-          <Pressable onPress={() => navigate(routeExtra?.NotificationHRM)}>
-            <Notification />
+          <Pressable
+            onPress={() => navigate(routeExtra?.NotificationHRM)}
+            style={styles.iconBtn}
+          >
+            <View style={styles.iconBadge} />
+            <Feather name="bell" size={22} color="#fff" />
           </Pressable>
-          <Pressable onPress={() => navigate(routeExtra?.SettingHRM)}>
-            <Setting />
+          <Pressable
+            onPress={() => setMenuVisible(true)}
+            style={styles.iconBtn}
+          >
+            <Feather name="menu" size={22} color="#fff" />
           </Pressable>
         </View>
-      </View>
+      </LinearGradient>
     );
   };
 
   const GoBackHeaderHRM = () => {
     return (
-      <View
+      <LinearGradient
+        colors={["#2E67BE", "#4985F2"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: color.paleGrey,
+          paddingTop: 45,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: 20,
-          paddingVertical: 10,
+          paddingBottom: 10,
         }}
       >
         <View
@@ -137,6 +174,7 @@ const ContainerHRM = ({
           <Pressable onPress={goBack}>
             <BackIcon />
           </Pressable>
+
           <CustomText
             fontSize={18}
             fontWeight="700"
@@ -173,13 +211,17 @@ const ContainerHRM = ({
             </Pressable>
           )}
         </View>
-      </View>
+      </LinearGradient>
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: color.paleGrey }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
       {!!isBAck?.title ? <GoBackHeaderHRM /> : <HeaderHRM />}
       <View
         style={[
@@ -195,11 +237,42 @@ const ContainerHRM = ({
       >
         {children}
       </View>
-      <LoadingModal isVisible={isLoading} />
-    </SafeAreaView>
+      <LoadingModal isVisible={logoutLoad} />
+      <HRMMenuModal
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        navigate={navigate}
+        handleLogout={handleLogout}
+        logoutLoading={logoutLoad}
+        user={user}
+      />
+    </View>
   );
 };
 
 export default ContainerHRM;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  iconWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  iconBtn: {
+    position: "relative",
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "#ffffff29",
+    borderWidth: 2,
+  },
+  iconBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#FF3B30",
+  },
+});

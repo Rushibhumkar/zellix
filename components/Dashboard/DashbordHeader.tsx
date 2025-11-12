@@ -1,8 +1,14 @@
 // src/components/Dashboard/DashbordHeader.tsx
-import { useNavigation } from "@react-navigation/native";
-import React from "react";
-import { Platform, Pressable, StyleSheet, View } from "react-native";
-import { useSelector } from "react-redux";
+import { CommonActions, useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import Feather from "react-native-vector-icons/Feather";
@@ -12,12 +18,41 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { myConsole } from "../../hooks/useConsole";
+import MenuModal from "./MenuModal";
+import { logOut } from "../../services/authApi/auth";
+import { removeItemValue } from "../../hooks/useAsyncStorage";
+import { onLogOutEmpty } from "../../redux/action";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
   const { navigate } = useNavigation();
   const insets = useSafeAreaInsets();
+  const [menuVisible, setMenuVisible] = React.useState(false);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      let a = await logOut(user?._id);
+      await removeItemValue("token");
+      await removeItemValue("userDetail");
+      await dispatch(onLogOutEmpty());
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        })
+      );
+      setMenuVisible(false);
+    } catch (error) {
+      console.error("Error logging out:", error);
+      setMenuVisible(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <LinearGradient
@@ -27,7 +62,10 @@ const DashbordHeader = () => {
       style={styles.gradientBackground}
     >
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="light" />
+        <StatusBar
+          style={menuVisible ? "dark" : "light"}
+          backgroundColor={menuVisible ? "#fff" : undefined}
+        />
 
         {/* Content Box (no gradient inside) */}
         <View
@@ -46,7 +84,7 @@ const DashbordHeader = () => {
                 ? "Sub Admin"
                 : user?.role === "admin"
                 ? "Admin"
-                : "User"}
+                : ""}
             </CustomText>
             <CustomText style={styles.userEmail}>
               {user?.email || ""}
@@ -63,13 +101,20 @@ const DashbordHeader = () => {
               <Feather name="bell" size={22} color="#fff" />
             </Pressable>
             <Pressable
-              onPress={() => navigate("Setting")}
+              onPress={() => setMenuVisible(true)}
               style={styles.iconBtn}
             >
-              <Feather name="settings" size={22} color="#fff" />
+              <Feather name="menu" size={22} color="#fff" />
             </Pressable>
           </View>
         </View>
+        <MenuModal
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          navigate={navigate}
+          handleLogout={handleLogout}
+          logoutLoading={isLoading}
+        />
       </SafeAreaView>
     </LinearGradient>
   );

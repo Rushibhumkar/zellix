@@ -1,6 +1,6 @@
 import * as React from "react";
 import Svg, { Rect, Path } from "react-native-svg";
-const SVGComponent = (props) => (
+const MeetingIcon = (props) => (
   <Svg
     width={36}
     height={36}
@@ -40,4 +40,4 @@ const SVGComponent = (props) => (
     />
   </Svg>
 );
-export default SVGComponent;
+export default MeetingIcon;

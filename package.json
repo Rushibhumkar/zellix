@@ -54,6 +54,7 @@
     "react-native-linear-gradient": "^2.8.3",
     "react-native-maps": "1.20.1",
     "react-native-modal": "^13.0.1",
+    "react-native-modals": "^0.22.3",
     "react-native-otp-inputs": "^7.4.0",
     "react-native-paper": "^5.11.3",
     "react-native-popup-confirm-toast": "^2.3.5",

@@ -51,7 +51,7 @@ const SearchBar = ({
         <TextInput
           style={styles.input}
           placeholder="Search..."
-          placeholderTextColor="#2E67BE" // ✅ visible placeholder on white
+          placeholderTextColor={color.mainTxtColor} // ✅ visible placeholder on white
           onChangeText={onChangeText}
           value={value}
           onFocus={() => setIsFocused(true)}

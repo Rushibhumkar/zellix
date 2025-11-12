@@ -1,23 +1,52 @@
 import * as React from "react";
-import Svg, { Rect, Path } from "react-native-svg";
+import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
 const LeaveActiveIcon = (props) => (
   <Svg
-    width={54}
-    height={54}
-    viewBox="0 0 54 54"
+    width={42}
+    height={40}
+    viewBox="0 0 42 40"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <Rect width={54} height={54} rx={27} fill="#2D67C6" />
     <Path
-      d="M29.2435 26.5251L27.75 28.0189L25.6857 27.5563C25.8805 27.2841 26.1785 26.6504 25.9353 26.4073C25.6572 26.1297 24.8712 26.5579 24.6958 26.7327L24.2046 27.2238L22.7573 26.8989L21.6705 27.9855L22.8714 28.5568L22.8273 28.6009L23.7419 29.5154L24.1131 29.1464L25.8148 29.9554L23.8097 31.9581H22.1117L21.5 32.5702L23.4368 33.0802L24.4214 34.0646L24.9309 36L25.5426 35.3884V33.6902L27.5467 31.6864L28.3558 33.3884L27.9857 33.7574L28.9014 34.6719L28.9444 34.6288L29.5163 35.8284L30.6031 34.7418L30.2781 33.2959L30.7688 32.8053C30.9442 32.6299 31.3714 31.8424 31.0937 31.5649C30.85 31.3217 30.2168 31.6186 29.9446 31.8144L29.4819 29.7499L30.9754 28.2561C31.4849 27.7462 32.9122 25.6402 32.385 25.1147C31.8593 24.5886 29.753 26.0146 29.243 26.524L29.2435 26.5251Z"
-      fill="#463812"
+      d="M0 16C0 7.16344 7.16344 0 16 0H26C34.8366 0 42 7.16344 42 16V24C42 32.8366 34.8366 40 26 40H16C7.16344 40 0 32.8366 0 24V16Z"
+      fill="url(#paint0_linear_102_239)"
     />
     <Path
-      d="M38.5 21.5H39V37C39 37.8284 38.3284 38.5 37.5 38.5H16.5C15.6716 38.5 15 37.8284 15 37V21.5H15.5H27H38.5ZM16 20.5V16.5H38V20.5H27H16Z"
-      stroke="#463812"
+      d="M25 19L27 21L31 17"
+      stroke="white"
+      strokeWidth={2.29167}
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
+    <Path
+      d="M25 29V27C25 25.9391 24.5786 24.9217 23.8284 24.1716C23.0783 23.4214 22.0609 23 21 23H15C13.9391 23 12.9217 23.4214 12.1716 24.1716C11.4214 24.9217 11 25.9391 11 27V29"
+      stroke="white"
+      strokeWidth={2.29167}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M18 19C20.2091 19 22 17.2091 22 15C22 12.7909 20.2091 11 18 11C15.7909 11 14 12.7909 14 15C14 17.2091 15.7909 19 18 19Z"
+      stroke="white"
+      strokeWidth={2.29167}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Defs>
+      <LinearGradient
+        id="paint0_linear_102_239"
+        x1={21}
+        y1={0}
+        x2={21}
+        y2={40}
+        gradientUnits="userSpaceOnUse"
+      >
+        <Stop stopColor="#2E67BE" />
+        <Stop offset={1} stopColor="#4985F2" />
+      </LinearGradient>
+    </Defs>
   </Svg>
 );
 export default LeaveActiveIcon;

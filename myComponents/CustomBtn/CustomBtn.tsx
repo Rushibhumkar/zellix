@@ -3,22 +3,22 @@ import {
   ActivityIndicator,
   StyleProp,
   StyleSheet,
-  Text,
   TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from "react-native";
 import { color } from "../../const/color";
-import { shadow1 } from "../../const/globalStyle";
 import CustomText from "../CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface TCustomBtn {
   title: string;
   onPress: () => void;
   isLoading?: boolean;
   disabled?: boolean;
-  containerStyle: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   isLoaderColor?: string;
 }
@@ -26,42 +26,49 @@ interface TCustomBtn {
 const CustomBtn = ({
   title,
   onPress,
-  isLoading,
-  disabled,
+  isLoading = false,
+  disabled = false,
   containerStyle,
   textStyle,
   isLoaderColor,
 }: TCustomBtn) => {
-  let loaderColor = isLoaderColor ?? color.white;
+  const loaderColor = isLoaderColor ?? color.white;
+
   return (
     <TouchableOpacity
       onPress={isLoading || disabled ? undefined : onPress}
       activeOpacity={isLoading || disabled ? 1 : 0.8}
       style={[
-        styles.container,
-        {
-          backgroundColor: disabled ? color?.gray : color.saffronMango,
-        },
+        styles.shadowWrapper, // ✅ shadow applied here
         containerStyle,
+        disabled && { opacity: 0.8 },
       ]}
+      disabled={disabled}
     >
-      <View style={styles.textView}>
-        <CustomText
-          style={[
-            styles.text,
-            { color: disabled ? color?.textGray : color.white },
-            textStyle,
-          ]}
-        >
-          {title}
-        </CustomText>
-        {isLoading && (
-          <ActivityIndicator
-            style={{ marginStart: 10 }}
-            color={disabled ? color?.textGray : loaderColor}
-          />
-        )}
-      </View>
+      <LinearGradient
+        colors={disabled ? ["#cccccc", "#cccccc"] : ["#2E67BE", "#4985F2"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.textView}>
+          <CustomText
+            style={[
+              styles.text,
+              { color: disabled ? color?.textGray : color.white },
+              textStyle,
+            ]}
+          >
+            {title}
+          </CustomText>
+          {isLoading && (
+            <ActivityIndicator
+              style={{ marginStart: 10 }}
+              color={disabled ? color?.textGray : loaderColor}
+            />
+          )}
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
@@ -69,23 +76,37 @@ const CustomBtn = ({
 export default CustomBtn;
 
 const styles = StyleSheet.create({
-  container: {
-    // backgroundColor: color.saffronMango,
+  shadowWrapper: {
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  gradientContainer: {
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    ...shadow1,
-  },
-  text: {
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    fontWeight: "600",
-    fontSize: 20,
   },
   textView: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  text: {
+    fontWeight: "600",
+    fontSize: 18,
+    letterSpacing: 0.5,
+    color: color.white,
   },
 });

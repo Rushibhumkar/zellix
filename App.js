@@ -12,8 +12,12 @@ import 'react-native-get-random-values';
 import UpdateChecker from './myComponents/UpdateChecker/UpdateChecker';
 import { myConsole } from './hooks/useConsole';
 import { LogBox } from 'react-native';
+import { ModalPortal } from "react-native-modals"; 
 //
-
+import { BackHandler } from "react-native";
+if (!BackHandler.removeEventListener) {
+  BackHandler.removeEventListener = (type, handler) => true;
+}
 
 // const socket = io('your_socket_server_url');
 
@@ -106,6 +110,7 @@ return () => {
           <Provider store={store}>
             <StackNavigation />
             <UpdateChecker />
+            <ModalPortal />
           </Provider>
         </QueryClientProvider>
       </PopupRootProvider>

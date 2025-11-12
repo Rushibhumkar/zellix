@@ -1,22 +1,36 @@
 import * as React from "react";
-import Svg, { Path, SvgProps } from "react-native-svg";
-const LeaveUnActiveIcon = (props: SvgProps) => (
-    <Svg
-        width={54}
-        height={54}
-        viewBox="0 0 54 54"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <Path
-            d="M29.2435 26.5251L27.75 28.0189L25.6857 27.5563C25.8805 27.2841 26.1785 26.6504 25.9353 26.4073C25.6572 26.1297 24.8712 26.5579 24.6958 26.7327L24.2046 27.2238L22.7573 26.8989L21.6705 27.9855L22.8714 28.5568L22.8273 28.6009L23.7419 29.5154L24.1131 29.1464L25.8148 29.9554L23.8097 31.9581H22.1117L21.5 32.5702L23.4368 33.0802L24.4214 34.0646L24.9309 36L25.5426 35.3884V33.6902L27.5467 31.6864L28.3558 33.3884L27.9857 33.7574L28.9014 34.6719L28.9444 34.6288L29.5163 35.8284L30.6031 34.7418L30.2781 33.2959L30.7688 32.8053C30.9442 32.6299 31.3714 31.8424 31.0937 31.5649C30.85 31.3217 30.2168 31.6186 29.9446 31.8144L29.4819 29.7499L30.9754 28.2561C31.4849 27.7462 32.9122 25.6402 32.385 25.1147C31.8593 24.5886 29.753 26.0146 29.243 26.524L29.2435 26.5251Z"
-            fill="#8F9BB3"
-        />
-        <Path
-            d="M38.5 21.5H39V37C39 37.8284 38.3284 38.5 37.5 38.5H16.5C15.6716 38.5 15 37.8284 15 37V21.5H15.5H27H38.5ZM16 20.5V16.5H38V20.5H27H16Z"
-            stroke="#8F9BB3"
-        />
-    </Svg>
+import Svg, { Rect, Path } from "react-native-svg";
+const LeaveUnActiveIcon = (props) => (
+  <Svg
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <Rect width={36} height={36} fill="white" />
+    <Path
+      d="M22 17L24 19L28 15"
+      stroke="#739FE1"
+      strokeWidth={1.83333}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M22 27V25C22 23.9391 21.5786 22.9217 20.8284 22.1716C20.0783 21.4214 19.0609 21 18 21H12C10.9391 21 9.92172 21.4214 9.17157 22.1716C8.42143 22.9217 8 23.9391 8 25V27"
+      stroke="#739FE1"
+      strokeWidth={1.83333}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M15 17C17.2091 17 19 15.2091 19 13C19 10.7909 17.2091 9 15 9C12.7909 9 11 10.7909 11 13C11 15.2091 12.7909 17 15 17Z"
+      stroke="#739FE1"
+      strokeWidth={1.83333}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
 );
 export default LeaveUnActiveIcon;

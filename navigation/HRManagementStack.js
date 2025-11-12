@@ -37,7 +37,10 @@ import UserAttendanceList from "../screensHRM/AttendanceHRM/UserAttendanceList";
 import InterviewActiveIcon from "../assets/svgHRM/InterviewActiveIcon";
 import InterviewUnActiveIcon from "../assets/svgHRM/InterviewUnActiveIcon";
 import { useSafeAreaInsets } from "react-native-safe-area-context"; 
-
+import LeadFocus from "../assets/svg/LeadFocus";
+import LeadIcons from "../assets/svg/Lead";
+import MeetingFocus from "../assets/svg/Meeting";
+import MeetingIcon from "../assets/svg/MeetingIcon";
 
 ////
 const Stack = createNativeStackNavigator();
@@ -69,9 +72,9 @@ export const HRManagementStack = () => {
                 options={{
                     tabBarIcon: ({ focused }) =>
                         focused ? (
-                            <DashboardActiveIcon />
+                            <DashboardIconFocus />
                         ) : (
-                            <DashboardUnActiveIcon />
+                            <DashboardIcon />
                         ),
                 }}
             />
@@ -81,9 +84,9 @@ export const HRManagementStack = () => {
                 options={{
                     tabBarIcon: ({ focused }) =>
                         focused ? (
-                            <UserActiveIcon />
+                            <LeadFocus />
                         ) : (
-                            <UserUnActiveIcon />
+                            <LeadIcons />
                         ),
                 }}
             />}
@@ -93,9 +96,9 @@ export const HRManagementStack = () => {
                 options={{
                     tabBarIcon: ({ focused }) =>
                         focused ? (
-                            <AttendanceActiveIcon />
+                            <MeetingFocus />
                         ) : (
-                            <AttendanceUnActiveIcon />
+                            <MeetingIcon />
                         ),
                 }}
             />

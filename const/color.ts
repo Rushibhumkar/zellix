@@ -33,4 +33,6 @@ export const color = {
   dullRed: "#C10404",
   goldenYellow: "#2D67C6",
   titleColor: "#3c59a9ff",
+  mainTxtColor: "#2E67BE",
+  color1: "#4985F2",
 };

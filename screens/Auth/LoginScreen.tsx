@@ -10,7 +10,7 @@ import {
   Pressable,
   Alert,
   Platform,
-  StatusBar
+  StatusBar,
 } from "react-native";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -25,10 +25,14 @@ import { myConsole } from "../../hooks/useConsole";
 import { baseURL, setBaseUrl } from "../../services/authApi/axiosInstance";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { color } from "../../const/color";
+import { Feather } from "@expo/vector-icons";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
+    // email: "kumarvishalpost1@gmail.com",
+    // password: "123456789",
     email: "",
     password: "",
   };
@@ -40,12 +44,12 @@ const LoginScreen = () => {
   });
 
   const handleFormSubmit = async (values) => {
-    const deviceId = await getData('deviceId');
+    const deviceId = await getData("deviceId");
     setIsLoading(true);
     let data = {
       email: values?.email,
       password: values?.password,
-      ...(typeof (deviceId) === 'string' && { deviceId: deviceId })
+      ...(typeof deviceId === "string" && { deviceId: deviceId }),
     };
 
     login(data)
@@ -61,7 +65,7 @@ const LoginScreen = () => {
         );
       })
       .catch((err) => {
-        myConsole('errssss', err)
+        myConsole("errssss", err);
         setSnackBar({
           visible: true,
           text: err?.response?.data,
@@ -73,11 +77,10 @@ const LoginScreen = () => {
       });
   };
 
-
   return (
     <>
       <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={'#fff'} barStyle="dark-content"/>
+        <StatusBar backgroundColor={"#fff"} barStyle="dark-content" />
         <ImageBackground
           source={require("../../assets/AuthBack.png")}
           style={styles.background}
@@ -93,7 +96,14 @@ const LoginScreen = () => {
                 validationSchema={LoginSchema}
                 onSubmit={handleFormSubmit}
               >
-                {({ handleChange, handleSubmit, values, errors, handleBlur, touched }) => {
+                {({
+                  handleChange,
+                  handleSubmit,
+                  values,
+                  errors,
+                  handleBlur,
+                  touched,
+                }) => {
                   return (
                     <View style={styles.logincontainer}>
                       <View style={{ flex: 1, alignItems: "center" }}>
@@ -102,14 +112,21 @@ const LoginScreen = () => {
                           style={styles.authlogo}
                         />
                       </View>
-                      <View style={{ flex: 1, textAlign: "center",marginTop:12 }}>
+                      <View
+                        style={{ flex: 1, textAlign: "center", marginTop: 12 }}
+                      >
                         <Pressable
                           onLongPress={async () => {
-                            const deviceId = await getData('deviceId');
-                            Alert.alert('deviceId', deviceId ?? 'null')
+                            const deviceId = await getData("deviceId");
+                            Alert.alert("deviceId", deviceId ?? "null");
                           }}
                         >
-                          <CustomText style={styles.loginheader}>Login</CustomText>
+                          <CustomText style={styles.welcomeTxt}>
+                            Welcome Back
+                          </CustomText>
+                          <CustomText style={styles.descTxt}>
+                            Sign in to your Zellix account
+                          </CustomText>
                         </Pressable>
                       </View>
                       <View style={styles.inputcontainer}>
@@ -118,10 +135,21 @@ const LoginScreen = () => {
                           value={values.email}
                           onChangeText={handleChange("email")}
                           placeholder="Email Address "
-                          onBlur={handleBlur('email')}
+                          onBlur={handleBlur("email")}
+                          leftIcon={
+                            <View style={styles.iconWrapper}>
+                              <Feather
+                                name="mail"
+                                size={20}
+                                color={color.color1}
+                              />
+                            </View>
+                          }
                         />
                         {errors.email && touched?.email && (
-                          <CustomText style={styles.errorText}>{errors.email}</CustomText>
+                          <CustomText style={styles.errorText}>
+                            {errors.email}
+                          </CustomText>
                         )}
                         <CustomInput
                           label=""
@@ -129,8 +157,16 @@ const LoginScreen = () => {
                           onChangeText={handleChange("password")}
                           placeholder="Password "
                           containerStyle={{ marginBottom: 15 }}
-                          onBlur={handleBlur('password')}
-
+                          onBlur={handleBlur("password")}
+                          leftIcon={
+                            <View style={styles.iconWrapper}>
+                              <Feather
+                                name="lock"
+                                size={20}
+                                color={color.color1}
+                              />
+                            </View>
+                          }
                           props={{
                             secureTextEntry: true,
                           }}
@@ -145,11 +181,10 @@ const LoginScreen = () => {
                         <CustomText
                           onPress={() => navigation.navigate("ForgetPassword")}
                           style={{
-                            color: "#2D67C6",
-                            fontSize: 18,
-                            fontWeight: 600,
-                            width: "55%",
+                            color: color.color1,
+                            fontSize: 16,
                             marginTop: 10,
+                            alignSelf: "flex-end",
                           }}
                         >
                           Forgot Password?
@@ -219,11 +254,18 @@ const styles = StyleSheet.create({
     marginVertical: 120,
     padding: 25,
   },
-  loginheader: {
-    fontSize: 35,
+  welcomeTxt: {
+    fontSize: 28,
     marginTop: 20,
-    fontWeight: "800",
     textAlign: "center",
+    color: color.mainTxtColor,
+  },
+  descTxt: {
+    fontSize: 18,
+    // marginTop: 12,
+    textAlign: "center",
+    fontWeight: "300",
+    color: "#739FE1",
   },
   inputcontainer: {
     flex: 1,
@@ -255,11 +297,19 @@ const styles = StyleSheet.create({
   //   fontSize: 16,
   // },
   authlogo: {
-    height:60,width:140
+    height: 60,
+    width: 140,
   },
   errorText: {
     color: "red",
     marginTop: -30,
+  },
+  iconWrapper: {
+    backgroundColor: "#F9FBFD",
+    borderWidth: 1,
+    borderColor: "#739fe13a",
+    padding: 6,
+    borderRadius: 12,
   },
 });
 export default LoginScreen;
