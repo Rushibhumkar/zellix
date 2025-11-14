@@ -43,7 +43,8 @@ const MainTitle = ({ title, icon, onPress, containerStyle }: TMainTitle) => {
         <CustomText
           style={{
             fontSize: 18,
-            fontWeight: "700",
+            fontWeight: "500",
+            color: color.mainTxtColor,
           }}
         >
           {title ?? "Title"}

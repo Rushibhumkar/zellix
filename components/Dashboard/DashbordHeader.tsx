@@ -71,7 +71,14 @@ const DashbordHeader = () => {
         <View
           style={[
             styles.contentBox,
-            { marginBottom: insets?.bottom !== 0 ? -28 : insets.top - 20 },
+            {
+              marginBottom:
+                insets?.bottom !== 0
+                  ? Platform.OS === "ios"
+                    ? -24
+                    : -28
+                  : insets.top - 20,
+            },
           ]}
         >
           {/* Left Side — User Info */}

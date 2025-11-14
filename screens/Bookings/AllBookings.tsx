@@ -25,7 +25,7 @@ import { deleteBookings } from "../../services/rootApi/bookingApi";
 import { getAllBookingFunc } from "../../redux/action";
 import { myConsole } from "../../hooks/useConsole";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { shadow2, shadow1 } from "../../const/globalStyle";
+import { shadow2, shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
@@ -404,11 +404,19 @@ const BookingRowItem = ({
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "10%", paddingEnd: 3 }}>
           {index === "S.No" ? (
-            <CustomText fontSize={14} fontWeight="400">
+            <CustomText
+              fontSize={14}
+              fontWeight="500"
+              color={color.mainTxtColor}
+            >
               No.
             </CustomText>
           ) : (
-            <CustomText fontSize={14} fontWeight="400">
+            <CustomText
+              fontSize={14}
+              fontWeight="500"
+              color={color.mainTxtColor}
+            >
               {" "}
               {index < 9 && "0"}
               {index + 1}
@@ -419,9 +427,10 @@ const BookingRowItem = ({
           <View>
             <CustomText
               fontSize={16}
-              fontWeight="700"
+              fontWeight="500"
               marginBottom={5}
               numberOfLines={2}
+              color={color.mainTxtColor}
             >
               {item?.projectName}
             </CustomText>
@@ -442,18 +451,26 @@ const BookingRowItem = ({
             // fontSize={12}
             fontWeight="600"
             color={statusColor[item?.status]}
-            style={{ textTransform: "capitalize" }}
+            style={{ textTransform: "capitalize", color: color.mainTxtColor }}
           >
             {item?.status}
           </CustomText>
         </View>
         <View style={{ width: "25%" }}>
           <View style={{ alignItems: "flex-end" }}>
-            <CustomText marginBottom={5} numberOfLines={1}>
+            <CustomText
+              marginBottom={5}
+              numberOfLines={1}
+              color={color.mainTxtColor}
+            >
               {" "}
               {item?.propertyDetails}
             </CustomText>
-            <CustomText fontSize={10} fontWeight="300">
+            <CustomText
+              fontSize={10}
+              fontWeight="300"
+              color={color.mainTxtColor}
+            >
               {" "}
               {moment(item?.date).format("DD/MM/YYYY")}
             </CustomText>
@@ -476,9 +493,9 @@ const styles = StyleSheet.create({
     marginTop: 25,
     borderWidth: 1,
     padding: 10,
-    borderRadius: 11,
-    borderColor: color.saffronMango,
-    ...shadow1,
+    borderRadius: 14,
+    borderColor: "#739fe141",
+    ...shadowPrimaryColor,
   },
 });
 

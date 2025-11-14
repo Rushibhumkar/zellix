@@ -279,9 +279,9 @@ const MeetingDetails = () => {
 
                   {user?._id === detail?.createdBy?._id && (
                     <CustomBtn
-                      title="Coverted to Booking"
+                      title="Convert to Booking"
                       // isLoading={isLoadingBooking}
-                      textStyle={{ fontSize: 12, color: "black" }}
+                      textStyle={{ fontSize: 12, color: "#fff" }}
                       onPress={handleConvertToBooking}
                       containerStyle={{
                         backgroundColor: "rgb(191, 191, 191)",
@@ -518,7 +518,7 @@ const MeetingDetails = () => {
                       <>
                         <CustomBtn
                           title="Reschedule"
-                          textStyle={{ fontSize: 12, color: "black" }}
+                          textStyle={{ fontSize: 12, color: "#fff" }}
                           isLoading={isLoading}
                           //  onPress={toggleModal}
                           onPress={rescheduleMeeting}
@@ -527,6 +527,7 @@ const MeetingDetails = () => {
                             height: 40,
                             width: "40%",
                             backgroundColor: "rgb(191, 191, 191)",
+                            zIndex:20
                           }}
                         />
                         {isCurrentDate && el?.status !== "conducted" && (

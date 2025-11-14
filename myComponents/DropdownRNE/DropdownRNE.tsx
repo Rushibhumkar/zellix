@@ -85,6 +85,7 @@ interface TDropdownRNE {
   isLoading: boolean;
   dpWidth: number;
   onSelect: (a: any) => void;
+  isCountryPicker?: boolean;
 }
 
 const DropdownRNE = ({
@@ -113,6 +114,7 @@ const DropdownRNE = ({
   isLoading = false,
   dpWidth,
   dropdownStyle,
+  isCountryPicker,
   onSelect,
 }: TDropdownRNE) => {
   //
@@ -143,7 +145,7 @@ const DropdownRNE = ({
         }
       }
     }
-  }, [allUsers, team, keyName]); // ✅ Add dependencies here to refresh when data changes
+  }, [allUsers, team, keyName]);
 
   //
   const [open, setOpen] = useState(false);
@@ -206,9 +208,11 @@ const DropdownRNE = ({
           // renderLeftIcon={() => (
           //     <UpDownIcon transform={[{ rotate: '180deg' }]} style={{ marginRight: 10 }} />
           // )}
-
           renderRightIcon={() => (
-            <UpDownIcon transform={[{ rotate: !open ? "180deg" : "0deg" }]} />
+            <UpDownIcon
+              color={color.mainTxtColor}
+              transform={[{ rotate: !open ? "180deg" : "0deg" }]}
+            />
           )}
           renderItem={renderItem}
           onFocus={() => setOpen((prev) => !prev)}
@@ -282,7 +286,10 @@ const DropdownRNE = ({
           }}
           selectedStyle={{ borderRadius: 12 }}
           renderRightIcon={() => (
-            <UpDownIcon transform={[{ rotate: !open ? "180deg" : "0deg" }]} />
+            <UpDownIcon
+              color={color.mainTxtColor}
+              transform={[{ rotate: !open ? "180deg" : "0deg" }]}
+            />
           )}
           renderItem={renderItem}
           onFocus={() => setOpen((prev) => !prev)}
@@ -327,11 +334,11 @@ export default DropdownRNE;
 const styles = StyleSheet.create({
   dropdown: {
     height: 40,
-    borderWidth: 0.6,
-    borderRadius: 12,
+    borderWidth: 1.6,
+    borderRadius: 14,
     paddingVertical: 6,
     paddingHorizontal: 15,
-    borderColor: color.primary200,
+    borderColor: "#739fe141",
     // backgroundColor: color.white
   },
   icon: {
@@ -350,10 +357,11 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontSize: 15,
-    color: "#a9a9a9",
+    color: color.mainTxtColorFade,
   },
   selectedTextStyle: {
     fontSize: 15,
+    color: color.mainTxtColor,
   },
   iconStyle: {
     width: 20,
@@ -368,8 +376,8 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   label: {
-    color: "#000000",
-    marginBottom: 10,
+    color: color.mainTxtColor,
+    marginBottom: 6,
     fontSize: 16,
     fontWeight: "500",
   },

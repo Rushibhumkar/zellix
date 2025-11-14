@@ -70,7 +70,7 @@ const DeleteModel = ({
                   }}
                 >
                   <CustomBtn
-                    textStyle={{ fontSize: 15, color: "black" }}
+                    textStyle={{ fontSize: 14 }}
                     title="Cancel"
                     onPress={toggleModal}
                     containerStyle={{
@@ -80,7 +80,7 @@ const DeleteModel = ({
                     }}
                   />
                   <CustomBtn
-                    textStyle={{ fontSize: 15 }}
+                    textStyle={{ fontSize: 14 }}
                     title="Delete"
                     containerStyle={{
                       backgroundColor: "rgb(211,46,47)",

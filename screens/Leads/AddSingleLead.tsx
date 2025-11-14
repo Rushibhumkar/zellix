@@ -191,7 +191,9 @@ const AddSingleLead = ({ data }) => {
       {errors.clientName && touched.clientName && (
         <CustomText style={styles.errorText}>{errors.clientName}</CustomText>
       )}
-      <CustomText style={{ fontSize: 16, fontWeight: 500 }}>
+      <CustomText
+        style={{ fontSize: 16, fontWeight: 500, color: color.mainTxtColor }}
+      >
         Client Mobile Number
       </CustomText>
       <MobileInput
@@ -239,12 +241,17 @@ const AddSingleLead = ({ data }) => {
       {errors.type && touched.type && (
         <CustomText style={styles.errorText}>{errors.type}</CustomText>
       )}
-      <CustomText fontSize={16} fontWeight="500" marginBottom={10}>
+      <CustomText
+        fontSize={16}
+        fontWeight="500"
+        marginBottom={6}
+        color={color.mainTxtColor}
+      >
         WhatsApp number
         <CustomText
           fontSize={12}
           fontWeight="400"
-          color={color.textGray}
+          color={color.mainTxtColor}
         >{`  (with country code)`}</CustomText>
       </CustomText>
 

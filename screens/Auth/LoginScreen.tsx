@@ -11,6 +11,7 @@ import {
   Alert,
   Platform,
   StatusBar,
+  TouchableOpacity,
 } from "react-native";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -27,6 +28,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color } from "../../const/color";
 import { Feather } from "@expo/vector-icons";
+import { iconWrapperStyle } from "../../const/globalStyle";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -135,9 +137,10 @@ const LoginScreen = () => {
                           value={values.email}
                           onChangeText={handleChange("email")}
                           placeholder="Email Address "
+                          isShadow
                           onBlur={handleBlur("email")}
                           leftIcon={
-                            <View style={styles.iconWrapper}>
+                            <View style={{ ...iconWrapperStyle }}>
                               <Feather
                                 name="mail"
                                 size={20}
@@ -157,9 +160,10 @@ const LoginScreen = () => {
                           onChangeText={handleChange("password")}
                           placeholder="Password "
                           containerStyle={{ marginBottom: 15 }}
+                          isShadow
                           onBlur={handleBlur("password")}
                           leftIcon={
-                            <View style={styles.iconWrapper}>
+                            <View style={{ ...iconWrapperStyle }}>
                               <Feather
                                 name="lock"
                                 size={20}
@@ -177,9 +181,11 @@ const LoginScreen = () => {
                           </CustomText>
                         )}
                       </View>
-                      <Pressable>
+
+                      <TouchableOpacity
+                        onPress={() => navigation.navigate("ForgetPassword")}
+                      >
                         <CustomText
-                          onPress={() => navigation.navigate("ForgetPassword")}
                           style={{
                             color: color.color1,
                             fontSize: 16,
@@ -189,7 +195,7 @@ const LoginScreen = () => {
                         >
                           Forgot Password?
                         </CustomText>
-                      </Pressable>
+                      </TouchableOpacity>
                       <CustomBtn
                         title="Login"
                         isLoading={isLoading}

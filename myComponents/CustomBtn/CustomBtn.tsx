@@ -77,7 +77,7 @@ export default CustomBtn;
 
 const styles = StyleSheet.create({
   shadowWrapper: {
-    borderRadius: 10,
+    borderRadius: 14,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -94,9 +94,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: Platform.OS === "ios" ? 14 : 10,
   },
   textView: {
     flexDirection: "row",

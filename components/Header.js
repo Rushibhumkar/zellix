@@ -28,7 +28,7 @@ const Header = ({ title, onBack }) => {
       >
         <StatusBar translucent backgroundColor="transparent" style="light" />
         <SafeAreaView style={{ backgroundColor: "transparent" }}>
-          <View style={[styles.container,{ marginBottom:insets?.bottom !==0 ?-10 :insets.top-8}]}>
+          <View style={[styles.container,{ marginBottom:insets?.bottom !==0 ?-20 :insets.top-8}]}>
             <TouchableOpacity
 
               style={styles.backButton}
@@ -56,12 +56,12 @@ const styles = StyleSheet.create({
   gradientBackground: {
     width: "100%",
     paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
-    // paddingBottom: 20,
   },
   container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
+    gap:12,
     paddingHorizontal: 20,
   },
   backButton: {

@@ -1,4 +1,10 @@
-import { AntDesign, Feather } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  FontAwesome5,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import React from "react";
 import {
   Platform,
@@ -15,7 +21,7 @@ import ASFilterIcon from "../../assets/svg/ASFilterIcon";
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
-import { shadowPrimaryColor } from "../../const/globalStyle";
+import { iconWrapperStyle, shadowPrimaryColor } from "../../const/globalStyle";
 
 interface TTitleWithAddDelete {
   arrLength: number;
@@ -47,7 +53,10 @@ const TitleWithAddDelete = ({
       colors={["#2452FA", "#6CA8FF"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.gradientBackground}
+      style={[
+        styles.gradientBackground,
+        { paddingBottom: arrLength > 0 ? 6 : 10 },
+      ]}
     >
       {arrLength === 0 && (
         <Pressable
@@ -67,15 +76,19 @@ const TitleWithAddDelete = ({
             }}
           >
             {!!onSelectLeadType && (
-              <TouchableOpacity onPress={onSelectLeadType}>
-                <AntDesign
-                  name="filter"
-                  size={35}
-                  color={color.saffronMango}
-                  style={{
-                    marginEnd: 10,
-                  }}
-                />
+              <TouchableOpacity
+                onPress={onSelectLeadType}
+                style={{
+                  backgroundColor: color.mainTxtColorFade,
+                  borderWidth: 1,
+                  borderColor: color.strokeColor,
+                  borderRadius: 14,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  marginRight: 8,
+                }}
+              >
+                <FontAwesome name="exchange" size={24} color={color.white} />
               </TouchableOpacity>
             )}
             {!!onPressToFilter && (
@@ -91,8 +104,12 @@ const TitleWithAddDelete = ({
                   borderWidth: 1,
                   borderColor: "#ffffff88",
                   paddingHorizontal: 16,
-                  paddingVertical: 5,
-                  width: 180,
+                  paddingVertical: Platform.OS === "ios" ? 7 : 5,
+                  width: !!onSelectLeadType
+                    ? Platform.OS === "ios"
+                      ? 170
+                      : 140
+                    : 180,
                 }}
               >
                 <Feather name="filter" color={"#fff"} size={18} />
@@ -122,7 +139,7 @@ const TitleWithAddDelete = ({
                 gap: 8,
                 backgroundColor: "#fff",
                 paddingHorizontal: 12,
-                paddingVertical: 6,
+                paddingVertical: Platform.OS === "ios" ? 8 : 6,
                 borderRadius: 12,
                 ...shadowPrimaryColor,
               }}
@@ -151,23 +168,32 @@ const TitleWithAddDelete = ({
             justifyContent: "space-between",
             alignItems: "center",
             paddingHorizontal: 25,
-            paddingTop: 20,
+            paddingTop: 8,
           }}
         >
-          <CustomText style={{ fontSize: 18, fontWeight: 500 }}>
+          <CustomText style={{ fontSize: 16, color: color.white }}>
             {arrLength} {title} Selected
           </CustomText>
           <View
-            style={{ flexDirection: "row", alignItems: "center" }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
             // onPress={handleDeleteBooking}
             // onPress={!!onPressToDelete ? onPressToDelete : undefined}
           >
             {!!onPressToDelete && (
               <TouchableOpacity
-                style={{ padding: 10 }}
+                style={{
+                  padding: 10,
+                  ...iconWrapperStyle,
+                  borderWidth: 1,
+                  borderColor: color.strokeColor,
+                }}
                 onPress={!!onPressToDelete ? onPressToDelete : undefined}
               >
-                <DeleteIcon />
+                <MaterialIcons
+                  name="delete-outline"
+                  size={24}
+                  color={color.mainTxtColor}
+                />
               </TouchableOpacity>
             )}
             {!!onPressToEdit && (
@@ -181,12 +207,20 @@ const TitleWithAddDelete = ({
 
             {!!onPressToAssignLead && (
               <TouchableOpacity
-                style={{ padding: 10 }}
+                style={{
+                  paddingHorizontal: 10,
+                  ...iconWrapperStyle,
+                  borderColor: color.strokeColor,
+                }}
                 onPress={
                   !!onPressToAssignLead ? onPressToAssignLead : undefined
                 }
               >
-                <LeadAssignIcon />
+                <FontAwesome5
+                  name="clipboard-list"
+                  size={24}
+                  color={color.mainTxtColor}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -202,7 +236,6 @@ const styles = StyleSheet.create({
   gradientBackground: {
     width: "100%",
     // paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
-    paddingBottom: 20,
     // borderBottomLeftRadius: 24,
     // borderBottomRightRadius: 24,
   },

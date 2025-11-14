@@ -41,6 +41,7 @@ import { useGetLeadById, useGetLeadInAddMeeting } from "../../hooks/useCRMgetQue
 import { debounce } from "../../utils/debounce";
 import IllusionBox from "../../myComponents/IllusionBoxForUpdate/IllusionBox";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
+import { color } from "../../const/color";
 
 const agents = [
   { label: "Ahmed", value: "Ahmed" },
@@ -229,7 +230,7 @@ const AddMeeting = () => {
             />
 
             <CustomText
-              style={{ fontSize: 20, fontWeight: "bold", marginBottom: 20 }}
+              style={{ fontSize: 20, fontWeight: "bold", marginBottom: 20 ,color:color.mainTxtColor}}
             >
               Client{" "}
             </CustomText>
@@ -243,7 +244,7 @@ const AddMeeting = () => {
               }) || []}
               keyValueGetOnSelect="_id"
               keyValueShowInBox="name"
-              label="Lead"
+              label="Choose Lead"
               placeholder="Lead..."
               onChange={(a) => setFieldValue("lead", a)}
               containerStyle={{ marginBottom: 15 }}
@@ -335,6 +336,7 @@ const AddMeeting = () => {
                   marginBottom={10}
                   fontSize={16}
                   fontWeight="500"
+                  style={{color:color.mainTxtColor}}
                 >
                   Meeting Location
                 </CustomText>

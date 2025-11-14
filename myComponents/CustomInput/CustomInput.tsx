@@ -28,6 +28,7 @@ interface TCustomInput {
   multiline?: boolean;
   numberOfLines?: number;
   leftIcon?: React.ReactNode;
+  isShadow?: boolean;
 }
 
 const CustomInput = ({
@@ -45,6 +46,7 @@ const CustomInput = ({
   multiline,
   numberOfLines,
   leftIcon,
+  isShadow = false,
 }: TCustomInput) => {
   const [isFocused, setIsFocused] = useState(false);
   return (
@@ -59,13 +61,13 @@ const CustomInput = ({
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
-            paddingVertical: leftIcon ? 4 : 0,
+            paddingVertical: leftIcon ? 4 : Platform.OS === "ios" ? 12 : 2,
           },
           {
             borderColor: isFocused ? "#2d68c672" : "#739fe141",
             borderWidth: isFocused ? 1.8 : 1.8,
-            // ✅ fix release font issue
           },
+          isShadow && { ...shadow2 },
         ]}
       >
         {leftIcon && leftIcon}
@@ -73,15 +75,15 @@ const CustomInput = ({
           value={typeof value === "number" ? value.toString() : value}
           onChangeText={onChangeText}
           style={[
-            inputStyle,
             {
-              color: "#000",
+              color: color.mainTxtColor,
               flex: 1,
               fontFamily: Platform.OS === "android" ? "sans-serif" : undefined,
             },
+            inputStyle,
           ]}
           placeholder={placeholder || label || "placeholder"}
-          placeholderTextColor="#888" // ✅ visible placeholder
+          placeholderTextColor={color.mainTxtColorFade} // ✅ visible placeholder
           onFocus={() => setIsFocused(true)}
           onBlur={(e) => {
             setIsFocused(false);
@@ -103,20 +105,20 @@ export default CustomInput;
 
 const styles = StyleSheet.create({
   inputlable: {
-    color: "#000000",
-    marginBottom: 10,
+    color: color.mainTxtColor,
+    marginBottom: 6,
+    marginLeft: 2,
     fontSize: 16,
     fontWeight: "500",
   },
   input: {
-    borderColor: "#739FE1",
+    borderColor: color.strokeColor,
     backgroundColor: "#ffffffff",
     borderWidth: 1.5,
     borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: Platform.OS === "ios" ? 6 : 2,
     color: "#000000", // ✅ Explicitly add this
-    ...shadow2,
   },
 
   errorText: {

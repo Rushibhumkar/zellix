@@ -100,13 +100,13 @@ const MobileInput = ({
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginTop: 8,
+            marginTop: 4,
             marginBottom: 15,
           }}
         >
           <DropdownRNE
             placeholderStyle={"#a9a9a9"}
-            dropdownStyle={{ height: 30, paddingTop: 4, borderRadius: 12 }}
+            dropdownStyle={{ height: 40, paddingTop: 4, borderRadius: 12 }}
             containerStyle={{
               width: "28%",
             }}

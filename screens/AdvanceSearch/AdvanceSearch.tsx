@@ -265,7 +265,7 @@ const AdvanceSearch = () => {
                 { name: "Lead", _id: "lead" },
                 { name: "Booking", _id: "booking" },
               ]}
-              containerStyle={{ marginBottom: 15 }}
+              containerStyle={{ marginBottom: 15, marginTop: 12 }}
               initialValue={category}
               onChange={(v) => {
                 setCategory(v);
@@ -368,11 +368,15 @@ const AdvanceSearch = () => {
                     <DropdownRNE
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{ width: 150, marginEnd: 10 }}
+                      dropdownStyle={{
+                        height: Platform.OS === "ios" ? 40 : 46,
+                      }}
                       placeholder="+91"
                       onChange={(v) => setFieldValue("code", v)}
                       initialValue={values?.code}
                       isAdvanceSearch
                       mode="modal"
+                      isCountryPicker
                     />
                   )}
                   {!onlyBooking && (
@@ -382,12 +386,15 @@ const AdvanceSearch = () => {
                         width: 80,
                         marginEnd: 10,
                       }}
-                      dropdownStyle={{ height: 32 }}
+                      dropdownStyle={{
+                        height: Platform.OS === "ios" ? 40 : 46,
+                      }}
                       placeholder="+91"
                       onChange={(v) => setFieldValue("code", v)}
                       initialValue={values?.code}
                       isAdvanceSearch
                       mode="modal"
+                      isCountryPicker
                     />
                   )}
 
@@ -398,6 +405,7 @@ const AdvanceSearch = () => {
                     placeholder="Mobile Number"
                     onChangeText={handleChange("mobile")}
                     value={values?.mobile}
+                    noShadow
                   />
                 </View>
               </>

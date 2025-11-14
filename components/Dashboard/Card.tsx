@@ -120,7 +120,7 @@ const SkeletonRow = () => (
 const styles = StyleSheet.create({
   wrapper: {
     width: sizes.width,
-    marginLeft: -22,
+    marginLeft: -20,
     marginTop: -20,
     backgroundColor: "transparent",
     borderBottomLeftRadius: 24,

@@ -21,7 +21,7 @@ import Container from "../../myComponents/Container/Container";
 import { getAllMeetingFunc } from "../../redux/action";
 import { deleteMeeting } from "../../services/rootApi/meetingApi";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import DeleteModel from "../../myComponents/DeleteModel";
@@ -43,10 +43,9 @@ import { LinearGradient } from "expo-linear-gradient";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
-  schedule: "#C9DCFA",   // lighter blue for planned
-  conducted: "#E4EEFC",  // pale bluish-white for done
+  schedule: "#C9DCFA", // lighter blue for planned
+  conducted: "#E4EEFC", // pale bluish-white for done
 };
-
 
 const AllMeetings = () => {
   const queryClient = useQueryClient();
@@ -252,7 +251,6 @@ const AllMeetings = () => {
             }}
             ListHeaderComponent={
               <>
-                
                 <SearchBar
                   onClickCancel={() => {
                     // setSearchValue('')
@@ -262,13 +260,17 @@ const AllMeetings = () => {
                   value={searchValue}
                   onChangeText={(v) => handleSearchChange(v)}
                 />
-            
+
                 <MeetingListHeading />
               </>
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
             ListEmptyComponent={
-              loading ? <SkeletonLoadingMeeting /> : <NoDataFound style={{marginTop:sizes.height/5}} showTxt/>
+              loading ? (
+                <SkeletonLoadingMeeting />
+              ) : (
+                <NoDataFound style={{ marginTop: sizes.height / 5 }} showTxt />
+              )
             }
             onEndReached={onEndReach}
             onEndReachedThreshold={0.5}
@@ -296,7 +298,13 @@ const AllMeetings = () => {
   );
 };
 
-const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
+const MeetingRowItem = ({
+  item,
+  onPress,
+  onLongPress,
+  selected,
+  bgColor = "#fff",
+}) => {
   return (
     <TouchableOpacity
       style={[
@@ -311,25 +319,35 @@ const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
       onLongPress={onLongPress}
     >
       <View style={{ width: "36%" }}>
-        <CustomText style={{ color: "#000000", fontWeight: "700", fontSize: 16 }}>
+        <CustomText
+          style={{ color: color.mainTxtColor, fontWeight: "600", fontSize: 14 }}
+        >
           {item?.lead?.clientName}
         </CustomText>
-        <CustomText style={{ color: "#000000", fontWeight: "300", fontSize: 14 }}>
+        <CustomText
+          style={{
+            color: color.darkBluTxtColor,
+            fontWeight: "300",
+            fontSize: 14,
+          }}
+        >
           {item?.productPitch}
         </CustomText>
       </View>
       <View style={{ width: "32%", alignItems: "center" }}>
         <CustomText
           style={{
-            color: "#000000",
-            fontWeight: "400",
-            fontSize: 16,
+            color: color.mainTxtColor,
+            fontWeight: "600",
+            fontSize: 14,
             textTransform: "capitalize",
           }}
         >
           {item?.meetings[item?.meetings?.length - 1]?.status}
         </CustomText>
-        <CustomText>
+        <CustomText
+          style={{ color: color.strokeColor, fontWeight: "300", fontSize: 14 }}
+        >
           <CustomText>
             {`${item?.createdBy?.name} (${item?.createdBy?.role
               ?.replace(/_/g, " ")
@@ -338,15 +356,25 @@ const MeetingRowItem = ({ item, onPress, onLongPress, selected, bgColor }) => {
         </CustomText>
       </View>
       <View style={{ width: "32%", alignItems: "flex-end" }}>
-        <CustomText style={{ color: "#000000", fontWeight: "700", fontSize: 12 }}>
+        <CustomText
+          style={{ color: color.mainTxtColor, fontWeight: "600", fontSize: 12 }}
+        >
           Scheduled
         </CustomText>
         {item?.scheduleDate === "Schedule Date" ? (
-          <CustomText style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
+          <CustomText
+            style={{
+              color: color.strokeColor,
+              fontWeight: "300",
+              fontSize: 12,
+            }}
+          >
             Schedule Date
           </CustomText>
         ) : (
-          <CustomText style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}>
+          <CustomText
+            style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}
+          >
             {moment(item?.scheduleDate).format("DD/MM/YYYY")}
           </CustomText>
         )}
@@ -365,16 +393,15 @@ const styles = StyleSheet.create({
     marginVertical: -2,
   },
   mainlistcontainer: {
-    marginTop: 25,
-    // backgroundColor: "#FCFAFA",
+    marginTop: 20,
     borderWidth: 1,
-    padding: 13,
-    borderRadius: 11,
-    borderColor: "#2D67C6",
+    padding: 12,
+    borderRadius: 14,
+    borderColor: color.strokeColor,
     flexDirection: "row",
     justifyContent: "space-between",
     marginHorizontal: 20,
-    ...shadow1,
+    ...shadowPrimaryColor,
   },
 });
 

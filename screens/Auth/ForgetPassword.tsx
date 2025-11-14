@@ -17,6 +17,8 @@ import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { iconWrapperStyle } from "../../const/globalStyle";
+import { Feather } from "@expo/vector-icons";
 
 const ForgetPassword = () => {
   const navigation = useNavigation();
@@ -30,18 +32,13 @@ const ForgetPassword = () => {
 
   return (
     <>
-
       <SafeAreaView style={styles.container}>
-
         <ImageBackground
           source={require("../../assets/AuthBack.png")}
           style={styles.background}
         >
           <ScrollView>
-            <CustomSnackBar
-              snackbar={snackBar}
-              setSnackbar={setSnackBar}
-            />
+            <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
             <Formik
               initialValues={initialValues}
               validationSchema={ForgetSchema}
@@ -67,18 +64,23 @@ const ForgetPassword = () => {
             >
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <View style={styles.forgetcontainer}>
-
                   <CustomText
                     style={{
                       fontSize: 30,
                       textAlign: "center",
                       fontWeight: "600",
+                      color: color.mainTxtColor,
                     }}
                   >
                     Forget Password
                   </CustomText>
                   <CustomText
-                    style={{ textAlign: "center", marginTop: 40, fontSize: 22 }}
+                    style={{
+                      textAlign: "center",
+                      marginTop: 40,
+                      fontSize: 22,
+                      color: color.mainTxtColor,
+                    }}
                   >
                     Email Verification
                   </CustomText>
@@ -89,9 +91,17 @@ const ForgetPassword = () => {
                       value={values.email}
                       onChangeText={handleChange("email")}
                       placeholder="Please Enter Your Email"
+                      isShadow
+                      leftIcon={
+                        <View style={{ ...iconWrapperStyle }}>
+                          <Feather name="mail" size={20} color={color.color1} />
+                        </View>
+                      }
                     />
-                    {(errors.email && touched?.email) && (
-                      <CustomText style={styles.errorText}>{errors.email}</CustomText>
+                    {errors.email && touched?.email && (
+                      <CustomText style={styles.errorText}>
+                        {errors.email}
+                      </CustomText>
                     )}
 
                     <CustomBtn

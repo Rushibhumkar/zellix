@@ -138,7 +138,7 @@ const CustomGooglePlacesSearch = ({
                   paddingVertical: 5,
                   paddingHorizontal: 10,
                   height: 40,
-                  color: "black",
+                  color: color.mainTxtColor,
                   fontSize: 15,
                   alignItems: "center",
                   justifyContent: "center",
@@ -163,17 +163,19 @@ const CustomGooglePlacesSearch = ({
   return (
     <TouchableOpacity
       style={{
-        borderWidth: 0.5,
+        borderWidth: 1.8,
         minHeight: 40,
-        borderRadius: 10,
+        borderRadius: 14,
         padding: 11,
         justifyContent: "center",
         marginBottom: 15,
-        borderColor: color.primaryColor,
+        borderColor: "#739fe141",
       }}
       onPress={chooseLocation}
     >
-      <CustomText color={!defaultValue ? "gray" : "black"}>
+      <CustomText
+        color={!defaultValue ? color.mainTxtColorFade : color.mainTxtColor}
+      >
         {defaultValue || "Meeting location"}
       </CustomText>
     </TouchableOpacity>

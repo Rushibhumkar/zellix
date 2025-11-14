@@ -1,12 +1,17 @@
-import { Text, StyleSheet, View } from "react-native";
 import React from "react";
-import { color } from "../../const/color";
+import { StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import CustomText from "../../myComponents/CustomText/CustomText";
 
 const BookingListHeading = () => {
   return (
     <View style={{ paddingHorizontal: 20 }}>
-      <View style={styles.headingContainer}>
+      <LinearGradient
+        colors={["#2452FAFF", "#6CA8FF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.headingContainer}
+      >
         <View style={{ flexDirection: "row", gap: 5 }}>
           <CustomText style={styles.headingText}>No</CustomText>
           <CustomText numberOfLines={1} style={styles.headingText}>
@@ -17,20 +22,23 @@ const BookingListHeading = () => {
         <CustomText numberOfLines={1} style={styles.headingText}>
           Project Details
         </CustomText>
-      </View>
+      </LinearGradient>
     </View>
   );
 };
+
 export default BookingListHeading;
+
 const styles = StyleSheet.create({
   headingContainer: {
-    backgroundColor: color.primary200,
     flexDirection: "row",
-    padding: 10,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 11,
     marginBottom: -8,
-    marginTop: 25,
-    justifyContent: "space-between",
+    marginTop: 16,
   },
   headingText: {
     fontSize: 14,

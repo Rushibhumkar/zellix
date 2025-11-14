@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +17,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import Feather from "react-native-vector-icons/Feather";
+import { StatusBar } from "expo-status-bar";
 
 interface MenuModalProps {
   visible: boolean;
@@ -45,7 +47,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
         marginTop: 0,
         backgroundColor: "#fff",
         position: "relative",
-        top: -100,
+        top: Platform.OS === "ios" ? -140 : -120,
         borderTopRightRadius: 0,
         borderTopLeftRadius: 0,
         borderBottomLeftRadius: 22,
@@ -55,11 +57,12 @@ const MenuModal: React.FC<MenuModalProps> = ({
       <ModalContent
         style={{
           backgroundColor: "#fff",
-          paddingTop: 20,
+          paddingTop: Platform.OS === "ios" ? 70 : 28,
           borderBottomLeftRadius: 20,
           borderBottomRightRadius: 20,
         }}
       >
+        <StatusBar backgroundColor={color.white} style="dark" />
         {/* Header with Cross */}
         <View
           style={{

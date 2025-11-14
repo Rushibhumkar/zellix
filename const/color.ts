@@ -34,5 +34,8 @@ export const color = {
   goldenYellow: "#2D67C6",
   titleColor: "#3c59a9ff",
   mainTxtColor: "#2E67BE",
+  mainTxtColorFade: "#2e68be4a",
   color1: "#4985F2",
+  strokeColor: "#739FE1",
+  darkBluTxtColor: "#07091bff",
 };

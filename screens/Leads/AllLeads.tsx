@@ -430,11 +430,11 @@ const LeadRowItem = ({
       onLongPress={onLongPress}
     >
       <View style={{ flexDirection: "row" }}>
-        <View style={{ width: "10%", paddingEnd: 3 }}>
+        <View style={{ width: "8%", paddingEnd: 2 }}>
           {index === "S.No" ? (
             <CustomText
               style={{
-                color: "#000000",
+                color: color.mainTxtColor,
                 fontWeight: "500",
                 textTransform: "capitalize",
               }}
@@ -444,7 +444,7 @@ const LeadRowItem = ({
           ) : (
             <CustomText
               style={{
-                color: "#000000",
+                color: color.mainTxtColor,
                 fontWeight: "500",
                 textTransform: "capitalize",
               }}
@@ -454,13 +454,13 @@ const LeadRowItem = ({
             </CustomText>
           )}
         </View>
-        <View style={{ width: "36%", paddingEnd: 3 }}>
+        <View style={{ width: "37%", paddingEnd: 2 }}>
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "700",
-              fontSize: 16,
+              fontSize: 15,
               textTransform: "capitalize",
             }}
           >
@@ -469,7 +469,7 @@ const LeadRowItem = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.strokeColor,
               fontWeight: "400",
               marginTop: 5,
               textTransform: "capitalize",
@@ -478,11 +478,11 @@ const LeadRowItem = ({
             {item?.clientMobile}
           </CustomText>
         </View>
-        <View style={{ width: "27%", paddingEnd: 3, alignItems: "center" }}>
+        <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -491,13 +491,19 @@ const LeadRowItem = ({
             {item?.assign?.name}
           </CustomText>
         </View>
-        <View style={{ width: "27%", alignItems: "flex-end", paddingEnd: 3 }}>
+        <View
+          style={{
+            width: "25%",
+            alignItems: "flex-start",
+            paddingEnd: 2,
+          }}
+        >
           <CustomText
             numberOfLines={2}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
-              fontSize: 16,
+              fontSize: 15,
               textTransform: "capitalize",
               //textTransform: "capitalize",
             }}
@@ -523,8 +529,8 @@ const styles = StyleSheet.create({
     marginTop: 25,
     borderWidth: 1,
     padding: 13,
-    borderRadius: 10,
-    borderColor: "#2D67C6",
+    borderRadius: 14,
+    borderColor: color.mainTxtColorFade,
     marginHorizontal: 20,
     ...shadowPrimaryColor,
   },

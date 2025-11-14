@@ -33,6 +33,7 @@ const SearchBar = ({
       end={{ x: 1, y: 1 }}
       style={{
         paddingBottom: 21,
+        paddingTop: 8,
         marginTop: -6,
         borderBottomLeftRadius: 26,
         borderBottomRightRadius: 26,
@@ -47,7 +48,7 @@ const SearchBar = ({
           containerStyle,
         ]}
       >
-        <EvilIcons name="search" size={20} color={"#739FE1"} />
+        <EvilIcons name="search" size={20} color={color.strokeColor} />
         <TextInput
           style={styles.input}
           placeholder="Search..."
@@ -59,7 +60,12 @@ const SearchBar = ({
           selectionColor={color.primaryColor}
         />
         {!!value && (
-          <Entypo name="cross" size={20} color="#444" onPress={onClickCancel} />
+          <AntDesign
+            name="close"
+            size={18}
+            color={color.mainTxtColor}
+            onPress={onClickCancel}
+          />
         )}
       </View>
     </LinearGradient>
@@ -75,13 +81,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     marginHorizontal: 25,
-    height: 45,
+    height: Platform.OS === "ios" ? 45 : 40,
     backgroundColor: "#fff",
   },
   input: {
     flex: 1,
     paddingHorizontal: 10,
-    color: "#000", // ✅ ensure text is visible on Android production builds
+    color: color.mainTxtColor, // ✅ ensure text is visible on Android production builds
     fontFamily: Platform.OS === "android" ? "sans-serif" : undefined, // ✅ fix release font issue
   },
 });

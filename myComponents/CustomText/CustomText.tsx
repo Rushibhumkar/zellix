@@ -63,18 +63,20 @@ const CustomText: React.FC<CustomTextProps> = ({
   fontSize,
   children,
   fontWeight,
-  color = "#000",
+  color = "black",
   marginBottom,
   numberOfLines,
   style,
 }) => {
-  const textStyle: StyleProp<TextStyle> = {
-    fontSize: fontSize,
-    color: color,
-    fontWeight: fontWeight,
-    marginBottom: marginBottom,
-    ...style,
-  };
+  const textStyle = [
+    {
+      fontSize,
+      fontWeight,
+      marginBottom,
+      color: color ?? undefined,
+    },
+    style,
+  ];
 
   return (
     <Text style={textStyle} numberOfLines={numberOfLines}>

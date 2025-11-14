@@ -35,10 +35,10 @@ export const shadowLight = {
 
 export const shadowPrimaryColor = {
   shadowColor: color.primaryColor,
-  shadowOpacity: 0.1,
+  shadowOpacity: 0.36,
   shadowRadius: 6,
-  elevation: 6,
-  shadowOffset: { width: 1, height: 0 },
+  elevation: 2,
+  shadowOffset: { width: 0, height: 2 },
 };
 export const shadowSecondaryColor = {
   shadowColor: color.secondaryColor,
@@ -67,4 +67,11 @@ export const textWhiteShadow = {
   textShadowColor: "rgba(255, 255, 255, 0.6)",
   textShadowOffset: { width: 0.5, height: 0.5 },
   textShadowRadius: 1,
+};
+export const iconWrapperStyle = {
+  backgroundColor: "#F9FBFD",
+  borderWidth: 1,
+  borderColor: "#739fe13a",
+  padding: 6,
+  borderRadius: 12,
 };

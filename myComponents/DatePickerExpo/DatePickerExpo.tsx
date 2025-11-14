@@ -117,10 +117,10 @@ const DatePickerExpo = ({
           activeOpacity={0.5}
           style={{
             height: 39.5,
-            borderColor: color.primaryColor,
+            borderColor: color.mainTxtColorFade,
             backgroundColor: "#ecf2f9ff",
-            borderWidth: 0.6,
-            borderRadius: 12,
+            borderWidth: 1.2,
+            borderRadius: 14,
             padding: 10,
             width: "100%",
             justifyContent: "space-between",
