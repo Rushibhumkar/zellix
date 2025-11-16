@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -111,7 +112,7 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
             width: sizes.width,
             marginLeft: -14,
             gap: 8,
-            paddingTop: 12,
+            paddingTop: Platform.OS === "ios" ? 24 : 12,
           }}
         >
           {menuItems.map((item: any, index: number) => (
@@ -137,6 +138,7 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
                 shadowRadius: 3,
                 elevation: 2,
                 paddingVertical: 8,
+                marginTop: Platform.OS === "ios" ? -12 : 8,
               }}
             >
               <LinearGradient

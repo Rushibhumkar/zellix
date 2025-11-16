@@ -1,4 +1,5 @@
 import {
+  Platform,
   StyleProp,
   StyleSheet,
   Text,
@@ -21,37 +22,23 @@ interface TRowAbsent {
   };
   onPress: () => void;
 }
+
 const RowAbsent = ({ containerStyle, item, onPress }: TRowAbsent) => {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[
-        {
-          borderWidth: 0.8,
-          borderColor: color.secondaryColor,
-          padding: 10,
-          borderRadius: 8,
-          justifyContent: "space-between",
-          flexDirection: "row",
-          ...shadowSecondaryColor,
-          backgroundColor: color.white,
-        },
-        containerStyle,
-      ]}
-    >
-      <View style={styles.row1}>
-        <CustomText style={styles.text1}>{item?.name}</CustomText>
-        <CustomText style={styles.text2}>ID</CustomText>
-      </View>
-      <View style={styles.row2}>
-        <CustomText style={styles.text1}>{roleHRM[item?.role]}</CustomText>
-        {/* <CustomText style={styles.text2}>03</CustomText> */}
-      </View>
-      <View style={styles.row3}>
-        <CustomText color={color.red} fontWeight="600" fontSize={14}>
-          {statusAttend[item?.status]}
-        </CustomText>
-        <CustomText style={styles.text2}>{}</CustomText>
+    <TouchableOpacity onPress={onPress} style={[styles.card, containerStyle]}>
+      <View style={styles.contentContainer}>
+        <View style={styles.mainInfo}>
+          <CustomText style={styles.nameText}>{item?.name}</CustomText>
+          <CustomText style={styles.roleText}>{roleHRM[item?.role]}</CustomText>
+        </View>
+
+        <View style={styles.statusContainer}>
+          <View style={styles.statusBadge}>
+            <CustomText style={styles.statusText}>
+              {statusAttend[item?.status]}
+            </CustomText>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -60,29 +47,70 @@ const RowAbsent = ({ containerStyle, item, onPress }: TRowAbsent) => {
 export default RowAbsent;
 
 const styles = StyleSheet.create({
-  row1: {
-    width: "50%",
-    gap: 5,
-    // backgroundColor: 'red'
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 4,
+    // iOS shadow
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+        shadowColor: "#000",
+      },
+    }),
+    borderLeftWidth: 4,
+    borderLeftColor: "#FF6B6B",
   },
-  row2: {
-    width: "20%",
-    gap: 5,
-    // backgroundColor: 'green'
-  },
-  row3: {
-    width: "30%",
-    justifyContent: "center",
+  contentContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 5,
-    // backgroundColor: 'blue'
   },
-  text1: {
+  mainInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  nameText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A202C",
+  },
+  roleText: {
     fontSize: 14,
     fontWeight: "400",
+    color: "#718096",
   },
-  text2: {
-    fontSize: 12,
-    fontWeight: "300",
+  statusContainer: {
+    alignItems: "flex-end",
+  },
+  statusBadge: {
+    backgroundColor: "#FFF5F5",
+    borderWidth: 1,
+    borderColor: "#FED7D7",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    // Shadow for status badge
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#E53E3E",
+    textTransform: "uppercase",
   },
 });

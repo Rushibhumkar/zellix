@@ -61,7 +61,7 @@ const CustomInput = ({
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
-            paddingVertical: leftIcon ? 4 : Platform.OS === "ios" ? 12 : 2,
+            paddingVertical: leftIcon ? 4 : Platform.OS === "ios" ? 12 : 0,
           },
           {
             borderColor: isFocused ? "#2d68c672" : "#739fe141",

@@ -25,74 +25,105 @@ interface TRowLeaveInAllList {
   };
   isAgent?: boolean;
 }
+
 const RowLeaveInAllList = ({
   containerStyle,
   onPress,
   item,
   isAgent,
 }: TRowLeaveInAllList) => {
+  const getStatusBorderColor = (status) => {
+    const colors = {
+      approved: "#48BB78",
+      pending: "#ED8936",
+      rejected: "#F56565",
+    };
+    return colors[status] || "#CBD5E0";
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[
-        {
-          borderWidth: 0.8,
-          borderColor: color.secondaryColor,
-          padding: 10,
-          borderRadius: 8,
-          justifyContent: "space-between",
-          flexDirection: "row",
-          ...shadowSecondaryColor,
-          backgroundColor: color.white,
-        },
+        styles.card,
+        { borderLeftColor: getStatusBorderColor(item?.status) },
         containerStyle,
       ]}
     >
       {!isAgent && (
-        <>
-          <View style={styles.row1}>
-            <CustomText style={styles.text1}>{item?.name}</CustomText>
-            <CustomText style={styles.text2}>{item?.days}</CustomText>
-          </View>
-          <View style={styles.row2}>
-            <CustomText style={styles.text1}>{roleHRM[item?.role]}</CustomText>
-            {/* <CustomText style={styles.text2}>03</CustomText> */}
-          </View>
-          <View style={styles.row3}>
-            <CustomText
-              color={statusColor[item?.status]}
-              fontSize={14}
-              fontWeight="600"
-            >
-              {statusHRM[item?.status]}
-            </CustomText>
-            <CustomText style={styles.text2}>
-              {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
+        <View style={styles.contentContainer}>
+          <View style={styles.mainInfo}>
+            <CustomText style={styles.nameText}>{item?.name}</CustomText>
+            <CustomText style={styles.roleText}>
+              {roleHRM[item?.role]}
             </CustomText>
           </View>
-        </>
+
+          <View style={styles.detailsContainer}>
+            <View style={styles.detailItem}>
+              <CustomText style={styles.detailLabel}>Days</CustomText>
+              <View style={styles.daysBadge}>
+                <CustomText style={styles.daysText}>{item?.days}</CustomText>
+              </View>
+            </View>
+
+            <View style={styles.statusItem}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: `${statusColor[item?.status]}20` },
+                ]}
+              >
+                <CustomText
+                  style={[
+                    styles.statusText,
+                    { color: statusColor[item?.status] },
+                  ]}
+                >
+                  {statusHRM[item?.status]}
+                </CustomText>
+              </View>
+              <CustomText style={styles.dateText}>
+                {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
+              </CustomText>
+            </View>
+          </View>
+        </View>
       )}
       {isAgent && (
-        <>
-          <View style={styles.row1}>
-            <CustomText style={styles.text2}>{item?.days}</CustomText>
+        <View style={styles.contentContainer}>
+          <View style={styles.daysSection}>
+            <CustomText style={styles.daysText}>{item?.days}</CustomText>
+            <CustomText style={styles.detailLabel}>Days</CustomText>
           </View>
-          <View style={styles.row2}>
-            <CustomText style={styles.text1}>{roleHRM[item?.role]}</CustomText>
-          </View>
-          <View style={styles.row3}>
-            <CustomText
-              color={statusColor[item?.status]}
-              fontSize={14}
-              fontWeight="600"
-            >
-              {statusHRM[item?.status]}
+
+          <View style={styles.mainInfo}>
+            <CustomText style={styles.roleText}>
+              {roleHRM[item?.role]}
             </CustomText>
-            <CustomText style={styles.text2}>
+          </View>
+
+          <View style={styles.statusSection}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: `${statusColor[item?.status]}20` },
+              ]}
+            >
+              <CustomText
+                style={[
+                  styles.statusText,
+                  { color: statusColor[item?.status] },
+                ]}
+              >
+                {statusHRM[item?.status]}
+              </CustomText>
+            </View>
+            <CustomText style={styles.dateText}>
               {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
             </CustomText>
           </View>
-        </>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -101,31 +132,93 @@ const RowLeaveInAllList = ({
 export default RowLeaveInAllList;
 
 const styles = StyleSheet.create({
-  row1: {
-    width: "50%",
-    gap: 5,
-    // backgroundColor: 'red'
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    borderLeftWidth: 4,
   },
-  row2: {
-    width: "20%",
-    gap: 5,
-    // backgroundColor: 'green'
-  },
-  row3: {
-    width: "30%",
-    justifyContent: "center",
+  contentContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 5,
-    // backgroundColor: 'blue'
   },
-  text1: {
+  mainInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  nameText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A202C",
+  },
+  roleText: {
     fontSize: 14,
     fontWeight: "400",
-    // marginBottom: 5
+    color: "#718096",
   },
-  text2: {
+  detailsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  detailItem: {
+    alignItems: "center",
+    gap: 4,
+  },
+  daysSection: {
+    alignItems: "center",
+    gap: 4,
+  },
+  statusSection: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  statusItem: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  detailLabel: {
     fontSize: 12,
-    fontWeight: "300",
-    // marginBottom: 5
+    fontWeight: "500",
+    color: "#A0AEC0",
+    textTransform: "uppercase",
+  },
+  daysBadge: {
+    backgroundColor: "#4299E1",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 30,
+    alignItems: "center",
+  },
+  daysText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  statusBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  dateText: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#718096",
   },
 });

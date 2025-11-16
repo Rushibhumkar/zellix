@@ -4,10 +4,11 @@ import CountryPicker, {
   Country,
   CountryCode,
 } from "react-native-country-picker-modal";
-import { mobileCode, mobileCodeWithIdKey } from "../../utils/data";
+import { mobileCodeWithIdKey } from "../../utils/data";
 import CustomInput from "../CustomInput/CustomInput";
 import CustomText from "../CustomText/CustomText";
 import DropdownRNE from "../DropdownRNE/DropdownRNE";
+import { color } from "../../const/color";
 
 interface TMobileInput {
   onChange: (a: TPhone) => void;
@@ -135,11 +136,12 @@ const MobileInput = ({
         <>
           <View
             style={{
-              borderWidth: 0.5,
-              borderRadius: 8,
+              borderWidth: 1.8,
+              borderRadius: 14,
               paddingHorizontal: 5,
               ...(!error && { marginBottom: 10 }),
               marginTop: 5,
+              borderColor: "#739fe141",
             }}
           >
             {!isInitial && (
@@ -158,6 +160,10 @@ const MobileInput = ({
                   withAlphaFilter
                   withCallingCode
                   withCloseButton
+                  theme={{
+                    primaryColor: color.mainTxtColor,
+                    onBackgroundTextColor: color.mainTxtColor,
+                  }}
                 />
                 <TextInput
                   onChangeText={(v) => onSelect({ numb: v })}
@@ -166,6 +172,7 @@ const MobileInput = ({
                     flex: 1,
                     fontSize: 16,
                     paddingHorizontal: 10,
+                    color: color.mainTxtColor,
                   }}
                   onBlur={onBlur}
                 />

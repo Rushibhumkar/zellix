@@ -237,7 +237,11 @@ const DropdownRNE = ({
                 }}
               >
                 {!isLoading ? (
-                  <CustomText fontSize={18} fontWeight="500">
+                  <CustomText
+                    fontSize={18}
+                    fontWeight="500"
+                    color={color.mainTxtColor}
+                  >
                     No Data Found
                   </CustomText>
                 ) : (
@@ -354,6 +358,7 @@ const styles = StyleSheet.create({
   textItem: {
     flex: 1,
     fontSize: 15,
+    color: color.mainTxtColor,
   },
   placeholderStyle: {
     fontSize: 15,
@@ -366,10 +371,13 @@ const styles = StyleSheet.create({
   iconStyle: {
     width: 20,
     height: 20,
+    color: color.mainTxtColor,
   },
   inputSearchStyle: {
     height: 40,
     fontSize: 16,
+    borderRadius: 12,
+    borderColor: color.mainTxtColorFade,
   },
   errorText: {
     color: "red",

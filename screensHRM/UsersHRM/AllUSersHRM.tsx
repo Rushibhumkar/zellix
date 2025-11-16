@@ -79,25 +79,20 @@ const AllUSersHRM = () => {
       {isSubSup && (
         <TouchableOpacity
           onPress={() => navigate(routeUser.AddUserHRM)}
-          activeOpacity={0.5}
-          style={{
-            position: "absolute",
-            bottom: Platform.OS === "ios" ? 40 : 70,
-            right: 10,
-            zIndex: 5,
-          }}
+          activeOpacity={0.7}
+          style={styles.fabButton}
         >
           <AddIcon />
         </TouchableOpacity>
       )}
-      <View style={{ minHeight: 600 }}>
+      <View style={styles.container}>
         <FlatList
           data={allUsers ?? []}
           renderItem={({ item }) => {
             return (
               <RowEmployee
                 onPress={() => navigate(routeUser.UserDetailHRM, { item })}
-                containerStyle={{ marginBottom: 10 }}
+                containerStyle={styles.rowContainer}
                 item={item}
               />
             );
@@ -127,25 +122,36 @@ const AllUSersHRM = () => {
               <HeaderRowEmployee />
             </>
           }
-          contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
+          contentContainerStyle={styles.listContent}
           onEndReached={onEndReach}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage && (
-              <ActivityIndicator size={"small"} color={"#002E6B"} />
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size={"small"} color={"#2D67C6"} />
+              </View>
             )
           }
           ListEmptyComponent={
             <>
               {isLoading && <LoadingCompo />}
               {allUsers?.length === 0 && (
-                <NoDataFound height={200} width={200} />
+                <View style={styles.emptyContainer}>
+                  <NoDataFound height={200} width={200} />
+                  <Text style={styles.emptyText}>No employees found</Text>
+                </View>
               )}
             </>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#2D67C6"]}
+              tintColor={"#2D67C6"}
+            />
           }
+          showsVerticalScrollIndicator={false}
         />
       </View>
     </ContainerHRM>
@@ -154,4 +160,51 @@ const AllUSersHRM = () => {
 
 export default AllUSersHRM;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    minHeight: 600,
+  },
+  listContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  rowContainer: {
+    marginBottom: 12,
+  },
+  fabButton: {
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 100 : 80,
+    right: 20,
+    zIndex: 5,
+    backgroundColor: "#2D67C6",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#718096",
+    fontWeight: "500",
+  },
+});

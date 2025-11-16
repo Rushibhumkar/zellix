@@ -1,5 +1,6 @@
 import * as React from "react";
 import Svg, { G, Path, SvgProps } from "react-native-svg";
+import { color } from "../../const/color";
 /* SVGR has dropped some elements not supported by react-native-svg: style */
 const PdfPickIcon = (props: SvgProps) => (
   <Svg
@@ -10,6 +11,7 @@ const PdfPickIcon = (props: SvgProps) => (
     xmlnsXlink="http://www.w3.org/1999/xlink"
     viewBox="0 0 512 512"
     xmlSpace="preserve"
+    fill={color.mainTxtColor}
     {...props}
   >
     <G>

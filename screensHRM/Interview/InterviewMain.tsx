@@ -164,7 +164,7 @@ const InterviewMain = () => {
     );
   };
   return (
-    <ContainerHRM>
+    <ContainerHRM headingTitle="Interview Module">
       <ModalWithBlur
         visible={showOptionsModal}
         onClose={() => setShowOptionsModal(false)}

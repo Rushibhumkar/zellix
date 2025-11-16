@@ -175,9 +175,6 @@ const styles = StyleSheet.create({
   },
   dropdownBox: {
     width: "100%",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
     backgroundColor: "#F9FAFB",
     marginBottom: 18,
   },

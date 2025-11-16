@@ -96,7 +96,7 @@ const Notification = () => {
         refetch();
       }
       if (item?.type === "Lead") {
-        navigate(routeLead.leadNavigator);
+        navigate(routeLead.allLead);
       } else if (item?.type === "Meeting") {
         navigate(routeMeeting.MeetingsNavigator);
       } else if (item?.type === "Booking") {
@@ -115,169 +115,270 @@ const Notification = () => {
     }
   };
 
+  const getTypeColor = (type) => {
+    const colors = {
+      Lead: "#FF6B6B",
+      Meeting: "#4ECDC4",
+      Booking: "#45B7D1",
+      Default: "#95A5A6"
+    };
+    return colors[type] || colors.Default;
+  };
+
+  const getTypeIcon = (type) => {
+    const icons = {
+      Lead: "person",
+      Meeting: "event",
+      Booking: "book",
+      Default: "notifications"
+    };
+    return icons[type] || icons.Default;
+  };
+
   const NotificationList = ({ item, isDivider }) => {
+    const typeColor = getTypeColor(item?.type);
+    
     return (
-      <View>
-        <TouchableOpacity
-          key={item?._id}
-          onPress={() => handleNotificationSeen(item)}
-          style={{
-            flexDirection: "row",
-            gap: 20,
-            marginTop: 15,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "#BFBFBF",
-              borderRadius: 50,
-              height: 50,
-              width: 50,
-              fontSize: 10,
-            }}
-          >
-            <CustomText
-              style={{
-                textAlign: "center",
-                position: "relative",
-                color: "#FFFFFF",
-                fontSize: 25,
-                marginTop: 6,
-                textTransform: "capitalize",
-              }}
-            >
-              {item?.type?.split("")[0]}
-            </CustomText>
-            {!item?.seen && (
+      <TouchableOpacity
+        key={item?._id}
+        onPress={() => handleNotificationSeen(item)}
+        style={[
+          styles.notificationCard,
+          !item?.seen && styles.unseenNotification
+        ]}
+      >
+        <View style={[styles.iconContainer, { backgroundColor: typeColor }]}>
+          <MaterialIcons 
+            name={getTypeIcon(item?.type)} 
+            size={24} 
+            color="#FFFFFF" 
+          />
+          {!item?.seen && (
+            <View style={styles.unseenDot}>
               <MaterialIcons
-                style={{
-                  color: "green",
-                  fontSize: 20,
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                }}
                 name="fiber-manual-record"
-                size={17}
-                color="green"
+                size={12}
+                color="#FF4757"
               />
-            )}
-          </View>
-          <View style={{ width: "75%" }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 5,
-              }}
-            >
-              <CustomText
-                style={{
-                  color: "#000000",
-                  fontSize: 18,
-                  fontWeight: "500",
-                }}
-              >
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.contentContainer}>
+          <View style={styles.headerRow}>
+            <View style={styles.typeContainer}>
+              <CustomText style={styles.typeText}>
                 {item?.type}
               </CustomText>
-              <CustomText
-                style={{
-                  color: "#000000",
-                  fontSize: 14,
-                  fontWeight: "400",
-                }}
-              >
-                {moment(item?.time).format("HH:mm A")}
-              </CustomText>
+              {!item?.seen && (
+                <View style={[styles.statusDot, { backgroundColor: typeColor }]} />
+              )}
             </View>
-            <CustomText
-              style={{
-                color: "#000000",
-                fontSize: 14,
-                fontWeight: "300",
-                textAlign: "justify",
-              }}
-            >
-              {item?.message}
+            <CustomText style={styles.timeText}>
+              {moment(item?.time).format("HH:mm A")}
             </CustomText>
           </View>
-        </TouchableOpacity>
-        {!isDivider && <View style={styles.dividern}></View>}
-      </View>
+          
+          <CustomText style={styles.messageText}>
+            {item?.message}
+          </CustomText>
+        </View>
+        
+        <MaterialIcons 
+          name="chevron-right" 
+          size={20} 
+          color="#95A5A6" 
+          style={styles.chevron}
+        />
+      </TouchableOpacity>
     );
   };
 
   return (
     <>
       <Header title={"Notification"} />
-      <FlatList
-        data={Object.entries(groupedNotifications)}
-        keyExtractor={(item) => item[0]}
-        renderItem={({ item }) => {
-          const [section, data] = item;
-          return (
-            <View style={{ marginBottom: 20 }}>
-              <CustomText style={styles.sectionHeader}>{section}</CustomText>
-              <View style={styles.divider}></View>
-              <FlatList
-                data={data}
-                keyExtractor={(item) => item?._id?.toString()}
-                renderItem={({ item, index }) => (
-                  <NotificationList
-                    item={item}
-                    isDivider={index === data?.length - 1}
-                  />
-                )}
-                showsVerticalScrollIndicator={false}
-              />
-            </View>
-          );
-        }}
-        showsVerticalScrollIndicator={false}
-        onEndReached={onEndReach}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextPage && (
-            <ActivityIndicator size={"small"} color={"#002E6B"} />
-          )
-        }
-        ListEmptyComponent={
-          <>
-            {isLoading && <LoadingCompo />}
-            {notifiData?.length === 0 && (
-              <NoDataFound height={200} width={200} />
-            )}
-          </>
-        }
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={{ padding: 20 }}
-      />
+      <View style={styles.container}>
+        <FlatList
+          data={Object.entries(groupedNotifications)}
+          keyExtractor={(item) => item[0]}
+          renderItem={({ item }) => {
+            const [section, data] = item;
+            return (
+              <View style={styles.sectionContainer}>
+                <View style={styles.sectionHeaderContainer}>
+                  <CustomText style={styles.sectionHeader}>{section}</CustomText>
+                  <View style={styles.sectionDivider} />
+                </View>
+                <View style={styles.notificationsList}>
+                  {data.map((notification, index) => (
+                    <NotificationList
+                      key={notification?._id?.toString()}
+                      item={notification}
+                      isDivider={index === data?.length - 1}
+                    />
+                  ))}
+                </View>
+              </View>
+            );
+          }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={onEndReach}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size={"small"} color={"#2D67C6"} />
+              </View>
+            )
+          }
+          ListEmptyComponent={
+            <>
+              {isLoading && <LoadingCompo />}
+              {notifiData?.length === 0 && (
+                <View style={styles.emptyContainer}>
+                  <NoDataFound height={200} width={200} />
+                  <CustomText style={styles.emptyText}>
+                    No notifications yet
+                  </CustomText>
+                </View>
+              )}
+            </>
+          }
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              colors={["#2D67C6"]}
+              tintColor={"#2D67C6"}
+            />
+          }
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  divider: {
-    borderBottomColor: "#2D67C6",
-    width: "100%",
-    margin: "auto",
-    alignSelf: "center",
-    borderBottomWidth: 1,
+  container: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
   },
-  dividern: {
-    borderBottomColor: "#131313",
-    width: "100%",
-    borderBottomWidth: 0.5,
-    marginVertical: 10,
+  listContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  sectionContainer: {
+    marginBottom: 24,
+  },
+  sectionHeaderContainer: {
+    marginBottom: 16,
   },
   sectionHeader: {
-    textAlign: "center",
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2D3748",
+    marginBottom: 8,
+    textAlign: "left",
+  },
+  sectionDivider: {
+    height: 2,
+    backgroundColor: "#E2E8F0",
+    borderRadius: 1,
+  },
+  notificationsList: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  notificationCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  unseenNotification: {
+    backgroundColor: "#F7FAFC",
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    position: "relative",
+  },
+  unseenDot: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 6,
+    padding: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    marginRight: 8,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  typeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  typeText: {
+    color: "#1A202C",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  timeText: {
+    color: "#718096",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  messageText: {
+    color: "#4A5568",
+    fontSize: 14,
     fontWeight: "400",
-    color: "#000000",
-    marginVertical: 15,
+    lineHeight: 20,
+  },
+  chevron: {
+    marginLeft: "auto",
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#718096",
+    marginTop: 16,
+    fontWeight: "500",
   },
 });
 

@@ -414,6 +414,7 @@ const AddMeeting = () => {
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
                 onSelect={(date) => setTempDate(prevState => ({ ...prevState, date }))}
                 initialValue={tempDate?.date}
+                minimumDate={new Date()}   
               />
               <DatePickerExpo
                 title={"Time"}
@@ -478,7 +479,8 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: -15,
-    marginBottom: 10
+    marginBottom: 10,
+    marginLeft:4
   },
 });
 

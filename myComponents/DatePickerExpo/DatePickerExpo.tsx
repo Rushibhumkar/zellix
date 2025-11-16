@@ -12,9 +12,9 @@ import {
   ViewStyle,
 } from "react-native";
 import Modal from "react-native-modal";
-import DateIcon from "../../assets/svg/DateIcon";
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
+import { Feather } from "@expo/vector-icons";
 
 interface TDatePickerExpo {
   boxContainerStyle?: StyleProp<ViewStyle>;
@@ -41,10 +41,14 @@ const DatePickerExpo = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const toggleDatePicker = () => {
-    if (mode === "time") {
-      setShowTimePicker(true); // directly open time picker
+    if (Platform.OS === "ios") {
+      setShowPicker(true); // always use modal for iOS
     } else {
-      setShowPicker(true); // open date picker for date/datetime
+      if (mode === "time") {
+        setShowTimePicker(true);
+      } else {
+        setShowPicker(true);
+      }
     }
   };
 
@@ -104,8 +108,8 @@ const DatePickerExpo = ({
         {title && (
           <CustomText
             style={{
-              color: "#000000",
-              marginBottom: 10,
+              color: color.mainTxtColor,
+              marginBottom: 6,
               fontSize: 16,
               fontWeight: "500",
             }}
@@ -134,7 +138,7 @@ const DatePickerExpo = ({
             style={{
               fontSize: 14,
               fontWeight: "400",
-              color: getDate ? color?.darkBlack : color?.placeholderGrey,
+              color: getDate ? color?.mainTxtColor : color?.mainTxtColorFade,
             }}
           >
             {getDate
@@ -150,7 +154,7 @@ const DatePickerExpo = ({
               : "Time"}
           </CustomText>
 
-          <DateIcon />
+          <Feather name="calendar" size={18} color={color.mainTxtColor} />
         </TouchableOpacity>
       </View>
       {/* date picker code */}
@@ -169,12 +173,18 @@ const DatePickerExpo = ({
             >
               {showPicker && (
                 <DateTimePicker
-                  mode={mode}
+                  mode={mode} // ✅ ensure time mode works too
                   display="spinner"
                   value={date}
-                  onChange={onChange}
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                    }
+                  }}
                   maximumDate={maximumDate}
                   minimumDate={minimumDate}
+                  textColor={color.mainTxtColor}
+                  accentColor={color.mainTxtColor}
                 />
               )}
               <>
@@ -187,8 +197,8 @@ const DatePickerExpo = ({
                     setShowPicker(false);
                     setShowTimePicker(false);
                   }}
+                  color={color.darkBlack}
                 />
-
                 <Button
                   title="Ok"
                   onPress={() => {
@@ -197,6 +207,7 @@ const DatePickerExpo = ({
                     setShowPicker(false);
                     setShowTimePicker(false);
                   }}
+                  color={color.darkBlack}
                 />
               </>
             </View>

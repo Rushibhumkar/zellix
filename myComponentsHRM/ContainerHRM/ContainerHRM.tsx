@@ -1,4 +1,5 @@
 import {
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -95,16 +96,16 @@ const ContainerHRM = ({
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
-          paddingTop: 45, // ✅ include StatusBar height
+          paddingTop: Platform.OS === "ios" ? 60 : 48, // ✅ include StatusBar height
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: 20,
-          paddingBottom: 10,
+          paddingBottom: Platform.OS === "ios" ? 16 : 10,
         }}
       >
         {!!headingTitle ? (
-          <CustomText fontWeight="700" fontSize={20} color={color.saffronMango}>
+          <CustomText fontWeight="700" fontSize={20} color={color.white}>
             {headingTitle}
           </CustomText>
         ) : (
@@ -168,7 +169,9 @@ const ContainerHRM = ({
             flexDirection: "row",
             justifyContent: "flex-end",
             alignItems: "center",
-            gap: 10,
+            gap: 12,
+            paddingTop: Platform.OS === "ios" ? 24 : 12,
+            paddingBlock: 12,
           }}
         >
           <Pressable onPress={goBack}>
@@ -181,6 +184,7 @@ const ContainerHRM = ({
             style={{
               fontStyle: "italic",
               textTransform: "capitalize",
+              color: color.white,
             }}
           >
             {isBAck?.title ?? "N/A"}
@@ -193,6 +197,7 @@ const ContainerHRM = ({
             justifyContent: "flex-end",
             alignItems: "center",
             gap: 10,
+            marginBottom: Platform.OS === "ios" ? -12 : -4,
           }}
         >
           {!!isBAck?.isEdit && (
@@ -207,7 +212,15 @@ const ContainerHRM = ({
           )}
           {!!isBAck?.isStatus && (
             <Pressable onPress={() => isBAck?.isStatus()}>
-              <ChangeStatus />
+              <View
+                style={{
+                  backgroundColor: color.mainTxtColor,
+                  borderRadius: 50,
+                  padding: 8,
+                }}
+              >
+                <ChangeStatus />
+              </View>
             </Pressable>
           )}
         </View>

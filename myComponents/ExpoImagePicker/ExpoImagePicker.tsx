@@ -139,7 +139,7 @@ const ExpoImagePicker = ({
         {label && (
           <CustomText
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               marginBottom: 10,
               fontSize: 16,
               fontWeight: "500",
@@ -151,11 +151,10 @@ const ExpoImagePicker = ({
         <TouchableOpacity
           activeOpacity={0.5}
           style={{
-            height: 37.5,
-            borderColor: "#000000",
-            backgroundColor: "#FCFAFA",
-            borderWidth: 0.5,
-            borderRadius: 10,
+            height: 44,
+            borderColor: color.mainTxtColorFade,
+            borderWidth: 1.6,
+            borderRadius: 14,
             paddingHorizontal: 10,
             width: "100%",
             justifyContent: "space-between",
@@ -169,6 +168,7 @@ const ExpoImagePicker = ({
             style={{
               fontSize: 14,
               fontWeight: "400",
+              color: color.mainTxtColorFade,
             }}
           >
             {image ? `${label}.png` : "Choose a file"}
@@ -187,14 +187,30 @@ const ExpoImagePicker = ({
             style={{
               backgroundColor: "white",
               marginHorizontal: 20,
-              padding: 20,
-              borderRadius: 20,
+              padding: 24,
+              borderRadius: 24,
               justifyContent: "center",
               alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 5,
+              borderWidth: 1,
+              borderColor: "#F1F5F9",
             }}
           >
             <CustomText
-              style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}
+              style={{
+                fontSize: 22,
+                fontWeight: "700",
+                marginBottom: 24,
+                color: color.mainTxtColor,
+                letterSpacing: 0.5,
+              }}
             >
               Choose Image
             </CustomText>
@@ -203,30 +219,51 @@ const ExpoImagePicker = ({
                 justifyContent: "space-between",
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 10,
-                width: 200,
+                gap: 16,
+                width: 240,
               }}
             >
               {/* <TouchableOpacity
-                                onPress={() => uploadImage('')}
-                                style={{
-                                    paddingHorizontal: 15,
-                                    paddingVertical: 10,
-                                    backgroundColor: color.gray,
-                                    borderRadius: 5,
-                                    marginHorizontal: 10,
-                                }}
-                            >
-                                <CameraIcon />
-                            </TouchableOpacity> */}
+        onPress={() => uploadImage('')}
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          backgroundColor: color.gray,
+          borderRadius: 12,
+          marginHorizontal: 10,
+          flex: 1,
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <CameraIcon />
+      </TouchableOpacity> */}
               <TouchableOpacity
                 onPress={() => uploadImage("gallery")}
                 style={{
-                  paddingHorizontal: 15,
-                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  paddingVertical: 16,
                   backgroundColor: color.gray,
-                  borderRadius: 5,
-                  // marginHorizontal: 10,
+                  borderRadius: 12,
+                  flex: 1,
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
                 }}
               >
                 <GalleryIcon />
@@ -234,11 +271,22 @@ const ExpoImagePicker = ({
               <TouchableOpacity
                 onPress={() => uploadImage("pdf")}
                 style={{
-                  paddingHorizontal: 15,
-                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  paddingVertical: 16,
                   backgroundColor: color.gray,
-                  borderRadius: 5,
-                  // marginHorizontal: 10,
+                  borderRadius: 12,
+                  flex: 1,
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
                 }}
               >
                 <PdfPickIcon />

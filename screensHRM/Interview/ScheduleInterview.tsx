@@ -20,6 +20,7 @@ import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
 import { uploadFile } from "../../utils/uploadFile";
 import { alphanumericValidation, emailValidate } from "../../utils/validation";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
+import { color } from "../../const/color";
 
 const qualifications = [
   { _id: "12th", name: "12th" },
@@ -112,7 +113,7 @@ const ScheduleInterview = () => {
   return (
     <ContainerHRM ph={20} isBAck={{ title: "Schedule Interview" }}>
       <ScrollViewWithKeyboardAvoid>
-        <View style={{ paddingBottom: 80, paddingTop: 20 }}>
+        <View style={{ paddingBottom: 200, paddingTop: 20 }}>
           <CustomInput
             label="First Name"
             placeholder="First Name"
@@ -204,7 +205,7 @@ const ScheduleInterview = () => {
           )}
           <DropdownRNE
             label="Referred By"
-            containerStyle={{ marginBottom: 15 }}
+            containerStyle={{ marginBottom: 15, marginTop: 12 }}
             arrOfObj={allUsers ?? []}
             onChange={(v) => formik.setFieldValue("referredBy", v)}
             initialValue={formik.values.referredBy}
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: "500",
-    color: "#000",
+    color: color.mainTxtColor,
   },
   errorText: {
     fontSize: 14,

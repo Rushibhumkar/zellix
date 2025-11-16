@@ -23,34 +23,45 @@ interface TCardHRM {
   obj2?: {};
   obj3?: {};
 }
-const CardHRM = ({
-  // isLoading,
-  obj0,
-  obj1,
-  obj2,
-  obj3,
-}: TCardHRM) => {
-  // let
+
+const CardHRM = ({ obj0, obj1, obj2, obj3 }: TCardHRM) => {
   const { data, isLoading } = useGetAttendanceChart({ isEnable: true });
   const numb = data ?? {};
 
+  const getCardColor = (index) => {
+    const colors = ["#2D67C6", "#4ECDC4", "#FF6B6B", "#45B7D1"];
+    return colors[index];
+  };
+
+  const cards = [
+    {
+      title: "Present Employee",
+      number: numb?.present,
+      color: getCardColor(0),
+    },
+    {
+      title: "Employees On leave",
+      number: numb?.leave,
+      color: getCardColor(1),
+    },
+    { title: "Employees Absent", number: numb?.absent, color: getCardColor(2) },
+    {
+      title: "Remote Checked-IN",
+      number: numb?.remoteCheckIn,
+      color: getCardColor(3),
+    },
+  ];
+
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 10,
-        paddingHorizontal: 10,
-        marginBottom: 30,
-      }}
-    >
-      <SingleCard title={"Present Employee"} number={numb?.present} />
-      <SingleCard title={"Employees On leave"} number={numb?.leave} />
-      <SingleCard title={"Employees Absent"} number={numb?.absent} />
-      <SingleCard title={"Remote Checked-IN"} number={numb?.remoteCheckIn} />
-      {/* {[1, 2, 3, 4].map((e) => {
-                return <SingleCard key={e} />
-            })} */}
+    <View style={styles.cardsContainer}>
+      {cards.map((card, index) => (
+        <SingleCard
+          key={index}
+          title={card.title}
+          number={card.number}
+          color={card.color}
+        />
+      ))}
     </View>
   );
 };
@@ -58,45 +69,52 @@ const CardHRM = ({
 export default CardHRM;
 
 const styles = StyleSheet.create({
-  cardcontainer: {
-    padding: 10,
-    backgroundColor: color.paleGrey,
-    borderRadius: 12,
-    borderWidth: 0.8,
-    borderColor: color.secondaryColor,
-    width: "48%",
-    ...shadowSecondaryColor,
-    // minHeight: 65
+  cardsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 30,
+    paddingHorizontal: 4,
+  },
+  cardContainer: {
+    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    width: "47%",
+    minHeight: 90,
+    // iOS shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    // Android shadow
+    elevation: 6,
+  },
+  numberText: {
+    fontSize: 28,
+    textAlign: "center",
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+  titleText: {
+    fontSize: 12,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#4A5568",
+    lineHeight: 16,
   },
 });
 
-export const SingleCard = ({ number, title }) => {
+export const SingleCard = ({ number, title, color }) => {
   return (
-    <TouchableOpacity
-      style={styles.cardcontainer}
-      // onPress={onPress}
-      activeOpacity={0.9}
-    >
-      <CustomText
-        style={{
-          fontSize: 24,
-          textAlign: "center",
-          color: color.hrmYellowText,
-          fontWeight: "900",
-        }}
-      >
+    <TouchableOpacity style={styles.cardContainer} activeOpacity={0.8}>
+      <CustomText style={[styles.numberText, { color }]}>
         {number ?? "0"}
       </CustomText>
-      <CustomText
-        style={{
-          fontSize: 12,
-          textAlign: "center",
-          color: "#131313",
-          fontWeight: "600",
-        }}
-      >
-        {title ?? "-"}
-      </CustomText>
+      <CustomText style={styles.titleText}>{title ?? "-"}</CustomText>
     </TouchableOpacity>
   );
 };
