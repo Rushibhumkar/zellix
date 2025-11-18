@@ -14,6 +14,7 @@ import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
 import {
+  shadow1,
   shadowPrimaryColor,
   shadowSecondaryColor,
 } from "../../const/globalStyle";
@@ -69,7 +70,11 @@ const LeadProjectCard = ({ onRefresh }) => {
           <CustomText style={styles.totalText}>Total: {total}</CustomText>
         </View>
         <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
-          <Entypo name="dots-three-vertical" size={18} color="#333" />
+          <Entypo
+            name="dots-three-vertical"
+            size={18}
+            color={color.mainTxtColor}
+          />
         </TouchableOpacity>
       </View>
 
@@ -90,13 +95,13 @@ const LeadProjectCard = ({ onRefresh }) => {
           maxValue={Math.max(...transformedData.map((d) => d.value), 5)}
           areaChart={false}
           //   showDataPoint
-          dataPointsColor="#555"
+          dataPointsColor={color.mainTxtColor}
           startFillColor="#fff"
           startOpacity={0.1}
           endOpacity={0.1}
-          yAxisTextStyle={{ color: "#666" }}
+          yAxisTextStyle={{ color: color.strokeColor }}
           xAxisLabelTextStyle={{
-            color: "#666",
+            color: color.strokeColor,
             transform: [{ rotate: "-25deg" }],
           }}
           isAnimated
@@ -135,6 +140,7 @@ const LeadProjectCard = ({ onRefresh }) => {
                 setShowStartPicker(false);
                 if (selectedDate) setStartDate(selectedDate);
               }}
+              textColor={color.mainTxtColor}
             />
           )}
 
@@ -147,6 +153,7 @@ const LeadProjectCard = ({ onRefresh }) => {
                 setShowEndPicker(false);
                 if (selectedDate) setEndDate(selectedDate);
               }}
+              textColor={color.mainTxtColor}
             />
           )}
         </View>
@@ -166,6 +173,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
     position: "relative",
     ...shadowPrimaryColor,
+    borderLeftWidth: 4,
+    borderLeftColor: color.mainTxtColor,
   },
   header: {
     flexDirection: "row",
@@ -174,13 +183,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 20,
-    color: "#1E3A8A",
+    fontSize: 17,
+    color: color.titleColor,
     letterSpacing: 0.3,
   },
   totalText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: color.mainTxtColor,
     fontWeight: "500",
     marginTop: 4,
   },
@@ -196,16 +205,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     zIndex: 30,
     width: 250,
-    shadowColor: "#1E293B",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 8,
-    elevation: 5,
+    ...shadowPrimaryColor,
   },
   dateLabel: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1E293B",
+    color: color.mainTxtColor,
     marginTop: 10,
     marginBottom: 5,
   },

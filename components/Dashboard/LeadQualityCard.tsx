@@ -13,6 +13,7 @@ import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const LeadQualityCard = ({ onRefresh }) => {
   const {
@@ -199,11 +200,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginHorizontal: 14,
     marginTop: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: color.primaryColor,
+    ...shadowPrimaryColor,
   },
   center: { justifyContent: "center", alignItems: "center" },
   header: {
@@ -257,13 +256,13 @@ const styles = StyleSheet.create({
   legendLabel: {
     flex: 1,
     fontSize: 14,
-    color: "#0F172A",
+    color: color.strokeColor,
     fontWeight: "500",
   },
   legendValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#334155",
+    color: color.mainTxtColor,
   },
   dropdown: {
     flexDirection: "row",
@@ -279,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     marginRight: 6,
-    color: "#334155",
+    color: color.mainTxtColor,
   },
   dropdownList: {
     position: "absolute",
@@ -301,7 +300,7 @@ const styles = StyleSheet.create({
   },
   dropdownOption: {
     fontSize: 14,
-    color: "#1E293B",
+    color: color.mainTxtColor,
     fontWeight: "500",
   },
 });

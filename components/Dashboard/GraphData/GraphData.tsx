@@ -22,6 +22,7 @@ import DatePickerExpo from "../../../myComponents/DatePickerExpo/DatePickerExpo"
 import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { LinearGradient } from "expo-linear-gradient";
+import { shadowPrimaryColor } from "../../../const/globalStyle";
 
 export default function GraphData({
   header,
@@ -145,7 +146,7 @@ export default function GraphData({
             {isLoading ? (
               <ActivityIndicator />
             ) : (
-              <NoDataFound width={200} height={200} />
+              <NoDataFound width={120} height={120} />
             )}
           </>
         )}
@@ -157,21 +158,20 @@ export default function GraphData({
 const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 18,
+    borderRadius: 24,
     paddingVertical: 20,
     paddingHorizontal: 18,
     marginHorizontal: 14,
     marginTop: 10,
-    shadowColor: color.primaryColor,
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
+    ...shadowPrimaryColor,
+    borderLeftWidth: 4,
+    borderLeftColor: color.mainTxtColor,
   },
   headerTitle: {
-    fontSize: 20,
-    color: "#1E3A8A",
-    marginBottom: 16,
+    fontSize: 17,
+    color: color.titleColor,
+    letterSpacing: 0.3,
+    marginBottom: 12,
   },
   dropdownBox: {
     width: "100%",

@@ -7,6 +7,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { WIDTH } from "../../const/deviceInfo";
 import NoDataIcon from "../../assets/svg/NoDataIcon";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
+import { color } from "../../const/color";
 
 const CommissionGraph = ({ isLoading, item }) => {
   const [chart, setChart] = useState([]);
@@ -92,7 +93,7 @@ const CommissionGraph = ({ isLoading, item }) => {
             </View>
           ) : (
             <View style={styles.noDataContainer}>
-              <NoDataIcon width={180} height={180} />
+              <NoDataIcon width={120} height={120} />
               <CustomText style={styles.noDataText}>
                 No data available
               </CustomText>
@@ -116,11 +117,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     ...shadowPrimaryColor,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: color.mainTxtColor,
   },
   headerRow: {
     flexDirection: "row",
@@ -159,7 +157,7 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     marginTop: 8,
-    color: "#64748B",
+    color: color.strokeColor,
     fontSize: 14,
   },
 });
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
 /* ---------------- Loader ---------------- */
 const Loader = () => (
   <View>
-    <View style={styles.loaderHeader}>
+    <View style={stylesLoader.loaderHeader}>
       <SkeletonView
         wrapperStyle={{
           width: 100,
@@ -183,7 +181,7 @@ const Loader = () => (
         }}
       />
     </View>
-    <View style={styles.loaderBody}>
+    <View style={stylesLoader.loaderBody}>
       <ActivityIndicator size="large" color="#2563EB" />
     </View>
   </View>

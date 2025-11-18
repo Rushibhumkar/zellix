@@ -72,6 +72,10 @@ const AllLeads = ({ tabType }) => {
   //
   const [filteredData, setFilteredData] = useState(copyLead);
   const [searchValue, setSearchValue] = useState("");
+
+  const [showHeaderActions, setShowHeaderActions] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
+
   //
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -242,10 +246,11 @@ const AllLeads = ({ tabType }) => {
           tabType === "calling_data"
             ? "Calling Data"
             : tabType === "lead"
-            ? "All Leads"
+            ? "Leads"
             : ""
         }
-        onBack={() => navigation.navigate("dashboard")}
+        showBackIcon={false}
+        // onBack={() => navigation.navigate("dashboard")}
       />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (

@@ -7,6 +7,8 @@ import Feather from "react-native-vector-icons/Feather";
 import { routeBooking } from "../../utils/routes";
 import { sizes } from "../../const";
 import { LinearGradient } from "expo-linear-gradient";
+import { formatCount } from "../../utils/commonFunctions";
+import { color } from "../../const/color";
 
 const Card = ({ item, loading }) => {
   const { navigate } = useNavigation();
@@ -51,7 +53,9 @@ const Card = ({ item, loading }) => {
 
           <View style={styles.textBox}>
             <CustomText style={styles.titleText}>{title}</CustomText>
-            <CustomText style={styles.countText}>{count}</CustomText>
+            <CustomText style={styles.countText}>
+              {formatCount(count)}
+            </CustomText>
           </View>
         </View>
 
@@ -162,13 +166,12 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 12,
-    color: "#6B6B6B",
-    fontWeight: "500",
+    color: color.mainTxtColor,
   },
   countText: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#1E1E1E",
+    fontWeight: "500",
+    color: color.mainTxtColor,
   },
   progressBar: {
     height: 4,

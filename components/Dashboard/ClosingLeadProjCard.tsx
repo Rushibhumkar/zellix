@@ -71,12 +71,20 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
           <CustomText style={styles.totalText}>Total: {total}</CustomText>
         </View>
         <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
-          <Entypo name="dots-three-vertical" size={18} color="#333" />
+          <Entypo
+            name="dots-three-vertical"
+            size={18}
+            color={color.mainTxtColor}
+          />
         </TouchableOpacity>
       </View>
 
       {loadingClosingLeadProjectWise ? (
-        <ActivityIndicator size="large" color="#000" style={{ height: 270 }} />
+        <ActivityIndicator
+          size="large"
+          color={color.mainTxtColor}
+          style={{ height: 270 }}
+        />
       ) : errorClosingLeadProjectWise ? (
         <NoDataFound width={250} height={280} />
       ) : (
@@ -90,8 +98,8 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
           xAxisThickness={1}
           yAxisColor="#ccc"
           xAxisColor="#ccc"
-          yAxisTextStyle={{ color: "#888" }}
-          xAxisLabelTextStyle={{ color: "#444", fontSize: 12 }}
+          yAxisTextStyle={{ color: color.strokeColor }}
+          xAxisLabelTextStyle={{ color: color.strokeColor, fontSize: 12 }}
           spacing={60}
           maxValue={Math.max(...transformedData.map((d) => d.value), 1)}
           stepHeight={50}
@@ -150,12 +158,14 @@ export default ClosingLeadProjCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#F9FAFB",
-    borderRadius: 16,
+    borderRadius: 22,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 16,
     position: "relative",
     ...shadowPrimaryColor,
+    borderLeftWidth: 4,
+    borderLeftColor: color.mainTxtColor,
   },
   header: {
     flexDirection: "row",
@@ -164,14 +174,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 20,
-    color: "#1E3A8A",
+    fontSize: 17,
+    color: color.titleColor,
     letterSpacing: 0.3,
   },
   totalText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#6B7280",
+    color: color.mainTxtColor,
     marginTop: 4,
   },
   datePopup: {
@@ -195,7 +205,7 @@ const styles = StyleSheet.create({
   dateLabel: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1E293B",
+    color: color.mainTxtColor,
     marginTop: 10,
     marginBottom: 5,
   },

@@ -112,12 +112,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 18,
+    borderLeftColor: color.mainTxtColor,
+    borderLeftWidth: 4,
     ...shadowPrimaryColor,
-    shadowColor: color.primaryColor,
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
   },
   title: {
     fontSize: 20,
@@ -126,9 +123,6 @@ const styles = StyleSheet.create({
   },
   dropdownBox: {
     marginBottom: 22,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
     backgroundColor: "#F9FAFB",
   },
   row: {

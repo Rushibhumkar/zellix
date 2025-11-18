@@ -24,7 +24,17 @@ import { logOut } from "../services/authApi/auth";
 import { removeItemValue } from "../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../redux/action";
 
-const Header = ({ title, onBack }) => {
+interface HeaderProps {
+  title: string;
+  onBack?: () => void;
+  showBackIcon?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  title,
+  onBack,
+  showBackIcon = true,
+}) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
 
@@ -77,16 +87,18 @@ const Header = ({ title, onBack }) => {
             }}
           >
             <View style={[styles.container]}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => (onBack ? onBack() : goBack())}
-              >
-                <Image
-                  tintColor={color.white}
-                  source={require("../assets/Backicon.png")}
-                  style={{ width: 16, height: 16 }}
-                />
-              </TouchableOpacity>
+              {showBackIcon && (
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => (onBack ? onBack() : goBack())}
+                >
+                  <Image
+                    tintColor={color.white}
+                    source={require("../assets/Backicon.png")}
+                    style={{ width: 16, height: 16 }}
+                  />
+                </TouchableOpacity>
+              )}
 
               <CustomText style={styles.titleText}>{title}</CustomText>
 
@@ -148,7 +160,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 8,
   },
   iconBtn: {
     position: "relative",

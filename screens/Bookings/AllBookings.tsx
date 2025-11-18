@@ -223,7 +223,7 @@ const AllBookings = () => {
   myConsole("canAddBooking", canAddBooking);
   return (
     <View style={{ flex: 1 }}>
-      <Header title={"All Bookings"} />
+      <Header title={"Bookings"} showBackIcon={false} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {/* {isLoading && <ActivityIndicator />} */}
 

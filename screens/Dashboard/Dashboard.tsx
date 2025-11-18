@@ -488,6 +488,7 @@ const Dashboard = () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        contentContainerStyle={{ paddingBottom: 80 }}
       >
         <View style={{ paddingBottom: 100 }}>
           {1 ? (

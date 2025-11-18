@@ -405,7 +405,6 @@ const AdvanceSearch = () => {
                     placeholder="Mobile Number"
                     onChangeText={handleChange("mobile")}
                     value={values?.mobile}
-                    noShadow
                   />
                 </View>
               </>

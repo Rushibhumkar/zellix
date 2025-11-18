@@ -111,11 +111,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     ...shadowPrimaryColor,
-    shadowColor: color.primaryColor,
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
+    borderLeftColor: color.mainTxtColor,
+    borderLeftWidth: 4,
   },
   title: {
     fontSize: 20,

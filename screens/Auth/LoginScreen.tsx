@@ -33,10 +33,10 @@ import { iconWrapperStyle } from "../../const/globalStyle";
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
-    // email: "kumarvishalpost1@gmail.com",
-    // password: "123456789",
-    email: "",
-    password: "",
+    email: "kumarvishalpost1@gmail.com",
+    password: "123456789",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

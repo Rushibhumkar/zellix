@@ -200,7 +200,7 @@ const AllMeetings = () => {
 
   return (
     <Container>
-      <Header title={"All Meetings"} />
+      <Header title={"Meetings"} showBackIcon={false} />
 
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
