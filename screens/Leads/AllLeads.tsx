@@ -249,53 +249,68 @@ const AllLeads = ({ tabType }) => {
             ? "Leads"
             : ""
         }
+        isWithAnimation
         showBackIcon={false}
-        // onBack={() => navigation.navigate("dashboard")}
+        showActions={showHeaderActions}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }}
+        onPressFilter={() =>
+          navigation.navigate("AdvanceSearch", { type: "lead" })
+        }
+        onPressAdd={() => {
+          if (canAddLead) navigation.navigate("AddLeads");
+          else popUpConfToast.errorMessage("Not authorized to add leads.");
+        }}
       />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <Container>
-          <TitleWithAddDelete
-            arrLength={selected?.length}
-            title={
-              tabType === "calling_data"
-                ? "Calling Data"
-                : tabType === "lead"
-                ? "Leads"
-                : ""
-            }
-            onPressToNavigate={() => {
-              if (canAddLead) {
-                navigation.navigate("AddLeads");
-              } else {
-                popUpConfToast.errorMessage(
-                  "You are not authorized to add new leads. Please contact your administrator."
-                );
+          {!showHeaderActions && (
+            <TitleWithAddDelete
+              arrLength={selected?.length}
+              isWithAnimation
+              title={
+                tabType === "calling_data"
+                  ? "Calling Data"
+                  : tabType === "lead"
+                  ? "Leads"
+                  : ""
               }
-            }}
-            onPressToDelete={
-              (canDeleteLead && user?.role === roleEnum.sub_admin) ||
-              user?.role === roleEnum.sup_admin
-                ? toggleModal
-                : false
-            }
-            onPressToAssignLead={
-              canAssignLead && user?.role === "agent"
-                ? false
-                : () => toggleModalAssignLead()
-            }
-            onPressToFilter={() =>
-              navigation.navigate("AdvanceSearch", { type: "lead" })
-            }
-            onCloseSearch={
-              leadQueryKey !== null
-                ? () => dispatch(setLeadQueryKey(null))
-                : false
-            }
-            // onSelectLeadType={
-            //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
-            // }
-          />
+              onPressToNavigate={() => {
+                if (canAddLead) {
+                  navigation.navigate("AddLeads");
+                } else {
+                  popUpConfToast.errorMessage(
+                    "You are not authorized to add new leads. Please contact your administrator."
+                  );
+                }
+              }}
+              onPressToDelete={
+                (canDeleteLead && user?.role === roleEnum.sub_admin) ||
+                user?.role === roleEnum.sup_admin
+                  ? toggleModal
+                  : false
+              }
+              onPressToAssignLead={
+                canAssignLead && user?.role === "agent"
+                  ? false
+                  : () => toggleModalAssignLead()
+              }
+              onPressToFilter={() =>
+                navigation.navigate("AdvanceSearch", { type: "lead" })
+              }
+              onCloseSearch={
+                leadQueryKey !== null
+                  ? () => dispatch(setLeadQueryKey(null))
+                  : false
+              }
+              // onSelectLeadType={
+              //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
+              // }
+            />
+          )}
+
           {isPoolRestricted === false && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
@@ -307,35 +322,32 @@ const AllLeads = ({ tabType }) => {
                 zIndex: 5,
               }}
             >
-              <CustomText
-                style={{ color: "white", fontWeight: 800 }}
-              ></CustomText>
+              <CustomText style={{ color: "white", fontWeight: 800 }} />
               <LeadPoolIcon width={60} height={60} />
             </TouchableOpacity>
           )}
+
           <FlatList
+            ref={flatListRef}
             data={leadData}
-            // data={[]}
-            renderItem={({ item, index }) => {
-              return (
-                <LeadRowItem
-                  index={index}
-                  item={item}
-                  selected={selected.indexOf(item?._id) !== -1}
-                  bgColor={bgByStatus[item?.status]}
-                  onPress={() =>
-                    selected?.length === 0
-                      ? navigation.navigate("LeadsDetails", { item })
-                      : handleSelect(item?._id)
-                  }
-                  onLongPress={
-                    user?.role === roleEnum.agent
-                      ? undefined
-                      : () => handleSelect(item?._id)
-                  }
-                />
-              );
-            }}
+            renderItem={({ item, index }) => (
+              <LeadRowItem
+                index={index}
+                item={item}
+                selected={selected.indexOf(item?._id) !== -1}
+                bgColor={bgByStatus[item?.status]}
+                onPress={() =>
+                  selected?.length === 0
+                    ? navigation.navigate("LeadsDetails", { item })
+                    : handleSelect(item?._id)
+                }
+                onLongPress={
+                  user?.role === roleEnum.agent
+                    ? undefined
+                    : () => handleSelect(item?._id)
+                }
+              />
+            )}
             keyExtractor={(item) => item?._id}
             showsVerticalScrollIndicator={true}
             contentContainerStyle={{
@@ -346,11 +358,8 @@ const AllLeads = ({ tabType }) => {
                 <SearchBar
                   onChangeText={(v) => handleSearchChange(v)}
                   value={searchValue}
-                  onClickCancel={() => {
-                    handleSearchChange("");
-                    // setSearchValue('')
-                    // setFilteredData([...copyLead])
-                  }}
+                  onClickCancel={() => handleSearchChange("")}
+                  isWithAnimation
                 />
                 <LeadListHeading
                   noText={"No"}
@@ -374,11 +383,17 @@ const AllLeads = ({ tabType }) => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            onScroll={(e) => {
+              const offsetY = e.nativeEvent.contentOffset.y;
+              setShowHeaderActions(offsetY > 180); // ✅ Hide title/add/delete bar when scrolled up
+            }}
+            scrollEventThrottle={16}
           />
         </Container>
       ) : (
         <NoDataFound style={{ marginTop: sizes.height / 4 }} showTxt />
       )}
+
       <DeleteModel
         isLoading={isLoading}
         handleDeleteUser={handleDeleteLead}
@@ -424,6 +439,7 @@ const LeadRowItem = ({
       style={[
         styles.mainlistcontainer,
         {
+          marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected
             ? color.primary200
             : bgColor
@@ -531,7 +547,6 @@ const styles = StyleSheet.create({
     marginVertical: -2,
   },
   mainlistcontainer: {
-    marginTop: 25,
     borderWidth: 1,
     padding: 13,
     borderRadius: 14,

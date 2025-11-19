@@ -200,6 +200,7 @@ const LeadPoolRowItem = ({
       style={[
         styles.mainlistcontainer,
         {
+          marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected
             ? "rgba(252, 244, 227, 1)"
             : bgColor
@@ -310,7 +311,6 @@ const styles = StyleSheet.create({
     marginVertical: -2,
   },
   mainlistcontainer: {
-    marginTop: 25,
     borderWidth: 1,
     padding: 13,
     borderRadius: 10,

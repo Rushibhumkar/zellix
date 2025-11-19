@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import Feather from "react-native-vector-icons/Feather";
 import { StatusBar } from "expo-status-bar";
+import { prepareDataForValidation } from "formik";
 
 interface MenuModalProps {
   visible: boolean;
@@ -44,7 +45,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
       rounded
       overlayOpacity={0.3}
       modalStyle={{
-        marginTop: 0,
+        marginTop: -20,
         backgroundColor: "#fff",
         position: "relative",
         top: Platform.OS === "ios" ? -140 : -120,
@@ -52,6 +53,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
         borderTopLeftRadius: 0,
         borderBottomLeftRadius: 22,
         borderBottomRightRadius: 22,
+        paddingTop: 16,
       }}
     >
       <ModalContent

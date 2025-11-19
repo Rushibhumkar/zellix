@@ -14,11 +14,9 @@ import {
   View,
   TextInput,
   StyleSheet,
-
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
-import EditIcon from "../../assets/svg/EditIcon";
 import Header from "../../components/Header";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetLeadById, useGetMeeting } from "../../hooks/useCRMgetQuerry";
@@ -32,7 +30,10 @@ import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import MainTitle from "../../myComponents/MainTitle/MainTitle";
 import RowItem from "../../myComponents/RowItem/RowItem";
 import { selectUser, setCallDetect } from "../../redux/userSlice";
-import { leadStatusUpdate, useLatestMeetings } from "../../services/rootApi/leadApi";
+import {
+  leadStatusUpdate,
+  useLatestMeetings,
+} from "../../services/rootApi/leadApi";
 import {
   inLeadStatus,
   leadTypeObj,
@@ -42,7 +43,6 @@ import {
 } from "../../utils/data";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
 import AddNote from "./component/AddNote";
 import NotesCard from "./component/NotesCard";
 import LeadUserInfo from "./component/LeadUserInfo";
@@ -53,10 +53,13 @@ import { axiosInstance } from "../../services/authApi/axiosInstance";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import CancelIcon from "../../assets/svg/CancelIcon";
-import {sendFollowUpNotification} from '../../services/rootApi/notificationApi'
+import { sendFollowUpNotification } from "../../services/rootApi/notificationApi";
 import { checkPermission } from "../../utils/commonFunctions";
-import {useGetUserPermission} from '../../services/rootApi/permissionApi'
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
+import { useAppToast } from "../../components/AppToast";
+import { AntDesign, Feather } from "@expo/vector-icons";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -76,25 +79,28 @@ const extractStringObj = (input) => {
 };
 
 const formatDateTime = (date, time) => {
-  let d = moment(date).format('DD/MM/YYYY') || 'N/A';
-  let h = moment(time).format('hh:mm A') || 'N/A';
-  return `${d}, ${h}`
+  let d = moment(date).format("DD/MM/YYYY") || "N/A";
+  let h = moment(time).format("hh:mm A") || "N/A";
+  return `${d}, ${h}`;
 };
 
 const combineDateAndTime = (dateStr, timeStr) => {
-  return moment.utc({
-    year: moment.utc(dateStr).year(),
-    month: moment.utc(dateStr).month(),         // 0-indexed (0 = January)
-    date: moment.utc(dateStr).date(),
-    hour: moment.utc(timeStr).hour(),
-    minute: moment.utc(timeStr).minute(),
-    second: moment.utc(timeStr).second(),
-    millisecond: moment.utc(timeStr).millisecond(),
-  }).toISOString();
+  return moment
+    .utc({
+      year: moment.utc(dateStr).year(),
+      month: moment.utc(dateStr).month(), // 0-indexed (0 = January)
+      date: moment.utc(dateStr).date(),
+      hour: moment.utc(timeStr).hour(),
+      minute: moment.utc(timeStr).minute(),
+      second: moment.utc(timeStr).second(),
+      millisecond: moment.utc(timeStr).millisecond(),
+    })
+    .toISOString();
 };
 
 const LeadsDetails = () => {
   const queryClient = useQueryClient();
+  const toast = useAppToast();
   const { navigate } = useNavigation();
   const { user, lead } = useSelector(selectUser);
   const isSubSupSrMng =
@@ -102,7 +108,6 @@ const LeadsDetails = () => {
     user?.role === roleEnum?.sup_admin ||
     user?.role === roleEnum?.sr_manager;
   const { params } = useRoute();
-
 
   const modalNote = useModal();
   const [activeTab, setActiveTab] = useState(1);
@@ -144,10 +149,10 @@ const LeadsDetails = () => {
     details?.assign?._id === user?._id;
 
   const [noteUpdate, setNoteUpdate] = useState();
- 
+
   const [tdForFUT, setTdForFUT] = useState({
     date: new Date(),
-    time: new Date()
+    time: new Date(),
   });
 
   const FUTModal = useModal();
@@ -190,7 +195,9 @@ const LeadsDetails = () => {
           ...(fields.comments && { comments: fields.comments }),
           ...(fields.status && { status: fields.status }),
           ...(fields.statusInfo && { statusInfo: fields.statusInfo }),
-          ...(fields.status === 'followUp_required' && { followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time) })
+          ...(fields.status === "followUp_required" && {
+            followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
+          }),
         };
 
         let res = await leadStatusUpdate({
@@ -204,7 +211,7 @@ const LeadsDetails = () => {
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLead],
         });
-        popUpConfToast.successMessage(res?.data?.message || 'Operation successful');
+        toast.success(res?.data?.message || "Operation successful");
         // await dispatch(getAllLeadFunc());
         // setIsVisible(true);
         // setMessage(res?.data);
@@ -212,7 +219,7 @@ const LeadsDetails = () => {
       }
     } catch (err) {
       myConsole("err in leadStatusUpdate", err);
-      popUpConfToast.errorMessage(err?.response?.data ?? "Server error");
+      toast.error(err?.response?.data ?? "Server error");
     } finally {
       setIsLoading(false);
       FUTModal.closeModal();
@@ -254,89 +261,78 @@ const LeadsDetails = () => {
   };
 
   const deleteNotes = async (notesId) => {
-
     try {
       setIsLoadingDelete(notesId);
-      await axiosInstance.delete(`api/notes/${detail?._id}/${notesId}`)
-      refetchLeadDetail()
+      await axiosInstance.delete(`api/notes/${detail?._id}/${notesId}`);
+      refetchLeadDetail();
+    } catch {
+      setIsLoadingDelete("");
+    } finally {
+      setIsLoadingDelete("");
     }
-    catch {
-      setIsLoadingDelete('')
-    }
-    finally {
-      setIsLoadingDelete('')
-    }
-  }
+  };
 
   useEffect(() => {
     if (!!detail?.statusChangedAt) {
       setTdForFUT({
         date: detail?.followUpTime || new Date(),
-        time: detail?.followUpTime || new Date()
-      })
+        time: detail?.followUpTime || new Date(),
+      });
     }
-  }, [detail?.statusChangedAt])
-  const [notiMsg, setNotiMsg] = useState('');
- const [showNotiPopup, setShowNotiPopup] = useState(false)
- const [isNotificationLoading, setIsNotificationLoading] = useState(false);
+  }, [detail?.statusChangedAt]);
+  const [notiMsg, setNotiMsg] = useState("");
+  const [showNotiPopup, setShowNotiPopup] = useState(false);
+  const [isNotificationLoading, setIsNotificationLoading] = useState(false);
 
- const handleSubmit = async () => {
-  try {
-    if (!notiMsg.trim()) {
-      popUpConfToast.errorMessage('Please enter a message.');
-      return;
+  const handleSubmit = async () => {
+    try {
+      if (!notiMsg.trim()) {
+        toast.error("Please enter a message.");
+        return;
+      }
+
+      setIsNotificationLoading(true);
+
+      let payload = {
+        leadId: detail?._id,
+        message: notiMsg,
+      };
+
+      // API call
+      let res = await sendFollowUpNotification(payload);
+
+      // ✅ Extract proper message from response
+      const successMsg =
+        res?.data?.message || res?.message || "Notification sent successfully!";
+
+      toast.success(successMsg);
+
+      setNotiMsg("");
+      setShowNotiPopup(false);
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLead],
+      });
+    } catch (err) {
+      const errMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to send notification";
+      toast.error(errMsg);
+    } finally {
+      setIsNotificationLoading(false);
+      setNotiMsg("");
+      setShowNotiPopup(false);
     }
+  };
 
-    setIsNotificationLoading(true);
+  const { data: permission = {} } = useGetUserPermission(user?._id);
 
-    let payload = {
-      leadId: detail?._id,
-      message: notiMsg,
-    };
+  const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
 
-    // API call
-    let res = await sendFollowUpNotification(payload);
-
-    // ✅ Extract proper message from response
-    const successMsg =
-      res?.data?.message ||
-      res?.message ||
-      'Notification sent successfully!';
-
-    popUpConfToast.successMessage(successMsg);
-
-    setNotiMsg('');
-    setShowNotiPopup(false);
-
-    queryClient.invalidateQueries({
-      queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [queryKeyCRM.getLead],
-    });
-  } catch (err) {
-    const errMsg =
-      err?.response?.data?.message ||
-      err?.message ||
-      'Failed to send notification';
-    popUpConfToast.errorMessage(errMsg);
-  } finally {
-    setIsNotificationLoading(false);
-     setNotiMsg('');
-    setShowNotiPopup(false);
-  }
-};
-
-
- const { data: permission = {} } = useGetUserPermission(user?._id);
-
-    const canEditLead = checkPermission(
-      permission,
-      "Leads",
-      "edit",
-      user?.role
-    );
-// myConsole('canEditLead',canEditLead);
   return (
     <>
       {activeTab === 1 && (
@@ -350,50 +346,79 @@ const LeadsDetails = () => {
               setMessage(null);
             }}
           />
-          <Header title={"Lead Details"} onBack={() => navigate(routeLead.allLead)} />
+          <Header
+            title={"Lead Details"}
+            onBack={() => navigate(routeLead.allLead)}
+          />
           {isSubSupSrMng && (
             <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
           )}
-         <ModalWithBlur visible={showNotiPopup} onClose={() => setShowNotiPopup(false)}>
-      <View style={styles.modalContent}>
-        <CustomText style={styles.title}>Send follow up notification</CustomText>
-        <TouchableOpacity style={{position:'absolute',top:0,right:-16,marginTop:4}} onPress={()=>setShowNotiPopup(false)}>
-<CancelIcon/>
-</TouchableOpacity>
-        <CustomText style={styles.label}>Message</CustomText>
-        <TextInput
-          style={styles.input}
-          multiline
-          numberOfLines={4}
-value={notiMsg}
-onChangeText={setNotiMsg}
-placeholderTextColor={'grey'}
-          placeholder="Enter your message"
-        />
+          <ModalWithBlur
+            visible={showNotiPopup}
+            onClose={() => setShowNotiPopup(false)}
+          >
+            <View style={styles.modalContent}>
+              <CustomText style={styles.title}>
+                Send follow up notification
+              </CustomText>
+              <TouchableOpacity
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: -16,
+                  marginTop: 4,
+                }}
+                onPress={() => setShowNotiPopup(false)}
+              >
+                <AntDesign name="close" size={22} color={color.mainTxtColor} />
+              </TouchableOpacity>
+              <CustomText style={styles.label}>Message</CustomText>
+              <TextInput
+                style={styles.input}
+                multiline
+                numberOfLines={4}
+                value={notiMsg}
+                onChangeText={setNotiMsg}
+                placeholderTextColor={color.strokeColor}
+                placeholder="Enter your message"
+              />
 
-<TouchableOpacity 
-  style={styles.button} 
-  onPress={handleSubmit}
-  disabled={isNotificationLoading}
->
-  {isNotificationLoading ? (
-    <ActivityIndicator color="white" />
-  ) : (
-    <CustomText style={styles.buttonText}>Submit</CustomText>
-  )}
-</TouchableOpacity>
-
-      </View>
-    </ModalWithBlur>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSubmit}
+                disabled={isNotificationLoading}
+              >
+                {isNotificationLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <CustomText style={styles.buttonText}>Submit</CustomText>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ModalWithBlur>
           <ScrollView
             style={{ padding: 20 }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <TouchableOpacity style={{alignSelf:'flex-end',backgroundColor:'#BFBFBF',paddingHorizontal:16,paddingVertical:6,borderRadius:8,marginBottom:12}} activeOpacity={0.6} onPress={() => setShowNotiPopup(true)}
->
-              <CustomText>Send Follow Up Notification</CustomText>
+            <TouchableOpacity
+              style={{
+                alignSelf: "flex-end",
+                backgroundColor: color.mainTxtColorFade,
+                paddingHorizontal: 16,
+                paddingVertical: 6,
+                borderRadius: 8,
+                marginBottom: 8,
+                borderWidth: 2,
+                borderColor: color.borderColor,
+              }}
+              activeOpacity={0.6}
+              onPress={() => setShowNotiPopup(true)}
+            >
+              <CustomText style={{ color: color.mainTxtColor }}>
+                Send Follow Up Notification
+              </CustomText>
             </TouchableOpacity>
             <View style={{ paddingBottom: 150 }}>
               {isLoadingQuery && <ActivityIndicator />}
@@ -401,27 +426,45 @@ placeholderTextColor={'grey'}
                 title="Client Details"
                 containerStyle={{ marginBottom: 20 }}
                 icon={
-                  <TouchableOpacity>
-                    {isLeadEdit && canEditLead && (
-                      <Pressable
-                        onPress={() => navigate(routeLead.AddLeads, { detail })}
-                        style={{ padding: 5, paddingRight: 0 }}
-                      >
-                        <EditIcon />
-                      </Pressable>
-                    )}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      // backgroundColor: "red",
+                      gap: 8,
+                    }}
+                  >
                     {user?._id === detail?.assign?._id && (
                       <CustomBtn
                         title="Convert to Meeting"
                         //isLoading={isLoadingMeeting}
-                        textStyle={{ fontSize: 12, color: "black" }}
+                        textStyle={{ fontSize: 12, color: "#fff" }}
                         onPress={handleConvertToMeeting}
-                        containerStyle={{
-                          backgroundColor: "rgb(191, 191, 191)",
-                        }}
+                        containerStyle={
+                          {
+                            // backgroundColor: "rgb(191, 191, 191)",
+                            // marginTop: 12,
+                          }
+                        }
                       />
                     )}
-                  </TouchableOpacity>
+                    {isLeadEdit && canEditLead && (
+                      <TouchableOpacity
+                        onPress={() => navigate(routeLead.AddLeads, { detail })}
+                        activeOpacity={0.6}
+                        style={{
+                          padding: 8,
+                          backgroundColor: color.mainTxtColor,
+                          borderRadius: 12,
+                          ...shadowPrimaryColor,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          width: 42,
+                        }}
+                      >
+                        <Feather name="edit-2" size={20} color="#fff" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 }
               />
               <RowItem
@@ -443,10 +486,14 @@ placeholderTextColor={'grey'}
                       // onPress={() => Linking.openURL(`tel:${detail?.clientMobile}`)}
                       onPress={() => navToCall()}
                     >
-                      <CustomText>{detail?.clientMobile}</CustomText>
+                      <CustomText style={{ color: color.mainTxtColor }}>
+                        {detail?.clientMobile}
+                      </CustomText>
                     </TouchableOpacity>
                   ) : (
-                    <CustomText>{"N/A"}</CustomText>
+                    <CustomText style={{ color: color.mainTxtColor }}>
+                      {"N/A"}
+                    </CustomText>
                   )
                 }
               />
@@ -461,10 +508,17 @@ placeholderTextColor={'grey'}
                         isMailAvail ? openMail(detail?.clientEmail) : null
                       }
                     >
-                      <CustomText numberOfLines={1}>{detail?.clientEmail}</CustomText>
+                      <CustomText
+                        numberOfLines={1}
+                        style={{ color: color.mainTxtColor }}
+                      >
+                        {detail?.clientEmail}
+                      </CustomText>
                     </TouchableOpacity>
                   ) : (
-                    <CustomText>{"N/A"}</CustomText>
+                    <CustomText style={{ color: color.mainTxtColor }}>
+                      {"N/A"}
+                    </CustomText>
                   )
                 }
               />
@@ -473,12 +527,13 @@ placeholderTextColor={'grey'}
                 value=""
                 containerStyle={{ marginBottom: 10 }}
                 icon={detail?.whatsapp ? "whatsapp" : "n/a"}
-                onPressIcon={() =>
-                  detail?.whatsapp
-                    ? Linking.openURL(`${detail?.whatsapp}`)
-                    : null
-                }
+                onPressIcon={() => {
+                  if (!detail?.clientMobile) return;
+                  const phone = "971-545011451".replace(/[^0-9]/g, "");
+                  Linking.openURL(`whatsapp://send?phone=${phone}`);
+                }}
               />
+
               <RowItem
                 title="Type"
                 value={leadTypeObj[detail?.type]}
@@ -504,27 +559,27 @@ placeholderTextColor={'grey'}
                   )
                 }
               />
-              {fields?.status === 'followUp_required' &&
+              {fields?.status === "followUp_required" && (
                 <RowItem
                   title="Follow Up Time"
                   component={
                     <View
                       style={{
-                        flexDirection: 'row'
+                        flexDirection: "row",
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={FUTModal.openModal}
-                      >
-                        <CustomText>
-                          {detail?.status !== 'followUp_required' ? 'Click for Date and Time'
-                            :
-                            formatDateTime(tdForFUT.date, tdForFUT.time)}</CustomText>
+                      <TouchableOpacity onPress={FUTModal.openModal}>
+                        <CustomText style={{ color: color.mainTxtColor }}>
+                          {detail?.status !== "followUp_required"
+                            ? "Click for Date and Time"
+                            : formatDateTime(tdForFUT.date, tdForFUT.time)}
+                        </CustomText>
                       </TouchableOpacity>
                     </View>
                   }
-                />}
-             
+                />
+              )}
+
               <RowItem
                 title="Comments"
                 value={detail?.comment || detail?.comments || ""}
@@ -543,7 +598,11 @@ placeholderTextColor={'grey'}
               {isAdminOrAssigne && (
                 <CustomBtn
                   title="Submit"
-                  containerStyle={{ marginBottom: 20, width: 100, alignSelf: 'flex-end' }}
+                  containerStyle={{
+                    marginBottom: 20,
+                    width: 100,
+                    alignSelf: "flex-end",
+                  }}
                   onPress={handleStatusUpdate}
                   isLoading={isLoading}
                   textStyle={{ fontSize: 14 }}
@@ -552,23 +611,37 @@ placeholderTextColor={'grey'}
               {/* notes */}
               <MainTitle
                 title="Notes"
-                containerStyle={{ marginBottom: 20 }}
+                containerStyle={{ marginBottom: 12 }}
                 icon={
-                  <TouchableOpacity onPress={() => {
-                    setNoteUpdate({})
-                    modalNote.openModal()
-                  }}>
-                    <EditIcon />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setNoteUpdate({});
+                      modalNote.openModal();
+                    }}
+                    activeOpacity={0.6}
+                    style={{
+                      padding: 8,
+                      backgroundColor: color.mainTxtColor,
+                      borderRadius: 12,
+                      ...shadowPrimaryColor,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: 42,
+                    }}
+                  >
+                    <Feather name="edit-2" size={20} color="#fff" />
                   </TouchableOpacity>
                 }
               />
               <NotesCard
                 noteArr={detail?.notes}
                 onEdit={(v) => {
-                  setNoteUpdate(v)
-                  modalNote.openModal()
+                  setNoteUpdate(v);
+                  modalNote.openModal();
                 }}
-                onDelete={(i) => { deleteNotes(i) }}
+                onDelete={(i) => {
+                  deleteNotes(i);
+                }}
                 isLoadingDelete={isLoadingDelete}
               />
               {!!detail?.additionalQuestions &&
@@ -651,18 +724,23 @@ placeholderTextColor={'grey'}
         onClose={FUTModal.closeModal}
         hasBackdrop
       >
-        <View style={{ backgroundColor: 'white', width: 300, padding: 20, borderRadius: 10 }}>
-          <MainTitle
-            title="Select Date and Time"
-          />
+        <View
+          style={{
+            backgroundColor: "white",
+            width: 300,
+            padding: 20,
+            borderRadius: 10,
+          }}
+        >
+          <MainTitle title="Select Date and Time" />
           <View style={{ height: 15 }} />
           <DatePickerExpo
             title="Date"
             boxContainerStyle={{ marginBottom: 15 }}
             onSelect={(v) => {
               setTdForFUT((prev) => {
-                return { ...prev, date: v }
-              })
+                return { ...prev, date: v };
+              });
             }}
             initialValue={tdForFUT.date}
           />
@@ -672,14 +750,18 @@ placeholderTextColor={'grey'}
             boxContainerStyle={{ marginBottom: 20 }}
             onSelect={(v) => {
               setTdForFUT((prev) => {
-                return { ...prev, time: v }
-              })
+                return { ...prev, time: v };
+              });
             }}
             initialValue={tdForFUT.time}
           />
           <CustomBtn
             title="Submit"
-            containerStyle={{ marginBottom: 20, width: 100, alignSelf: 'center' }}
+            containerStyle={{
+              marginBottom: 20,
+              width: 100,
+              alignSelf: "center",
+            }}
             onPress={handleStatusUpdate}
             isLoading={isLoading}
             textStyle={{ fontSize: 14 }}
@@ -688,46 +770,49 @@ placeholderTextColor={'grey'}
       </CustomModal>
     </>
   );
-}; 
+};
 
 export default LeadsDetails;
 
-const styles=StyleSheet.create({
-   modalContent: {
-    backgroundColor: 'white',
+const styles = StyleSheet.create({
+  modalContent: {
+    backgroundColor: "white",
     borderRadius: 10,
     // padding: 20,
-    width: '90%',
-    alignSelf: 'center',
+    width: "90%",
+    alignSelf: "center",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
+    color: color.mainTxtColor,
   },
   label: {
     fontSize: 16,
     marginBottom: 10,
+    color: color.mainTxtColor,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: color.borderColor,
+    color: color.mainTxtColor,
+    borderRadius: 12,
     padding: 10,
     height: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     marginBottom: 20,
   },
   button: {
     backgroundColor: color.saffronMango,
     paddingVertical: 12,
-    borderRadius: 5,
-    alignItems: 'center',
+    borderRadius: 14,
+    alignItems: "center",
   },
   buttonText: {
-    color: '#000',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
-})
+});

@@ -57,7 +57,7 @@ const RowItem = ({
       >
         <CustomText
           style={{
-            color: color.darkBlack,
+            color: color.mainTxtColor,
             fontWeight: "600",
             fontSize: 18,
           }}
@@ -90,7 +90,11 @@ const RowItem = ({
           {icon && (
             <TouchableOpacity style={{ width: 30 }} onPress={onPressIcon}>
               {icon === "whatsapp" && <WhatsappIcon width={15} height={15} />}
-              {icon === "n/a" && <CustomText>N/A</CustomText>}
+              {icon === "n/a" && (
+                <CustomText style={{ color: color.mainTxtColor }}>
+                  N/A
+                </CustomText>
+              )}
             </TouchableOpacity>
           )}
         </View>
@@ -103,13 +107,13 @@ export default RowItem;
 
 const styles = StyleSheet.create({
   text: {
-    color: color.darkBlack,
+    color: color.mainTxtColor,
     fontWeight: "400",
     fontSize: 15,
     textTransform: "capitalize",
   },
   text2: {
-    color: color.darkBlack,
+    color: color.mainTxtColor,
     // fontWeight: "300",
     fontSize: 14,
     textTransform: "capitalize",

@@ -94,7 +94,7 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
         />
         <CustomBtn
           title="Search"
-          containerStyle={{ width: 70 }}
+          containerStyle={{ width: 80 }}
           onPress={() => {
             !!onPressSubmit && onPressSubmit(search);
             popUpConfToast.popUpClose();

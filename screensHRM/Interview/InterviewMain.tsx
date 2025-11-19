@@ -36,6 +36,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { checkPermission } from "../../utils/commonFunctions";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const InterviewMain = () => {
   const { navigate } = useNavigation();
@@ -49,7 +50,7 @@ const InterviewMain = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useGetAllCandidates({ search: "" });
-
+  myConsole("candidatessss", candidates);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -164,7 +165,7 @@ const InterviewMain = () => {
     );
   };
   return (
-    <ContainerHRM headingTitle="Interview Module">
+    <ContainerHRM headingTitle="Interview">
       <ModalWithBlur
         visible={showOptionsModal}
         onClose={() => setShowOptionsModal(false)}
@@ -309,11 +310,22 @@ const InterviewMain = () => {
         {isLoading ? (
           <ActivityIndicator
             size="large"
-            color={color.saffronMango}
+            color={color.mainTxtColor}
             style={{ marginTop: 300 }}
           />
         ) : isError ? (
           <View style={{ flex: 1, paddingVertical: 200 }}>
+            <NoDataFound height={200} width={200} />
+          </View>
+        ) : candidates.length === 0 ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: -100,
+            }}
+          >
             <NoDataFound height={200} width={200} />
           </View>
         ) : (
@@ -338,7 +350,9 @@ const InterviewMain = () => {
               />
             }
             ListFooterComponent={
-              isFetchingNextPage ? <ActivityIndicator size="small" /> : null
+              isFetchingNextPage ? (
+                <ActivityIndicator size="small" color={color.mainTxtColor} />
+              ) : null
             }
           />
         )}
@@ -366,16 +380,10 @@ const styles = StyleSheet.create({
     borderColor: color.saffronMango,
     padding: 12,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 1, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   headerText: {
     fontSize: 16,
-    fontStyle: "italic",
-    color: "#4a3c1a",
+    color: color.mainTxtColor,
   },
   scheduleButton: {
     backgroundColor: color.saffronMango,
@@ -393,7 +401,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     borderBottomWidth: 1,
-    borderColor: "#000",
+    color: color.mainTxtColor,
+    borderColor: color.mainTxtColor,
   },
   card: {
     flexDirection: "row",

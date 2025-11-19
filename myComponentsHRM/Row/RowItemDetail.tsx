@@ -73,7 +73,7 @@ const RowItemDetail = ({
       >
         <CustomText
           style={{
-            color: color.darkBlack,
+            color: color.mainTxtColor,
             fontWeight: "600",
             fontSize: 18,
           }}
@@ -125,14 +125,14 @@ export default RowItemDetail;
 
 const styles = StyleSheet.create({
   text: {
-    color: color.darkBlack,
+    color: color.mainTxtColor,
     fontWeight: "600",
     fontSize: 15,
     textTransform: "capitalize",
   },
   text2: {
-    color: color.darkBlack,
-    fontWeight: "300",
+    color: color.mainTxtColor,
+    fontWeight: "400",
     fontSize: 14,
     textTransform: "capitalize",
   },

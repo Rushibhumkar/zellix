@@ -10,6 +10,9 @@ import React from "react";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { roleHRM } from "../../utils/hrmKeysMatchToBE";
 import moment from "moment";
+import { truncateString } from "../../utils/commonFunctions";
+import { shadowPrimaryColor } from "../../const/globalStyle";
+import { color } from "../../const/color";
 
 interface TRowOnLeave {
   containerStyle?: StyleProp<ViewStyle>;
@@ -29,6 +32,7 @@ const RowOnLeave = ({ containerStyle, item, onPress }: TRowOnLeave) => {
       <View style={styles.contentContainer}>
         <View style={styles.mainInfo}>
           <CustomText style={styles.nameText}>{item?.name ?? "N/A"}</CustomText>
+
           <CustomText style={styles.roleText}>{roleHRM[item?.role]}</CustomText>
         </View>
 
@@ -60,14 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    ...shadowPrimaryColor,
     borderLeftWidth: 4,
     borderLeftColor: "#4ECDC4",
   },
@@ -83,12 +80,12 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A202C",
+    color: color.mainTxtColor,
   },
   roleText: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#718096",
+    color: color.strokeColor,
   },
   detailsContainer: {
     flexDirection: "row",

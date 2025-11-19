@@ -17,6 +17,8 @@ import TabButton from "./TabButton";
 import { Feather } from "@expo/vector-icons";
 import { navigateToMapApp } from "../../../utils/navigateToMapApp";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import { sizes } from "../../../const";
+import { color } from "../../../const/color";
 
 const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
   const logsInfo = useLatestMeetings(leadId);
@@ -110,7 +112,20 @@ const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
               );
             })
           ) : (
-            <CustomText>Meeting information is not available</CustomText>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: sizes.height / 1.8,
+              }}
+            >
+              <CustomText
+                style={{ color: color.placeholderGrey, fontSize: 18 }}
+              >
+                Meeting information is not available
+              </CustomText>
+            </View>
           )}
         </View>
       </ScrollView>

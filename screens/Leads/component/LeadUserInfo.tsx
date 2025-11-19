@@ -17,6 +17,7 @@ import { roleHRM } from "../../../utils/hrmKeysMatchToBE";
 import moment from "moment";
 import TabButton from "./TabButton";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import { color } from "../../../const/color";
 
 const LeadUserInfo = ({ leadId = "", onTabPress, activeTab, setActiveTab }) => {
   const userInfo = useGetUserInfoInLeadDetail(leadId);
@@ -57,7 +58,9 @@ const LeadUserInfo = ({ leadId = "", onTabPress, activeTab, setActiveTab }) => {
           <RowItem
             title="Additional"
             component={
-              <CustomText>{userInfo.data?.[0]?.additional || "N/A"}</CustomText>
+              <CustomText style={{ color: color.mainTxtColor }}>
+                {userInfo.data?.[0]?.additional || "N/A"}
+              </CustomText>
             }
             containerStyle={{ marginBottom: 10 }}
           />
@@ -95,7 +98,9 @@ const LeadUserInfo = ({ leadId = "", onTabPress, activeTab, setActiveTab }) => {
                       <RowItem
                         title="Additional"
                         component={
-                          <CustomText>{x?.additional || "N/A"}</CustomText>
+                          <CustomText style={{ color: color.mainTxtColor }}>
+                            {x?.additional || "N/A"}
+                          </CustomText>
                         }
                         containerStyle={{ marginBottom: 10 }}
                       />

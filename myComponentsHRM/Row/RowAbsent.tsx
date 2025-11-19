@@ -11,7 +11,10 @@ import React from "react";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 import { roleHRM, statusAttend, statusHRM } from "../../utils/hrmKeysMatchToBE";
-import { shadowSecondaryColor } from "../../const/globalStyle";
+import {
+  shadowPrimaryColor,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 
 interface TRowAbsent {
   containerStyle: StyleProp<ViewStyle>;
@@ -52,19 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 4,
-    // iOS shadow
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 6,
-        shadowColor: "#000",
-      },
-    }),
+    ...shadowPrimaryColor,
     borderLeftWidth: 4,
     borderLeftColor: "#FF6B6B",
   },
@@ -80,12 +71,12 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A202C",
+    color: color.mainTxtColor,
   },
   roleText: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#718096",
+    color: color.strokeColor,
   },
   statusContainer: {
     alignItems: "flex-end",

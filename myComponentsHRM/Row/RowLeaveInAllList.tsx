@@ -11,7 +11,10 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 import moment from "moment";
 import { roleHRM, statusColor, statusHRM } from "../../utils/hrmKeysMatchToBE";
-import { shadowSecondaryColor } from "../../const/globalStyle";
+import {
+  shadowPrimaryColor,
+  shadowSecondaryColor,
+} from "../../const/globalStyle";
 
 interface TRowLeaveInAllList {
   containerStyle?: StyleProp<ViewStyle>;
@@ -137,14 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    ...shadowPrimaryColor,
     borderLeftWidth: 4,
   },
   contentContainer: {
@@ -159,12 +155,12 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A202C",
+    color: color.mainTxtColor,
   },
   roleText: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#718096",
+    color: color.strokeColor,
   },
   detailsContainer: {
     flexDirection: "row",

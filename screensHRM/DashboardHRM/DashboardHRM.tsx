@@ -23,6 +23,7 @@ import { routeAttendance, routeLeave } from "../../utils/routesHRM";
 import CheckInOut from "./CheckInOut";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
+import { color } from "../../const/color";
 
 const DashboardHRM = () => {
   const { user } = useSelector(selectUser);
@@ -84,62 +85,94 @@ const DashboardHRM = () => {
         ListFooterComponent={
           <View>
             {!isAgent && (
-              <>
-                <TitleHRM title="Employees on Leave Today" marginBottom={20} />
-                <FlatList
-                  ListEmptyComponent={
-                    <>
-                      {isLoadingTodayLeave && <LoadingCompo />}
-                      {todayLeaveList?.data?.length === 0 && (
-                        <NoDataFound height={150} width={150} />
-                      )}
-                    </>
-                  }
-                  data={todayLeaveList?.data ?? []}
-                  renderItem={({ item }) => (
-                    <RowOnLeave
-                      containerStyle={styles.rowContainer}
-                      item={item}
-                      onPress={() =>
-                        navigate(routeLeave.AllLeaveStack, {
-                          params: { item: { ...item } },
-                          screen: routeLeave?.LeaveDetail,
-                          initial: false,
-                        })
-                      }
-                    />
-                  )}
-                />
-                <TitleHRM
-                  title="Employees Absent Today"
-                  marginBottom={20}
-                  marginTop={20}
-                />
-                <FlatList
-                  ListEmptyComponent={
-                    <>
-                      {isLoadingAbsent && <LoadingCompo />}
-                      {todayAbsentList?.data?.length === 0 && (
-                        <NoDataFound height={150} width={150} />
-                      )}
-                    </>
-                  }
-                  data={todayAbsentList?.data ?? []}
-                  renderItem={({ item }) => (
-                    <RowAbsent
-                      containerStyle={styles.rowContainer}
-                      item={item}
-                      onPress={() =>
-                        navigate(routeAttendance?.AttendanceStack, {
-                          params: { item: { ...item } },
-                          screen: routeAttendance?.AttendanceDetail,
-                          initial: false,
-                        })
-                      }
-                    />
-                  )}
-                />
-              </>
+              <View style={{ marginTop: 12 }}>
+                <View
+                  style={{
+                    marginBottom: 24,
+                    borderColor: color.borderColor,
+                    borderRadius: 14,
+                    borderWidth: 1.4,
+                    paddingHorizontal: 8,
+                  }}
+                >
+                  <TitleHRM
+                    title="Employees on Leave Today"
+                    marginBottom={20}
+                    marginTop={20}
+                  />
+                  <FlatList
+                    ListEmptyComponent={
+                      <>
+                        {isLoadingTodayLeave && <LoadingCompo />}
+                        {todayLeaveList?.data?.length === 0 && (
+                          <View
+                            style={{
+                              backgroundColor: "#fff",
+                              borderRadius: 12,
+                              paddingBottom: 12,
+                            }}
+                          >
+                            <NoDataFound height={120} width={120} />
+                          </View>
+                        )}
+                      </>
+                    }
+                    data={todayLeaveList?.data ?? []}
+                    renderItem={({ item }) => (
+                      <RowOnLeave
+                        containerStyle={styles.rowContainer}
+                        item={item}
+                        onPress={() =>
+                          navigate(routeLeave.AllLeaveStack, {
+                            params: { item: { ...item } },
+                            screen: routeLeave?.LeaveDetail,
+                            initial: false,
+                          })
+                        }
+                      />
+                    )}
+                  />
+                </View>
+                <View
+                  style={{
+                    marginBottom: 24,
+                    borderColor: "#739FE133",
+                    borderRadius: 14,
+                    borderWidth: 1.4,
+                    paddingHorizontal: 8,
+                  }}
+                >
+                  <TitleHRM
+                    title="Employees Absent Today"
+                    marginBottom={20}
+                    marginTop={20}
+                  />
+                  <FlatList
+                    ListEmptyComponent={
+                      <>
+                        {isLoadingAbsent && <LoadingCompo />}
+                        {todayAbsentList?.data?.length === 0 && (
+                          <NoDataFound height={120} width={120} />
+                        )}
+                      </>
+                    }
+                    data={todayAbsentList?.data ?? []}
+                    renderItem={({ item }) => (
+                      <RowAbsent
+                        containerStyle={styles.rowContainer}
+                        item={item}
+                        onPress={() =>
+                          navigate(routeAttendance?.AttendanceStack, {
+                            params: { item: { ...item } },
+                            screen: routeAttendance?.AttendanceDetail,
+                            initial: false,
+                          })
+                        }
+                      />
+                    )}
+                  />
+                </View>
+              </View>
             )}
             {isAgent && (
               <>
@@ -147,35 +180,44 @@ const DashboardHRM = () => {
                 <CardAgentLeaveCount />
               </>
             )}
-            <TitleHRM
-              title="Leave Application Status"
-              marginBottom={20}
-              marginTop={20}
-            />
-            <FlatList
-              ListEmptyComponent={
-                <>
-                  {isLoadingLeave && <LoadingCompo />}
-                  {leaveList?.length === 0 && (
-                    <NoDataFound height={150} width={150} />
-                  )}
-                </>
-              }
-              data={leaveList?.slice(0, 10)}
-              renderItem={({ item }) => (
-                <RowLeaveInAllList
-                  containerStyle={styles.rowContainer}
-                  item={item}
-                  onPress={() =>
-                    navigate(routeLeave?.AllLeaveStack, {
-                      params: { item: { ...item } },
-                      screen: routeLeave?.LeaveDetail,
-                      initial: false,
-                    })
-                  }
-                />
-              )}
-            />
+            <View
+              style={{
+                borderColor: "#739FE133",
+                borderRadius: 14,
+                borderWidth: 1.4,
+                paddingHorizontal: 8,
+              }}
+            >
+              <TitleHRM
+                title="Leave Application Status"
+                marginBottom={20}
+                marginTop={20}
+              />
+              <FlatList
+                ListEmptyComponent={
+                  <>
+                    {isLoadingLeave && <LoadingCompo />}
+                    {leaveList?.length === 0 && (
+                      <NoDataFound height={120} width={120} />
+                    )}
+                  </>
+                }
+                data={leaveList?.slice(0, 10)}
+                renderItem={({ item }) => (
+                  <RowLeaveInAllList
+                    containerStyle={styles.rowContainer}
+                    item={item}
+                    onPress={() =>
+                      navigate(routeLeave?.AllLeaveStack, {
+                        params: { item: { ...item } },
+                        screen: routeLeave?.LeaveDetail,
+                        initial: false,
+                      })
+                    }
+                  />
+                )}
+              />
+            </View>
           </View>
         }
         refreshControl={
@@ -191,7 +233,8 @@ export default DashboardHRM;
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 180,
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   rowContainer: {
     marginBottom: 12,

@@ -101,7 +101,7 @@ const AllAttendance = () => {
   };
   myConsole("issueAttList", issueAttList?.length);
   return (
-    <ContainerHRM headingTitle="Attendance Module">
+    <ContainerHRM headingTitle="Attendance">
       <FlatList
         ListHeaderComponent={
           <>
@@ -111,7 +111,7 @@ const AllAttendance = () => {
               style={{ gap: 10 }}
               ListHeaderComponent={
                 <>
-                  <TitleHRM title="Issues" marginBottom={20} />
+                  <TitleHRM title="Issues" marginBottom={20} marginTop={12} />
                   {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
                 </>
               }
@@ -119,7 +119,17 @@ const AllAttendance = () => {
                 <>
                   {isLoadingIssue && <LoadingCompo />}
                   {issueAttList?.length === 0 && (
-                    <NoDataFound height={200} width={200} />
+                    <View
+                      style={{
+                        backgroundColor: "#fff",
+                        borderWidth: 0.8,
+                        borderColor: color.borderColor,
+                        borderRadius: 12,
+                        paddingBottom: 12,
+                      }}
+                    >
+                      <NoDataFound height={140} width={140} />
+                    </View>
                   )}
                 </>
               }
@@ -175,10 +185,11 @@ const AllAttendance = () => {
                   {issueAttList?.length !== 0 && hasNextPageIssue && (
                     <CustomBtn
                       containerStyle={{
-                        width: 80,
+                        width: 100,
                         alignSelf: "flex-end",
                         backgroundColor: color.prussianBlue,
                       }}
+                      gradientContStyle={{ paddingVertical: 10 }}
                       title="Load More"
                       textStyle={{ fontSize: 12 }}
                       onPress={loadMoreIssueList}
@@ -190,6 +201,7 @@ const AllAttendance = () => {
             <TitleHRM
               title="Attendance"
               marginBottom={20}
+              marginTop={12}
               onPressFilter={() =>
                 popUpConfToast.plzWait({
                   bodyComponent: () => (

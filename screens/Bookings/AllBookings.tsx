@@ -381,6 +381,7 @@ const BookingRowItem = ({
       style={[
         styles.mainlistcontainer,
         {
+          marginTop: index === 0 ? 25 : 12,
           marginHorizontal: 20,
           backgroundColor: selected
             ? "rgba(252, 244, 227, 1)"
@@ -490,7 +491,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   mainlistcontainer: {
-    marginTop: 25,
     borderWidth: 1,
     padding: 10,
     borderRadius: 14,

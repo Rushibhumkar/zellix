@@ -38,4 +38,6 @@ export const color = {
   color1: "#4985F2",
   strokeColor: "#739FE1",
   darkBluTxtColor: "#07091bff",
+
+  borderColor: "#739FE133",
 };

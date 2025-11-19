@@ -51,8 +51,9 @@ export const shadowPrimaryColor = {
     ios: {
       shadowColor: color.primaryColor,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.36,
-      shadowRadius: 6,
+      shadowOpacity: 0.26,
+      shadowRadius: 2,
+      elevation: 1,
     },
     android: {
       elevation: 6,
@@ -105,4 +106,12 @@ export const iconWrapperStyle = {
   borderColor: "#739fe13a",
   padding: 6,
   borderRadius: 12,
+};
+
+export const headerRowItemsStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  borderRadius: 14,
+  justifyContent: "space-between" as const,
+  flexDirection: "row" as const,
 };

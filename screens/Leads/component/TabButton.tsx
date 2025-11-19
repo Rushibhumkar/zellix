@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
-  Pressable,
+  TouchableOpacity,
   ScrollView,
+  Platform,
 } from "react-native";
 import { color } from "../../../const/color";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import { shadowPrimaryColor } from "../../../const/globalStyle";
 
 interface TTabButton {
   onTabPress?: (v: number) => void;
@@ -17,63 +17,52 @@ interface TTabButton {
 }
 
 const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
-  // const [activeTab, setActiveTab] = useState(1);
-
-  const handlePress = (tabIndex) => {
+  const handlePress = (tabIndex: number) => {
     setActiveTab && setActiveTab(tabIndex);
     if (onTabPress) {
       onTabPress(tabIndex);
     }
   };
+
   useEffect(() => {
     setActiveTab && setActiveTab(activeTab);
   }, [activeTab]);
 
+  const tabs = [
+    { id: 1, label: "Lead Info" },
+    { id: 2, label: "User Info" },
+    { id: 3, label: "Logs Info" },
+    { id: 4, label: "Meeting Info" },
+  ];
+
   return (
     <View style={styles.container}>
-      <ScrollView horizontal>
-        <Pressable
-          style={[styles.tab, activeTab === 1 && styles.activeTab]}
-          onPress={() => handlePress(1)}
-        >
-          <CustomText
-            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[
+              styles.tab,
+              activeTab === tab.id && styles.activeTab,
+              activeTab === tab.id && styles.activeTabShadow,
+            ]}
+            onPress={() => handlePress(tab.id)}
+            activeOpacity={0.6}
           >
-            Lead Info
-          </CustomText>
-        </Pressable>
-
-        <Pressable
-          style={[styles.tab, activeTab === 2 && styles.activeTab]}
-          onPress={() => handlePress(2)}
-        >
-          <CustomText
-            style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
-          >
-            User Info
-          </CustomText>
-        </Pressable>
-
-        <Pressable
-          style={[styles.tab, activeTab === 3 && styles.activeTab]}
-          onPress={() => handlePress(3)}
-        >
-          <CustomText
-            style={[styles.tabText, activeTab === 3 && styles.activeTabText]}
-          >
-            Logs Info
-          </CustomText>
-        </Pressable>
-        <Pressable
-          style={[styles.tab, activeTab === 4 && styles.activeTab]}
-          onPress={() => handlePress(4)}
-        >
-          <CustomText
-            style={[styles.tabText, activeTab === 4 && styles.activeTabText]}
-          >
-            Meeting Info
-          </CustomText>
-        </Pressable>
+            <CustomText
+              style={[
+                styles.tabText,
+                activeTab === tab.id && styles.activeTabText,
+              ]}
+            >
+              {tab.label}
+            </CustomText>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </View>
   );
@@ -81,36 +70,77 @@ const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 8,
+    ...shadowPrimaryColor,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "space-between",
-    width: "80%",
-    alignSelf: "center",
-    marginTop: 10,
-    borderRadius: 10,
-
-    // padding: 20,
-    // marginVertical: 20,
   },
   tab: {
-    // flex: 1,
-    // paddingVertical: 10,
-    // marginHorizontal: 5,
-    backgroundColor: color.gray,
     flex: 1,
-    // borderRadius: 5,
     alignItems: "center",
-    padding: 5,
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    // marginHorizontal: 4,
+    minWidth: 100,
   },
   activeTab: {
     backgroundColor: color.saffronMango,
+    ...Platform.select({
+      ios: {
+        shadowColor: color.saffronMango,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+        shadowColor: color.saffronMango,
+      },
+    }),
+  },
+  activeTabShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: color.saffronMango,
+      },
+    }),
   },
   tabText: {
-    fontWeight: "500",
-    // color: '#fff',
+    fontWeight: "600",
+    fontSize: 14,
+    color: color.strokeColor,
+    textAlign: "center",
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "600",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
   activeTabText: {
-    // color: '#fff',
-    fontWeight: "500",
+    color: "#ffffffff",
+    fontWeight: "700",
+    ...Platform.select({
+      ios: {
+        fontFamily: "System",
+        fontWeight: "700",
+      },
+      android: {
+        fontFamily: "sans-serif-medium",
+      },
+    }),
   },
 });
 

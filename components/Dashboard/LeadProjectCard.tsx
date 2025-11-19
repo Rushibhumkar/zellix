@@ -79,7 +79,11 @@ const LeadProjectCard = ({ onRefresh }) => {
       </View>
 
       {loadingLeadProjectWise ? (
-        <ActivityIndicator size="large" color="#000" style={{ height: 240 }} />
+        <ActivityIndicator
+          size="large"
+          color={color.mainTxtColor}
+          style={{ height: 240 }}
+        />
       ) : errorLeadProjectWise ? (
         <NoDataFound width={220} height={240} />
       ) : (

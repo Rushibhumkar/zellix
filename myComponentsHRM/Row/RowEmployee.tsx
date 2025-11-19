@@ -10,6 +10,7 @@ import React from "react";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 import { roleHRM, statusColor, statusHRM } from "../../utils/hrmKeysMatchToBE";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 interface TRowEmployee {
   containerStyle?: StyleProp<ViewStyle>;
@@ -28,11 +29,12 @@ const RowEmployee = ({ containerStyle, onPress, item }: TRowEmployee) => {
       onPress={onPress}
       style={[
         {
-          borderWidth: 0.8,
-          borderColor: color.secondaryColor,
+          borderWidth: 1.8,
+          borderColor: color.borderColor,
           padding: 10,
-          borderRadius: 5,
+          borderRadius: 14,
           justifyContent: "space-between",
+          backgroundColor: color.white,
           flexDirection: "row",
         },
         containerStyle,
@@ -83,11 +85,11 @@ const styles = StyleSheet.create({
   text1: {
     fontSize: 14,
     fontWeight: "400",
-    // marginBottom: 5
+    color: color.mainTxtColor,
   },
   text2: {
     fontSize: 12,
     fontWeight: "300",
-    // marginBottom: 5
+    color: color.strokeColor,
   },
 });

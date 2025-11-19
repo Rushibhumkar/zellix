@@ -5,9 +5,7 @@ import { PieChart } from "react-native-gifted-charts";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 import {
-  shadow1,
-  shadow2,
-  shadowLight,
+  shadowPrimaryColor,
   shadowSecondaryColor,
 } from "../../const/globalStyle";
 import {
@@ -105,16 +103,13 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
           style={{
             height: 10,
             width: 10,
-            borderRadius: 5,
             backgroundColor: color,
-            // marginRight: 10,
           }}
         />
-        {/* <CustomText style={{ color: 'white' }}>{text}</CustomText> */}
         <CustomText
           fontSize={12}
-          fontWeight="300"
-          style={{ textTransform: "uppercase" }}
+          fontWeight="400"
+          style={{ textTransform: "uppercase", color: "#2E67BE" }}
         >
           {text}
           <CustomText color={color} fontSize={11}>{`(${value})`}</CustomText>
@@ -152,19 +147,19 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
       style={{
         // margin: 20,
         padding: 16,
-        borderRadius: 10,
+        borderRadius: 16,
         backgroundColor: color.listCardBg,
-        borderWidth: 0.8,
-        borderColor: color.secondaryColor,
+        borderWidth: 1.2,
+        borderColor: color.borderColor,
         marginBottom: 15,
-        ...shadowSecondaryColor,
+        ...shadowPrimaryColor,
       }}
     >
       <CustomText
         fontSize={16}
         fontWeight="600"
-        style={{ fontStyle: "italic" }}
         marginBottom={10}
+        color={color.mainTxtColor}
       >
         {titleH[type]}
       </CustomText>

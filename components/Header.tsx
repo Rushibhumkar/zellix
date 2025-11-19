@@ -23,17 +23,28 @@ import { selectUser } from "../redux/userSlice";
 import { logOut } from "../services/authApi/auth";
 import { removeItemValue } from "../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../redux/action";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 interface HeaderProps {
   title: string;
   onBack?: () => void;
   showBackIcon?: boolean;
+  showActions?: boolean;
+  onPressSearch?: () => void;
+  onPressFilter?: () => void;
+  onPressAdd?: () => void;
+  isWithAnimation?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
   title,
   onBack,
   showBackIcon = true,
+  showActions = false,
+  onPressSearch,
+  onPressFilter,
+  onPressAdd,
+  isWithAnimation = false,
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
@@ -104,23 +115,73 @@ const Header: React.FC<HeaderProps> = ({
 
               {/* Placeholder for balance */}
             </View>
-            <View style={styles.iconWrapper}>
-              {title !== "Notification" && (
+            {isWithAnimation ? (
+              <Animated.View
+                entering={FadeInDown.duration(400)}
+                exiting={FadeOutUp.duration(300)}
+                style={styles.iconWrapper}
+              >
+                {showActions && (
+                  <>
+                    <Pressable onPress={onPressSearch} style={styles.iconBtn}>
+                      <Feather name="search" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable onPress={onPressFilter} style={styles.iconBtn}>
+                      <Feather name="filter" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable onPress={onPressAdd} style={styles.iconBtn}>
+                      <Feather name="plus" size={20} color="#fff" />
+                    </Pressable>
+                  </>
+                )}
+                {title !== "Notification" && (
+                  <Pressable
+                    onPress={() => navigate("Notification")}
+                    style={styles.iconBtn}
+                  >
+                    <View style={styles.iconBadge} />
+                    <Feather name="bell" size={20} color="#fff" />
+                  </Pressable>
+                )}
                 <Pressable
-                  onPress={() => navigate("Notification")}
+                  onPress={() => setMenuVisible(true)}
                   style={styles.iconBtn}
                 >
-                  <View style={styles.iconBadge} />
-                  <Feather name="bell" size={20} color="#fff" />
+                  <Feather name="menu" size={20} color="#fff" />
                 </Pressable>
-              )}
-              <Pressable
-                onPress={() => setMenuVisible(true)}
-                style={styles.iconBtn}
-              >
-                <Feather name="menu" size={20} color="#fff" />
-              </Pressable>
-            </View>
+              </Animated.View>
+            ) : (
+              <View style={styles.iconWrapper}>
+                {showActions && (
+                  <>
+                    <Pressable onPress={onPressSearch} style={styles.iconBtn}>
+                      <Feather name="search" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable onPress={onPressFilter} style={styles.iconBtn}>
+                      <Feather name="filter" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable onPress={onPressAdd} style={styles.iconBtn}>
+                      <Feather name="plus" size={20} color="#fff" />
+                    </Pressable>
+                  </>
+                )}
+                {title !== "Notification" && (
+                  <Pressable
+                    onPress={() => navigate("Notification")}
+                    style={styles.iconBtn}
+                  >
+                    <View style={styles.iconBadge} />
+                    <Feather name="bell" size={20} color="#fff" />
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => setMenuVisible(true)}
+                  style={styles.iconBtn}
+                >
+                  <Feather name="menu" size={20} color="#fff" />
+                </Pressable>
+              </View>
+            )}
           </View>
           <MenuModal
             visible={menuVisible}

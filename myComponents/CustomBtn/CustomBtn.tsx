@@ -20,6 +20,7 @@ interface TCustomBtn {
   disabled?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  gradientContStyle?: StyleProp<ViewStyle>;
   isLoaderColor?: string;
 }
 
@@ -31,6 +32,7 @@ const CustomBtn = ({
   containerStyle,
   textStyle,
   isLoaderColor,
+  gradientContStyle,
 }: TCustomBtn) => {
   const loaderColor = isLoaderColor ?? color.white;
 
@@ -49,7 +51,7 @@ const CustomBtn = ({
         colors={disabled ? ["#cccccc", "#cccccc"] : ["#2E67BE", "#4985F2"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={styles.gradientContainer}
+        style={[styles.gradientContainer, gradientContStyle]}
       >
         <View style={styles.textView}>
           <CustomText

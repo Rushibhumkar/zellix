@@ -31,6 +31,7 @@ import { queryKeyHRM } from "../../utils/queryKeys";
 import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import { roleEnum } from "../../utils/data";
+import { Feather } from "@expo/vector-icons";
 
 const AllUSersHRM = () => {
   const { navigate } = useNavigation();
@@ -75,7 +76,7 @@ const AllUSersHRM = () => {
     }
   };
   return (
-    <ContainerHRM headingTitle="User Module">
+    <ContainerHRM headingTitle="Users">
       {isSubSup && (
         <TouchableOpacity
           onPress={() => navigate(routeUser.AddUserHRM)}
@@ -103,6 +104,7 @@ const AllUSersHRM = () => {
               <CardHRM />
               <TitleHRM
                 title="Total Employees"
+                marginTop={12}
                 marginBottom={20}
                 onPressFilter={() =>
                   popUpConfToast.plzWait({
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     minHeight: 600,
   },
   listContent: {
-    paddingBottom: 100,
+    paddingBottom: 180,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
@@ -174,10 +176,10 @@ const styles = StyleSheet.create({
   },
   fabButton: {
     position: "absolute",
-    bottom: Platform.OS === "ios" ? 100 : 80,
+    bottom: Platform.OS === "ios" ? 120 : 100,
     right: 20,
     zIndex: 5,
-    backgroundColor: "#2D67C6",
+    // backgroundColor: "#2D67C6",
     width: 56,
     height: 56,
     borderRadius: 28,

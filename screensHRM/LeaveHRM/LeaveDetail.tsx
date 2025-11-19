@@ -139,7 +139,7 @@ const LeaveDetail = () => {
               <CustomBtn
                 title="Accept"
                 containerStyle={{
-                  minWidth: "30%",
+                  minWidth: "32%",
                   marginEnd: 20,
                 }}
                 textStyle={{
@@ -155,7 +155,7 @@ const LeaveDetail = () => {
                   fontSize: 14,
                 }}
                 containerStyle={{
-                  minWidth: "30%",
+                  minWidth: "32%",
                 }}
                 // onPress={() => handleApproveReject('leaveRejectById')}
                 // isLoading={isLoading.reject}
@@ -242,7 +242,14 @@ export default LeaveDetail;
 
 const RespondentDetails = ({ item, isFirst, isLast }) => {
   return (
-    <View>
+    <View
+      style={{
+        borderWidth: 1.8,
+        borderColor: color.borderColor,
+        padding: 12,
+        borderRadius: 12,
+      }}
+    >
       {isFirst && <TitleInDetail title={"Respondent Details"} />}
       <RowItemDetail
         title={"Name"}

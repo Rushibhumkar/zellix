@@ -22,3 +22,9 @@ export const formatCount = (value?: number | string): string => {
     return "0";
   }
 };
+
+export function truncateString(value, length = 18) {
+  if (typeof value !== "string") value = String(value);
+  if (value.length <= length) return value;
+  return value.slice(0, length - 3) + "...";
+}

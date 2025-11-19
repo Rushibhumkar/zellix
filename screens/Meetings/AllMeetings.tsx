@@ -224,11 +224,12 @@ const AllMeetings = () => {
           <FlatList
             data={meetingData}
             // data={[]}
-            renderItem={({ item }) => {
+            renderItem={({ item, index }) => {
               let status = item?.meetings[item?.meetings?.length - 1]?.status;
               return (
                 <MeetingRowItem
                   item={item}
+                  index={index}
                   onPress={() =>
                     selected?.length > 0
                       ? handleSelect(item._id)
@@ -303,6 +304,7 @@ const MeetingRowItem = ({
   onPress,
   onLongPress,
   selected,
+  index,
   bgColor = "#fff",
 }) => {
   return (
@@ -311,6 +313,7 @@ const MeetingRowItem = ({
         styles.mainlistcontainer,
         {
           // backgroundColor: selected ? "rgba(252, 244, 227, 1)" : "#FCFAFA",
+          marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected ? "rgba(252, 244, 227, 1)" : bgColor,
         },
       ]}

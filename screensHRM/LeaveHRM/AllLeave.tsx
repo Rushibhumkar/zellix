@@ -72,7 +72,7 @@ const AllLeave = () => {
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   return (
-    <ContainerHRM headingTitle="Leave Module">
+    <ContainerHRM headingTitle="Leave">
       <>
         {currentDate < 25 && (
           <TouchableOpacity
@@ -97,6 +97,7 @@ const AllLeave = () => {
               {isAgent && <CircularBarChart type="attendanceChart" />}
               <TitleHRM
                 title="Total Leaves"
+                marginTop={12}
                 marginBottom={20}
                 onPressFilter={() =>
                   popUpConfToast.plzWait({

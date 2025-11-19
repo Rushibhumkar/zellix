@@ -1,63 +1,76 @@
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native'
-import React from 'react'
-import CustomText from '../../myComponents/CustomText/CustomText'
-import { Ionicons } from '@expo/vector-icons';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import React from "react";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { color } from "../../const/color";
+import { iconWrapperStyle, shadowPrimaryColor } from "../../const/globalStyle";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface TTitleHRM {
-    title?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-    marginBottom?: number;
-    marginTop?: number;
-    onPressFilter?: () => void;
+  title?: string;
+  containerStyle?: StyleProp<ViewStyle>;
+  marginBottom?: number;
+  marginTop?: number;
+  onPressFilter?: () => void;
 }
 const TitleHRM = ({
-    title,
-    containerStyle,
-    marginBottom,
-    marginTop,
-    onPressFilter
+  title,
+  containerStyle,
+  marginBottom,
+  marginTop,
+  onPressFilter,
 }: TTitleHRM) => {
-    return (
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingBottom: 3,
-                marginBottom,
-                marginTop
-            }}
+  return (
+    <View
+      style={[
+        {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: !!onPressFilter ? 6 : marginBottom ? marginBottom : 0,
+          marginTop,
+        },
+        containerStyle,
+      ]}
+    >
+      <View>
+        <CustomText
+          fontSize={16}
+          fontWeight="600"
+          style={{ color: color.mainTxtColor, marginLeft: 4 }}
         >
-            <View
-                style={[{
-                    borderBottomWidth: 1,
-                    width: '70%',
-                },
-                    containerStyle
-                ]}
-            >
-                <CustomText
-                    fontSize={16}
-                    fontWeight='600'
-                    style={{
-                        fontStyle: 'italic'
-                    }}
-                >
-                    {title ?? '  Employees on Leave Today'}
-                </CustomText>
-            </View>
-            {!!onPressFilter && <TouchableOpacity
-                onPress={onPressFilter}
-                style={{
-                    paddingHorizontal: 10
-                }}
-            >
-                <Ionicons name='filter' size={20} />
-            </TouchableOpacity>}
-        </View>
-    )
-}
+          {title ?? "  Employees on Leave Today"}
+        </CustomText>
+      </View>
+      {!!onPressFilter && (
+        <LinearGradient
+          colors={["#2E67BE", "#4985F2"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{
+            borderRadius: 12,
+            padding: 6,
+            borderColor: "#ffffff29",
+            borderWidth: 2,
+            ...shadowPrimaryColor,
+          }}
+        >
+          <TouchableOpacity onPress={onPressFilter}>
+            <Feather name="filter" size={20} color={color.white} />
+          </TouchableOpacity>
+        </LinearGradient>
+      )}
+    </View>
+  );
+};
 
-export default TitleHRM
+export default TitleHRM;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

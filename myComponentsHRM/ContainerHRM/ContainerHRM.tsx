@@ -182,7 +182,6 @@ const ContainerHRM = ({
             fontSize={18}
             fontWeight="700"
             style={{
-              fontStyle: "italic",
               textTransform: "capitalize",
               color: color.white,
             }}

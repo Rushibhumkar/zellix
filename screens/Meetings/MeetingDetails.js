@@ -306,7 +306,7 @@ const MeetingDetails = () => {
                     navToCall()
                   }
                 >
-                  <CustomText>{detail?.lead?.clientMobile}</CustomText>
+                  <CustomText style={{color:color.mainTxtColor}}>{detail?.lead?.clientMobile}</CustomText>
                 </TouchableOpacity>
               }
               containerStyle={{ marginBottom: 10 }}
@@ -320,7 +320,7 @@ const MeetingDetails = () => {
                     isMailAvail ? openMail(detail?.lead?.clientEmail) : null
                   }
                 >
-                  <CustomText numberOfLines={1}>{detail?.lead?.clientEmail}</CustomText>
+                  <CustomText numberOfLines={1}  style={{color:color.mainTxtColor}}>{detail?.lead?.clientEmail}</CustomText>
                 </TouchableOpacity>
               }
               containerStyle={{ marginBottom: 10 }}

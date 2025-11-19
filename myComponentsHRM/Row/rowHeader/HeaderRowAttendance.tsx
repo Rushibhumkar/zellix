@@ -1,32 +1,21 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
+import { LinearGradient } from "expo-linear-gradient";
+import { headerRowItemsStyle } from "../../../const/globalStyle";
 
 const HeaderRowAttendance = () => {
   return (
-    <View
-      style={[
-        {
-          borderWidth: 0.5,
-          borderColor: "grey",
-          padding: 10,
-          borderRadius: 5,
-          justifyContent: "space-between",
-          flexDirection: "row",
-          backgroundColor: color.secondary200,
-        },
-      ]}
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={headerRowItemsStyle}
     >
       <View style={styles.row1}>
-        <CustomText style={styles.text1}>
-          Name
-          {/* {item?.name} */}
-        </CustomText>
-        <CustomText style={styles.text2}>
-          {/* {roleHRM[item?.role]} */}
-          Role
-        </CustomText>
+        <CustomText style={styles.text1}>Name</CustomText>
+        <CustomText style={styles.text2}>Role</CustomText>
       </View>
       <View style={styles.row2}>
         <CustomText style={styles.text1}>P.I.T</CustomText>
@@ -37,14 +26,10 @@ const HeaderRowAttendance = () => {
       <View style={styles.row3}>
         <CustomText style={styles.text1} color={"white"}>
           Status
-          {/* {statusAttend[item?.status]} */}
         </CustomText>
-        <CustomText style={styles.text2}>
-          {/* {moment(item?.createdAt).format('DD/MM/YYYY')} */}
-          Date
-        </CustomText>
+        <CustomText style={styles.text2}>Date</CustomText>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -54,21 +39,18 @@ const styles = StyleSheet.create({
   row1: {
     width: "50%",
     gap: 5,
-    // backgroundColor: 'red'
   },
   row2: {
     width: "20%",
     gap: 5,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: 'green'
   },
   row3: {
     width: "30%",
     gap: 5,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: 'blue'
   },
   text1: {
     fontSize: 14,

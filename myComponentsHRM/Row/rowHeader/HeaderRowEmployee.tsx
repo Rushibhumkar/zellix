@@ -2,22 +2,16 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
+import { LinearGradient } from "expo-linear-gradient";
+import { headerRowItemsStyle } from "../../../const/globalStyle";
 
 const HeaderRowEmployee = () => {
   return (
-    <View
-      style={[
-        {
-          borderWidth: 0.5,
-          borderColor: "grey",
-          padding: 10,
-          borderRadius: 5,
-          justifyContent: "space-between",
-          flexDirection: "row",
-          marginBottom: 10,
-          backgroundColor: color.secondary200,
-        },
-      ]}
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[headerRowItemsStyle, { marginBottom: 12 }]}
     >
       <View style={styles.row1}>
         <CustomText style={styles.text1}>Name</CustomText>
@@ -36,7 +30,7 @@ const HeaderRowEmployee = () => {
         </CustomText>
         <CustomText style={styles.text2}>{``}</CustomText>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

@@ -10,12 +10,14 @@ import React, { useState } from "react";
 import { AntDesign, Entypo, EvilIcons } from "@expo/vector-icons";
 import { color } from "../../const/color";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 interface TSearchBar {
   onClickCancel: () => void;
   onChangeText: (text: string) => void;
   containerStyle?: StyleProp<ViewStyle>;
   value: string;
+  isWithAnimation?: boolean;
 }
 
 const SearchBar = ({
@@ -23,52 +25,105 @@ const SearchBar = ({
   onChangeText,
   containerStyle,
   value,
+  isWithAnimation = false,
 }: TSearchBar) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <LinearGradient
-      colors={["#2452FA", "#6CA8FF"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        paddingBottom: 21,
-        paddingTop: 8,
-        marginTop: -6,
-        borderBottomLeftRadius: 26,
-        borderBottomRightRadius: 26,
-      }}
-    >
-      <View
-        style={[
-          styles.container,
-          {
-            borderColor: isFocused ? color.primaryColor : "#ccc",
-          },
-          containerStyle,
-        ]}
-      >
-        <EvilIcons name="search" size={20} color={color.strokeColor} />
-        <TextInput
-          style={styles.input}
-          placeholder="Search..."
-          placeholderTextColor={color.mainTxtColor} // ✅ visible placeholder on white
-          onChangeText={onChangeText}
-          value={value}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          selectionColor={color.primaryColor}
-        />
-        {!!value && (
-          <AntDesign
-            name="close"
-            size={18}
-            color={color.mainTxtColor}
-            onPress={onClickCancel}
-          />
-        )}
-      </View>
-    </LinearGradient>
+    <>
+      {isWithAnimation ? (
+        <Animated.View
+          entering={FadeInDown.duration(400)}
+          exiting={FadeOutUp.duration(300)}
+        >
+          <LinearGradient
+            colors={["#2452FA", "#6CA8FF"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              paddingBottom: 21,
+              paddingTop: 8,
+              marginTop: -6,
+              borderBottomLeftRadius: 26,
+              borderBottomRightRadius: 26,
+            }}
+          >
+            <View
+              style={[
+                styles.container,
+                {
+                  borderColor: isFocused ? color.primaryColor : "#ccc",
+                },
+                containerStyle,
+              ]}
+            >
+              <EvilIcons name="search" size={20} color={color.strokeColor} />
+              <TextInput
+                style={styles.input}
+                placeholder="Search..."
+                placeholderTextColor={color.mainTxtColor} // ✅ visible placeholder on white
+                onChangeText={onChangeText}
+                value={value}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                selectionColor={color.primaryColor}
+              />
+              {!!value && (
+                <AntDesign
+                  name="close"
+                  size={18}
+                  color={color.mainTxtColor}
+                  onPress={onClickCancel}
+                />
+              )}
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      ) : (
+        <LinearGradient
+          colors={["#2452FA", "#6CA8FF"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            paddingBottom: 21,
+            paddingTop: 8,
+            marginTop: -6,
+            borderBottomLeftRadius: 26,
+            borderBottomRightRadius: 26,
+          }}
+        >
+          <View
+            style={[
+              styles.container,
+              {
+                borderColor: isFocused ? color.primaryColor : "#ccc",
+              },
+              containerStyle,
+            ]}
+          >
+            <EvilIcons name="search" size={20} color={color.strokeColor} />
+            <TextInput
+              style={styles.input}
+              placeholder="Search..."
+              placeholderTextColor={color.mainTxtColor} // ✅ visible placeholder on white
+              onChangeText={onChangeText}
+              value={value}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              selectionColor={color.primaryColor}
+            />
+            {!!value && (
+              <AntDesign
+                name="close"
+                size={18}
+                color={color.mainTxtColor}
+                onPress={onClickCancel}
+              />
+            )}
+          </View>
+        </LinearGradient>
+      )}
+    </>
   );
 };
 

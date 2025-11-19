@@ -1,64 +1,70 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { color } from "../../const/color";
-import {
-  shadow1,
-  shadow2,
-  shadowLight,
-  shadowSecondaryColor,
-} from "../../const/globalStyle";
-import { myConsole } from "../../hooks/useConsole";
-import { useGetAttendanceChart } from "../../hooks/useGetQuerryHRM";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { shadowPrimaryColor } from "../../const/globalStyle";
+import { color } from "../../const/color";
 
-interface TCardHRM {
-  title?: string;
-  isLoading?: boolean;
-  count?: number;
-  obj0?: {
-    count: number;
-    title: string;
+const CARD_COLORS = [
+  "#27C46F", // Present
+  "#FF8107", // On Leave
+  "#FF3E5A", // Absent
+  "#457EF2", // Remote
+];
+
+const ICONS = [
+  "account-group", // Present
+  "account-off", // On Leave
+  "account-cancel", // Absent
+  "wifi", // Remote
+];
+
+const CARD_TITLES = ["Present", "On Leave", "Absent", "Remote"];
+
+const CardHRM = ({ obj0, obj1, obj2, obj3 }) => {
+  // Replace with actual data logic if needed
+  const numb = {
+    present: obj0?.count ?? 0,
+    leave: obj1?.count ?? 0,
+    absent: obj2?.count ?? 0,
+    remoteCheckIn: obj3?.count ?? 0,
   };
-  obj1?: {};
-  obj2?: {};
-  obj3?: {};
-}
 
-const CardHRM = ({ obj0, obj1, obj2, obj3 }: TCardHRM) => {
-  const { data, isLoading } = useGetAttendanceChart({ isEnable: true });
-  const numb = data ?? {};
-
-  const getCardColor = (index) => {
-    const colors = ["#2D67C6", "#4ECDC4", "#FF6B6B", "#45B7D1"];
-    return colors[index];
-  };
-
-  const cards = [
+  const dataArr = [
     {
-      title: "Present Employee",
-      number: numb?.present,
-      color: getCardColor(0),
+      number: numb.present,
+      title: CARD_TITLES[0],
+      icon: ICONS[0],
+      color: CARD_COLORS[0],
     },
     {
-      title: "Employees On leave",
-      number: numb?.leave,
-      color: getCardColor(1),
+      number: numb.leave,
+      title: CARD_TITLES[1],
+      icon: ICONS[1],
+      color: CARD_COLORS[1],
     },
-    { title: "Employees Absent", number: numb?.absent, color: getCardColor(2) },
     {
-      title: "Remote Checked-IN",
-      number: numb?.remoteCheckIn,
-      color: getCardColor(3),
+      number: numb.absent,
+      title: CARD_TITLES[2],
+      icon: ICONS[2],
+      color: CARD_COLORS[2],
+    },
+    {
+      number: numb.remoteCheckIn,
+      title: CARD_TITLES[3],
+      icon: ICONS[3],
+      color: CARD_COLORS[3],
     },
   ];
 
   return (
     <View style={styles.cardsContainer}>
-      {cards.map((card, index) => (
+      {dataArr.map((card, idx) => (
         <SingleCard
-          key={index}
-          title={card.title}
+          key={idx}
           number={card.number}
+          title={card.title}
+          icon={card.icon}
           color={card.color}
         />
       ))}
@@ -66,55 +72,59 @@ const CardHRM = ({ obj0, obj1, obj2, obj3 }: TCardHRM) => {
   );
 };
 
-export default CardHRM;
+const SingleCard = ({ number, title, icon, color }) => (
+  <TouchableOpacity style={styles.cardContainer} activeOpacity={0.85}>
+    <View style={[styles.iconBox, { backgroundColor: color }]}>
+      <MaterialCommunityIcons name={icon} size={26} color="#fff" />
+    </View>
+    <View style={styles.detailsBox}>
+      <CustomText style={styles.numberText}>{number ?? "0"}</CustomText>
+      <CustomText style={styles.titleText}>{title ?? "-"}</CustomText>
+    </View>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   cardsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 12,
-    marginBottom: 30,
-    paddingHorizontal: 4,
+    backgroundColor: "#fff",
+    paddingVertical: 12,
   },
   cardContainer: {
-    padding: 16,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 14,
     width: "47%",
-    minHeight: 90,
-    // iOS shadow
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    // Android shadow
-    elevation: 6,
+    paddingLeft: 16,
+    paddingVertical: 12,
+    ...shadowPrimaryColor,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  detailsBox: {
+    flex: 1,
+    alignItems: "flex-start",
   },
   numberText: {
-    fontSize: 28,
-    textAlign: "center",
-    fontWeight: "800",
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: "700",
+    color: color.mainTxtColor,
   },
   titleText: {
-    fontSize: 12,
-    textAlign: "center",
+    fontSize: 14,
     fontWeight: "600",
-    color: "#4A5568",
-    lineHeight: 16,
+    color: color.strokeColor,
   },
 });
 
-export const SingleCard = ({ number, title, color }) => {
-  return (
-    <TouchableOpacity style={styles.cardContainer} activeOpacity={0.8}>
-      <CustomText style={[styles.numberText, { color }]}>
-        {number ?? "0"}
-      </CustomText>
-      <CustomText style={styles.titleText}>{title ?? "-"}</CustomText>
-    </TouchableOpacity>
-  );
-};
+export default CardHRM;
