@@ -155,10 +155,10 @@ const NotificationHRM = () => {
               {isLoading && <LoadingCompo />}
               {!isLoading && data?.length === 0 && (
                 <View style={styles.emptyContainer}>
-                  <NoDataFound />
                   <CustomText style={styles.emptyText}>
                     No notifications found
                   </CustomText>
+                  <NoDataFound height={200} width={200} />
                 </View>
               )}
             </>
@@ -376,6 +376,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
+    marginTop: 100,
   },
   emptyText: {
     marginTop: 16,

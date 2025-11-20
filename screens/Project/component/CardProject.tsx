@@ -1,8 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
+import { LinearGradient } from "expo-linear-gradient";
+import { color } from "../../../const/color";
 
 const CardProject = ({
   item,
@@ -16,10 +18,10 @@ const CardProject = ({
   return (
     <TouchableOpacity
       key={index}
-      // activeOpacity={isSubSup ? 0.9 : 1}
       style={[
         styles.mainlistcontainer,
         {
+          marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected
             ? "rgba(252, 244, 227, 1)"
             : bgColor
@@ -35,7 +37,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               // fontWeight: "700",
               fontSize: 16,
               textTransform: "capitalize",
@@ -46,7 +48,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.strokeColor,
               fontWeight: "400",
               marginTop: 5,
               textTransform: "capitalize",
@@ -59,7 +61,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -70,7 +72,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.strokeColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -84,7 +86,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -95,7 +97,7 @@ const CardProject = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -114,7 +116,22 @@ export default CardProject;
 
 export const HeaderProjectList = () => {
   return (
-    <View style={styles.headingContainer}>
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[
+        {
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
+          justifyContent: "space-between",
+          flexDirection: "row",
+          marginHorizontal: 16,
+          marginTop: 16,
+        },
+      ]}
+    >
       <View style={{ width: "45%", paddingEnd: 3 }}>
         <CustomText color="white" marginBottom={5}>
           Source
@@ -135,28 +152,18 @@ export const HeaderProjectList = () => {
           Members
         </CustomText>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   mainlistcontainer: {
     marginTop: 25,
-    borderWidth: 1,
+    borderWidth: 1.8,
     padding: 13,
-    borderRadius: 10,
-    borderColor: "#2D67C6",
+    borderRadius: 14,
+    borderColor: color.borderColor,
     marginHorizontal: 20,
-    ...shadow1,
-  },
-  headingContainer: {
-    backgroundColor: "#3E3E3E",
-    flexDirection: "row",
-    padding: 10,
-    borderRadius: 11,
-    marginBottom: -8,
-    marginTop: 25,
-    marginHorizontal: 20,
-    // justifyContent: "space-between",
+    ...shadowPrimaryColor,
   },
 });

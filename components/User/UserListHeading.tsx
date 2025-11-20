@@ -2,10 +2,26 @@ import { Text, StyleSheet, View } from "react-native";
 import React from "react";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
 
 const UserListHeading = () => {
   return (
-    <View style={styles.headingContainer}>
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[
+        {
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
+          justifyContent: "space-between",
+          flexDirection: "row",
+          marginHorizontal: 16,
+          marginTop: 16,
+        },
+      ]}
+    >
       <View style={{ flexDirection: "row", gap: 12 }}>
         <CustomText style={styles.headingText}>No</CustomText>
         <View style={{ flexDirection: "column", gap: 5 }}>
@@ -26,7 +42,7 @@ const UserListHeading = () => {
       <CustomText style={[styles.headingText, { marginLeft: 20 }]}>
         Email
       </CustomText>
-    </View>
+    </LinearGradient>
   );
 };
 export default UserListHeading;

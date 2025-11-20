@@ -52,7 +52,7 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import Payout from "./component/Payout";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import useModal from "../../hooks/useModal";
 import ThreeDotVerSvg from "../../assets/svg/ThreeDotVerSvg";
 import { checkPermission } from "../../utils/commonFunctions";
@@ -338,12 +338,16 @@ const BookingDetail = () => {
                         style={{
                           padding: 10,
                           backgroundColor: "white",
-                          borderRadius: 5,
-                          ...shadow1,
+                          borderRadius: 12,
+                          ...shadowPrimaryColor,
                           marginBottom: 15,
                         }}
                       >
-                        <CustomText fontSize={16} fontWeight="500">
+                        <CustomText
+                          fontSize={16}
+                          fontWeight="500"
+                          style={{ color: color.mainTxtColor }}
+                        >
                           Client Info 1
                         </CustomText>
                       </TouchableOpacity>
@@ -390,7 +394,9 @@ const BookingDetail = () => {
                         navToCall()
                       }
                     >
-                      <CustomText>{filterLead?.clientMobile}</CustomText>
+                      <CustomText style={{ color: color.mainTxtColor }}>
+                        {filterLead?.clientMobile}
+                      </CustomText>
                     </TouchableOpacity>
                   ) : (
                     <CustomText>{"N/A"}</CustomText>
@@ -407,7 +413,10 @@ const BookingDetail = () => {
                         isMailAvail ? openMail(filterLead?.clientEmail) : null
                       }
                     >
-                      <CustomText numberOfLines={1}>
+                      <CustomText
+                        numberOfLines={1}
+                        style={{ color: color.mainTxtColor }}
+                      >
                         {filterLead?.clientEmail}
                       </CustomText>
                     </TouchableOpacity>
@@ -421,11 +430,19 @@ const BookingDetail = () => {
                 title="Whatsapp Link"
                 icon={filterLead?.whatsapp ? "whatsapp" : "n/a"}
                 containerStyle={{ marginBottom: 10 }}
-                onPressIcon={() =>
-                  filterLead?.whatsapp
-                    ? Linking.openURL(`${filterLead?.whatsapp}`)
-                    : null
-                }
+                // onPressIcon={() =>
+                //   filterLead?.whatsapp
+                //     ? Linking.openURL(`${filterLead?.whatsapp}`)
+                //     : null
+                // }
+                onPressIcon={() => {
+                  if (!filterLead?.clientMobile) return;
+                  const phone = (filterLead?.clientMobile).replace(
+                    /[^0-9]/g,
+                    ""
+                  );
+                  Linking.openURL(`whatsapp://send?phone=${phone}`);
+                }}
               />
               <RowItem
                 title="Date Of Birth"
@@ -456,7 +473,11 @@ const BookingDetail = () => {
                 containerStyle={{ marginBottom: 15 }}
                 // value={data?.status ?? "N/A"}
                 component={
-                  <CustomText color={approvalStatusColor[data?.status]}>
+                  <CustomText
+                    color={
+                      approvalStatusColor[data?.status] || color.mainTxtColor
+                    }
+                  >
                     {approvalStatus[data?.status] ?? "N/A"}
                   </CustomText>
                 }
@@ -465,9 +486,13 @@ const BookingDetail = () => {
               {data?.remarks && (
                 <RowItem
                   title="Remarks"
-                  containerStyle={{ marginBottom: 15 }}
+                  containerStyle={{ marginBottom: 15, marginTop: 8 }}
                   // value={data?.status ?? "N/A"}
-                  component={<CustomText>{data?.remarks}</CustomText>}
+                  component={
+                    <CustomText color={color.mainTxtColor}>
+                      {data?.remarks}
+                    </CustomText>
+                  }
                 />
               )}
               {data?.paymentProofArr?.length > 0 &&
@@ -762,7 +787,11 @@ const BookingDetail = () => {
                       <RowItem
                         title="Remarks"
                         containerStyle={{ marginBottom: 10 }}
-                        component={<CustomText>{el?.remarks}</CustomText>}
+                        component={
+                          <CustomText color={color.mainTxtColor}>
+                            {el?.remarks}
+                          </CustomText>
+                        }
                       />
                       <RowItem
                         title="File"
@@ -772,7 +801,9 @@ const BookingDetail = () => {
                           !!el?.file ? (
                             <ImgViewer uri={`${el?.file}`} />
                           ) : (
-                            <CustomText>---</CustomText>
+                            <CustomText color={color.mainTxtColor}>
+                              ---
+                            </CustomText>
                           )
                         }
                       />
@@ -809,12 +840,6 @@ const BookingDetail = () => {
                         isLoading={isLoadingReject}
                         containerStyle={{
                           width: "45%",
-                          backgroundColor: "rgb(243,213,213)",
-                          borderColor: "rgb(183,49,42)",
-                          borderWidth: 0.5,
-                        }}
-                        textStyle={{
-                          color: "rgb(183,49,42)",
                         }}
                       />
                       <CustomBtn
@@ -824,12 +849,6 @@ const BookingDetail = () => {
                         isLoading={isLoadingApprove}
                         containerStyle={{
                           width: "45%",
-                          backgroundColor: "rgb(213,242,214)",
-                          borderColor: "rgb(16,206,29)",
-                          borderWidth: 0.5,
-                        }}
-                        textStyle={{
-                          color: "rgb(16,206,29)",
                         }}
                       />
                     </View>
@@ -923,12 +942,17 @@ const BookingDetail = () => {
               marginBottom: 10,
             }}
           >
-            <CustomText fontSize={18} fontWeight="500">
+            <CustomText
+              fontSize={18}
+              fontWeight="500"
+              color={color.mainTxtColor}
+            >
               Update Case
             </CustomText>
             <Ionicons
               name="close"
               size={25}
+              color={color.mainTxtColor}
               style={{
                 alignSelf: "flex-end",
                 // paddingHorizontal: 10
@@ -1011,7 +1035,7 @@ const BookingDetail = () => {
               ownerInfo?.passport ? (
                 <ImgViewer uri={`${ownerInfo.passport}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}
@@ -1022,7 +1046,7 @@ const BookingDetail = () => {
               ownerInfo?.passport2 ? (
                 <ImgViewer uri={`${ownerInfo.passport2}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}
@@ -1033,7 +1057,7 @@ const BookingDetail = () => {
               ownerInfo?.emiratesID ? (
                 <ImgViewer uri={`${ownerInfo.emiratesID}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}
@@ -1044,7 +1068,7 @@ const BookingDetail = () => {
               ownerInfo?.emiratesID2 ? (
                 <ImgViewer uri={`${ownerInfo.emiratesID2}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}
@@ -1055,7 +1079,7 @@ const BookingDetail = () => {
               ownerInfo?.visa ? (
                 <ImgViewer uri={`${ownerInfo.visa}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}
@@ -1066,7 +1090,7 @@ const BookingDetail = () => {
               ownerInfo?.visa2 ? (
                 <ImgViewer uri={`${ownerInfo.visa2}`} />
               ) : (
-                <CustomText>N/A</CustomText>
+                <CustomText color={color.mainTxtColor}>N/A</CustomText>
               )
             }
             containerStyle={{ marginBottom: 10 }}

@@ -106,7 +106,7 @@ const ExpenseList = () => {
             activeOpacity={0.5}
             style={{
               position: "absolute",
-              bottom: 100,
+              bottom: 80,
               right: 20,
               zIndex: 5,
             }}
@@ -117,9 +117,10 @@ const ExpenseList = () => {
         {canViewExpList ? (
           <InfiniteScroll
             query={expenseQuery}
-            renderItems={({ item }) => (
+            renderItems={({ item, index }) => (
               <ExpenseCard
                 item={item}
+                index={index}
                 onPress={
                   canViewExpDetail
                     ? () => nav.navigate("ExpenseDetail", { item })

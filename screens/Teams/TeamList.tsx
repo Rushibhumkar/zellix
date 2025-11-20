@@ -21,6 +21,7 @@ import { myConsole } from "../../hooks/useConsole";
 import { routeTeam } from "../../utils/routes";
 import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
 
 const TeamList = () => {
   const isFocused = useIsFocused();
@@ -104,24 +105,26 @@ const TeamList = () => {
     }
   };
 
-
-
   return (
     <Container>
       <Header title={"Teams"} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <View>
-          {user?.role !== "sr_manager" && user?.role !== "manager" && user?.role !== "team_lead" &&<TitleWithAddDelete
-            arrLength={!!selectedTeam?._id ? 1 : 0}
-            title="Team"
-            onPressToNavigate={() => navigation.navigate("addTeam")}
-            onPressToEdit={() => {
-              navigation.navigate("addTeam", { data: selectedTeam });
-              setSelectedTeam({});
-            }}
-            onPressToDelete={toggleModal}
-          />}
+          {user?.role !== "sr_manager" &&
+            user?.role !== "manager" &&
+            user?.role !== "team_lead" && (
+              <TitleWithAddDelete
+                arrLength={!!selectedTeam?._id ? 1 : 0}
+                title="Team"
+                onPressToNavigate={() => navigation.navigate("addTeam")}
+                onPressToEdit={() => {
+                  navigation.navigate("addTeam", { data: selectedTeam });
+                  setSelectedTeam({});
+                }}
+                onPressToDelete={toggleModal}
+              />
+            )}
 
           <FlatList
             data={filteredTeam}
@@ -130,6 +133,7 @@ const TeamList = () => {
               return (
                 <TeamRowItem
                   serial={index + 1}
+                  index={index}
                   managerName={item?.srManager?.name}
                   teamLeadName={item?.teamLead?.name}
                   teamName={item?.name}
@@ -167,12 +171,16 @@ const TeamList = () => {
             ListHeaderComponentStyle={{ marginBottom: 10, marginTop: -20 }}
             // ListEmptyComponent={<SkeletonLoadingLead isTeam />}
             ListEmptyComponent={
-              loading?.team ? <SkeletonLoadingUser /> : <NoDataFound style={{marginTop:sizes.height/4}} showTxt/>
+              loading?.team ? (
+                <SkeletonLoadingUser />
+              ) : (
+                <NoDataFound style={{ marginTop: sizes.height / 4 }} showTxt />
+              )
             }
           />
         </View>
       ) : (
-        <NoDataFound style={{marginTop:sizes.height/4}} showTxt/>
+        <NoDataFound style={{ marginTop: sizes.height / 4 }} showTxt />
       )}
       {/* modal delete */}
       <DeleteModel
@@ -193,48 +201,60 @@ export default TeamList;
 
 const TeamListHeading = () => {
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor:color.primary200,
-        marginHorizontal: 20,
-        borderRadius: 12,
-        paddingHorizontal: 10,
-        marginTop: 15,
-        paddingVertical: 10,
-      }}
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[
+        {
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
+          justifyContent: "space-between",
+          flexDirection: "row",
+          marginHorizontal: 16,
+          marginTop: 16,
+        },
+      ]}
     >
       <CustomText
         style={{
-          width: '10%',
-          color: 'white',
+          width: "10%",
+          color: "white",
           paddingRight: 3,
         }}
         numberOfLines={1}
-      >No.</CustomText>
+      >
+        No.
+      </CustomText>
       <CustomText
         style={{
-          width: '30%',
-          color: 'white',
+          width: "30%",
+          color: "white",
           paddingRight: 3,
         }}
-      >Team</CustomText>
+      >
+        Team
+      </CustomText>
       <CustomText
         style={{
-          width: '30%',
-          color: 'white',
+          width: "30%",
+          color: "white",
           paddingRight: 3,
         }}
         numberOfLines={1}
-      >Manager</CustomText>
+      >
+        Manager
+      </CustomText>
       <CustomText
         style={{
-          width: '30%',
-          color: 'white'
+          width: "30%",
+          color: "white",
         }}
         numberOfLines={1}
-      >Team Lead</CustomText>
-    </View>
+      >
+        Team Lead
+      </CustomText>
+    </LinearGradient>
   );
 };

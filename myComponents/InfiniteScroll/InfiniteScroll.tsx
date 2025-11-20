@@ -88,7 +88,11 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
       }
       ListFooterComponent={
         isFetchingNextPage ? (
-          <ActivityIndicator size="small" color="#002E6B" />
+          <ActivityIndicator
+            size="small"
+            color={color.mainTxtColor}
+            style={{ marginTop: 12 }}
+          />
         ) : null
       }
       keyExtractor={(item, index) => `${item?._id}-${index}`}

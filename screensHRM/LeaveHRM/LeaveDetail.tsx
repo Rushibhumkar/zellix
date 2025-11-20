@@ -27,6 +27,7 @@ import LeaveAppRemark from "./components/LeaveAppRemark";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
+import { useAppToast } from "../../components/AppToast";
 
 const whichStatus = {
   Cancel: "leaveCancelById",
@@ -34,6 +35,7 @@ const whichStatus = {
   Reject: "leaveRejectById",
 };
 const LeaveDetail = () => {
+  const toast = useAppToast();
   const { params } = useRoute();
   const { user } = useSelector(selectUser);
   const isAgentTl =
@@ -88,7 +90,7 @@ const LeaveDetail = () => {
         queryKey: ["getAllLeave"],
       });
       !!resAcceptRejectLeave &&
-        popUpConfToast.successMessage(resAcceptRejectLeave?.message ?? "--");
+        toast.success(resAcceptRejectLeave?.message ?? "--");
     } catch (error) {}
   };
 
@@ -216,7 +218,7 @@ const LeaveDetail = () => {
           />
         }
         contentContainerStyle={{
-          paddingBottom: 120,
+          paddingBottom: 180,
           paddingTop: 10,
         }}
         showsVerticalScrollIndicator={false}
@@ -248,6 +250,7 @@ const RespondentDetails = ({ item, isFirst, isLast }) => {
         borderColor: color.borderColor,
         padding: 12,
         borderRadius: 12,
+        marginTop: 12,
       }}
     >
       {isFirst && <TitleInDetail title={"Respondent Details"} />}
@@ -266,15 +269,6 @@ const RespondentDetails = ({ item, isFirst, isLast }) => {
         value={item?.remarks ?? "-"}
         containerStyle={{ marginBottom: 15 }}
       />
-      {!isLast && (
-        <View
-          style={{
-            borderWidth: 0.5,
-            borderColor: color.grayBtn,
-            marginBottom: 15,
-          }}
-        />
-      )}
     </View>
   );
 };

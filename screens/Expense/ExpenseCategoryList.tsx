@@ -39,6 +39,7 @@ export default function ExpenseCategoryList() {
             return (
               <ExpenseCategoryCard
                 item={item}
+                index={index}
                 onPress={() => {
                   if (canViewCat) {
                     navigate(routeExpense.ExpenseCategoryDetail, { item });

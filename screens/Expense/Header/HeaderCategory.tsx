@@ -2,21 +2,23 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
+import { LinearGradient } from "expo-linear-gradient";
 
 const HeaderCategoryExpense = () => {
   return (
-    <View
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
       style={[
         {
-          borderWidth: 0.5,
-          borderColor: "grey",
-          padding: 10,
-          paddingHorizontal: 30,
-          borderRadius: 5,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
           justifyContent: "space-between",
           flexDirection: "row",
-          marginTop: 10,
-          backgroundColor: color.darkBlack,
+          marginHorizontal: 16,
+          marginTop: 16,
         },
       ]}
     >
@@ -40,7 +42,7 @@ const HeaderCategoryExpense = () => {
           </CustomText>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

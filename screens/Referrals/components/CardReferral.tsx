@@ -1,9 +1,11 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import moment from "moment";
 import { myConsole } from "../../../hooks/useConsole";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import { LinearGradient } from "expo-linear-gradient";
+import { color } from "../../../const/color";
 
 const CardReferral = ({
   item,
@@ -19,6 +21,7 @@ const CardReferral = ({
       style={[
         styles.mainlistcontainer,
         {
+          marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected
             ? "rgba(252, 244, 227, 1)"
             : bgColor || "white",
@@ -69,7 +72,22 @@ export default CardReferral;
 // ✅ Header component export
 export const HeaderReferralList = () => {
   return (
-    <View style={styles.headingContainer}>
+    <LinearGradient
+      colors={["#2E67BE", "#4985F2"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[
+        {
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
+          justifyContent: "space-between",
+          flexDirection: "row",
+          marginHorizontal: 16,
+          marginTop: 16,
+        },
+      ]}
+    >
       <View style={{ width: "40%", paddingEnd: 3 }}>
         <CustomText style={styles.headingText}>Client</CustomText>
         <CustomText style={styles.headingText}>Email</CustomText>
@@ -81,19 +99,18 @@ export const HeaderReferralList = () => {
       <View style={{ width: "20%" }}>
         <CustomText style={styles.headingText}>Date</CustomText>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   mainlistcontainer: {
-    marginTop: 25,
-    borderWidth: 1,
+    borderWidth: 1.8,
     padding: 13,
-    borderRadius: 10,
-    borderColor: "#2D67C6",
+    borderRadius: 14,
+    borderColor: color.borderColor,
     marginHorizontal: 20,
-    ...shadow1,
+    ...shadowPrimaryColor,
   },
   headingContainer: {
     backgroundColor: "#3E3E3E",
@@ -110,18 +127,18 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   labelText: {
-    color: "#000",
+    color: color.mainTxtColor,
     fontSize: 16,
     textTransform: "capitalize",
   },
   valueText: {
-    color: "#000",
+    color: color.strokeColor,
     fontSize: 14,
     marginTop: 5,
     textTransform: "capitalize",
   },
   dateText: {
-    color: "#000",
+    color: color.mainTxtColor,
     fontSize: 14,
     marginTop: 10,
     marginRight: 12,

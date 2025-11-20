@@ -55,8 +55,9 @@ const UserRowItem = ({
             style={[
               styles.bold,
               {
-                // marginBottom: 5,
                 textTransform: "capitalize",
+                color: color.mainTxtColor,
+                marginBottom: 4,
               },
             ]}
           >
@@ -81,15 +82,15 @@ export default UserRowItem;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 0.8,
-    borderRadius: 16,
+    borderWidth: 1.4,
+    borderRadius: 14,
     paddingHorizontal: 10,
+    marginHorizontal: 16,
     paddingVertical: 15,
-    borderColor: color.primaryColor,
-    // backgroundColor: color.white,
+    borderColor: color.borderColor,
+    backgroundColor: color.white,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 85,
     ...shadowPrimaryColor,
   },
   box1: {
@@ -97,6 +98,7 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     fontSize: 14,
     fontWeight: "400",
+    color: color.mainTxtColor,
   },
   box2: {
     width: "45%",
@@ -107,13 +109,15 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     fontSize: 14,
     fontWeight: "400",
+    color: color.mainTxtColor,
   },
   bold: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "600",
   },
   lightText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "300",
+    color: color.strokeColor,
   },
 });

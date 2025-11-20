@@ -1,26 +1,30 @@
 import moment from "moment";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { monthsStatic } from "../../../utils/data";
+import { color } from "../../../const/color";
 
 interface TInvoiceCard {
   item: any;
   onPress: () => void;
+  index: number;
 }
-const InvoiceCard = ({ item, onPress }: TInvoiceCard) => {
+const InvoiceCard = ({ item, onPress, index }: TInvoiceCard) => {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
       style={{
-        marginTop: 25,
-        borderWidth: 1,
+        marginTop: index === 0 ? 25 : 12,
+        borderWidth: 1.8,
         padding: 13,
-        borderRadius: 10,
-        borderColor: "#2D67C6",
+        borderRadius: 14,
+        borderColor: color.borderColor,
         marginHorizontal: 20,
+        ...shadowPrimaryColor,
+        backgroundColor: color.white,
       }}
     >
       <View
@@ -29,11 +33,13 @@ const InvoiceCard = ({ item, onPress }: TInvoiceCard) => {
           alignItems: "center",
           justifyContent: "space-between",
           flexDirection: "row",
-          marginBottom: 15,
+          marginBottom: 8,
         }}
       >
-        <CustomText>{item?.developer?.name || "N/A"}</CustomText>
-        <CustomText>
+        <CustomText style={{ color: color.mainTxtColor }}>
+          {item?.developer?.name || "N/A"}
+        </CustomText>
+        <CustomText style={{ color: color.mainTxtColor }}>
           {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
         </CustomText>
       </View>
@@ -45,9 +51,13 @@ const InvoiceCard = ({ item, onPress }: TInvoiceCard) => {
           flexDirection: "row",
         }}
       >
-        <CustomText>{item?.clientName || "N/A"} </CustomText>
+        <CustomText style={{ color: color.strokeColor }}>
+          {item?.clientName || "N/A"}{" "}
+        </CustomText>
 
-        <CustomText>{item?.totalExcludedVat || "N/A"}</CustomText>
+        <CustomText style={{ color: color.strokeColor }}>
+          {item?.totalExcludedVat || "N/A"}
+        </CustomText>
       </View>
     </TouchableOpacity>
   );

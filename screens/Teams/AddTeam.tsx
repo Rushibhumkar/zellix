@@ -19,6 +19,7 @@ import CustomModelMessage from "../../myComponents/CustomModelMessage";
 import { routeTeam } from "../../utils/routes";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 const AddTeam = () => {
   const navigation = useNavigation();
@@ -67,17 +68,15 @@ const AddTeam = () => {
   };
 
   const filterAllAgents = (allUsers) => {
-    let allAgents = allUsers?.filter((user) =>
-      user.role === "agent" ? { _id: user._id, name: user.name } : null
-    )
+    let allAgents = allUsers
+      ?.filter((user) =>
+        user.role === "agent" ? { _id: user._id, name: user.name } : null
+      )
       .map((user) => ({ _id: user._id, name: user.name }));
-    return allAgents
-
+    return allAgents;
   };
 
-  filterAllAgents(allUsers)
-
-
+  filterAllAgents(allUsers);
 
   return (
     <Container>
@@ -110,11 +109,21 @@ const AddTeam = () => {
             <ScrollViewWithKeyboardAvoid>
               <View style={{ paddingBottom: 70, padding: 25 }}>
                 <CustomText
-                  style={{ fontSize: 18, color: "#000000", fontWeight: "700" }}
+                  style={{
+                    fontSize: 18,
+                    color: color.mainTxtColor,
+                    fontWeight: "700",
+                    borderBottomColor: color.mainTxtColor,
+                    alignSelf: "flex-start",
+                    marginBottom: 20,
+                    textAlign: "left",
+                    borderBottomWidth: 1,
+                    paddingBottom: 4,
+                    marginTop: 10,
+                  }}
                 >
                   Team Information
                 </CustomText>
-                <View style={[styles.divider, { marginBottom: 20 }]}></View>
                 <CustomInput
                   placeholder="Team Name"
                   value={values.name}
@@ -124,7 +133,9 @@ const AddTeam = () => {
                   onBlur={handleBlur("name")}
                 />
                 {errors.name && touched.name && (
-                  <CustomText style={styles.errorText}>{errors.name}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.name}
+                  </CustomText>
                 )}
                 <DropdownRNE
                   keyValueShowInBox="name"
@@ -138,9 +149,10 @@ const AddTeam = () => {
                   onBlur={handleBlur("srManagerId")}
                 />
                 {errors.srManagerId && touched.srManagerId && (
-                  <CustomText style={styles.errorText}>{errors.srManagerId}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.srManagerId}
+                  </CustomText>
                 )}
-
 
                 <DropdownRNE
                   keyValueShowInBox="name"
@@ -154,7 +166,9 @@ const AddTeam = () => {
                   onBlur={handleBlur("managerId")}
                 />
                 {errors.managerId && touched.managerId && (
-                  <CustomText style={styles.errorText}>{errors.managerId}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.managerId}
+                  </CustomText>
                 )}
 
                 <DropdownRNE
@@ -169,7 +183,9 @@ const AddTeam = () => {
                   onBlur={handleBlur("assistantManagerId")}
                 />
                 {errors.assistantManagerId && touched.assistantManagerId && (
-                  <CustomText style={styles.errorText}>{errors.assistantManagerId}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.assistantManagerId}
+                  </CustomText>
                 )}
 
                 <DropdownRNE
@@ -184,7 +200,9 @@ const AddTeam = () => {
                   onBlur={handleBlur("teamLeadId")}
                 />
                 {errors.teamLeadId && touched.teamLeadId && (
-                  <CustomText style={styles.errorText}>{errors.teamLeadId}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.teamLeadId}
+                  </CustomText>
                 )}
 
                 <DropdownRNE
@@ -202,9 +220,10 @@ const AddTeam = () => {
                   dropdownPosition="top"
                 />
                 {errors.agents && touched.agents && (
-                  <CustomText style={styles.errorText}>{errors.agents}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.agents}
+                  </CustomText>
                 )}
-
 
                 <CustomBtn
                   title="Submit"
@@ -224,15 +243,8 @@ const AddTeam = () => {
 export default AddTeam;
 
 const styles = StyleSheet.create({
-  divider: {
-    borderBottomColor: "#2D67C6",
-    width: "60%",
-    margin: "auto",
-    borderBottomWidth: 0.3,
-    marginTop: 10,
-  },
   inputlable: {
-    color: "#000000",
+    color: color.mainTxtColor,
     marginTop: 20,
     fontSize: 16,
     fontWeight: "500",
@@ -250,6 +262,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: -10,
-    marginBottom: 8
+    marginBottom: 8,
   },
 });

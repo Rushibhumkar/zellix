@@ -71,6 +71,7 @@ const InvoiceList = () => {
           renderItems={({ item, index }) => (
             <InvoiceCard
               item={item}
+              index={index}
               onPress={() => {
                 if (canViweDetails) {
                   navigate(routeInvoice.InvoiceDetail, { item });

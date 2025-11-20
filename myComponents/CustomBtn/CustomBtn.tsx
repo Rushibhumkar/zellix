@@ -65,8 +65,9 @@ const CustomBtn = ({
           </CustomText>
           {isLoading && (
             <ActivityIndicator
-              style={{ marginStart: 10 }}
+              style={{ marginStart: 4 }}
               color={disabled ? color?.textGray : loaderColor}
+              size={"small"}
             />
           )}
         </View>

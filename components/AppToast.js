@@ -69,7 +69,7 @@ export function useAppToast() {
     }
   };
 
-  const offline = (msg = 'You’re offline. Check your connection.') =>
+  const offline = (msg = `You're offline. Check your connection.`) =>
     toast.show(msg, {type: 'warning', duration: 3000});
 
   return {

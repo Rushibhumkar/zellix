@@ -16,6 +16,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
 import { uploadFile } from "../../utils/uploadFile";
+import { useAppToast } from "../../components/AppToast";
 
 const AddReferrals = () => {
   const { goBack, navigate } = useNavigation();
@@ -23,7 +24,7 @@ const AddReferrals = () => {
   const queryClient = useQueryClient();
   const { params } = useRoute();
   const { data, type } = params;
-
+  const toast = useAppToast();
   const formik = useFormik({
     initialValues: {
       clientName: "",
@@ -66,7 +67,7 @@ const AddReferrals = () => {
         values.Eid_dcoument = values.Eid_dcoument || null;
 
         // Add the referral with the values
-        await addReferral(values, data._id, type);
+        await addReferral(values, data._id, type, toast);
         queryClient.invalidateQueries({
           queryKey: ["getAllReferrals"],
         });

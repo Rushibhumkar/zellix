@@ -1,26 +1,30 @@
 import moment from "moment";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { monthsStatic } from "../../../utils/data";
+import { color } from "../../../const/color";
 
 interface TIncentiveCard {
   item: any;
   onPress: () => void;
+  index: number;
 }
-const IncentiveCard = ({ item, onPress }: TIncentiveCard) => {
+const IncentiveCard = ({ item, onPress, index }: TIncentiveCard) => {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
       style={{
-        marginTop: 25,
-        borderWidth: 1,
+        marginTop: index === 0 ? 24 : 12,
+        borderWidth: 1.8,
         padding: 13,
-        borderRadius: 10,
-        borderColor: "#2D67C6",
+        borderRadius: 14,
+        borderColor: color.borderColor,
         marginHorizontal: 20,
+        ...shadowPrimaryColor,
+        backgroundColor: color.white,
       }}
     >
       <View
@@ -29,11 +33,13 @@ const IncentiveCard = ({ item, onPress }: TIncentiveCard) => {
           alignItems: "center",
           justifyContent: "space-between",
           flexDirection: "row",
-          marginBottom: 15,
+          marginBottom: 8,
         }}
       >
-        <CustomText>{item?.user?.name || "N/A"}</CustomText>
-        <CustomText>
+        <CustomText style={{ color: color.mainTxtColor }}>
+          {item?.user?.name || "N/A"}
+        </CustomText>
+        <CustomText style={{ color: color.mainTxtColor }}>
           {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
         </CustomText>
       </View>
@@ -45,11 +51,17 @@ const IncentiveCard = ({ item, onPress }: TIncentiveCard) => {
           flexDirection: "row",
         }}
       >
-        <CustomText>{item?.year || "N/A"} </CustomText>
-        <CustomText style={{ textTransform: "capitalize" }}>
+        <CustomText style={{ color: color.strokeColor }}>
+          {item?.year || "N/A"}{" "}
+        </CustomText>
+        <CustomText
+          style={{ textTransform: "capitalize", color: color.strokeColor }}
+        >
           {item?.status || "N/A"}
         </CustomText>
-        <CustomText>{monthsStatic?.[item?.month] || "N/A"}</CustomText>
+        <CustomText style={{ color: color.mainTxtColor }}>
+          {monthsStatic?.[item?.month] || "N/A"}
+        </CustomText>
       </View>
     </TouchableOpacity>
   );

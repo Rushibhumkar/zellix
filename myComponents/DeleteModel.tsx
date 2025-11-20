@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import React from "react";
 import CustomModal from "./CustomModal/CustomModal";
 import { color } from "../const/color";
 import { AntDesign } from "@expo/vector-icons";
 import CustomBtn from "./CustomBtn/CustomBtn";
 import CustomText from "./CustomText/CustomText";
+import { sizes } from "../const";
+
+const { width } = Dimensions.get("window");
 
 const DeleteModel = ({
   modalVisible,
@@ -15,82 +18,31 @@ const DeleteModel = ({
 }) => {
   return (
     <View>
-      <CustomModal
-        visible={modalVisible}
-        onClose={toggleModal}
-        hasBackdrop={false}
-      >
-        <View
-          style={{
-            backgroundColor: color.white,
+      <CustomModal visible={modalVisible} onClose={toggleModal} hasBackdrop>
+        <View style={styles.container}>
+          {/* Warning Icon */}
+          <View style={styles.iconContainer}>
+            <AntDesign name="warning" size={22} color="red" />
+          </View>
 
-            minWidth: 100,
-            minHeight: 100,
-            borderRadius: 20,
-            padding: 20,
-          }}
-        >
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                marginBottom: 20,
-              }}
-            >
-              <View
-                style={{
-                  padding: 5,
-                  backgroundColor: "rgb(222, 196, 196)",
-                  borderRadius: 25,
-                  height: 40,
-                  width: 40,
-                }}
-              >
-                <AntDesign
-                  name="warning"
-                  size={20}
-                  color="red"
-                  style={{ textAlign: "center", marginTop: 4 }}
-                />
-              </View>
-              <View style={{ marginTop: 5 }}>
-                <CustomText
-                  style={{ textAlign: "center", fontSize: 16, fontWeight: 600 }}
-                >
-                  Are you Sure, You Want to Delete {selectedUser}
-                </CustomText>
+          {/* Title */}
+          <CustomText style={styles.title}>
+            Are you sure you want to delete {selectedUser}?
+          </CustomText>
 
-                <View
-                  style={{
-                    flexDirection: "row",
-                    marginTop: 25,
-                    gap: 10,
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <CustomBtn
-                    textStyle={{ fontSize: 14 }}
-                    title="Cancel"
-                    onPress={toggleModal}
-                    containerStyle={{
-                      backgroundColor: "white",
-                      borderColor: "black",
-                      borderWidth: 0.5,
-                    }}
-                  />
-                  <CustomBtn
-                    textStyle={{ fontSize: 14 }}
-                    title="Delete"
-                    containerStyle={{
-                      backgroundColor: "rgb(211,46,47)",
-                    }}
-                    isLoading={isLoading}
-                    onPress={handleDeleteUser}
-                  />
-                </View>
-              </View>
-            </View>
+          {/* Buttons */}
+          <View style={styles.btnRow}>
+            <CustomBtn
+              textStyle={{ fontSize: 14 }}
+              title="Cancel"
+              onPress={toggleModal}
+            />
+            <CustomBtn
+              textStyle={{ fontSize: 14 }}
+              title="Delete"
+              isLoading={isLoading}
+              onPress={handleDeleteUser}
+            />
           </View>
         </View>
       </CustomModal>
@@ -99,3 +51,45 @@ const DeleteModel = ({
 };
 
 export default DeleteModel;
+
+// ---------------- STYLES ----------------
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: color.white,
+    width: width * 0.85, // 85% of screen width
+    maxWidth: 400,
+    minWidth: 260,
+    borderRadius: 18,
+    paddingVertical: 25,
+    paddingHorizontal: 20,
+    alignSelf: "center",
+  },
+
+  iconContainer: {
+    padding: 10,
+    backgroundColor: "rgb(222, 196, 196)",
+    borderRadius: 40,
+    height: 50,
+    width: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 15,
+  },
+
+  title: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
+    color: color.mainTxtColor,
+    paddingHorizontal: 10,
+    marginBottom: 25,
+  },
+
+  btnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+});

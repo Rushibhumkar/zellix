@@ -80,7 +80,7 @@ const AllLeave = () => {
             activeOpacity={0.5}
             style={{
               position: "absolute",
-              bottom: Platform.OS === "ios" ? 40 : 70,
+              bottom: Platform.OS === "ios" ? 120 : 100,
               right: 10,
               zIndex: 5,
             }}

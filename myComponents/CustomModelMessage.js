@@ -7,6 +7,7 @@ import CustomModal from "./CustomModal/CustomModal";
 import CustomBtn from "./CustomBtn/CustomBtn";
 import { WIDTH } from "../const/deviceInfo";
 import CustomText from "./CustomText/CustomText";
+import { color } from "../const/color";
 
 const CustomModelMessage = ({ isVisible, message, onClose, onPressBtn, setIsVisible }) => {
   return (
@@ -49,7 +50,7 @@ const CustomModelMessage = ({ isVisible, message, onClose, onPressBtn, setIsVisi
               fontWeight="700"
               fontSize={20}
               marginBottom={20}
-              style={{ textAlign: "center", marginHorizontal: 10, textTransform: 'capitalize' }}
+              style={{ textAlign: "center", marginHorizontal: 10, textTransform: 'capitalize' ,color:color.mainTxtColor}}
             >
               {message}
             </CustomText>

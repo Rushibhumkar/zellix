@@ -20,9 +20,11 @@ import { popupModal2 } from "../../utils/toastFunction";
 import { routeReferral } from "../../utils/routes";
 import CardReferral, { HeaderReferralList } from "./components/CardReferral";
 import { deleteReferral } from "../../services/rootApi/referralApi";
+import { useAppToast } from "../../components/AppToast";
 
 const ReferralList = () => {
   const { navigate } = useNavigation();
+  const toast = useAppToast();
   const [selected, setSelected] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -38,7 +40,8 @@ const ReferralList = () => {
   } = useGetAllReferrals({ search: debouncedSearch });
 
   const onEndReach = () => {
-    if (hasNextPage && !loading && data?.length > 0) {
+    // if (hasNextPage && !loading && data?.length > 0) {
+    if (hasNextPage && !loading && data?.pages?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
   };
@@ -78,11 +81,12 @@ const ReferralList = () => {
   const handleDeleteReferral = async () => {
     if (selected?.length > 0) {
       popupModal2.wantLoading();
-      await deleteReferral({ idArr: selected });
+      await deleteReferral({ idArr: selected }, toast);
       await refetch();
       setSelected([]);
     }
   };
+
   return (
     <>
       <Header title="Referral List" />
@@ -98,7 +102,8 @@ const ReferralList = () => {
         />
 
         <FlatList
-          data={data}
+          // data={data}
+          data={data?.pages?.flatMap((p) => p?.data || [])}
           renderItem={({ item, index }) => (
             <CardReferral
               index={index}
@@ -112,7 +117,8 @@ const ReferralList = () => {
               onLongPress={() => handleSelect(item._id)}
             />
           )}
-          keyExtractor={(item) => item?._id}
+          // keyExtractor={(item) => item?._id}
+          keyExtractor={(item) => item?._id?.toString()}
           showsVerticalScrollIndicator={true}
           contentContainerStyle={{ paddingBottom: 100 }}
           ListHeaderComponent={
@@ -130,7 +136,7 @@ const ReferralList = () => {
             loading ? (
               <SkeletonLoadingLead />
             ) : (
-              <NoDataFound height={340} width={340} />
+              <NoDataFound height={200} width={200} />
             )
           }
           onEndReached={onEndReach}

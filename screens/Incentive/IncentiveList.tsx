@@ -69,7 +69,7 @@ const IncentiveList = () => {
         query={individualIncentive}
         renderItems={({ item, index }) => (
           <IncentiveCard
-            key={index}
+            index={index}
             item={item}
             onPress={() => navigate(routeIncentive.IncentiveDetail, { item })}
           />

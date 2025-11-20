@@ -48,6 +48,7 @@ import { leaveApproveReject } from "../../services/hrmApi/leaveHrmApi";
 import LeadPoolRestriction from "./components/LeadpoolRestriction";
 import DeleteIcon from "../../assets/svg/DeleteIcon";
 import { popupModal2 } from "../../utils/toastFunction";
+import { useAppToast } from "../../components/AppToast";
 
 const UserDetailHRM = () => {
   const navigation = useNavigation(); // ✅ Define navigation at the top
@@ -104,7 +105,7 @@ const UserDetailHRM = () => {
       queryClient.invalidateQueries({
         queryKey: ["getAllUserHRM"],
       });
-      popUpConfToast.successMessage(resUserApprove?.message ?? "--");
+      toast.success(resUserApprove?.message ?? "--");
     } catch (err) {
       console.log("errUserApprove", err);
     }
@@ -144,7 +145,7 @@ const UserDetailHRM = () => {
 
   //     const response = await leadPoolRestriction(sendData);
   //     if (response?.success) {
-  //       popUpConfToast.successMessage("Updated successfully");
+  //       toast.success("Updated successfully");
   //       navigate(routeUser.AllUSersHRM) ;
   //       refetch() ;
   //     } else {
@@ -152,18 +153,21 @@ const UserDetailHRM = () => {
   //     }
   //   } catch (error) {
   //     console.error("Error sending switch value:", error);
-  //     popUpConfToast.errorMessage(
+  //     toast.error(
   //       "Failed to update restriction. Please try again."
   //     );
   //   }
   // };
+
+  const toast = useAppToast();
+
   const sendValue = async (value: boolean) => {
     try {
       const sendData = { userId: params?.item?._id, isPoolRestrict: value };
       const response = await leadPoolRestriction(sendData);
 
       if (response?.success) {
-        popUpConfToast.successMessage("Updated successfully");
+        toast.success("Updated successfully");
 
         await refetch(); // Ensure fresh data before navigation
         queryClient.invalidateQueries(["getAllUserHRM"]); // Refresh query cache
@@ -173,9 +177,7 @@ const UserDetailHRM = () => {
       }
     } catch (error) {
       console.error("Error sending switch value:", error);
-      popUpConfToast.errorMessage(
-        "Failed to update restriction. Please try again."
-      );
+      toast.error("Failed to update restriction. Please try again.");
     }
   };
 
@@ -199,7 +201,7 @@ const UserDetailHRM = () => {
 
     if (!userId) {
       console.error("User ID is missing");
-      popUpConfToast.errorMessage("User ID not found.");
+      toast.error("User ID not found.");
       return;
     }
 
@@ -209,16 +211,14 @@ const UserDetailHRM = () => {
           popupModal2.wantLoading();
           const res = await deleteDeviceId({ id: userId });
           myConsole("Devices cleared response:", res);
-          popUpConfToast.successMessage("Devices cleared successfully");
+          toast.success("Devices cleared successfully");
           refetch();
         } catch (error) {
           console.error(
             "Error deleting devices:",
             error?.response?.data || error.message
           );
-          popUpConfToast.errorMessage(
-            "Failed to clear devices. Please try again."
-          );
+          toast.error("Failed to clear devices. Please try again.");
         }
       },
       title: "Do you want to Delete",
@@ -236,13 +236,20 @@ const UserDetailHRM = () => {
     >
       <View>
         <View style={styles.leadPoolText}>
-          <CustomText style={{ marginHorizontal: 20, fontWeight: "bold" }}>
+          <CustomText
+            style={{
+              marginHorizontal: 20,
+              fontWeight: "600",
+              fontSize: 16,
+              color: color.mainTxtColor,
+            }}
+          >
             Lead Pool Restriction
           </CustomText>
           <Switch
             trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={isPoolRestrict ? "#f5dd4b" : "#f4f3f4"}
-            ios_backgroundColor="#3e3e3e"
+            thumbColor={isPoolRestrict ? color.mainTxtColor : "#f4f3f4"}
+            ios_backgroundColor={color.mainTxtColorFade}
             onValueChange={toggleSwitch}
             value={isPoolRestrict}
           />
@@ -288,7 +295,7 @@ const UserDetailHRM = () => {
           contentContainerStyle={{
             paddingTop: 10,
             paddingHorizontal: 20,
-            paddingBottom: 150,
+            paddingBottom: 180,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -318,7 +325,11 @@ const UserDetailHRM = () => {
 
             return (
               <RowItemDetail
-                title={<CustomText>{item?.title}</CustomText>}
+                title={
+                  <CustomText style={{ color: color.mainTxtColor }}>
+                    {item?.title}
+                  </CustomText>
+                }
                 value={
                   isDevices ? (
                     <View
@@ -334,6 +345,7 @@ const UserDetailHRM = () => {
                           fontSize: 14,
                           fontWeight: "300",
                           maxWidth: 150,
+                          color: color.mainTxtColor,
                         }}
                         // numberOfLines={2}
                         // ellipsizeMode="tail"
@@ -378,5 +390,11 @@ const UserDetailHRM = () => {
 export default UserDetailHRM;
 
 const styles = StyleSheet.create({
-  leadPoolText: { flexDirection: "row", alignItems: "center" },
+  leadPoolText: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    justifyContent: "space-between",
+    paddingRight: 16,
+  },
 });

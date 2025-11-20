@@ -5,7 +5,8 @@ import { axiosInstance } from "../authApi/axiosInstance";
 export const addReferral = async (
   data: Record<string, any>,
   bookingId: string,
-  type: string
+  type: string,
+  toast: any
 ) => {
   try {
     const response = await axiosInstance.post(
@@ -13,22 +14,20 @@ export const addReferral = async (
       data
     );
 
-    popUpConfToast.successMessage(
-      response?.data?.message || "Referral added successfully"
-    );
+    toast.success(response?.data?.message || "Referral added successfully");
     return response.data;
   } catch (err: any) {
     const msg =
       err?.response?.data?.message ||
       err?.response?.data?.error ||
       "Internal Server Error";
-    popUpConfToast.errorMessage(msg);
+    toast.error(msg);
     throw new Error(msg);
   }
 };
 
 // Get All Referrals
-export const getAllReferrals = () =>
+export const getAllReferrals = (toast) =>
   axiosInstance
     .get("/api/refferal")
     .then((res) => res?.data)
@@ -37,12 +36,12 @@ export const getAllReferrals = () =>
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         "Failed to fetch referrals";
-      popUpConfToast.errorMessage(msg);
+      toast.error(msg);
       throw new Error(msg);
     });
 
 // Get Referral by ID
-export const getReferralById = ({ id }: { id: string }) =>
+export const getReferralById = ({ id }: { id: string }, toast) =>
   axiosInstance
     .get(`/api/refferal/${id}`)
     .then((res) => res?.data)
@@ -51,11 +50,11 @@ export const getReferralById = ({ id }: { id: string }) =>
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         "Failed to fetch referral details";
-      popUpConfToast.errorMessage(msg);
+      toast.error(msg);
       throw new Error(msg);
     });
 
-export const deleteReferral = async ({ idArr }: { idArr: string[] }) => {
+export const deleteReferral = async ({ idArr }: { idArr: string[] }, toast) => {
   try {
     const response = await axiosInstance.post("/api/refferal/delete", {
       refferal_ids: idArr,

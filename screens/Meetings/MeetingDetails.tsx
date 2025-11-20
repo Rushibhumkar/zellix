@@ -80,7 +80,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 export const getAddressFromCoordinates = async (coordinates) => {
   const { latitude, longitude } = coordinates;
   try {
-    console.log("latitude", latitude, 'longitude', longitude);
+    console.log("latitude", latitude, "longitude", longitude);
     if (!!latitude) {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDUjsrrYwsQnZZX6ocF7jQcXevrhoK9ruU`
@@ -104,13 +104,13 @@ export const getLocationLatLng = async () => {
     );
     return;
   }
-let currentLocation = await Location.getCurrentPositionAsync({
-  accuracy: Location.Accuracy.Highest, // Change from Highest to BestForNavigation
-  maximumAge: 0, // Force fresh fetch
-  timeout: 20000, // Give 20 seconds to improve GPS lock
-});
+  let currentLocation = await Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.Highest, // Change from Highest to BestForNavigation
+    maximumAge: 0, // Force fresh fetch
+    timeout: 20000, // Give 20 seconds to improve GPS lock
+  });
 
-// myConsole('sjlfkjdsklfjldf',currentLocation)
+  // myConsole('sjlfkjdsklfjldf',currentLocation)
   let a = await Location.hasServicesEnabledAsync();
   console.log("hasServicesEnabledAsync", a);
   return currentLocation;
@@ -259,7 +259,10 @@ const MeetingDetails = () => {
     <>
       <Header title={"Meeting Details"} />
       <Container>
-        <ScrollView style={{ padding: 20 }}>
+        <ScrollView
+          style={{ padding: 20 }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
           <View style={{ paddingBottom: 70 }}>
             {isLoadingQuery && <ActivityIndicator />}
             <MainTitle
@@ -306,7 +309,9 @@ const MeetingDetails = () => {
                     navToCall()
                   }
                 >
-                  <CustomText style={{color:color.mainTxtColor}}>{detail?.lead?.clientMobile}</CustomText>
+                  <CustomText style={{ color: color.mainTxtColor }}>
+                    {detail?.lead?.clientMobile}
+                  </CustomText>
                 </TouchableOpacity>
               }
               containerStyle={{ marginBottom: 10 }}
@@ -320,7 +325,12 @@ const MeetingDetails = () => {
                     isMailAvail ? openMail(detail?.lead?.clientEmail) : null
                   }
                 >
-                  <CustomText numberOfLines={1}  style={{color:color.mainTxtColor}}>{detail?.lead?.clientEmail}</CustomText>
+                  <CustomText
+                    numberOfLines={1}
+                    style={{ color: color.mainTxtColor }}
+                  >
+                    {detail?.lead?.clientEmail}
+                  </CustomText>
                 </TouchableOpacity>
               }
               containerStyle={{ marginBottom: 10 }}
@@ -330,6 +340,14 @@ const MeetingDetails = () => {
               icon="whatsapp"
               containerStyle={{ marginBottom: 10 }}
               onPressIcon={() => Linking.openURL(`${detail?.lead?.whatsapp}`)}
+              onPressIcon={() => {
+                if (!detail?.lead?.clientMobile) return;
+                const phone = (detail?.lead?.clientMobile).replace(
+                  /[^0-9]/g,
+                  ""
+                );
+                Linking.openURL(`whatsapp://send?phone=${phone}`);
+              }}
             />
             <RowItem
               title="Address"
@@ -358,8 +376,9 @@ const MeetingDetails = () => {
             />
             <RowItem
               title="Created By"
-              value={`${detail?.createdBy?.name} ${"("} ${userTypes[detail?.createdBy?.role]
-                } ${")"}`}
+              value={`${detail?.createdBy?.name} ${"("} ${
+                userTypes[detail?.createdBy?.role]
+              } ${")"}`}
               containerStyle={{ marginBottom: 10 }}
             />
             <RowItem
@@ -373,7 +392,8 @@ const MeetingDetails = () => {
               containerStyle={{ marginBottom: 30 }}
               component={
                 <CustomText
-                // fontWeight="300"
+                  // fontWeight="300"
+                  color={color.mainTxtColor}
                 >
                   {detail?.agents
                     ?.map((agentId) => {
@@ -418,7 +438,8 @@ const MeetingDetails = () => {
                       containerStyle={{ marginBottom: 15 }}
                       component={
                         <CustomText
-                        // fontWeight="300"
+                          // fontWeight="300"
+                          color={color.mainTxtColor}
                         >
                           {el?.location}
                         </CustomText>
@@ -441,7 +462,9 @@ const MeetingDetails = () => {
                             }}
                           />
                         ) : (
-                          <CustomText>N/A</CustomText>
+                          <CustomText color={color.mainTxtColor}>
+                            N/A
+                          </CustomText>
                         )
                       }
                     />
@@ -471,6 +494,7 @@ const MeetingDetails = () => {
                               fontWeight: !!el?.isLocationGranted
                                 ? "400"
                                 : "800",
+                              color: color.mainTxtColor,
                             }}
                           >
                             {!!el?.isLocationGranted ? "Granted" : "Denied"}
@@ -483,7 +507,9 @@ const MeetingDetails = () => {
                         <RowItem
                           title="Conducted Location"
                           component={
-                            <CustomText>{el?.conductMeetingAddress}</CustomText>
+                            <CustomText style={{ color: color.mainTxtColor }}>
+                              {el?.conductMeetingAddress}
+                            </CustomText>
                           }
                         />
                         <RowItem
@@ -527,7 +553,7 @@ const MeetingDetails = () => {
                             height: 40,
                             width: "40%",
                             backgroundColor: "rgb(191, 191, 191)",
-                            zIndex:20
+                            zIndex: 20,
                           }}
                         />
                         {isCurrentDate && el?.status !== "conducted" && (
@@ -750,7 +776,9 @@ const MeetingDetails = () => {
                     containerStyle={{ marginBottom: 15 }}
                   />
                   {errors.remarks && touched.remarks && (
-                    <CustomText style={{ color: "red" }}>{errors.remarks}</CustomText>
+                    <CustomText style={{ color: "red" }}>
+                      {errors.remarks}
+                    </CustomText>
                   )}
                   <CustomText fontSize={13} color={color.textGray}>
                     {location?.coords?.latitude

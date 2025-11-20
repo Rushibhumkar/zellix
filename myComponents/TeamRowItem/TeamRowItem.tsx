@@ -17,6 +17,7 @@ interface TeamRowItem {
   onLongPress: () => void;
   isSelected: boolean;
   bgColor: string;
+  index?: number;
 }
 
 const TeamRowItem = ({
@@ -27,6 +28,7 @@ const TeamRowItem = ({
   onLongPress,
   isSelected,
   bgColor,
+  index,
 }: TeamRowItem) => {
   return (
     <TouchableOpacity
@@ -70,11 +72,11 @@ export default TeamRowItem;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 0.8,
-    borderRadius: 16,
+    borderWidth: 1.4,
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingVertical: 15,
-    borderColor: color.saffronMango,
+    borderColor: color.borderColor,
     backgroundColor: color.white,
     flexDirection: "row",
     alignItems: "center",
@@ -86,22 +88,26 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     fontSize: 14,
     fontWeight: "400",
+    color: color.mainTxtColor,
   },
   box2: {
     width: "30%",
     paddingRight: 3,
     fontSize: 14,
     fontWeight: "700",
+    color: color.mainTxtColor,
   },
   box3: {
     width: "30%",
     paddingRight: 3,
     fontSize: 14,
     fontWeight: "400",
+    color: color.strokeColor,
   },
   box4: {
     width: "30%",
     fontSize: 14,
     fontWeight: "400",
+    color: color.mainTxtColor,
   },
 });

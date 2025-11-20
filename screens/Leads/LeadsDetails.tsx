@@ -529,7 +529,7 @@ const LeadsDetails = () => {
                 icon={detail?.whatsapp ? "whatsapp" : "n/a"}
                 onPressIcon={() => {
                   if (!detail?.clientMobile) return;
-                  const phone = "971-545011451".replace(/[^0-9]/g, "");
+                  const phone = (detail?.clientMobile).replace(/[^0-9]/g, "");
                   Linking.openURL(`whatsapp://send?phone=${phone}`);
                 }}
               />

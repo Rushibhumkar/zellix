@@ -1,34 +1,46 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
+import { color } from "../../../const/color";
 
 interface TExpenseCategoryCard {
   item: any;
   onPress: () => void;
+  index: number;
 }
 
-const ExpenseCategoryCard = ({ item, onPress }: TExpenseCategoryCard) => {
+const ExpenseCategoryCard = ({
+  item,
+  onPress,
+  index,
+}: TExpenseCategoryCard) => {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
       style={{
-        marginTop: 25,
-        borderWidth: 1,
+        marginTop: index === 0 ? 25 : 12,
+        borderWidth: 1.8,
         padding: 13,
-        borderRadius: 10,
-        borderColor: "#2D67C6",
+        borderRadius: 14,
+        borderColor: color.borderColor,
         marginHorizontal: 20,
+        ...shadowPrimaryColor,
+        backgroundColor: color.white,
       }}
     >
       <View style={{ flexDirection: "row", marginBottom: 10 }}>
         <View style={{ width: "48%" }}>
-          <CustomText>{item?.CategoryName || "N/A"}</CustomText>
+          <CustomText style={{ color: color.mainTxtColor, fontWeight: "500" }}>
+            {item?.CategoryName || "N/A"}
+          </CustomText>
         </View>
         <View style={{ width: "50%" }}>
-          <CustomText style={{ alignSelf: "flex-end" }}>
+          <CustomText
+            style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
+          >
             {item?.subCategory?.map((sub) => sub.subCategoryName).join(", ") ||
               "N/A"}
           </CustomText>
@@ -36,12 +48,14 @@ const ExpenseCategoryCard = ({ item, onPress }: TExpenseCategoryCard) => {
       </View>
       <View style={{ flexDirection: "row", marginBottom: 10 }}>
         <View style={{ width: "48%" }}>
-          <CustomText>
+          <CustomText style={{ color: color.strokeColor }}>
             {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
           </CustomText>
         </View>
         <View style={{ width: "50%" }}>
-          <CustomText style={{ alignSelf: "flex-end" }}>
+          <CustomText
+            style={{ alignSelf: "flex-end", color: color.strokeColor }}
+          >
             {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
           </CustomText>
         </View>

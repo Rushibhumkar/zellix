@@ -40,7 +40,7 @@ const LeadPoolRestriction = ({
         <CustomText
           fontSize={18}
           fontWeight="600"
-          style={{ textTransform: "capitalize" }}
+          style={{ textTransform: "capitalize", color: color.mainTxtColor }}
         >
           {heading ?? "---------"}
         </CustomText>
@@ -63,7 +63,12 @@ const LeadPoolRestriction = ({
             isSearch
           />
         )}
-        <CustomText fontSize={16} fontWeight="400" marginBottom={7}>
+        <CustomText
+          fontSize={16}
+          fontWeight="400"
+          marginBottom={7}
+          color={color.mainTxtColor}
+        >
           {subHeadingText}
         </CustomText>
       </View>
@@ -80,7 +85,6 @@ const LeadPoolRestriction = ({
         <CustomBtn
           title="No"
           containerStyle={{
-            backgroundColor: color.dullRed,
             paddingHorizontal: 25,
           }}
           textStyle={{ fontSize: 12, fontWeight: "700" }}

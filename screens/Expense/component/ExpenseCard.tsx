@@ -1,60 +1,76 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import { color } from "../../../const/color";
 
 interface TExpenseCard {
   item: any;
   onPress: () => void;
+  index: number;
 }
 
-const ExpenseCard = ({ item, onPress }: TExpenseCard) => {
+const ExpenseCard = ({ item, onPress, index }: TExpenseCard) => {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
       style={{
-        marginTop: 25,
-        borderWidth: 1,
+        marginTop: index === 0 ? 25 : 12,
+        borderWidth: 1.8,
         padding: 13,
-        borderRadius: 10,
-        borderColor: "#2D67C6",
+        borderRadius: 14,
+        borderColor: color.borderColor,
         marginHorizontal: 20,
+        ...shadowPrimaryColor,
+        backgroundColor: color.white,
       }}
     >
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+      <View style={{ flexDirection: "row", marginBottom: 4 }}>
         <View style={{ width: "48%" }}>
-          <CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
             {item?.responsiblePerson?.CategoryName || "N/A"}
           </CustomText>
         </View>
         <View style={{ width: "50%" }}>
-          <CustomText style={{ alignSelf: "flex-end" }}>
+          <CustomText
+            style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
+          >
             {item?.team?.name || "N/A"}
           </CustomText>
         </View>
       </View>
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+      <View style={{ flexDirection: "row", marginBottom: 4 }}>
         <View style={{ width: "48%" }}>
-          <CustomText>{item?.expenseCategory?.name || "N/A"}</CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
+            {item?.expenseCategory?.name || "N/A"}
+          </CustomText>
         </View>
         <View style={{ width: "50%" }}>
-          <CustomText style={{ alignSelf: "flex-end" }}>
+          <CustomText
+            style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
+          >
             {item?.expenseSubCategory?.name || "N/A"}
           </CustomText>
         </View>
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View style={{ width: "30%" }}>
-          <CustomText>{item?.vatPercent || "N/A"}</CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
+            {item?.vatPercent || "N/A"}
+          </CustomText>
         </View>
         <View style={{ width: "30%" }}>
-          <CustomText style={{ alignSelf: "center" }}>
+          <CustomText
+            style={{ alignSelf: "center", color: color.mainTxtColor }}
+          >
             {parseInt(item?.vatAmount) || "N/A"}
           </CustomText>
         </View>
         <View style={{ width: "30%" }}>
-          <CustomText style={{ alignSelf: "flex-end" }}>
+          <CustomText
+            style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
+          >
             {parseInt(item?.amountExcludedVat) || "N/A"}
           </CustomText>
         </View>

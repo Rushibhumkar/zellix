@@ -130,7 +130,6 @@ const UserList = () => {
                 : toggleModal
             }
           />}
-
           <FlatList
             data={filteredUser}
             renderItem={({ item, index }) => {
@@ -152,9 +151,8 @@ const UserList = () => {
             keyExtractor={(item) => item?._id}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingBottom: Platform.OS === "ios" ? 300 : 250,
-              paddingTop: 5,
-              paddingHorizontal: 20,
+              paddingBottom: Platform.OS === "ios" ? 270 : 250,
+              paddingTop: 10,
             }}
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             ListHeaderComponent={
@@ -167,20 +165,19 @@ const UserList = () => {
                   value={searchValue}
                   onChangeText={(v) => handleFilterTextOnChange(v)}
                   containerStyle={{
-                    marginHorizontal: 0,
                     marginBottom: 15,
                   }}
                 />
                 <UserListHeading />
               </>
             }
-            ListHeaderComponentStyle={{ paddingTop: 5, marginBottom: 15 }}
+            ListHeaderComponentStyle={{ marginBottom: 10, marginTop: -6 }}
             // ListEmptyComponent={<SkeletonLoadingUser />}
             ListEmptyComponent={
               loading?.allUsers ? <SkeletonLoadingUser /> : <NoDataFound />
             }
           />
-        </View>
+          </View>
       ) : (
         <NoDataFound />
       )}
