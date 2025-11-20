@@ -10,6 +10,9 @@ import React, { ReactNode } from "react";
 import { color } from "../../const/color";
 import WhatsappIcon from "../../assets/svg/WhatsappIcon";
 import CustomText from "../CustomText/CustomText";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import IconWrapper from "../../components/IconWrapper";
 
 interface TRowItem {
   title: string;
@@ -88,8 +91,15 @@ const RowItem = ({
             </CustomText>
           )}
           {icon && (
-            <TouchableOpacity style={{ width: 30 }} onPress={onPressIcon}>
-              {icon === "whatsapp" && <WhatsappIcon width={15} height={15} />}
+            <TouchableOpacity
+              style={{ alignSelf: "flex-end" }}
+              onPress={onPressIcon}
+            >
+              {icon === "whatsapp" && (
+                <IconWrapper gradientColors={["#00C950", "#00A63E"]}>
+                  <FontAwesome name="whatsapp" size={16} color={color.white} />
+                </IconWrapper>
+              )}
               {icon === "n/a" && (
                 <CustomText style={{ color: color.mainTxtColor }}>
                   N/A

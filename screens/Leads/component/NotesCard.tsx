@@ -30,15 +30,16 @@ const NotesCard = ({
   return (
     <View style={{ marginBottom: 10 }}>
       {noteArr?.map((item, i) => {
-        i === 0 && myConsole("itemNotes", item);
+        i === 0;
 
         return (
           <View
             key={i}
             style={{
-              borderWidth: 0.5,
+              borderWidth: 1.4,
+              borderColor: color.borderColor,
               padding: 10,
-              borderRadius: 10,
+              borderRadius: 14,
               marginBottom: 8,
             }}
           >

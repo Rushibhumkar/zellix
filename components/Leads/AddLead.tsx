@@ -91,7 +91,9 @@ const AddLead = () => {
                   placeholder="client name"
                 />
                 {errors.clientName && (
-                  <CustomText style={styles.errorText}>{errors.clientName}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.clientName}
+                  </CustomText>
                 )}
                 <View>
                   <CustomText style={styles.label}>Mobile Number</CustomText>
@@ -114,7 +116,9 @@ const AddLead = () => {
                     />
                   </View>
                   {errors.mobileNumber && (
-                    <CustomText style={styles.errorText}>{errors.mobileNumber}</CustomText>
+                    <CustomText style={styles.errorText}>
+                      {errors.mobileNumber}
+                    </CustomText>
                   )}
                 </View>
                 <View>
@@ -129,7 +133,9 @@ const AddLead = () => {
                   placeholder="Email Address"
                 />
                 {errors.EmailAddress && (
-                  <CustomText style={styles.errorText}>{errors.EmailAddress}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.EmailAddress}
+                  </CustomText>
                 )}
                 <View>
                   <CustomText style={styles.label}>Comments</CustomText>
@@ -143,9 +149,11 @@ const AddLead = () => {
                   placeholder="Comments"
                 />
                 {errors.comment && (
-                  <CustomText style={styles.errorText}>{errors.comment}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.comment}
+                  </CustomText>
                 )}
-                <View style={styles.container}>
+                <View>
                   <View>
                     <CustomText style={styles.label}>Lead Type</CustomText>
                   </View>
@@ -169,7 +177,9 @@ const AddLead = () => {
                   placeholder="Whatsapp Link"
                 />
                 {errors.whatsappLink && (
-                  <CustomText style={styles.errorText}>{errors.whatsappLink}</CustomText>
+                  <CustomText style={styles.errorText}>
+                    {errors.whatsappLink}
+                  </CustomText>
                 )}
                 <View>
                   <CustomText style={styles.label}>Add Sr.Manager</CustomText>

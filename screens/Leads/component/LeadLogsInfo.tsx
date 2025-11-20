@@ -21,6 +21,8 @@ import moment from "moment";
 import { roleHRM } from "../../../utils/hrmKeysMatchToBE";
 import TabButton from "./TabButton";
 import { inLeadStatus } from "../../../utils/data";
+import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
+import { sizes } from "../../../const";
 
 const logDetailKey = {
   name: "Name",
@@ -33,6 +35,7 @@ const logDetailKey = {
 const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
   const logsInfo = useGetLogsInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
+  myConsole("logsInfoss", logsInfo);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -53,6 +56,18 @@ const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
       >
         <View style={{ paddingBottom: 150 }}>
           <MainTitle title="Logs" containerStyle={{ marginBottom: 20 }} />
+          {!logsInfo?.isLoading && logsInfo?.data?.length === 0 && (
+            <View
+              style={{
+                flex: 1,
+                height: sizes.height / 2,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <NoDataFound width={140} height={140} />
+            </View>
+          )}
           {logsInfo.data?.map((x, i, arr) => {
             console.log("x", x);
             const date = moment(x?.assignedAt).format("DD/MM/YYYY hh:ss a");

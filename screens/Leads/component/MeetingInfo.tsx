@@ -19,6 +19,7 @@ import { navigateToMapApp } from "../../../utils/navigateToMapApp";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { sizes } from "../../../const";
 import { color } from "../../../const/color";
+import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 
 const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
   const logsInfo = useLatestMeetings(leadId);
@@ -34,7 +35,7 @@ const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
     <Container>
       <Header title="Lead Details" />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
-      {logsInfo?.isLoading && <ActivityIndicator />}
+      {logsInfo?.isLoading && <ActivityIndicator color={color.mainTxtColor} />}
       <ScrollView
         style={{ padding: 20 }}
         refreshControl={
@@ -117,14 +118,10 @@ const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
                 flex: 1,
                 justifyContent: "center",
                 alignItems: "center",
-                minHeight: sizes.height / 1.8,
+                minHeight: sizes.height / 2,
               }}
             >
-              <CustomText
-                style={{ color: color.placeholderGrey, fontSize: 18 }}
-              >
-                Meeting information is not available
-              </CustomText>
+              <NoDataFound width={140} height={140} />
             </View>
           )}
         </View>

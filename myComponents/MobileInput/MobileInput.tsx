@@ -107,14 +107,14 @@ const MobileInput = ({
         >
           <DropdownRNE
             placeholderStyle={"#a9a9a9"}
-            dropdownStyle={{ height: 40, paddingTop: 4, borderRadius: 12 }}
+            dropdownStyle={{ height: 40, paddingTop: 8, borderRadius: 12 }}
             containerStyle={{
               width: "28%",
             }}
             placeholder="+91"
             arrOfObj={formattedCodes}
             keyValueGetOnSelect="_id"
-            keyValueShowInBox="displayName"
+            // keyValueShowInBox="displayName"
             onChange={(e) => handleChangeMobile(e, "pin")}
             initialValue={number?.pin}
             mode="modal"

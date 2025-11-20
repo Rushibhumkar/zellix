@@ -58,8 +58,9 @@ import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
 import { useAppToast } from "../../components/AppToast";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import IconWrapper from "../../components/IconWrapper";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -483,12 +484,20 @@ const LeadsDetails = () => {
                 component={
                   detail?.clientMobile ? (
                     <TouchableOpacity
-                      // onPress={() => Linking.openURL(`tel:${detail?.clientMobile}`)}
                       onPress={() => navToCall()}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                        justifyContent: "space-between",
+                      }}
                     >
                       <CustomText style={{ color: color.mainTxtColor }}>
                         {detail?.clientMobile}
                       </CustomText>
+                      <IconWrapper>
+                        <Feather name="phone-call" size={14} color={"#fff"} />
+                      </IconWrapper>
                     </TouchableOpacity>
                   ) : (
                     <CustomText style={{ color: color.mainTxtColor }}>
@@ -507,13 +516,22 @@ const LeadsDetails = () => {
                       onPress={() =>
                         isMailAvail ? openMail(detail?.clientEmail) : null
                       }
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                        justifyContent: "space-between",
+                      }}
                     >
                       <CustomText
                         numberOfLines={1}
-                        style={{ color: color.mainTxtColor }}
+                        style={{ color: color.mainTxtColor, width: "80%" }}
                       >
                         {detail?.clientEmail}
                       </CustomText>
+                      <IconWrapper>
+                        <Fontisto name="email" size={14} color={"#fff"} />
+                      </IconWrapper>
                     </TouchableOpacity>
                   ) : (
                     <CustomText style={{ color: color.mainTxtColor }}>
