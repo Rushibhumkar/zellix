@@ -50,6 +50,7 @@ import {
   tokenInBooking,
 } from "../../utils/data";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
+import { color } from "../../const/color";
 
 //
 function filterObjectKeys(obj: any, keys: [string]) {
@@ -355,7 +356,12 @@ const AdvanceSearch = () => {
                   value={values?.clientEmail}
                 />
 
-                <CustomText fontSize={16} fontWeight="500" marginBottom={8}>
+                <CustomText
+                  fontSize={16}
+                  fontWeight="500"
+                  marginBottom={8}
+                  color={color.mainTxtColor}
+                >
                   Client Mobile
                 </CustomText>
                 <View

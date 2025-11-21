@@ -340,14 +340,6 @@ const MeetingDetails = () => {
               icon="whatsapp"
               containerStyle={{ marginBottom: 10 }}
               onPressIcon={() => Linking.openURL(`${detail?.lead?.whatsapp}`)}
-              onPressIcon={() => {
-                if (!detail?.lead?.clientMobile) return;
-                const phone = (detail?.lead?.clientMobile).replace(
-                  /[^0-9]/g,
-                  ""
-                );
-                Linking.openURL(`whatsapp://send?phone=${phone}`);
-              }}
             />
             <RowItem
               title="Address"

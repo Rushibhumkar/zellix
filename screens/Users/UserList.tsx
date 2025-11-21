@@ -19,15 +19,14 @@ import SkeletonLoadingUser from "../../components/User/SkeletonLoadingUser";
 import { myConsole } from "../../hooks/useConsole";
 
 const roleType = {
-  sr_manager: 'Sr manager',
-  manager: 'Manager',
-  team_lead: 'Team Lead',
-  agent: 'Agent',
+  sr_manager: "Sr manager",
+  manager: "Manager",
+  team_lead: "Team Lead",
+  agent: "Agent",
   sup_admin: "Sup Admin",
   assistant_manager: "Assistant Manager",
-  sub_admin: 'Sub Admin',
-}
-
+  sub_admin: "Sub Admin",
+};
 
 const UserList = () => {
   const isFocused = useIsFocused();
@@ -93,7 +92,7 @@ const UserList = () => {
         text: res.data,
         error: false,
       });
-      setSelectedUser('')
+      setSelectedUser("");
     } catch (err) {
       setSnackBar({
         visible: true,
@@ -107,8 +106,8 @@ const UserList = () => {
   };
 
   useEffect(() => {
-    setFilteredUser(allUsers)
-  }, [!!isFocused, allUsers])
+    setFilteredUser(allUsers);
+  }, [!!isFocused, allUsers]);
 
   return (
     <Container>
@@ -116,20 +115,22 @@ const UserList = () => {
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <View>
-          {user?.role !== "sr_manager" && <TitleWithAddDelete
-            arrLength={!!selectedUser?._id ? 1 : 0}
-            title="User"
-            onPressToNavigate={() => navigate("addUsers")}
-            onPressToEdit={() => {
-              navigate("addUsers", { data: { ...selectedUser } });
-              setSelectedUser({});
-            }}
-            onPressToDelete={
-              user?.role === "agent" || user?.role === "sr_manager"
-                ? false
-                : toggleModal
-            }
-          />}
+          {user?.role !== "sr_manager" && (
+            <TitleWithAddDelete
+              arrLength={!!selectedUser?._id ? 1 : 0}
+              title="User"
+              onPressToNavigate={() => navigate("addUsers")}
+              onPressToEdit={() => {
+                navigate("addUsers", { data: { ...selectedUser } });
+                setSelectedUser({});
+              }}
+              onPressToDelete={
+                user?.role === "agent" || user?.role === "sr_manager"
+                  ? false
+                  : toggleModal
+              }
+            />
+          )}
           <FlatList
             data={filteredUser}
             renderItem={({ item, index }) => {
@@ -177,7 +178,7 @@ const UserList = () => {
               loading?.allUsers ? <SkeletonLoadingUser /> : <NoDataFound />
             }
           />
-          </View>
+        </View>
       ) : (
         <NoDataFound />
       )}

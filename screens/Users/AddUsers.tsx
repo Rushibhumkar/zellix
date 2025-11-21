@@ -14,6 +14,8 @@ import { getUserFunc } from "../../redux/action";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import CustomModelMessage from "../../myComponents/CustomModelMessage";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 const AddUsers = () => {
   const dispatch = useDispatch();
@@ -29,7 +31,6 @@ const AddUsers = () => {
     email: data?.email ?? "",
     role: data?.role ?? "",
   };
-
 
   const handleFormSubmit = async (values) => {
     setIsLoading(true);
@@ -63,101 +64,106 @@ const AddUsers = () => {
   return (
     <Container>
       <Header title={"Add Users"} />
-      <ScrollViewWithKeyboardAvoid
-        >
-       <View style={{  paddingBottom: 20 }}>
-      <CustomModelMessage
-        isVisible={isVisible}
-        setIsVisible={setIsVisible}
-        message={message}
-        onClose={() => {
-          setIsVisible(false);
-          setMessage(null);
-        }}
-      />
-      <Formik
-        initialValues={initialValues}
-        validationSchema={AddUsersSchema}
-        onSubmit={handleFormSubmit}
-      // validateOnChange={false}
-      >
-        {({
-          handleChange,
-          handleSubmit,
-          values,
-          handleBlur,
-          touched,
-          errors,
-          setFieldValue,
-        }) => {
-          return (
-            <View style={{ padding: 20 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginBottom: 20,
-                }}
-              >
-                <View>
-                  <CustomText
+      <ScrollViewWithKeyboardAvoid>
+        <View style={{ paddingBottom: 20 }}>
+          <CustomModelMessage
+            isVisible={isVisible}
+            setIsVisible={setIsVisible}
+            message={message}
+            onClose={() => {
+              setIsVisible(false);
+              setMessage(null);
+            }}
+          />
+          <Formik
+            initialValues={initialValues}
+            validationSchema={AddUsersSchema}
+            onSubmit={handleFormSubmit}
+            // validateOnChange={false}
+          >
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              handleBlur,
+              touched,
+              errors,
+              setFieldValue,
+            }) => {
+              return (
+                <View style={{ padding: 20 }}>
+                  <View
                     style={{
-                      fontSize: 18,
-                      fontWeight: "700",
-                      color: "#000000",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginBottom: 20,
                     }}
                   >
-                    User Information
-                  </CustomText>
-                  <View style={styles.divider}></View>
+                    <View>
+                      <CustomText
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "700",
+                          color: color.mainTxtColor,
+                        }}
+                      >
+                        User Information
+                      </CustomText>
+                      <View style={styles.divider}></View>
+                    </View>
+                  </View>
+                  <CustomInput
+                    label="Name"
+                    value={values.name}
+                    onChangeText={handleChange("name")}
+                    onBlur={handleBlur("name")}
+                    containerStyle={{ marginBottom: 10 }}
+                  />
+                  {errors.name && touched.name && (
+                    <CustomText style={styles.errorText}>
+                      {errors.name}
+                    </CustomText>
+                  )}
+                  <CustomInput
+                    label="Email"
+                    value={values.email}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    containerStyle={{ marginBottom: 10 }}
+                  />
+                  {errors.email && touched.email && (
+                    <CustomText style={styles.errorText}>
+                      {errors.email}
+                    </CustomText>
+                  )}
+
+                  <DropdownRNE
+                    label="Role"
+                    arrOfObj={roleListArr}
+                    placeholder="Select Role"
+                    keyValueGetOnSelect="_id"
+                    keyValueShowInBox="name"
+                    initialValue={values?.role}
+                    onChange={(v) => setFieldValue("role", v)}
+                    onBlur={handleBlur("role")}
+                  />
+                  {errors.role && touched.role && (
+                    <CustomText style={{ color: "red" }}>
+                      {errors.role}
+                    </CustomText>
+                  )}
+
+                  <CustomBtn
+                    containerStyle={{ marginTop: 50, marginHorizontal: 10 }}
+                    title="Submit"
+                    onPress={handleSubmit}
+                    isLoading={isLoading}
+                  />
                 </View>
-              </View>
-              <CustomInput
-                label="Name"
-                value={values.name}
-                onChangeText={handleChange("name")}
-                onBlur={handleBlur("name")}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              {errors.name && touched.name && (
-                <CustomText style={styles.errorText}>{errors.name}</CustomText>
-              )}
-              <CustomInput
-                label="Email"
-                value={values.email}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              {errors.email && touched.email && (
-                <CustomText style={styles.errorText}>{errors.email}</CustomText>
-              )}
-
-              <DropdownRNE
-                label="Role"
-                arrOfObj={roleListArr}
-                placeholder="Select Role"
-                keyValueGetOnSelect="_id"
-                keyValueShowInBox="name"
-                initialValue={values?.role}
-                onChange={(v) => setFieldValue("role", v)}
-                onBlur={handleBlur("role")}
-              />
-              {errors.role && touched.role && (
-                <CustomText style={{ color: "red" }}>{errors.role}</CustomText>
-              )}
-
-              <CustomBtn
-                containerStyle={{ marginTop: 50, marginHorizontal: 10 }}
-                title="Submit"
-                onPress={handleSubmit}
-                isLoading={isLoading}
-              />
-            </View>
-          );
-        }}
-      </Formik>
-      </View>
+              );
+            }}
+          </Formik>
+        </View>
       </ScrollViewWithKeyboardAvoid>
     </Container>
   );
@@ -167,9 +173,9 @@ export default AddUsers;
 
 const styles = StyleSheet.create({
   divider: {
-    borderBottomColor: "#2D67C6",
+    borderBottomColor: color.mainTxtColor,
     width: "100%",
-    borderBottomWidth: 0.5,
+    borderBottomWidth: 1,
     marginTop: 10,
   },
   inputlable: {

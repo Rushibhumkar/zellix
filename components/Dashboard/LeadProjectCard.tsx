@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     position: "relative",
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
   },
   header: {
     flexDirection: "row",

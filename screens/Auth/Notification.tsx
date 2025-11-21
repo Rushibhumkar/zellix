@@ -26,6 +26,8 @@ import { myConsole } from "../../hooks/useConsole";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
+import { color } from "../../const/color";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const Notification = () => {
   const { user } = useSelector(selectUser);
@@ -120,7 +122,7 @@ const Notification = () => {
       Lead: "#FF6B6B",
       Meeting: "#4ECDC4",
       Booking: "#45B7D1",
-      Default: "#95A5A6"
+      Default: "#95A5A6",
     };
     return colors[type] || colors.Default;
   };
@@ -130,28 +132,28 @@ const Notification = () => {
       Lead: "person",
       Meeting: "event",
       Booking: "book",
-      Default: "notifications"
+      Default: "notifications",
     };
     return icons[type] || icons.Default;
   };
 
   const NotificationList = ({ item, isDivider }) => {
     const typeColor = getTypeColor(item?.type);
-    
+
     return (
       <TouchableOpacity
         key={item?._id}
         onPress={() => handleNotificationSeen(item)}
         style={[
           styles.notificationCard,
-          !item?.seen && styles.unseenNotification
+          !item?.seen && styles.unseenNotification,
         ]}
       >
         <View style={[styles.iconContainer, { backgroundColor: typeColor }]}>
-          <MaterialIcons 
-            name={getTypeIcon(item?.type)} 
-            size={24} 
-            color="#FFFFFF" 
+          <MaterialIcons
+            name={getTypeIcon(item?.type)}
+            size={24}
+            color="#FFFFFF"
           />
           {!item?.seen && (
             <View style={styles.unseenDot}>
@@ -163,31 +165,29 @@ const Notification = () => {
             </View>
           )}
         </View>
-        
+
         <View style={styles.contentContainer}>
           <View style={styles.headerRow}>
             <View style={styles.typeContainer}>
-              <CustomText style={styles.typeText}>
-                {item?.type}
-              </CustomText>
+              <CustomText style={styles.typeText}>{item?.type}</CustomText>
               {!item?.seen && (
-                <View style={[styles.statusDot, { backgroundColor: typeColor }]} />
+                <View
+                  style={[styles.statusDot, { backgroundColor: typeColor }]}
+                />
               )}
             </View>
             <CustomText style={styles.timeText}>
               {moment(item?.time).format("HH:mm A")}
             </CustomText>
           </View>
-          
-          <CustomText style={styles.messageText}>
-            {item?.message}
-          </CustomText>
+
+          <CustomText style={styles.messageText}>{item?.message}</CustomText>
         </View>
-        
-        <MaterialIcons 
-          name="chevron-right" 
-          size={20} 
-          color="#95A5A6" 
+
+        <MaterialIcons
+          name="chevron-right"
+          size={20}
+          color={color.mainTxtColorFade}
           style={styles.chevron}
         />
       </TouchableOpacity>
@@ -206,7 +206,9 @@ const Notification = () => {
             return (
               <View style={styles.sectionContainer}>
                 <View style={styles.sectionHeaderContainer}>
-                  <CustomText style={styles.sectionHeader}>{section}</CustomText>
+                  <CustomText style={styles.sectionHeader}>
+                    {section}
+                  </CustomText>
                   <View style={styles.sectionDivider} />
                 </View>
                 <View style={styles.notificationsList}>
@@ -245,8 +247,8 @@ const Notification = () => {
             </>
           }
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
+            <RefreshControl
+              refreshing={refreshing}
               onRefresh={onRefresh}
               colors={["#2D67C6"]}
               tintColor={"#2D67C6"}
@@ -266,7 +268,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   sectionContainer: {
     marginBottom: 24,
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2D3748",
+    color: color.mainTxtColor,
     marginBottom: 8,
     textAlign: "left",
   },
@@ -290,14 +293,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     paddingHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    ...shadowPrimaryColor,
   },
   notificationCard: {
     flexDirection: "row",
@@ -342,7 +338,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   typeText: {
-    color: "#1A202C",
+    color: color.mainTxtColor,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -352,12 +348,12 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   timeText: {
-    color: "#718096",
+    color: color.strokeColor,
     fontSize: 12,
     fontWeight: "500",
   },
   messageText: {
-    color: "#4A5568",
+    color: color.strokeColor,
     fontSize: 14,
     fontWeight: "400",
     lineHeight: 20,

@@ -334,6 +334,7 @@ const LeadsDetails = () => {
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
 
+  myConsole("detail", detail);
   return (
     <>
       {activeTab === 1 && (
@@ -546,9 +547,8 @@ const LeadsDetails = () => {
                 containerStyle={{ marginBottom: 10 }}
                 icon={detail?.whatsapp ? "whatsapp" : "n/a"}
                 onPressIcon={() => {
-                  if (!detail?.clientMobile) return;
-                  const phone = (detail?.clientMobile).replace(/[^0-9]/g, "");
-                  Linking.openURL(`whatsapp://send?phone=${phone}`);
+                  if (!detail?.whatsapp) return;
+                  Linking.openURL(detail?.whatsapp);
                 }}
               />
 

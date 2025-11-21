@@ -77,9 +77,9 @@ const LeaveDetail = () => {
   ) => {
     try {
       toggleModal(" ");
-      popUpConfToast.plzWait({
-        bodyComponent: () => <PleaseWait />,
-      });
+      // popUpConfToast.plzWait({
+      //   bodyComponent: () => <PleaseWait />,
+      // });
       let resAcceptRejectLeave = await leaveApproveReject({
         key: key,
         id: params?.item?._id,

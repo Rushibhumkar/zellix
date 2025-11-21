@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
   },
   headerTitle: {
     fontSize: 17,

@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 18,
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
   },
   headerRow: {
     flexDirection: "row",
@@ -133,9 +133,6 @@ const styles = StyleSheet.create({
   },
   dropdownBox: {
     width: 130,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
     backgroundColor: "#F9FAFB",
   },
   chartWrapper: {

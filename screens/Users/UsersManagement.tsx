@@ -8,6 +8,7 @@ import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import { myConsole } from "../../hooks/useConsole";
 
 const UsersManagement = () => {
   const navigation = useNavigation();
@@ -24,19 +25,26 @@ const UsersManagement = () => {
       id: 2,
       title: "Teams",
       screen: "teamList",
-      roles: [roleEnum.sup_admin, roleEnum.sr_manager, roleEnum.manager, roleEnum.agent],
+      roles: [
+        roleEnum.sup_admin,
+        roleEnum.sr_manager,
+        roleEnum.manager,
+        roleEnum.agent,
+      ],
     },
   ];
 
-  const filteredMenuItems = menuItems.filter(item => 
+  const filteredMenuItems = menuItems.filter((item) =>
     item.roles.includes(user?.role)
   );
+
+  myConsole("filteredMenuItems", filteredMenuItems);
+  myConsole("usersss", user?.role);
 
   return (
     <View style={styles.container}>
       <Header title={"Users Management"} />
       <View style={styles.content}>
-        
         <View style={styles.menuContainer}>
           {filteredMenuItems.map((item) => (
             <TouchableOpacity
@@ -52,12 +60,10 @@ const UsersManagement = () => {
                   </CustomText>
                 </View>
                 <View style={styles.textContainer}>
-                  <CustomText style={styles.menuTitle}>
-                    {item.title}
-                  </CustomText>
+                  <CustomText style={styles.menuTitle}>{item.title}</CustomText>
                   <CustomText style={styles.menuDescription}>
-                    {item.title === "Users" 
-                      ? "Manage individual users and permissions" 
+                    {item.title === "Users"
+                      ? "Manage individual users and permissions"
                       : "Organize users into teams and groups"}
                   </CustomText>
                 </View>
@@ -67,6 +73,14 @@ const UsersManagement = () => {
               </View>
             </TouchableOpacity>
           ))}
+          {filteredMenuItems.length === 0 && (
+            <View style={styles.emptyBox}>
+              <CustomText style={styles.emptyTitle}>No Access</CustomText>
+              <CustomText style={styles.emptySub}>
+                You don't have permission to view any sections here.
+              </CustomText>
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -104,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 20,
-...shadowPrimaryColor,
+    ...shadowPrimaryColor,
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
@@ -145,6 +159,27 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#9ca3af",
     fontWeight: "bold",
+  },
+  emptyBox: {
+    padding: 30,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadowPrimaryColor,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: color.mainTxtColor,
+    marginBottom: 8,
+  },
+  emptySub: {
+    fontSize: 14,
+    color: "#6b7280",
+    textAlign: "center",
   },
 });
 

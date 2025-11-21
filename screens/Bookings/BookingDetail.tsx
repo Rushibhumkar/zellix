@@ -430,20 +430,12 @@ const BookingDetail = () => {
                 title="Whatsapp Link"
                 icon={filterLead?.whatsapp ? "whatsapp" : "n/a"}
                 containerStyle={{ marginBottom: 10 }}
-                // onPressIcon={() =>
-                //   filterLead?.whatsapp
-                //     ? Linking.openURL(`${filterLead?.whatsapp}`)
-                //     : null
-                // }
                 onPressIcon={() => {
-                  if (!filterLead?.clientMobile) return;
-                  const phone = (filterLead?.clientMobile).replace(
-                    /[^0-9]/g,
-                    ""
-                  );
-                  Linking.openURL(`whatsapp://send?phone=${phone}`);
+                  if (!filterLead?.whatsapp) return;
+                  Linking.openURL(filterLead.whatsapp);
                 }}
               />
+
               <RowItem
                 title="Date Of Birth"
                 value={

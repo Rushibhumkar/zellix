@@ -1,44 +1,35 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import {
-  StyleProp,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleProp, TouchableOpacity, View, ViewStyle } from "react-native";
 import Modal from "react-native-modal";
+import * as FileSystem from "expo-file-system/legacy";
+import * as DocumentPicker from "expo-document-picker";
+
 import CameraIcon from "../../assets/svg/CameraIcon";
 import FileIcon from "../../assets/svg/FileIcon";
 import GalleryIcon from "../../assets/svg/GalleryIcon";
+import PdfPickIcon from "../../assets/svg/PdfPickIcon";
+
 import { color } from "../../const/color";
 import { myConsole } from "../../hooks/useConsole";
-import * as FileSystem from "expo-file-system";
-import * as DocumentPicker from "expo-document-picker";
-import PdfPickIcon from "../../assets/svg/PdfPickIcon";
 import CustomText from "../CustomText/CustomText";
 
 export interface TOnSelect {
   canceled: boolean;
-  assets: [
-    {
-      width: number;
-      rotation: any;
-      height: number;
-      exif: any;
-      duration: any;
-      type: string;
-      base64: string;
-      uri: string;
-      assetId: any;
-    }
-  ];
-  cancelled: boolean;
+  assets: Array<{
+    width: number;
+    height: number;
+    uri: string;
+    base64?: string;
+    type: string;
+    fileSize?: number;
+    fileName?: string;
+  }>;
 }
 
 interface TExpoImagePicker {
-  onSelect: (TOnSelect) => void;
-  boxContainerStyle: StyleProp<ViewStyle>;
+  onSelect: (data: TOnSelect) => void;
+  boxContainerStyle?: StyleProp<ViewStyle>;
   label: string;
   isMultiplePick?: boolean;
 }
@@ -50,93 +41,106 @@ const ExpoImagePicker = ({
   isMultiplePick = false,
 }: TExpoImagePicker) => {
   const [open, setOpen] = useState(false);
-  const [image, setImage] = useState("");
-  const handleModal = () => {
-    setOpen(!open);
-  };
+  const [imageName, setImageName] = useState("");
+
+  const handleModal = () => setOpen(!open);
+
   const uploadImage = async (mode) => {
     try {
+      let result = null;
+
+      /** --------------------------------------------------
+       * 📄 PDF PICKER
+       * -------------------------------------------------- */
       if (mode === "pdf") {
-        const result = await DocumentPicker.getDocumentAsync({
+        result = await DocumentPicker.getDocumentAsync({
           type: "application/pdf",
-          multiple: false,
         });
-        // const fileSizeInBytes = await FileSystem.getInfoAsync(result?.assets[0]?.uri);
-        // // result?.['fileSize'] = fileSizeInBytes?.size;
-        let tempResult = {
-          ...result,
-          assets: [
-            {
-              ...result?.assets[0],
-              fileSize: result?.assets[0]?.size,
-              uri: result?.assets[0]?.uri,
-              type: "pdf",
-              fileName: result?.assets[0]?.name,
-            },
-          ],
-        };
+
         if (!result.canceled) {
-          await setImage(tempResult?.assets[0]?.uri);
-          await onSelect(tempResult);
+          const asset = result.assets[0];
+          const temp = {
+            ...result,
+            assets: [
+              {
+                ...asset,
+                uri: asset.uri,
+                type: "pdf",
+                fileName: asset.name,
+                fileSize: asset.size,
+              },
+            ],
+          };
+
+          setImageName(asset.name);
+          onSelect(temp);
         }
-        myConsole("resultPDwF", result);
-      } else if (mode === "gallery") {
-        let result = {};
+
+        return;
+      }
+
+      /** --------------------------------------------------
+       * 🖼 GALLERY PICKER
+       * -------------------------------------------------- */
+      if (mode === "gallery") {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
+
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
-          quality: 0.4,
+          quality: 0.5,
           allowsMultipleSelection: isMultiplePick,
         });
-        const fileSizeInBytes = await FileSystem.getInfoAsync(
-          result?.assets[0]?.uri
-        );
-        // result?.['fileSize'] = fileSizeInBytes?.size;
-        let tempResult = {
-          ...result,
-          assets: [{ ...result?.assets[0], fileSize: fileSizeInBytes?.size }],
-        };
         if (!result.canceled) {
-          await setImage(tempResult?.assets[0]?.uri);
-          await onSelect(!isMultiplePick ? tempResult : result);
+          const asset = result.assets[0];
+          const info = await FileSystem.getInfoAsync(asset.uri);
+
+          const temp = {
+            ...result,
+            assets: [{ ...asset, fileSize: info.size }],
+          };
+
+          setImageName(asset.uri.split("/").pop());
+          onSelect(isMultiplePick ? result : temp);
+          handleModal();
         }
-      } else {
-        let result = {};
-        await ImagePicker.requestCameraPermissionsAsync();
-        result = await ImagePicker.launchCameraAsync({
-          cameraType: ImagePicker.CameraType.back,
-          allowsEditing: false,
-          quality: 0.5,
-        });
-        // if (!result.canceled) {
-        //     await setImage(result?.assets[0]?.uri)
-        //     await onSelect(result)
-        // }
-        const fileSizeInBytes = await FileSystem.getInfoAsync(
-          result?.assets[0]?.uri
-        );
-        // result?.['fileSize'] = fileSizeInBytes?.size;
-        let tempResult = {
+
+        return;
+      }
+
+      /** --------------------------------------------------
+       * 📷 CAMERA
+       * -------------------------------------------------- */
+      await ImagePicker.requestCameraPermissionsAsync();
+
+      result = await ImagePicker.launchCameraAsync({
+        cameraType: ImagePicker.CameraType.back,
+        quality: 0.5,
+        allowsEditing: false,
+      });
+
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        const info = await FileSystem.getInfoAsync(asset.uri);
+
+        const temp = {
           ...result,
-          assets: [{ ...result?.assets[0], fileSize: fileSizeInBytes?.size }],
+          assets: [{ ...asset, fileSize: info.size }],
         };
-        if (!result.canceled) {
-          await setImage(tempResult?.assets[0]?.uri);
-          await onSelect(tempResult);
-        }
+
+        setImageName(asset.uri.split("/").pop());
+        onSelect(temp);
       }
     } catch (error) {
-    } finally {
-      handleModal();
+      myConsole("expoPickerError", error);
     }
   };
+
   return (
     <View>
-      {/* <CustomText>ExpoImagePicker</CustomText>
-            <Button title='openModal gallery' onPress={handleModal} /> */}
-      <View style={[boxContainerStyle]}>
-        {label && (
+      {/* Label */}
+      <View style={boxContainerStyle}>
+        {label ? (
           <CustomText
             style={{
               color: color.mainTxtColor,
@@ -147,7 +151,9 @@ const ExpoImagePicker = ({
           >
             {label}
           </CustomText>
-        )}
+        ) : null}
+
+        {/* Picker Button */}
         <TouchableOpacity
           activeOpacity={0.5}
           style={{
@@ -171,16 +177,18 @@ const ExpoImagePicker = ({
               color: color.mainTxtColorFade,
             }}
           >
-            {image ? `${label}.png` : "Choose a file"}
+            {imageName ? imageName : "Choose a file"}
           </CustomText>
           <FileIcon />
         </TouchableOpacity>
       </View>
+
+      {/* Modal */}
       <Modal
         isVisible={open}
-        hasBackdrop={true}
+        hasBackdrop
         onBackdropPress={handleModal}
-        animationOut={"zoomOut"}
+        animationOut="zoomOut"
       >
         <View>
           <View
@@ -189,13 +197,9 @@ const ExpoImagePicker = ({
               marginHorizontal: 20,
               padding: 24,
               borderRadius: 24,
-              justifyContent: "center",
               alignItems: "center",
               shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
+              shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.15,
               shadowRadius: 12,
               elevation: 5,
@@ -209,85 +213,30 @@ const ExpoImagePicker = ({
                 fontWeight: "700",
                 marginBottom: 24,
                 color: color.mainTxtColor,
-                letterSpacing: 0.5,
               }}
             >
-              Choose Image
+              Choose File
             </CustomText>
+
             <View
               style={{
-                justifyContent: "space-between",
                 flexDirection: "row",
-                alignItems: "center",
                 gap: 16,
                 width: 240,
               }}
             >
-              {/* <TouchableOpacity
-        onPress={() => uploadImage('')}
-        style={{
-          paddingHorizontal: 20,
-          paddingVertical: 16,
-          backgroundColor: color.gray,
-          borderRadius: 12,
-          marginHorizontal: 10,
-          flex: 1,
-          alignItems: 'center',
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
-      >
-        <CameraIcon />
-      </TouchableOpacity> */}
+              {/* Gallery */}
               <TouchableOpacity
                 onPress={() => uploadImage("gallery")}
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 16,
-                  backgroundColor: color.gray,
-                  borderRadius: 12,
-                  flex: 1,
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                  borderWidth: 1,
-                  borderColor: "#E2E8F0",
-                }}
+                style={pickerBtnStyle}
               >
                 <GalleryIcon />
               </TouchableOpacity>
+
+              {/* PDF */}
               <TouchableOpacity
                 onPress={() => uploadImage("pdf")}
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 16,
-                  backgroundColor: color.gray,
-                  borderRadius: 12,
-                  flex: 1,
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                  borderWidth: 1,
-                  borderColor: "#E2E8F0",
-                }}
+                style={pickerBtnStyle}
               >
                 <PdfPickIcon />
               </TouchableOpacity>
@@ -297,6 +246,22 @@ const ExpoImagePicker = ({
       </Modal>
     </View>
   );
+};
+
+const pickerBtnStyle = {
+  paddingHorizontal: 20,
+  paddingVertical: 16,
+  backgroundColor: color.gray,
+  borderRadius: 12,
+  flex: 1,
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+  borderWidth: 1,
+  borderColor: "#E2E8F0",
 };
 
 export default ExpoImagePicker;

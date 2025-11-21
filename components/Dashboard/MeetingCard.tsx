@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 18,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
     borderLeftWidth: 4,
     ...shadowPrimaryColor,
   },

@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
   },
   titleText: {
     fontSize: 17,

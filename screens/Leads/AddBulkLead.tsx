@@ -16,8 +16,9 @@ import FileIcon from "../../assets/svg/FileIcon";
 import { addLeadInBulk } from "../../utils/validation";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
+import { useAppToast } from "../../components/AppToast";
 
 const leadType = [
   { value: "lead", label: "Lead" },
@@ -33,13 +34,22 @@ const AddBulkLead = () => {
   const [bulkLead, setBulkLead] = useState([]);
   const [isLoading, setLoading] = useState(false);
 
+  const toast = useAppToast();
+
   const { values, errors, setFieldValue, handleSubmit, handleBlur, touched } =
     useFormik({
       validationSchema: addLeadInBulk,
       initialValues: {
         srManager: "",
+        fileSelectionError: "",
       },
       onSubmit: async (value) => {
+        if (bulkLead.length === 0) {
+          setFieldValue("fileSelectionError", "Please choose a file");
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         try {
           let sendData = {
@@ -47,19 +57,19 @@ const AddBulkLead = () => {
             srManager: value?.srManager,
             assign: value?.srManager,
           };
-          let addLeadRes = await addLead(sendData);
+          let addLeadRes = await addLead(sendData, toast);
           // await dispatch(getAllLeadFunc());
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],
           });
-          popUpConfToast.successMessage("Lead Add Successfully");
+          toast.success("Lead Added Successfully");
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
           navigate(routeLead.allLead);
         } catch (err) {
           myConsole("error", err);
-          popUpConfToast.errorMessage(err?.response?.data || err);
+          toast.error(err?.response?.data || err);
         } finally {
           setLoading(false);
         }
@@ -98,7 +108,7 @@ const AddBulkLead = () => {
       <View style={{ marginBottom: 15 }}>
         <CustomText
           style={{
-            color: "#000000",
+            color: color.mainTxtColor,
             marginBottom: 10,
             fontSize: 16,
             fontWeight: "500",
@@ -110,10 +120,10 @@ const AddBulkLead = () => {
           activeOpacity={0.5}
           style={{
             height: 37.5,
-            borderColor: "#000000",
-            backgroundColor: "#FCFAFA",
-            borderWidth: 0.5,
-            borderRadius: 10,
+            borderColor: color.borderColor,
+            backgroundColor: color.white,
+            borderWidth: 1.8,
+            borderRadius: 14,
             padding: 10,
             width: "100%",
             justifyContent: "space-between",
@@ -127,12 +137,18 @@ const AddBulkLead = () => {
             style={{
               fontSize: 14,
               fontWeight: "400",
+              color: color.strokeColor,
             }}
           >
             {bulkLead?.length > 0 ? "You have choose file" : "Choose a file"}
           </CustomText>
           <FileIcon />
         </TouchableOpacity>
+        {values.fileSelectionError ? (
+          <CustomText style={{ color: "red", marginTop: 5 }}>
+            {values.fileSelectionError}
+          </CustomText>
+        ) : null}
       </View>
 
       {user?.isAdmin && (

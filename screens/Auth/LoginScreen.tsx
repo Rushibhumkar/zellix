@@ -35,10 +35,10 @@ const LoginScreen = () => {
   const initialValues = {
     // email: "kumarvishalpost1@gmail.com",
     // password: "123456789",
-    // email: "test@test.com",
-    // password: "123456789",
-    email: "",
-    password: "",
+    email: "test@test.com",
+    password: "123456789",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

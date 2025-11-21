@@ -310,7 +310,11 @@ const AllBookings = () => {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage && (
-              <ActivityIndicator size={"small"} color={"#002E6B"} />
+              <ActivityIndicator
+                size={"small"}
+                color={color.mainTxtColor}
+                style={{ marginTop: 12 }}
+              />
             )
           }
           refreshControl={
@@ -339,7 +343,7 @@ const AllBookings = () => {
             width: 250,
           }}
         >
-          <CustomText fontSize={16} fontWeight="600">
+          <CustomText fontSize={16} fontWeight="600" color={color.mainTxtColor}>
             Business Status
           </CustomText>
           <View style={{ height: 15 }} />

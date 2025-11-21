@@ -19,8 +19,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
 import { uploadFile } from "../../utils/uploadFile";
 import { alphanumericValidation, emailValidate } from "../../utils/validation";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { color } from "../../const/color";
+import { useAppToast } from "../../components/AppToast";
 
 const qualifications = [
   { _id: "12th", name: "12th" },
@@ -32,6 +32,7 @@ const ScheduleInterview = () => {
   const { navigate, goBack } = useNavigation();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const toast = useAppToast();
   const {
     data: allUsers,
     isLoading: usersLoading,
@@ -94,16 +95,17 @@ const ScheduleInterview = () => {
           realEstateExperience: values.experience,
           beforeInterview: values.cvFile,
         };
+        console.log("payloaddd", payload);
         await scheduleInterview(payload);
         queryClient.invalidateQueries({
           queryKey: ["getAllCandidates"],
         });
-        popUpConfToast.successMessage("Interview Scheduled Successfully");
+        toast.success("Interview Scheduled Successfully");
         goBack();
         formik.resetForm();
       } catch (error) {
         console.error("Submission Error:", error);
-        popUpConfToast.errorMessage("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
       } finally {
         setLoading(false);
       }

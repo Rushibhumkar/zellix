@@ -181,7 +181,7 @@ const ClientInfoNewForm = ({ params }: any) => {
             padding: 10,
             borderRadius: 10,
             marginBottom: 20,
-            borderColor: color.grayBtn,
+            borderColor: color.borderColor,
           }}
         >
           {formik?.values?.clients?.map((client, index) => (

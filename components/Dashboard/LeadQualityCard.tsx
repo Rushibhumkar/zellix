@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginTop: 10,
     borderLeftWidth: 4,
-    borderLeftColor: color.primaryColor,
+    borderLeftColor: color.mainTxtColorFade,
     ...shadowPrimaryColor,
   },
   center: { justifyContent: "center", alignItems: "center" },

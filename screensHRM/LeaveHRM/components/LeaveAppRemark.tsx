@@ -84,6 +84,7 @@ const LeaveAppRemark = ({
           multiline={true}
           textAlignVertical="top"
           placeholder="Type here"
+          placeholderTextColor={color.mainTxtColorFade}
           onChangeText={onChangeText}
         />
       </View>

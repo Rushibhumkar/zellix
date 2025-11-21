@@ -277,7 +277,11 @@ const AllMeetings = () => {
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               isFetchingNextPage && (
-                <ActivityIndicator size={"small"} color={"#002E6B"} />
+                <ActivityIndicator
+                  size={"small"}
+                  color={color.mainTxtColor}
+                  style={{ marginTop: 12 }}
+                />
               )
             }
             refreshControl={

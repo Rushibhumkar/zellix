@@ -21,10 +21,11 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyCRM } from "../../utils/queryKeys";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
+import { useAppToast } from "../../components/AppToast";
 
 const AddSingleLead = ({ data }) => {
   const queryClient = useQueryClient();
+  const toast = useAppToast();
   const dispatch = useDispatch();
   const { navigate, goBack } = useNavigation();
   const { user, team } = useSelector(selectUser);
@@ -51,16 +52,17 @@ const AddSingleLead = ({ data }) => {
       clientEmail: data?.clientEmail ?? "",
       type: data?.type ?? "",
       whatsapp: data?.whatsapp?.slice(14) ?? "",
-      // srManager: data?.team?.srManager ?? '',
+      // name: data?.name ?? "sdfsdfdsf",
+      // clientName: data?.clientName ?? "lksjdlkfjd",
+      // clientMobile: data?.clientMobile ?? "91 383928121",
+      // clientEmail: data?.clientEmail ?? "sdfsdf@gmail.com",
+      // type: data?.type ?? "",
+      // whatsapp: data?.whatsapp?.slice(14) ?? "9183736272",
+
       ...(user?.isAdmin && { srManager: data?.team?.srManager ?? "" }),
-      // clientMobile: '91-9988776655',
-      // name: 'Lead Name',
-      // clientName: 'clientName',
-      // clientEmail: 'clientEmail@gmail.com',
-      // whatsapp: '7766554433',
-      // srManager: '',
     },
-    onSubmit: async (value) => {
+    onSubmit: async (values) => {
+      myConsole("formik_values", values);
       let isUpdate = !!data?._id;
       setLoading(true);
       try {
@@ -69,15 +71,19 @@ const AddSingleLead = ({ data }) => {
           ...restData,
           whatsapp: `https://wa.me/${whatsapp}`,
         };
+        myConsole("payload_to_send", sendData);
         if (isUpdate) {
-          let updateLeadRes = await updateLead({
-            id: data?._id,
-            data: {
-              data: sendData,
-              srManager,
-              assign: srManager,
+          let updateLeadRes = await updateLead(
+            {
+              id: data?._id,
+              data: {
+                data: sendData,
+                srManager,
+                assign: srManager,
+              },
             },
-          });
+            toast
+          );
 
           // setIsVisible(true);
           // setMessage("Updated Successfully");
@@ -88,28 +94,31 @@ const AddSingleLead = ({ data }) => {
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],
           });
-          popUpConfToast.successMessage(updateLeadRes);
+          toast.success(updateLeadRes);
           goBack();
         } else {
-          let addLeadRes = await addLead({
-            data: sendData,
-            srManager,
-            assign: srManager,
-          });
+          let addLeadRes = await addLead(
+            {
+              data: sendData,
+              srManager,
+              assign: srManager,
+            },
+            toast
+          );
           // setIsVisible(true);
           // setMessage("Lead saved successfully");
           // await dispatch(getAllLeadFunc());
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],
           });
-          popUpConfToast.successMessage("Lead Add Successfully");
+          toast.success("Lead Add Successfully");
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
           navigate("allLead");
         }
       } catch (err) {
-        popUpConfToast.errorMessage(err?.response?.data || err);
+        toast.error(err?.response?.data || err);
         // setLoading(false);
         // Alert.alert("Error ", `${err?.response?.data || err}`, [
         //   {

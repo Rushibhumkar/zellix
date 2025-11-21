@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     ...shadowPrimaryColor,
-    borderLeftColor: color.mainTxtColor,
+    borderLeftColor: color.mainTxtColorFade,
     borderLeftWidth: 4,
   },
   title: {
