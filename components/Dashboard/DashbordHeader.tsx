@@ -84,15 +84,18 @@ const DashbordHeader = () => {
           {/* Left Side — User Info */}
           <View style={styles.leftContainer}>
             <CustomText style={styles.userName}>{user?.name || ""}</CustomText>
-            <CustomText style={styles.userRole}>
-              {user?.role === "sup_admin"
-                ? "Super Admin"
-                : user?.role === "sub_admin"
-                ? "Sub Admin"
-                : user?.role === "admin"
-                ? "Admin"
-                : ""}
-            </CustomText>
+            {user?.role === "sup_admin" && (
+              <CustomText style={styles.userRole}>Super Admin</CustomText>
+            )}
+
+            {user?.role === "sub_admin" && (
+              <CustomText style={styles.userRole}>Sub Admin</CustomText>
+            )}
+
+            {user?.role === "admin" && (
+              <CustomText style={styles.userRole}>Admin</CustomText>
+            )}
+
             <CustomText style={styles.userEmail}>
               {user?.email || ""}
             </CustomText>

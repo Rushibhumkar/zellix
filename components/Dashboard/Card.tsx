@@ -4,17 +4,21 @@ import { useNavigation } from "@react-navigation/native";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 import Feather from "react-native-vector-icons/Feather";
-import { routeBooking } from "../../utils/routes";
+import { routeBooking, routeMeeting } from "../../utils/routes";
 import { sizes } from "../../const";
 import { LinearGradient } from "expo-linear-gradient";
 import { formatCount } from "../../utils/commonFunctions";
 import { color } from "../../const/color";
+import { myConsole } from "../../hooks/useConsole";
+import { routeUser } from "../../utils/routesHRM";
 
 const Card = ({ item, loading }) => {
   const { navigate } = useNavigation();
 
-  // ✅ Reusable Card Component
-  const SingleCard = ({ count, title, onPress, isLoading }) => {
+  // -------------------------------
+  // Reusable Single Card Component
+  // -------------------------------
+  const SingleCard = ({ count, title, icon, onPress, isLoading }) => {
     if (isLoading) {
       return (
         <TouchableOpacity
@@ -26,7 +30,7 @@ const Card = ({ item, loading }) => {
       );
     }
 
-    const iconColor = title === "Bookings" ? "#34C759" : "#4A68FF";
+    const iconColor = "#4A68FF";
 
     return (
       <TouchableOpacity
@@ -34,21 +38,9 @@ const Card = ({ item, loading }) => {
         onPress={onPress}
         activeOpacity={0.8}
       >
-        {/* Row: Icon + Title + Count */}
         <View style={styles.rowAlign}>
           <View style={[styles.iconBox, { backgroundColor: `${iconColor}1A` }]}>
-            {title === "Leads" && (
-              <Feather name="users" size={20} color={iconColor} />
-            )}
-            {title === "Calling Leads" && (
-              <Feather name="phone" size={20} color={iconColor} />
-            )}
-            {title === "Bookings" && (
-              <Feather name="check-square" size={20} color={iconColor} />
-            )}
-            {title === "Team" && (
-              <Feather name="briefcase" size={20} color={iconColor} />
-            )}
+            <Feather name={icon} size={20} color={iconColor} />
           </View>
 
           <View style={styles.textBox}>
@@ -59,7 +51,6 @@ const Card = ({ item, loading }) => {
           </View>
         </View>
 
-        {/* Progress Bar */}
         <View
           style={[
             styles.progressBar,
@@ -77,32 +68,40 @@ const Card = ({ item, loading }) => {
       end={{ x: 1, y: 1 }}
       style={styles.wrapper}
     >
+      {/* ROW 1 */}
       <View style={styles.row}>
         <SingleCard
           count={item?.leads ?? 0}
           title="Leads"
+          icon="users"
           onPress={() => navigate("allLead2")}
           isLoading={loading}
         />
+
         <SingleCard
-          count={item?.callingData ?? "1.4K"}
-          title="Calling Leads"
-          onPress={() => navigate("allLead")}
+          count={item?.meetings ?? 0}
+          title="Meetings"
+          icon="calendar"
+          onPress={() => navigate(routeMeeting.MeetingsNavigator)}
           isLoading={loading}
         />
       </View>
 
+      {/* ROW 2 */}
       <View style={styles.row}>
         <SingleCard
           count={item?.bookings ?? 0}
           title="Bookings"
+          icon="check-square"
           onPress={() => navigate(routeBooking.bookingNavigator)}
           isLoading={loading}
         />
+
         <SingleCard
           count={item?.users ?? 0}
-          title="Team"
-          onPress={() => navigate("usermanagement")}
+          title="Employees"
+          icon="briefcase"
+          onPress={() => navigate("UsersNavigator")}
           isLoading={loading}
         />
       </View>
@@ -110,7 +109,9 @@ const Card = ({ item, loading }) => {
   );
 };
 
-// ✅ Skeleton Loader
+// ---------------------------------------
+// Skeleton Loader
+// ---------------------------------------
 const SkeletonRow = () => (
   <View style={styles.skeletonWrapper}>
     <SkeletonView wrapperStyle={{ width: 32, height: 32, borderRadius: 16 }} />
@@ -120,7 +121,9 @@ const SkeletonRow = () => (
   </View>
 );
 
-// ✅ Styles
+// ---------------------------------------
+// STYLES
+// ---------------------------------------
 const styles = StyleSheet.create({
   wrapper: {
     width: sizes.width,

@@ -97,7 +97,6 @@ export default function DashboardCard({ title = "" }) {
         </View>
       </View>
       {/* Summary Cards */}
-      // Summary Cards
       {summaryData?.data?.length > 0 ? (
         summaryData?.data?.map((item) => (
           <LinearGradient
