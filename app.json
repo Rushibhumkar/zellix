@@ -19,6 +19,7 @@
       "bundleNumber": "1.4.8",
       "supportsTablet": true,
       "buildNumber": "71",
+       "googleServicesFile": "./GoogleService-Info.plist",
       "permissions": [
         "READ_CALL_LOG"
       ],
@@ -51,6 +52,16 @@
       "favicon": "./assets/favicon1.png"
     },
     "plugins": [
+       [
+        "@react-native-firebase/app",
+        {
+          "iosGoogleServicesFile": "./GoogleService-Info.plist",
+          "androidGoogleServicesFile": "./google-services.json"
+        }
+      ],
+      [
+        "@react-native-firebase/messaging"
+      ],
       [
         "expo-image-picker",
         {
