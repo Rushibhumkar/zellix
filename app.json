@@ -19,7 +19,7 @@
       "bundleNumber": "1.4.8",
       "supportsTablet": true,
       "buildNumber": "71",
-       "googleServicesFile": "./GoogleService-info.plist",
+       "googleServicesFile":  "./GoogleService-Info.plist",
       "permissions": [
         "READ_CALL_LOG"
       ],
@@ -55,7 +55,7 @@
        [
         "@react-native-firebase/app",
         {
-        "iosGoogleServicesFile": "./GoogleService-info.plist",
+        "iosGoogleServicesFile": "./GoogleService-Info.plist",
           "androidGoogleServicesFile": "./google-services.json"
         }
       ],
