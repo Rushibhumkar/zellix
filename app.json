@@ -2,7 +2,7 @@
   "expo": {
     "name": "zellix",
     "slug": "zellix",
-    "version": "1.4.9",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -16,9 +16,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.4.9",
+      "bundleNumber": "1.5.0",
       "supportsTablet": true,
-      "buildNumber": "72",
+      "buildNumber": "73",
       "permissions": [
         "READ_CALL_LOG"
       ],
