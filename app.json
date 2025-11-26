@@ -19,12 +19,6 @@
       "bundleNumber": "1.4.9",
       "supportsTablet": true,
       "buildNumber": "72",
-       "googleServicesFile":  "./GoogleService-Info.plist",
-        "config": {
-        "googleServices": {
-          "apiKey": "AIzaSyAyKgM64CXloNo0pmNa0ECXTplNyeAUH-U"
-        }
-      },
       "permissions": [
         "READ_CALL_LOG"
       ],
@@ -57,17 +51,6 @@
       "favicon": "./assets/favicon1.png"
     },
     "plugins": [
-       [
-        "@react-native-firebase/app",
-        {
-        "iosGoogleServicesFile": "./GoogleService-Info.plist",
-          "androidGoogleServicesFile": "./google-services.json"
-        }
-      ],
-   [
-  "@react-native-firebase/messaging",
-  {}
-],
       [
         "expo-image-picker",
         {
@@ -91,8 +74,7 @@
             "minSdkVersion": 24
           },
           "ios": {
-            "deploymentTarget": "15.1",
-             "useFrameworks": "static"
+            "deploymentTarget": "15.1"
           }
         }
       ],
@@ -102,16 +84,12 @@
     "owner": "rushibhumkar14",
     "runtimeVersion": "1.3.6",
     "updates": {
-      "fallbackToCacheTimeout": 0,
-      "checkAutomatically": "ON_LOAD"
+      "fallbackToCacheTimeout": 0
     },
     "extra": {
-      "firebaseApiKey": "AIzaSyDUuI4NE54bTHHXDOJNFysIiImtRM1SmH0",
       "eas": {
-        "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8",
-        "updateChannel": "production"
+        "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       }
     }
   }
 }
-
