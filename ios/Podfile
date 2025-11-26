@@ -38,18 +38,32 @@ target 'zellix' do
 
   config = use_native_modules!(config_command)
 
-  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
-  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
+  use_frameworks! :linkage => :static
 
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
+   :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false'
   )
 
   post_install do |installer|
+    # FIX FOR ALL REACT HEADER ERRORS
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Fix non-modular header issues
+        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        
+        # Fix React header search paths
+        if target.name == 'React'
+          config.build_settings['DEFINES_MODULE'] = 'NO'
+        else
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+        end
+      end
+    end
+    
     react_native_post_install(
       installer,
       config[:reactNativePath],
