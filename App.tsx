@@ -15,6 +15,8 @@ import { ToastProvider } from "react-native-toast-notifications";
 import { ModalPortal } from "react-native-modals";
 import { BackHandler } from "react-native";
 import { myConsole } from "./hooks/useConsole";
+import * as Updates from "expo-updates";
+import { Alert, Linking } from "react-native";
 
 if (!BackHandler.removeEventListener) {
   BackHandler.removeEventListener = (type, handler) => true;
@@ -89,6 +91,41 @@ export default function App() {
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
+  }, []);
+
+  const APP_STORE_URL = "https://apps.apple.com/app/id6748918861";
+  const PLAY_STORE_URL =
+    "https://play.google.com/store/apps/details?id=com.skg.zellix";
+
+  useEffect(() => {
+    async function checkUpdate() {
+      try {
+        if (__DEV__) return;
+
+        const update = await Updates.checkForUpdateAsync();
+
+        if (update.isAvailable) {
+          Alert.alert(
+            "Update Available",
+            "A new version of the app is available. Please update from the store.",
+            [
+              {
+                text: "Update Now",
+                onPress: () => {
+                  const url =
+                    Platform.OS === "android" ? PLAY_STORE_URL : APP_STORE_URL;
+                  Linking.openURL(url);
+                },
+              },
+            ]
+          );
+        }
+      } catch (e) {
+        console.log("Update check failed:", e);
+      }
+    }
+
+    checkUpdate();
   }, []);
 
   LogBox.ignoreAllLogs(true);

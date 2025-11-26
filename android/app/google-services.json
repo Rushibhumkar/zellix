@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "222971094342",
-    "project_id": "zellix-75b90",
-    "storage_bucket": "zellix-75b90.firebasestorage.app"
+    "project_number": "625909935162",
+    "project_id": "zellix-app",
+    "storage_bucket": "zellix-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:222971094342:android:289f52a697c19d06683147",
+        "mobilesdk_app_id": "1:625909935162:android:503c538d1e5e7c9d985903",
         "android_client_info": {
           "package_name": "com.skg.zellix"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCgy2dmE12jcMElbBkeERfL0IjDlVW9cUQ"
+          "current_key": "AIzaSyDUuI4NE54bTHHXDOJNFysIiImtRM1SmH0"
         }
       ],
       "services": {
