@@ -18,7 +18,7 @@
       "bundleIdentifier": "com.skg.zellix",
       "bundleNumber": "1.4.9",
       "supportsTablet": true,
-      "buildNumber": "71",
+      "buildNumber": "72",
        "googleServicesFile":  "./GoogleService-Info.plist",
         "config": {
         "googleServices": {
