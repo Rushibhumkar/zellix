@@ -5,12 +5,14 @@
   },
   "build": {
     "development": {
+      "developmentClient": true,
       "distribution": "internal",
       "android": {
         "gradleCommand": ":app:assembleDebug"
       },
       "ios": {
-        "buildConfiguration": "Debug"
+        "buildConfiguration": "Debug",
+        "simulator": false
       },
       "channel": "development"
     },
@@ -21,17 +23,17 @@
     "production": {
       "autoIncrement": true,
       "channel": "production",
-  "android": {
-       "buildType": "app-bundle"
-     }
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
     "production": {
-      "ios":{
-        "appleId":"skgestates9@gmail.com",
-        "ascAppId":"6748918861",
-        "appleTeamId":"2ZUBH53J8W"
+      "ios": {
+        "appleId": "skgestates9@gmail.com",
+        "ascAppId": "6748918861",
+        "appleTeamId": "2ZUBH53J8W"
       }
     }
   }
