@@ -100,6 +100,12 @@ const ClientInfoNewForm = ({ params }: any) => {
       ownership: params?.initialValues?.ownership ?? "single",
       paymentProofArr: params?.initialValues?.paymentProofArr || [],
       otherDocs: params?.initialValues?.otherDocs || [],
+      aml: params?.initialValues?.aml || [],
+      kycForm: params?.initialValues?.kycForm || [],
+      developerInvoice: params?.initialValues?.developerInvoice || [],
+      agentCommissionRelease:
+        params?.initialValues?.agentCommissionRelease || [],
+      referralForm: params?.initialValues?.referralForm || [],
       bookingForm: params?.initialValues?.bookingForm || "",
       inputStatus: params?.initialValues?.inputStatus,
       remarks: params?.initialValues?.remarks || "",
@@ -112,6 +118,11 @@ const ClientInfoNewForm = ({ params }: any) => {
         ownership: values.ownership,
         paymentProofArr: values?.paymentProofArr?.filter((el) => el),
         otherDocs: values?.otherDocs?.filter((el) => el),
+        aml: values?.aml,
+        kycForm: values?.kycForm,
+        developerInvoice: values?.developerInvoice,
+        agentCommissionRelease: values?.agentCommissionRelease,
+        referralForm: values?.referralForm,
         bookingForm: values?.bookingForm,
         inputStatus: values?.inputStatus || "",
         remarks: values?.remarks || "",
@@ -134,7 +145,7 @@ const ClientInfoNewForm = ({ params }: any) => {
     updatedClients.splice(index, 1);
     formik.setFieldValue("clients", updatedClients);
   };
-  console.log("formikerror", formik.errors);
+  // console.log("formikerror", formik.errors);
   const handleCategoryChange = (selected) => {
     formik.setFieldValue("ownership", selected);
     //set initial clients based on ownership
@@ -155,7 +166,25 @@ const ClientInfoNewForm = ({ params }: any) => {
     formik.setFieldValue(keyName, updatedArray);
   };
 
-  myConsole("bookingForm", formik.values.otherDocs);
+  const handleMultiUpload = async (assets, fieldName) => {
+    const uploadedUrls = [];
+
+    for (let asset of assets) {
+      await uploadFile({
+        file: [asset],
+        getUrl: (v) => {
+          if (v?.[0]) uploadedUrls.push(v[0]);
+        },
+      });
+    }
+
+    formik.setFieldValue(fieldName, [
+      ...formik.values[fieldName],
+      ...uploadedUrls,
+    ]);
+  };
+
+  // myConsole("bookingForm", formik.values.otherDocs);
 
   return (
     <View>
@@ -329,7 +358,7 @@ const ClientInfoNewForm = ({ params }: any) => {
                         );
                       },
                       onLoading: (v) => {
-                        myConsole("onLoading", v);
+                        // myConsole("onLoading", v);
                       },
                     });
                   }}
@@ -624,6 +653,44 @@ const ClientInfoNewForm = ({ params }: any) => {
             onBlur={formik.handleBlur(`bookingForm`)}
           />
         </View>
+
+        <ExpoImagePicker
+          label="AML Documents"
+          isMultiplePick={true}
+          onSelect={(a) => handleMultiUpload(a?.assets, "aml")}
+          boxContainerStyle={{ marginBottom: 8 }}
+        />
+
+        <ExpoImagePicker
+          label="KYC Documents"
+          isMultiplePick={true}
+          onSelect={(a) => handleMultiUpload(a?.assets, "kycForm")}
+          boxContainerStyle={{ marginBottom: 8 }}
+        />
+
+        <ExpoImagePicker
+          label="Developer Invoice"
+          isMultiplePick={true}
+          onSelect={(a) => handleMultiUpload(a?.assets, "developerInvoice")}
+          boxContainerStyle={{ marginBottom: 8 }}
+        />
+
+        <ExpoImagePicker
+          label="Commission Release Docs"
+          isMultiplePick={true}
+          onSelect={(a) =>
+            handleMultiUpload(a?.assets, "agentCommissionRelease")
+          }
+          boxContainerStyle={{ marginBottom: 8 }}
+        />
+
+        <ExpoImagePicker
+          label="Referral Form"
+          isMultiplePick={true}
+          allowedTypes={["jpg", "jpeg", "png", "pdf"]}
+          onSelect={(a) => handleMultiUpload(a?.assets, "referralForm")}
+          boxContainerStyle={{ marginBottom: 8 }}
+        />
       </View>
       {/* entry status */}
       <MainTitle title="Entry Status" containerStyle={{ marginBottom: 20 }} />

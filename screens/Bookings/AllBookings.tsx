@@ -220,7 +220,8 @@ const AllBookings = () => {
     user?.role
   );
 
-  myConsole("canAddBooking", canAddBooking);
+  // myConsole("canAddBookinggg", canAddBooking);
+  // myConsole("permissionnnn", permission);
   return (
     <View style={{ flex: 1 }}>
       <Header title={"Bookings"} showBackIcon={false} />
@@ -374,7 +375,7 @@ const BookingRowItem = ({
   onLongPress,
   selected,
   bgColor,
-}) => {
+}: any) => {
   let statusColor = {
     approved: color.green,
     rejected: "red",
@@ -388,7 +389,7 @@ const BookingRowItem = ({
           marginTop: index === 0 ? 25 : 12,
           marginHorizontal: 20,
           backgroundColor: selected
-            ? "rgba(252, 244, 227, 1)"
+            ? color.primaryFade
             : bgColor
             ? bgColor
             : "#FCFAFA",

@@ -17,6 +17,7 @@ import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
 import { uploadFile } from "../../utils/uploadFile";
 import { useAppToast } from "../../components/AppToast";
+import { color } from "../../const/color";
 
 const AddReferrals = () => {
   const { goBack, navigate } = useNavigation();
@@ -102,9 +103,8 @@ const AddReferrals = () => {
             style={{
               marginTop: 8,
               fontSize: 16,
-              fontWeight: "400",
-              color: "#000",
-              marginBottom: 8,
+              fontWeight: "500",
+              color: color.mainTxtColor,
             }}
           >
             Mobile Number
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: "800",
-    color: "#000",
+    color: color.mainTxtColor,
     marginBottom: 8,
   },
   errorText: {

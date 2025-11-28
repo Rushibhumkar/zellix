@@ -1,5 +1,6 @@
 import {
   Button,
+  Keyboard,
   Modal,
   StyleSheet,
   Text,
@@ -12,48 +13,51 @@ interface TCustomModal {
   visible: boolean;
   onClose: () => void;
   children: ReactNode;
-  hasBackdrop: boolean;
+  hasBackdrop?: boolean;
 }
 
-const CustomModal = (
-    { visible, onClose, children, hasBackdrop }: TCustomModal
-) => {
-    const handleModalPress = () => {
-        !!onClose && onClose();
-    };
-    const handleChildPress = (e) => {
-        // Prevent the modal from closing when clicking on the child view
-        e.stopPropagation();
-    };
+const CustomModal = ({
+  visible,
+  onClose,
+  children,
+  hasBackdrop,
+}: TCustomModal) => {
+  const handleModalPress = () => {
+    !!onClose && onClose();
+  };
+  const handleChildPress = (e) => {
+    // Prevent the modal from closing when clicking on the child view
+    e.stopPropagation();
+  };
 
-    return (
-        <Modal
-            transparent
-            // animationType="slide"
-            visible={visible}
-            onRequestClose={!!onClose ? onClose : undefined}
+  return (
+    <Modal
+      transparent
+      // animationType="slide"
+      visible={visible}
+      onRequestClose={!!onClose ? onClose : undefined}
+    >
+      <TouchableWithoutFeedback
+        onPress={hasBackdrop ? handleModalPress : Keyboard.dismiss}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            padding: 10,
+          }}
         >
-            <TouchableWithoutFeedback onPress={hasBackdrop ? handleModalPress : undefined}>
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        padding: 10,
-                    }}
-                >
-                    <TouchableWithoutFeedback onPress={handleChildPress}>
-                        <View>
-                            {!!children && children}
-                        </View>
-                    </TouchableWithoutFeedback>
-                </View>
-            </TouchableWithoutFeedback>
-        </Modal>
-    )
-}
+          <TouchableWithoutFeedback onPress={handleChildPress}>
+            <View>{!!children && children}</View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+};
 
-export default CustomModal
+export default CustomModal;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

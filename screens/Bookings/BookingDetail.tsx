@@ -863,7 +863,12 @@ const BookingDetail = () => {
             borderRadius: 10,
           }}
         >
-          <CustomText fontSize={20} fontWeight="500" marginBottom={20}>
+          <CustomText
+            fontSize={20}
+            fontWeight="500"
+            marginBottom={20}
+            color={color.mainTxtColor}
+          >
             Reject Booking
           </CustomText>
           <CustomInput
@@ -912,7 +917,7 @@ const BookingDetail = () => {
       </CustomModal>
       <CustomModal
         visible={isModalUpdateCase}
-        hasBackdrop={false}
+        hasBackdrop={true}
         onClose={toggleIsModalUpdateCase}
       >
         <Pressable
@@ -1124,6 +1129,6 @@ const styles = StyleSheet.create({
   },
   modalText: {
     fontSize: 16,
-    color: "#333",
+    color: color.mainTxtColor,
   },
 });

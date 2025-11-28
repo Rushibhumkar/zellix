@@ -372,8 +372,9 @@ const Agents = () => {
           ownerShipDetails: paramData?.clients || [],
         };
         delete sendData.clients;
-        myConsole("sendData2", sendData);
+        // myConsole("sendDatabeforebackend", sendData);
         const res = await axiosInstance.post("/api/booking/V2", sendData);
+        // myConsole("resdtaabackend", res?.data);
         popUpConfToast.successMessage(
           res?.data || "Booking Added Successfully"
         );

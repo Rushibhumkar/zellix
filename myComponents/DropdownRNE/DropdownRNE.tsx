@@ -157,9 +157,7 @@ const DropdownRNE = ({
         <CustomText style={styles.textItem}>
           {item?.[keyValueShowInBox]}
         </CustomText>
-        {/* {item.value === value && (
-                    <UpDownIcon />
-                )} */}
+        {/* {item.value === value && <UpDownIcon />} */}
       </View>
     );
   };
@@ -181,7 +179,11 @@ const DropdownRNE = ({
           style={[styles.dropdown, dropdownStyle]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
+          searchPlaceholderTextColor={color.strokeColor}
+          inputSearchStyle={[
+            styles.inputSearchStyle,
+            { color: color.mainTxtColor },
+          ]}
           iconStyle={styles.iconStyle}
           data={
             searchText.trim()
@@ -265,7 +267,11 @@ const DropdownRNE = ({
           style={[styles.dropdown, dropdownStyle]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={[styles.selectedTextStyle]}
-          inputSearchStyle={styles.inputSearchStyle}
+          searchPlaceholderTextColor={color.strokeColor}
+          inputSearchStyle={[
+            styles.inputSearchStyle,
+            { color: color.mainTxtColor },
+          ]}
           iconStyle={styles.iconStyle}
           search={isSearch}
           data={
@@ -377,7 +383,7 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 16,
     borderRadius: 12,
-    borderColor: color.mainTxtColorFade,
+    borderColor: color.mainTxtColor,
   },
   errorText: {
     color: "red",

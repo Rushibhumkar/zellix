@@ -18,23 +18,17 @@ const UpdateChecker = () => {
       console.log("Update check failed:", error);
     }
   };
-
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      checkForUpdates();
-    }, 20); // 2 seconds delay
-
-    return () => clearTimeout(timeout); //
-  }, []);
-
-  useEffect(() => {
+    if (__DEV__) return;
     checkForUpdates();
   }, []);
 
   const handleUpdateNow = async () => {
     try {
-      await Updates.fetchUpdateAsync();
-      await Updates.reloadAsync(); //
+      const result = await Updates.fetchUpdateAsync();
+      if (result.isNew) {
+        await Updates.reloadAsync();
+      }
     } catch (error) {
       console.log("Update failed:", error);
     }

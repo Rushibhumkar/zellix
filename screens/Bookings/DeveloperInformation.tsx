@@ -2,10 +2,22 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSelector } from "react-redux";
 import Header from "../../components/Header";
-import { useGetMeetingById, useGetMeetingForBooking } from "../../hooks/useCRMgetQuerry";
+import {
+  useGetMeetingById,
+  useGetMeetingForBooking,
+} from "../../hooks/useCRMgetQuerry";
 import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
@@ -36,7 +48,6 @@ function percent(total, value) {
 }
 
 function initialValues(data) {
-
   return {
     developer: data?.developer?._id ?? "",
     relationshipManager: data?.relationshipManager ?? "",
@@ -53,7 +64,7 @@ function initialValues(data) {
     // passback: data?.passback ?? "",
     // passbackPerc: data?.passback ? percent(data?.total, data?.passback) : "",
     commission: data?.commission ?? "",
-    commissionPerc: data?.commissionPerc ?? '',
+    commissionPerc: data?.commissionPerc ?? "",
     clientLoyalty: data?.clientLoyalty ?? "",
     clientLoyaltyPerc: data?.clientLoyaltyPerc ?? "",
     brokerReferralPerc: data?.brokerReferralPerc ?? "",
@@ -71,29 +82,29 @@ function initialValues(data) {
   };
 }
 
-// 
+//
 const dummyInData = {
-  "developer": { _id: "662a01b3d4026cd0412b05bb" },
-  "relationshipManager": "managersaud",
-  "meeting": { _id: "6683cb006c13ff751036b667" },
-  "projectName": "",
-  "unit": "9887987",
-  "areaSQFT": 874568,
-  "total": 763456,
-  "propertyDetails": "qwertyuioplkjhgfdsazxcvbnm,",
-  "paymentPlan": "uywetr",
-  "paymentMode": "cheque",
-  "token": true,
-  "bookingAmount": 0,
-  "commission": 7653741,
-  "commissionPerc": 1002.51,
-  "clientLoyalty": 8745,
-  "clientLoyaltyPerc": 1.15,
-  "brokerReferralPerc": 0.61,
-  "brokerReferral": 4654,
-  "typeOfProperty": "hjewgtyger",
-  "category": "primary"
-}
+  developer: { _id: "662a01b3d4026cd0412b05bb" },
+  relationshipManager: "managersaud",
+  meeting: { _id: "6683cb006c13ff751036b667" },
+  projectName: "sdfdsf",
+  unit: "9887987",
+  areaSQFT: 874568,
+  total: 763456,
+  propertyDetails: "qwertyuioplkjhgfdsazxcvbnm,",
+  paymentPlan: "uywetr",
+  paymentMode: "cheque",
+  token: true,
+  bookingAmount: 0,
+  commission: 7653741,
+  commissionPerc: 1002.51,
+  clientLoyalty: 8745,
+  clientLoyaltyPerc: 1.15,
+  brokerReferralPerc: 0.61,
+  brokerReferral: 4654,
+  typeOfProperty: "hjewgtyger",
+  category: "primary",
+};
 
 const DeveloperInformation = () => {
   const queryClient = useQueryClient();
@@ -102,7 +113,6 @@ const DeveloperInformation = () => {
   const { params } = useRoute();
   const data = params?.data;
   let initial;
-  myConsole('datadata', data)
   //
   const [modifiedMeeting, setModifiedMeeting] = useState([]);
   // const [paymentProof, setPaymentProof] = useState(!!data?.passport? { uri: data?.passport, }: {});
@@ -112,7 +122,7 @@ const DeveloperInformation = () => {
   const [paymentProof2, setPaymentProof2] = useState({});
   // const [dateOfBirth, setDateOfBirth] = useState(data?.dateOfBirth ?? new Date());
   const [refreshing, setRefreshing] = useState(false);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [isUpdateFrom, setIsUpdateFrom] = useState(!!data);
   const {
@@ -132,8 +142,8 @@ const DeveloperInformation = () => {
         // paymentProof,
         // paymentProof2,
         bookingAmount: values?.token ? values?.bookingAmount : "0",
-        ...(params?.data?._id && { initialValues: { ...data }, })
-      }
+        ...(params?.data?._id && { initialValues: { ...data } }),
+      };
       navigate(routeBooking.clientInformation, passData);
     },
   });
@@ -143,15 +153,14 @@ const DeveloperInformation = () => {
     isLoading: loading,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = useGetMeetingForBooking({
-    search: debouncedSearch
-  })
+    search: debouncedSearch,
+  });
 
-  const {
-    data: meetingDetail,
-    isLoading: loadingMeeting
-  } = useGetMeetingById(data?.meeting?._id)
+  const { data: meetingDetail, isLoading: loadingMeeting } = useGetMeetingById(
+    data?.meeting?._id
+  );
 
   // const handleModifiedMeeting = () => {
   //   if (user?.role === "sup_admin" || user?.role === "sub_admin") {
@@ -204,28 +213,26 @@ const DeveloperInformation = () => {
   //     setFieldValue("passback", amount.toFixed(2).toString());
   //   }
   // };
-  let forUpdate = !!params?.data
+  let forUpdate = !!params?.data;
 
   const onEndReach = () => {
     if (hasNextPage && !loading && meetingList?.length > 0) {
-      fetchNextPage && fetchNextPage()
+      fetchNextPage && fetchNextPage();
     }
-  }
+  };
 
   const onRefresh = async () => {
     try {
-      setRefreshing(true)
+      setRefreshing(true);
       await queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getMeetingForBooking]
-      })
+        queryKey: [queryKeyCRM.getMeetingForBooking],
+      });
+    } catch (e) {
+      console.log("refreshGetAllLeave", e);
+    } finally {
+      setRefreshing(false);
     }
-    catch (e) {
-      console.log('refreshGetAllLeave', e)
-    }
-    finally {
-      setRefreshing(false)
-    }
-  }
+  };
 
   const debounceSearch = React.useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
@@ -236,7 +243,6 @@ const DeveloperInformation = () => {
     setSearchValue(v);
     debounceSearch(v);
   };
-
 
   return (
     <>
@@ -261,7 +267,9 @@ const DeveloperInformation = () => {
               maxHeight={300}
             />
             {errors.developer && touched.developer && (
-              <CustomText style={styles.errorText}>{errors.developer}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.developer}
+              </CustomText>
             )}
             <CustomInput
               label="Relationship Manager"
@@ -282,38 +290,44 @@ const DeveloperInformation = () => {
               title="Unit Information"
               containerStyle={{ marginBottom: 20, marginTop: 15 }}
             />
-            {!isUpdateFrom ? <DropdownRNE
-              label="Meeting"
-              containerStyle={{ marginBottom: 15 }}
-              arrOfObj={meetingList || []}
-              keyValueShowInBox="name"
-              keyValueGetOnSelect="_id"
-              onChange={(a) => setFieldValue("meeting", a)}
-              initialValue={values?.meeting}
-              onBlur={handleBlur("meeting")}
-              isSearch
-              mode="modal"
-              //
-              onEndReached={onEndReach}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={
-                isFetchingNextPage && <ActivityIndicator
-                  size={'small'}
-                  color={'#002E6B'}
-                />
-              }
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-              onChangeText={(v) => handleSearchChange(v)}
-              isLoading={loading}
-            /> :
+            {!isUpdateFrom ? (
+              <DropdownRNE
+                label="Meeting"
+                containerStyle={{ marginBottom: 15 }}
+                arrOfObj={meetingList || []}
+                keyValueShowInBox="name"
+                keyValueGetOnSelect="_id"
+                onChange={(a) => setFieldValue("meeting", a)}
+                initialValue={values?.meeting}
+                onBlur={handleBlur("meeting")}
+                isSearch
+                mode="modal"
+                //
+                onEndReached={onEndReach}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isFetchingNextPage && (
+                    <ActivityIndicator size={"small"} color={"#002E6B"} />
+                  )
+                }
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                  />
+                }
+                onChangeText={(v) => handleSearchChange(v)}
+                isLoading={loading}
+              />
+            ) : (
               <IllusionBox
                 title="Meeting"
-                value={meetingDetail?.lead?.clientName || meetingDetail?.lead?.name}
+                value={
+                  meetingDetail?.lead?.clientName || meetingDetail?.lead?.name
+                }
                 onPress={() => setIsUpdateFrom(false)}
               />
-            }
+            )}
             {errors.meeting && touched.meeting && (
               <CustomText style={styles.errorText}>{errors.meeting}</CustomText>
             )}
@@ -326,7 +340,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("projectName")}
             />
             {errors.projectName && touched.projectName && (
-              <CustomText style={styles.errorText}>{errors.projectName}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.projectName}
+              </CustomText>
             )}
             <CustomInput
               label="Unit Number"
@@ -351,7 +367,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("areaSQFT")}
             />
             {errors.areaSQFT && touched.areaSQFT && (
-              <CustomText style={styles.errorText}>{errors.areaSQFT}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.areaSQFT}
+              </CustomText>
             )}
 
             <CustomInput
@@ -378,15 +396,17 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("paymentPlan")}
             />
             {errors.paymentPlan && touched.paymentPlan && (
-              <CustomText style={styles.errorText}>{errors.paymentPlan}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.paymentPlan}
+              </CustomText>
             )}
 
             <DropdownRNE
               label="Select Category"
               containerStyle={{ marginBottom: 15 }}
               arrOfObj={[
-                { name: "Primary", _id: 'primary' },
-                { name: "Secondary", _id: 'secondary' },
+                { name: "Primary", _id: "primary" },
+                { name: "Secondary", _id: "secondary" },
               ]}
               keyValueGetOnSelect="_id"
               keyValueShowInBox="name"
@@ -422,7 +442,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("paymentMode")}
             />
             {errors.paymentMode && touched.paymentMode && (
-              <CustomText style={styles.errorText}>{errors.paymentMode}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.paymentMode}
+              </CustomText>
             )}
             <DropdownRNE
               label="Token"
@@ -453,43 +475,20 @@ const DeveloperInformation = () => {
             {values?.token === true &&
               errors.bookingAmount &&
               touched.bookingAmount && (
-                <CustomText style={styles.errorText}>{errors.bookingAmount}</CustomText>
+                <CustomText style={styles.errorText}>
+                  {errors.bookingAmount}
+                </CustomText>
               )}
-
-            {/* <CustomInput
-              label="Kickbak/Passback"
-              containerStyle={{ marginBottom: 15 }}
-              value={values?.passback}
-              onChangeText={(v) => habdlePassback(v, "amount")}
-              props={{
-                keyboardType: "numeric",
-              }}
-              onBlur={handleBlur("passback")}
-            />
-            {errors.passback && touched.passback && (
-              <CustomText style={styles.errorText}>{errors.passback}</CustomText>
-            )}
-            <CustomInput
-              label="Kickbak/Passback %"
-              containerStyle={{ marginBottom: 15 }}
-              value={values?.passbackPerc}
-              onChangeText={(v) => habdlePassback(v, "per")}
-              props={{
-                keyboardType: "numeric",
-              }}
-              onBlur={handleBlur("passbackPerc")}
-            />
-            {errors.passbackPerc && touched.passbackPerc && (
-              <CustomText style={styles.errorText}>{errors.passbackPerc}</CustomText>
-            )} */}
-            {/* New field add start */}
             <CustomInput
               label="Client Loyalty"
               containerStyle={{ marginBottom: 15 }}
               value={values?.clientLoyalty}
               onChangeText={(v) => {
-                setFieldValue('clientLoyalty', v);
-                setFieldValue('clientLoyaltyPerc', !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2));
+                setFieldValue("clientLoyalty", v);
+                setFieldValue(
+                  "clientLoyaltyPerc",
+                  !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2)
+                );
               }}
               props={{
                 keyboardType: "numeric",
@@ -497,15 +496,20 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("clientLoyalty")}
             />
             {errors.clientLoyalty && touched.clientLoyalty && (
-              <CustomText style={styles.errorText}>{errors.clientLoyalty}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.clientLoyalty}
+              </CustomText>
             )}
             <CustomInput
               label="Client Loyalty %"
               containerStyle={{ marginBottom: 15 }}
               value={values?.clientLoyaltyPerc}
               onChangeText={(v) => {
-                setFieldValue('clientLoyaltyPerc', v);
-                setFieldValue('clientLoyalty', !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2));
+                setFieldValue("clientLoyaltyPerc", v);
+                setFieldValue(
+                  "clientLoyalty",
+                  !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2)
+                );
               }}
               props={{
                 keyboardType: "numeric",
@@ -513,7 +517,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("clientLoyaltyPerc")}
             />
             {errors.clientLoyaltyPerc && touched.clientLoyaltyPerc && (
-              <CustomText style={styles.errorText}>{errors.clientLoyaltyPerc}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.clientLoyaltyPerc}
+              </CustomText>
             )}
 
             <CustomInput
@@ -521,8 +527,11 @@ const DeveloperInformation = () => {
               containerStyle={{ marginBottom: 15 }}
               value={values?.brokerReferral}
               onChangeText={(v) => {
-                setFieldValue('brokerReferral', v);
-                setFieldValue('brokerReferralPerc', !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2));
+                setFieldValue("brokerReferral", v);
+                setFieldValue(
+                  "brokerReferralPerc",
+                  !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2)
+                );
               }}
               props={{
                 keyboardType: "numeric",
@@ -530,15 +539,20 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("brokerReferral")}
             />
             {errors.brokerReferral && touched.brokerReferral && (
-              <CustomText style={styles.errorText}>{errors.brokerReferral}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.brokerReferral}
+              </CustomText>
             )}
             <CustomInput
               label="Broker Referral %"
               containerStyle={{ marginBottom: 15 }}
               value={values?.brokerReferralPerc}
               onChangeText={(v) => {
-                setFieldValue('brokerReferralPerc', v);
-                setFieldValue('brokerReferral', !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2));
+                setFieldValue("brokerReferralPerc", v);
+                setFieldValue(
+                  "brokerReferral",
+                  !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2)
+                );
               }}
               props={{
                 keyboardType: "numeric",
@@ -546,7 +560,9 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("brokerReferralPerc")}
             />
             {errors.brokerReferralPerc && touched.brokerReferralPerc && (
-              <CustomText style={styles.errorText}>{errors.brokerReferralPerc}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.brokerReferralPerc}
+              </CustomText>
             )}
 
             {/* new field add end */}
@@ -554,10 +570,14 @@ const DeveloperInformation = () => {
               label="Commission"
               containerStyle={{ marginBottom: 15 }}
               value={values?.commission}
-              onChangeText={(v) => {
-                setFieldValue('commission', v);
-                setFieldValue('commissionPerc', !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2));
-              }
+              onChangeText={
+                (v) => {
+                  setFieldValue("commission", v);
+                  setFieldValue(
+                    "commissionPerc",
+                    !v ? 0 : parseFloat((v / values.total) * 100).toFixed(2)
+                  );
+                }
                 // handleCommission(v, "amount")
               }
               props={{
@@ -566,15 +586,20 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("commission")}
             />
             {errors.commission && touched.commission && (
-              <CustomText style={styles.errorText}>{errors.commission}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.commission}
+              </CustomText>
             )}
             <CustomInput
               label="Commission %"
               containerStyle={{ marginBottom: 15 }}
               value={values?.commissionPerc}
               onChangeText={(v) => {
-                setFieldValue('commissionPerc', v);
-                setFieldValue('commission', !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2));
+                setFieldValue("commissionPerc", v);
+                setFieldValue(
+                  "commission",
+                  !v ? 0 : parseFloat((v / 100) * values.total).toFixed(2)
+                );
               }}
               props={{
                 keyboardType: "numeric",
@@ -582,12 +607,18 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("commissionPerc")}
             />
             {errors.commissionPerc && touched.commissionPerc && (
-              <CustomText style={styles.errorText}>{errors.commissionPerc}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.commissionPerc}
+              </CustomText>
             )}
 
             <IllusionBox
               title="Net Commission"
-              value={`${values?.commission - values?.brokerReferral - values.clientLoyalty}`}
+              value={`${
+                values?.commission -
+                values?.brokerReferral -
+                values.clientLoyalty
+              }`}
             />
 
             <CustomInput
@@ -599,12 +630,14 @@ const DeveloperInformation = () => {
               onBlur={handleBlur("propertyDetails")}
               props={{
                 multiline: true,
-                textAlignVertical: 'top'
+                textAlignVertical: "top",
               }}
               inputStyle={{ minHeight: 80 }}
             />
             {errors.propertyDetails && touched.propertyDetails && (
-              <CustomText style={styles.errorText}>{errors.propertyDetails}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.propertyDetails}
+              </CustomText>
             )}
 
             {/* <ExpoImagePicker
@@ -673,7 +706,6 @@ const DeveloperInformation = () => {
               containerStyle={{ margin: 20 }}
             />
           </View>
-
         </ScrollViewWithKeyboardAvoid>
       </Container>
     </>

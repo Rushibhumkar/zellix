@@ -91,20 +91,52 @@ const ExpoImagePicker = ({
           quality: 0.5,
           allowsMultipleSelection: isMultiplePick,
         });
+
         if (!result.canceled) {
-          const asset = result.assets[0];
-          const info = await FileSystem.getInfoAsync(asset.uri);
+          // For multiple selection, process all assets
+          if (isMultiplePick) {
+            const processedAssets = await Promise.all(
+              result.assets.map(async (asset) => {
+                const info = await FileSystem.getInfoAsync(asset.uri);
+                return {
+                  ...asset,
+                  fileSize: info.size,
+                };
+              })
+            );
 
-          const temp = {
-            ...result,
-            assets: [{ ...asset, fileSize: info.size }],
-          };
+            const temp = {
+              ...result,
+              assets: processedAssets,
+            };
 
-          setImageName(asset.uri.split("/").pop());
-          onSelect(isMultiplePick ? result : temp);
-          handleModal();
+            myConsole("Multiple files selected:", {
+              count: processedAssets.length,
+              files: processedAssets.map((asset) => ({
+                fileName: asset.fileName || asset.uri.split("/").pop(),
+                fileSize: asset.fileSize,
+                type: asset.type,
+                uri: asset.uri,
+                width: asset.width,
+                height: asset.height,
+              })),
+            });
+
+            setImageName(`${processedAssets.length} files selected`);
+            onSelect(temp);
+          } else {
+            // Single selection - original logic
+            const asset = result.assets[0];
+            const info = await FileSystem.getInfoAsync(asset.uri);
+            const temp = {
+              ...result,
+              assets: [{ ...asset, fileSize: info.size }],
+            };
+            setImageName(asset.uri.split("/").pop());
+            onSelect(temp);
+          }
+          handleModal(); // ✅ Move this outside the if/else
         }
-
         return;
       }
 
