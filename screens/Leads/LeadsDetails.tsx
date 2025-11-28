@@ -57,10 +57,10 @@ import { sendFollowUpNotification } from "../../services/rootApi/notificationApi
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
-import { useAppToast } from "../../components/AppToast";
 import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import IconWrapper from "../../components/IconWrapper";
+import { useAppToast } from "../../components/AppToast";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);

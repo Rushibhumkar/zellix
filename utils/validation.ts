@@ -94,8 +94,7 @@ export const addSingleLeadSchema = Yup.object().shape({
     .required(" Field required"),
   whatsapp: Yup.string()
     .required("WhatsApp number is required")
-    .matches(/^[1-9]\d{5,}$/, "Invalid WhatsApp number")
-    .min(6, "WhatsApp number must be at least 6 characters"),
+    .min(5, "Minimum 5 digits required"),
 });
 export const addSingleLeadWithSrManagerSchema = Yup.object().shape({
   //srManager: Yup.string().required("Name is Required"),
@@ -109,8 +108,7 @@ export const addSingleLeadWithSrManagerSchema = Yup.object().shape({
     .required(" Field required"),
   whatsapp: Yup.string()
     .required("WhatsApp number is required")
-    .matches(/^[1-9]\d{5,}$/, "Invalid WhatsApp number")
-    .min(6, "WhatsApp number must be at least 6 characters"),
+    .min(5, "Minimum 5 digits required"),
 });
 
 export const addLeadInBulk = Yup.object().shape({

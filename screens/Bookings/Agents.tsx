@@ -26,6 +26,7 @@ import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboa
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { useAppToast } from "../../components/AppToast";
 
 function percent(total = 1, value = 0) {
   // if (typeof value !== "number" || typeof total !== "number" || total === 0) {
@@ -106,7 +107,7 @@ const Agents = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
   const [isValidate, setIsValidate] = useState(false);
-
+  const toast = useAppToast();
   let agentUpdateArr = params?.data?.initialValues?.agents?.map((el) => {
     let total = params?.data?.initialValues?.commission;
     return { ...el, commissionPerc: percent(total, el?.commission) };
@@ -375,9 +376,7 @@ const Agents = () => {
         // myConsole("sendDatabeforebackend", sendData);
         const res = await axiosInstance.post("/api/booking/V2", sendData);
         // myConsole("resdtaabackend", res?.data);
-        popUpConfToast.successMessage(
-          res?.data || "Booking Added Successfully"
-        );
+        toast.success(res?.data || "Booking Added Successfully");
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getBooking],
         });

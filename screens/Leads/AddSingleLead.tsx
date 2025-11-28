@@ -111,7 +111,7 @@ const AddSingleLead = ({ data }) => {
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],
           });
-          toast.success("Lead Add Successfully");
+          toast.success("Lead Added Successfully");
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
@@ -272,15 +272,7 @@ const AddSingleLead = ({ data }) => {
         value={values?.whatsapp}
         onBlur={handleBlur("whatsapp")}
       />
-      {/* <CustomText
-        fontSize={16}
-        fontWeight="500"
-      >WhatsApp Number</CustomText>
-      <MobileInput
-        onChange={(v) => setFieldValue('whatsapp', v.split('-').join(''))}
-        value={values?.whatsapp}
-        
-      /> */}
+
       {errors.whatsapp && touched.whatsapp && (
         <CustomText style={styles.errorText}>{errors.whatsapp}</CustomText>
       )}
