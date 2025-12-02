@@ -334,7 +334,6 @@ const LeadsDetails = () => {
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
 
-  myConsole("detail", detail);
   return (
     <>
       {activeTab === 1 && (

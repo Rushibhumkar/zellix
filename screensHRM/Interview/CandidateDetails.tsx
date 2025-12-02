@@ -106,7 +106,6 @@ const CandidateDetailsScreen = () => {
           : [],
     },
   ];
-  myConsole("detailaaa", detail);
   if (isLoading || isError || !detail) {
     return (
       <ContainerHRM ph={20}>

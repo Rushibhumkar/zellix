@@ -53,7 +53,7 @@ const LoginScreen = () => {
     error: false,
   });
 
-  const handleFormSubmit = async (values) => {
+  const handleFormSubmit = async (values: any) => {
     const deviceId = await getData("deviceId");
     setIsLoading(true);
     let data = {
