@@ -160,7 +160,6 @@ const RSVPManagerList = () => {
     <Container>
       <Header
         title="RSVP Manager"
-        showBackIcon={false}
         isWithAnimation
         showActions={showHeaderActions}
         onPressSearch={() => setFocusSearch(true)}

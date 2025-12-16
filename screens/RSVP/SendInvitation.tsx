@@ -449,7 +449,7 @@ const SendInvitation = () => {
                     }}
                   >
                     <CustomBtn
-                      title="Send Invitation"
+                      title="Create Event"
                       onPress={handleSubmit}
                       isLoading={submitting}
                       disabled={submitting}

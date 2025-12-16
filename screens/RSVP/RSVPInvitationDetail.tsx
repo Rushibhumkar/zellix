@@ -180,7 +180,6 @@ const RSVPInvitationDetail = ({ route }: any) => {
                     flexDirection: "row",
                     alignItems: "center",
                     gap: 8,
-                    backgroundColor: "red",
                     justifyContent: "space-between",
                     paddingRight: 2,
                   }}

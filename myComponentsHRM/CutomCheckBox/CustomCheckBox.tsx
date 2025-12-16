@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TouchableOpacity, StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
@@ -10,39 +10,40 @@ interface TCustomCheckBox {
   marginBottom?: number;
   marginTop?: number;
 }
+
 const CustomCheckBox = ({
   title,
-  isCheck,
+  isCheck = false,
   onPress,
   marginBottom,
   marginTop,
 }: TCustomCheckBox) => {
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(isCheck);
+
   const toggleCheckBox = () => {
-    !!onPress &&
-      setIsChecked((prev) => {
-        onPress(!prev);
-        return !prev;
-      });
+    const updated = !isChecked;
+    setIsChecked(updated);
+    onPress?.(updated);
   };
 
   useEffect(() => {
     setIsChecked(isCheck);
   }, [isCheck]);
+
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.6}
+      onPress={toggleCheckBox}
       style={{
         flexDirection: "row",
         marginBottom,
         marginTop,
+        alignItems: "center",
       }}
     >
-      <Pressable
-        style={isChecked ? styles?.checked : styles?.unChecked}
-        onPress={toggleCheckBox}
-      />
+      <View style={isChecked ? styles.checked : styles.unChecked} />
       <CustomText style={{ color: color.mainTxtColor }}>{title}</CustomText>
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -190,7 +190,6 @@ const RSVPInvitationList = () => {
     <Container>
       <Header
         title="RSVP Invitations"
-        showBackIcon={false}
         isWithAnimation
         showActions={showHeaderActions}
         onPressSearch={() => setFocusSearch(true)}

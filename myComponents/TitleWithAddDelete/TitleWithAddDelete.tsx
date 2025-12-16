@@ -150,23 +150,27 @@ const TitleWithAddDelete = ({
               >
                 <Feather name="filter" color={"#fff"} size={18} />
                 <CustomText style={{ color: "#fff" }}>Filter</CustomText>
-              </AnimatedTouchableOpacity>
-            )}
-
-            {!!onCloseSearch && (
-              <AnimatedTouchableOpacity
-                entering={isWithAnimation ? FadeIn.duration(300) : undefined}
-                exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
-                onPress={!!onCloseSearch ? onCloseSearch : undefined}
-              >
-                <AntDesign
-                  name="close"
-                  size={30}
-                  color={color.saffronMango}
-                  style={{
-                    marginLeft: 10,
-                  }}
-                />
+                {!!onCloseSearch && (
+                  <AnimatedTouchableOpacity
+                    style={{ marginVertical: -8 }}
+                    entering={
+                      isWithAnimation ? FadeIn.duration(300) : undefined
+                    }
+                    exiting={
+                      isWithAnimation ? FadeOut.duration(200) : undefined
+                    }
+                    onPress={!!onCloseSearch ? onCloseSearch : undefined}
+                  >
+                    <AntDesign
+                      name="close"
+                      size={22}
+                      color={color.white}
+                      style={{
+                        marginLeft: 10,
+                      }}
+                    />
+                  </AnimatedTouchableOpacity>
+                )}
               </AnimatedTouchableOpacity>
             )}
           </View>
