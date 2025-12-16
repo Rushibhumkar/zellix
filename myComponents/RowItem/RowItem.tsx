@@ -18,9 +18,9 @@ interface TRowItem {
   title: string;
   value?: string;
   containerStyle?: StyleProp<ViewStyle>;
-  icon: "whatsapp" | "n/a";
-  onPressIcon: () => void;
-  component: ReactNode;
+  icon?: "whatsapp" | "n/a";
+  onPressIcon?: () => void;
+  component?: ReactNode;
 }
 const RowItem = ({
   title,

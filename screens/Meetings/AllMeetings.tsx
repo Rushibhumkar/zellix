@@ -67,6 +67,11 @@ const AllMeetings = () => {
     error: false,
   });
   const [searchValue, setSearchValue] = useState("");
+
+  const [showHeaderActions, setShowHeaderActions] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
+  const [focusSearch, setFocusSearch] = useState(false);
+
   //refresh
   const [refreshing, setRefreshing] = React.useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -200,29 +205,47 @@ const AllMeetings = () => {
 
   return (
     <Container>
-      <Header title={"Meetings"} showBackIcon={false} />
+      <Header
+        title={"Meetings"}
+        showBackIcon={false}
+        isWithAnimation
+        showActions={showHeaderActions}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setTimeout(() => {
+            setFocusSearch((prev) => !prev); // toggles every time
+          }, 100);
+        }}
+        onPressFilter={() => navigate("AdvanceSearch", { type: "meeting" })}
+        onPressAdd={() => navigate("AddMeeting")}
+      />
 
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <View>
-          <TitleWithAddDelete
-            arrLength={selected?.length}
-            title="Meeting"
-            onPressToNavigate={() => navigate("AddMeeting")}
-            onPressToDelete={
-              user?.role === roleEnum?.sup_admin ? toggleModal : false
-            }
-            onPressToFilter={() =>
-              navigate("AdvanceSearch", { type: "meeting" })
-            }
-            onCloseSearch={
-              meetingQueryKey !== null
-                ? () => dispatch(setMeetingQueryKey(null))
-                : false
-            }
-          />
+          {!showHeaderActions && (
+            <TitleWithAddDelete
+              isWithAnimation
+              arrLength={selected?.length}
+              title="Meeting"
+              onPressToNavigate={() => navigate("AddMeeting")}
+              onPressToDelete={
+                user?.role === roleEnum?.sup_admin ? toggleModal : false
+              }
+              onPressToFilter={() =>
+                navigate("AdvanceSearch", { type: "meeting" })
+              }
+              onCloseSearch={
+                meetingQueryKey !== null
+                  ? () => dispatch(setMeetingQueryKey(null))
+                  : false
+              }
+            />
+          )}
+
           <FlatList
             data={meetingData}
+            ref={flatListRef}
             // data={[]}
             renderItem={({ item, index }) => {
               let status = item?.meetings[item?.meetings?.length - 1]?.status;
@@ -257,9 +280,12 @@ const AllMeetings = () => {
                     // setSearchValue('')
                     // setFilteredMeeting([...copyMeeting])
                     handleSearchChange("");
+                    setFocusSearch(false);
                   }}
                   value={searchValue}
+                  isWithAnimation
                   onChangeText={(v) => handleSearchChange(v)}
+                  autoFocus={focusSearch}
                 />
 
                 <MeetingListHeading />
@@ -287,6 +313,14 @@ const AllMeetings = () => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            onScroll={(e) => {
+              const offsetY = e.nativeEvent.contentOffset.y;
+              const show = offsetY > 180;
+              if (show !== showHeaderActions) {
+                setShowHeaderActions(show);
+              }
+            }}
+            scrollEventThrottle={16}
           />
         </View>
       ) : (
@@ -333,7 +367,7 @@ const MeetingRowItem = ({
         </CustomText>
         <CustomText
           style={{
-            color: color.darkBluTxtColor,
+            color: color.mainTxtColor,
             fontWeight: "300",
             fontSize: 14,
           }}
@@ -355,7 +389,7 @@ const MeetingRowItem = ({
         <CustomText
           style={{ color: color.strokeColor, fontWeight: "300", fontSize: 14 }}
         >
-          <CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
             {`${item?.createdBy?.name} (${item?.createdBy?.role
               ?.replace(/_/g, " ")
               .replace(/\b\w/g, (char) => char.toUpperCase())})`}
@@ -380,7 +414,11 @@ const MeetingRowItem = ({
           </CustomText>
         ) : (
           <CustomText
-            style={{ color: "#000000", fontWeight: "400", fontSize: 12 }}
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "400",
+              fontSize: 12,
+            }}
           >
             {moment(item?.scheduleDate).format("DD/MM/YYYY")}
           </CustomText>

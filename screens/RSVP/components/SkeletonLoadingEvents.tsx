@@ -1,9 +1,9 @@
 import { View } from "react-native";
 import React from "react";
-import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
-import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../../const/globalStyle";
+import SkeletonView from "../../../myComponents/SkeletonView/SkeletonView";
 
-const SkeletonLoadingMeeting = () => {
+const SkeletonLoadingEvents = () => {
   return (
     <>
       {[...new Array(6)].map((el, i) => {
@@ -28,7 +28,7 @@ const SkeletonLoadingMeeting = () => {
   );
 };
 
-export default SkeletonLoadingMeeting;
+export default SkeletonLoadingEvents;
 
 const SkeltonItem = () => {
   return (
@@ -37,17 +37,19 @@ const SkeltonItem = () => {
         gap: 40,
         alignItems: "baseline",
         flexDirection: "row",
-        // justifyContent: 'space-between'
+        justifyContent: "space-between",
+        width: "100%",
       }}
     >
-      <View style={{ flex: 1, gap: 10 }}>
+      <View style={{ flex: 1, gap: 10, width: "28%" }}>
         <List />
-        <List />
+        {/* <List /> */}
       </View>
-      <View>
+      <View style={{ flex: 1, gap: 10, width: "32%" }}>
         <List />
+        {/* <List /> */}
       </View>
-      <View style={{ flex: 1, gap: 10, alignItems: "flex-end" }}>
+      <View style={{ flex: 1, gap: 10, width: "40%" }}>
         <List />
         <List />
       </View>

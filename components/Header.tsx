@@ -23,7 +23,23 @@ import { selectUser } from "../redux/userSlice";
 import { logOut } from "../services/authApi/auth";
 import { removeItemValue } from "../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../redux/action";
-import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeOutUp,
+  FadeIn,
+  FadeOut,
+  SlideInLeft,
+  SlideOutLeft,
+  BounceIn,
+  BounceOut,
+  ZoomIn,
+  ZoomOut,
+} from "react-native-reanimated";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface HeaderProps {
   title: string;
@@ -99,7 +115,15 @@ const Header: React.FC<HeaderProps> = ({
           >
             <View style={[styles.container]}>
               {showBackIcon && (
-                <TouchableOpacity
+                <AnimatedTouchableOpacity
+                  entering={
+                    isWithAnimation
+                      ? FadeInDown.duration(300).delay(50)
+                      : undefined
+                  }
+                  exiting={
+                    isWithAnimation ? FadeOutUp.duration(200) : undefined
+                  }
                   style={styles.backButton}
                   onPress={() => (onBack ? onBack() : goBack())}
                 >
@@ -108,81 +132,104 @@ const Header: React.FC<HeaderProps> = ({
                     source={require("../assets/Backicon.png")}
                     style={{ width: 16, height: 16 }}
                   />
-                </TouchableOpacity>
+                </AnimatedTouchableOpacity>
               )}
 
-              <CustomText style={styles.titleText}>{title}</CustomText>
-
-              {/* Placeholder for balance */}
-            </View>
-            {isWithAnimation ? (
-              <Animated.View
-                entering={FadeInDown.duration(400)}
-                exiting={FadeOutUp.duration(300)}
-                style={styles.iconWrapper}
+              <AnimatedView
+                entering={
+                  isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
+                }
+                exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
               >
-                {showActions && (
-                  <>
-                    <Pressable onPress={onPressSearch} style={styles.iconBtn}>
+                <CustomText style={styles.titleText}>{title}</CustomText>
+              </AnimatedView>
+            </View>
+
+            <View style={styles.iconWrapper}>
+              {showActions && (
+                <>
+                  {onPressSearch && (
+                    <AnimatedPressable
+                      entering={
+                        isWithAnimation
+                          ? ZoomIn.duration(300).delay(150)
+                          : undefined
+                      }
+                      exiting={
+                        isWithAnimation ? ZoomOut.duration(200) : undefined
+                      }
+                      onPress={onPressSearch}
+                      style={styles.iconBtn}
+                    >
                       <Feather name="search" size={20} color="#fff" />
-                    </Pressable>
-                    <Pressable onPress={onPressFilter} style={styles.iconBtn}>
+                    </AnimatedPressable>
+                  )}
+
+                  {onPressFilter && (
+                    <AnimatedPressable
+                      entering={
+                        isWithAnimation
+                          ? ZoomIn.duration(300).delay(200)
+                          : undefined
+                      }
+                      exiting={
+                        isWithAnimation ? ZoomOut.duration(200) : undefined
+                      }
+                      onPress={onPressFilter}
+                      style={styles.iconBtn}
+                    >
                       <Feather name="filter" size={20} color="#fff" />
-                    </Pressable>
-                    <Pressable onPress={onPressAdd} style={styles.iconBtn}>
+                    </AnimatedPressable>
+                  )}
+
+                  {onPressAdd && (
+                    <AnimatedPressable
+                      entering={
+                        isWithAnimation
+                          ? BounceIn.duration(400).delay(250)
+                          : undefined
+                      }
+                      exiting={
+                        isWithAnimation ? BounceOut.duration(300) : undefined
+                      }
+                      onPress={onPressAdd}
+                      style={styles.iconBtn}
+                    >
                       <Feather name="plus" size={20} color="#fff" />
-                    </Pressable>
-                  </>
-                )}
-                {title !== "Notification" && (
-                  <Pressable
-                    onPress={() => navigate("Notification")}
-                    style={styles.iconBtn}
-                  >
-                    <View style={styles.iconBadge} />
-                    <Feather name="bell" size={20} color="#fff" />
-                  </Pressable>
-                )}
-                <Pressable
-                  onPress={() => setMenuVisible(true)}
+                    </AnimatedPressable>
+                  )}
+                </>
+              )}
+
+              {title !== "Notification" && (
+                <AnimatedPressable
+                  entering={
+                    isWithAnimation
+                      ? ZoomIn.duration(300).delay(300)
+                      : undefined
+                  }
+                  exiting={isWithAnimation ? ZoomOut.duration(200) : undefined}
+                  onPress={() => navigate("Notification")}
                   style={styles.iconBtn}
                 >
-                  <Feather name="menu" size={20} color="#fff" />
-                </Pressable>
-              </Animated.View>
-            ) : (
-              <View style={styles.iconWrapper}>
-                {showActions && (
-                  <>
-                    <Pressable onPress={onPressSearch} style={styles.iconBtn}>
-                      <Feather name="search" size={20} color="#fff" />
-                    </Pressable>
-                    <Pressable onPress={onPressFilter} style={styles.iconBtn}>
-                      <Feather name="filter" size={20} color="#fff" />
-                    </Pressable>
-                    <Pressable onPress={onPressAdd} style={styles.iconBtn}>
-                      <Feather name="plus" size={20} color="#fff" />
-                    </Pressable>
-                  </>
-                )}
-                {title !== "Notification" && (
-                  <Pressable
-                    onPress={() => navigate("Notification")}
-                    style={styles.iconBtn}
-                  >
-                    <View style={styles.iconBadge} />
-                    <Feather name="bell" size={20} color="#fff" />
-                  </Pressable>
-                )}
-                <Pressable
-                  onPress={() => setMenuVisible(true)}
-                  style={styles.iconBtn}
-                >
-                  <Feather name="menu" size={20} color="#fff" />
-                </Pressable>
-              </View>
-            )}
+                  <View style={styles.iconBadge} />
+                  <Feather name="bell" size={20} color="#fff" />
+                </AnimatedPressable>
+              )}
+
+              <AnimatedPressable
+                entering={
+                  isWithAnimation ? ZoomIn.duration(300).delay(350) : undefined
+                }
+                exiting={isWithAnimation ? ZoomOut.duration(200) : undefined}
+                onPress={() => setMenuVisible(true)}
+                style={styles.iconBtn}
+              >
+                <Feather name="menu" size={20} color="#fff" />
+              </AnimatedPressable>
+            </View>
           </View>
+
           <MenuModal
             visible={menuVisible}
             onClose={() => setMenuVisible(false)}
@@ -204,7 +251,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    // justifyContent: "space-between",
     gap: 12,
   },
   backButton: {

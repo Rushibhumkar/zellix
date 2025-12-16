@@ -209,9 +209,9 @@ const LeadsDetails = () => {
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
         });
-        queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getLead],
-        });
+        // queryClient.invalidateQueries({
+        //   queryKey: [queryKeyCRM.getLead],
+        // });
         toast.success(res?.data?.message || "Operation successful");
         // await dispatch(getAllLeadFunc());
         // setIsVisible(true);

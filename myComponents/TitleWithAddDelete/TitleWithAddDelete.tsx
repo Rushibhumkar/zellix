@@ -14,15 +14,25 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import DeleteIcon from "../../assets/svg/DeleteIcon";
 import EditIcon from "../../assets/svg/EditIcon";
-import LeadAssignIcon from "../../assets/svg/LeadAssignIcon";
-import ASFilterIcon from "../../assets/svg/ASFilterIcon";
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
 import { iconWrapperStyle, shadowPrimaryColor } from "../../const/globalStyle";
-import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeOutUp,
+  FadeIn,
+  FadeOut,
+  SlideInRight,
+  SlideOutRight,
+  BounceIn,
+  BounceOut,
+} from "react-native-reanimated";
+
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface TTitleWithAddDelete {
   arrLength: number;
@@ -36,6 +46,12 @@ interface TTitleWithAddDelete {
   onCloseSearch: () => void;
   onSelectLeadType: () => void;
   isWithAnimation?: boolean;
+  buttons?: {
+    title: string;
+    onPress: () => void;
+    style?: any;
+    icon?: React.ReactNode;
+  }[];
 }
 
 const TitleWithAddDelete = ({
@@ -50,388 +66,290 @@ const TitleWithAddDelete = ({
   onCloseSearch,
   onSelectLeadType,
   isWithAnimation = false,
+  buttons,
 }: TTitleWithAddDelete) => {
   return (
-    <>
-      {isWithAnimation ? (
-        <Animated.View
-          entering={FadeInDown.duration(400)}
-          exiting={FadeOutUp.duration(300)}
+    <LinearGradient
+      colors={["#2b58f7ff", "#6CA8FF"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[
+        styles.gradientBackground,
+        { paddingBottom: arrLength > 0 ? 6 : 10 },
+      ]}
+    >
+      {arrLength === 0 && (
+        <Pressable
+          style={{
+            flexDirection: "row",
+            gap: 10,
+            marginHorizontal: 20,
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          <LinearGradient
-            colors={["#2452FA", "#6CA8FF"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.gradientBackground,
-              { paddingBottom: arrLength > 0 ? 6 : 10 },
-            ]}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
           >
-            {arrLength === 0 && (
-              <Pressable
+            {!!onSelectLeadType && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? FadeInDown.duration(300).delay(100)
+                    : undefined
+                }
+                exiting={isWithAnimation ? FadeOutUp.duration(200) : undefined}
+                onPress={onSelectLeadType}
                 style={{
-                  flexDirection: "row",
-                  gap: 10,
-                  marginHorizontal: 20,
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  backgroundColor: color.mainTxtColorFade,
+                  borderWidth: 1,
+                  borderColor: color.strokeColor,
+                  borderRadius: 14,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  marginRight: 8,
                 }}
-                // onPress={() => navigate("DeveloperInformation")}
               >
-                <View
+                <FontAwesome name="exchange" size={24} color={color.white} />
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onPressToFilter && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? FadeInDown.duration(300).delay(150)
+                    : undefined
+                }
+                exiting={isWithAnimation ? FadeOutUp.duration(200) : undefined}
+                onPress={!!onPressToFilter ? onPressToFilter : undefined}
+                style={{
+                  backgroundColor: "#ffffff3d",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 12,
+                  flexDirection: "row",
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#ffffff88",
+                  paddingHorizontal: 16,
+                  paddingVertical: Platform.OS === "ios" ? 7 : 5,
+                  width: !!onSelectLeadType
+                    ? Platform.OS === "ios"
+                      ? title === "Bookings"
+                        ? 160
+                        : 170
+                      : title === "Bookings"
+                      ? 130
+                      : 140
+                    : 180,
+                }}
+              >
+                <Feather name="filter" color={"#fff"} size={18} />
+                <CustomText style={{ color: "#fff" }}>Filter</CustomText>
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onCloseSearch && (
+              <AnimatedTouchableOpacity
+                entering={isWithAnimation ? FadeIn.duration(300) : undefined}
+                exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
+                onPress={!!onCloseSearch ? onCloseSearch : undefined}
+              >
+                <AntDesign
+                  name="close"
+                  size={30}
+                  color={color.saffronMango}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
+                    marginLeft: 10,
+                  }}
+                />
+              </AnimatedTouchableOpacity>
+            )}
+          </View>
+
+          {showAddBtn && (
+            <AnimatedTouchableOpacity
+              entering={
+                isWithAnimation
+                  ? SlideInRight.duration(400).springify()
+                  : undefined
+              }
+              exiting={
+                isWithAnimation ? SlideOutRight.duration(300) : undefined
+              }
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                backgroundColor: "#fff",
+                paddingHorizontal: 12,
+                paddingVertical: Platform.OS === "ios" ? 8 : 6,
+                borderRadius: 12,
+                ...shadowPrimaryColor,
+              }}
+              onPress={!!onPressToNavigate ? onPressToNavigate : undefined}
+            >
+              <AntDesign name="plus" size={16} color={color.primaryColor} />
+              <View>
+                <CustomText
+                  style={{
+                    color: color.primaryColor,
                   }}
                 >
-                  {!!onSelectLeadType && (
-                    <TouchableOpacity
-                      onPress={onSelectLeadType}
-                      style={{
-                        backgroundColor: color.mainTxtColorFade,
-                        borderWidth: 1,
-                        borderColor: color.strokeColor,
-                        borderRadius: 14,
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        marginRight: 8,
-                      }}
-                    >
-                      <FontAwesome
-                        name="exchange"
-                        size={24}
-                        color={color.white}
-                      />
-                    </TouchableOpacity>
-                  )}
-                  {!!onPressToFilter && (
-                    <TouchableOpacity
-                      onPress={!!onPressToFilter ? onPressToFilter : undefined}
-                      style={{
-                        backgroundColor: "#ffffff3d",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 12,
-                        flexDirection: "row",
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: "#ffffff88",
-                        paddingHorizontal: 16,
-                        paddingVertical: Platform.OS === "ios" ? 7 : 5,
-                        width: !!onSelectLeadType
-                          ? Platform.OS === "ios"
-                            ? 170
-                            : 140
-                          : 180,
-                      }}
-                    >
-                      <Feather name="filter" color={"#fff"} size={18} />
-                      <CustomText style={{ color: "#fff" }}>Filter</CustomText>
-                    </TouchableOpacity>
-                  )}
-                  {!!onCloseSearch && (
-                    <TouchableOpacity
-                      onPress={!!onCloseSearch ? onCloseSearch : undefined}
-                    >
-                      <AntDesign
-                        name="close"
-                        size={30}
-                        color={color.saffronMango}
-                        style={{
-                          marginLeft: 10,
-                        }}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-                {showAddBtn && (
-                  <TouchableOpacity
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                      backgroundColor: "#fff",
-                      paddingHorizontal: 12,
-                      paddingVertical: Platform.OS === "ios" ? 8 : 6,
-                      borderRadius: 12,
-                      ...shadowPrimaryColor,
-                    }}
-                    onPress={
-                      !!onPressToNavigate ? onPressToNavigate : undefined
-                    }
-                  >
-                    <AntDesign
-                      name="plus"
-                      size={16}
-                      color={color.primaryColor}
-                    />
-                    <View>
-                      <CustomText
-                        style={{
-                          color: color.primaryColor,
-                        }}
-                      >
-                        Add {title ?? "title"}
-                      </CustomText>
-                      {/* <View style={styles.divider}></View> */}
-                    </View>
-                  </TouchableOpacity>
-                )}
-              </Pressable>
-            )}
-
-            {arrLength > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  paddingHorizontal: 25,
-                  paddingTop: 8,
-                }}
-              >
-                <CustomText style={{ fontSize: 16, color: color.white }}>
-                  {arrLength} {title} Selected
+                  Add {title ?? "title"}
                 </CustomText>
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                  // onPress={handleDeleteBooking}
-                  // onPress={!!onPressToDelete ? onPressToDelete : undefined}
-                >
-                  {!!onPressToDelete && (
-                    <TouchableOpacity
-                      style={{
-                        padding: 10,
-                        ...iconWrapperStyle,
-                        borderWidth: 1,
-                        borderColor: color.strokeColor,
-                      }}
-                      onPress={!!onPressToDelete ? onPressToDelete : undefined}
-                    >
-                      <MaterialIcons
-                        name="delete-outline"
-                        size={24}
-                        color={color.mainTxtColor}
-                      />
-                    </TouchableOpacity>
-                  )}
-                  {!!onPressToEdit && (
-                    <TouchableOpacity
-                      style={{ padding: 10 }}
-                      onPress={!!onPressToEdit ? onPressToEdit : undefined}
-                    >
-                      <EditIcon />
-                    </TouchableOpacity>
-                  )}
-
-                  {!!onPressToAssignLead && (
-                    <TouchableOpacity
-                      style={{
-                        paddingHorizontal: 10,
-                        ...iconWrapperStyle,
-                        borderColor: color.strokeColor,
-                      }}
-                      onPress={
-                        !!onPressToAssignLead ? onPressToAssignLead : undefined
-                      }
-                    >
-                      <FontAwesome5
-                        name="clipboard-list"
-                        size={24}
-                        color={color.mainTxtColor}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
               </View>
-            )}
-          </LinearGradient>
-        </Animated.View>
-      ) : (
-        <LinearGradient
-          colors={["#2452FA", "#6CA8FF"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[
-            styles.gradientBackground,
-            { paddingBottom: arrLength > 0 ? 6 : 10 },
-          ]}
-        >
-          {arrLength === 0 && (
-            <Pressable
+            </AnimatedTouchableOpacity>
+          )}
+          {!!buttons?.length && (
+            <AnimatedView
               style={{
                 flexDirection: "row",
                 gap: 10,
-                marginHorizontal: 20,
-                alignItems: "center",
-                justifyContent: "space-between",
+                paddingTop: 4,
+                marginBottom: -6,
               }}
-              // onPress={() => navigate("DeveloperInformation")}
+              entering={
+                isWithAnimation
+                  ? FadeInDown.duration(300).delay(200)
+                  : undefined
+              }
+              exiting={isWithAnimation ? FadeOutUp.duration(200) : undefined}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                {!!onSelectLeadType && (
-                  <TouchableOpacity
-                    onPress={onSelectLeadType}
-                    style={{
-                      backgroundColor: color.mainTxtColorFade,
-                      borderWidth: 1,
-                      borderColor: color.strokeColor,
-                      borderRadius: 14,
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      marginRight: 8,
-                    }}
-                  >
-                    <FontAwesome
-                      name="exchange"
-                      size={24}
-                      color={color.white}
-                    />
-                  </TouchableOpacity>
-                )}
-                {!!onPressToFilter && (
-                  <TouchableOpacity
-                    onPress={!!onPressToFilter ? onPressToFilter : undefined}
-                    style={{
+              {buttons.map((b, i) => (
+                <AnimatedTouchableOpacity
+                  key={i}
+                  style={[
+                    {
                       backgroundColor: "#ffffff3d",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 12,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 10,
                       flexDirection: "row",
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: "#ffffff88",
-                      paddingHorizontal: 16,
-                      paddingVertical: Platform.OS === "ios" ? 7 : 5,
-                      width: !!onSelectLeadType
-                        ? Platform.OS === "ios"
-                          ? 170
-                          : 140
-                        : 180,
-                    }}
-                  >
-                    <Feather name="filter" color={"#fff"} size={18} />
-                    <CustomText style={{ color: "#fff" }}>Filter</CustomText>
-                  </TouchableOpacity>
-                )}
-                {!!onCloseSearch && (
-                  <TouchableOpacity
-                    onPress={!!onCloseSearch ? onCloseSearch : undefined}
-                  >
-                    <AntDesign
-                      name="close"
-                      size={30}
-                      color={color.saffronMango}
-                      style={{
-                        marginLeft: 10,
-                      }}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-              {showAddBtn && (
-                <TouchableOpacity
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    backgroundColor: "#fff",
-                    paddingHorizontal: 12,
-                    paddingVertical: Platform.OS === "ios" ? 8 : 6,
-                    borderRadius: 12,
-                    ...shadowPrimaryColor,
-                  }}
-                  onPress={!!onPressToNavigate ? onPressToNavigate : undefined}
+                      alignItems: "center",
+                    },
+                    b.style,
+                  ]}
+                  onPress={b.onPress}
+                  entering={
+                    isWithAnimation
+                      ? FadeInDown.duration(300).delay(250 + i * 50)
+                      : undefined
+                  }
+                  exiting={
+                    isWithAnimation ? FadeOutUp.duration(200) : undefined
+                  }
                 >
-                  <AntDesign name="plus" size={16} color={color.primaryColor} />
-                  <View>
-                    <CustomText
-                      style={{
-                        color: color.primaryColor,
-                      }}
-                    >
-                      Add {title ?? "title"}
-                    </CustomText>
-                    {/* <View style={styles.divider}></View> */}
-                  </View>
-                </TouchableOpacity>
-              )}
-            </Pressable>
+                  {b.icon}
+                  <CustomText
+                    style={{ color: "#fff", marginLeft: b.icon ? 6 : 0 }}
+                  >
+                    {b.title}
+                  </CustomText>
+                </AnimatedTouchableOpacity>
+              ))}
+            </AnimatedView>
           )}
-
-          {arrLength > 0 && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingHorizontal: 25,
-                paddingTop: 8,
-              }}
-            >
-              <CustomText style={{ fontSize: 16, color: color.white }}>
-                {arrLength} {title} Selected
-              </CustomText>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                // onPress={handleDeleteBooking}
-                // onPress={!!onPressToDelete ? onPressToDelete : undefined}
-              >
-                {!!onPressToDelete && (
-                  <TouchableOpacity
-                    style={{
-                      padding: 10,
-                      ...iconWrapperStyle,
-                      borderWidth: 1,
-                      borderColor: color.strokeColor,
-                    }}
-                    onPress={!!onPressToDelete ? onPressToDelete : undefined}
-                  >
-                    <MaterialIcons
-                      name="delete-outline"
-                      size={24}
-                      color={color.mainTxtColor}
-                    />
-                  </TouchableOpacity>
-                )}
-                {!!onPressToEdit && (
-                  <TouchableOpacity
-                    style={{ padding: 10 }}
-                    onPress={!!onPressToEdit ? onPressToEdit : undefined}
-                  >
-                    <EditIcon />
-                  </TouchableOpacity>
-                )}
-
-                {!!onPressToAssignLead && (
-                  <TouchableOpacity
-                    style={{
-                      paddingHorizontal: 10,
-                      ...iconWrapperStyle,
-                      borderColor: color.strokeColor,
-                    }}
-                    onPress={
-                      !!onPressToAssignLead ? onPressToAssignLead : undefined
-                    }
-                  >
-                    <FontAwesome5
-                      name="clipboard-list"
-                      size={24}
-                      color={color.mainTxtColor}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          )}
-        </LinearGradient>
+        </Pressable>
       )}
-    </>
+
+      {arrLength > 0 && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 25,
+            paddingTop: 8,
+          }}
+        >
+          <AnimatedView
+            entering={isWithAnimation ? FadeInDown.duration(300) : undefined}
+            exiting={isWithAnimation ? FadeOutUp.duration(200) : undefined}
+          >
+            <CustomText style={{ fontSize: 16, color: color.white }}>
+              {arrLength} {title} Selected
+            </CustomText>
+          </AnimatedView>
+
+          <AnimatedView
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            entering={
+              isWithAnimation ? FadeInDown.duration(300).delay(100) : undefined
+            }
+            exiting={isWithAnimation ? FadeOutUp.duration(200) : undefined}
+          >
+            {!!onPressToDelete && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? BounceIn.duration(400).delay(150)
+                    : undefined
+                }
+                exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
+                style={{
+                  padding: 10,
+                  ...iconWrapperStyle,
+                  borderWidth: 1,
+                  borderColor: color.strokeColor,
+                }}
+                onPress={!!onPressToDelete ? onPressToDelete : undefined}
+              >
+                <MaterialIcons
+                  name="delete-outline"
+                  size={24}
+                  color={color.mainTxtColor}
+                />
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onPressToEdit && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? BounceIn.duration(400).delay(200)
+                    : undefined
+                }
+                exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
+                style={{ padding: 10 }}
+                onPress={!!onPressToEdit ? onPressToEdit : undefined}
+              >
+                <EditIcon />
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onPressToAssignLead && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? BounceIn.duration(400).delay(250)
+                    : undefined
+                }
+                exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
+                style={{
+                  paddingHorizontal: 10,
+                  ...iconWrapperStyle,
+                  borderColor: color.strokeColor,
+                }}
+                onPress={
+                  !!onPressToAssignLead ? onPressToAssignLead : undefined
+                }
+              >
+                <FontAwesome5
+                  name="clipboard-list"
+                  size={24}
+                  color={color.mainTxtColor}
+                />
+              </AnimatedTouchableOpacity>
+            )}
+          </AnimatedView>
+        </View>
+      )}
+    </LinearGradient>
   );
 };
 
@@ -440,8 +358,5 @@ export default TitleWithAddDelete;
 const styles = StyleSheet.create({
   gradientBackground: {
     width: "100%",
-    // paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
-    // borderBottomLeftRadius: 24,
-    // borderBottomRightRadius: 24,
   },
 });

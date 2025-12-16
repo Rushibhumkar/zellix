@@ -84,9 +84,14 @@ import AddReferrals from "../screens/Referrals/AddReferrals";
 import ReferralDetails from "../screens/Referrals/ReferralDetails";
 import CallingFocus from "../assets/svg/CallingFocus";
 import CallingInfocus from "../assets/svg/CallingInfocus";
-import { useSafeAreaInsets } from "react-native-safe-area-context"; 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import RSVPInvitationList from "../screens/RSVP/RSVPInvitationList";
+import RSVPInvitationDetail from "../screens/RSVP/RSVPInvitationDetail";
+import RSVPManagerList from "../screens/RSVP/RSVPManagerList";
+import SendInvitation from "../screens/RSVP/SendInvitation";
+import AddEvent from "../screens/RSVP/AddEvent";
+import RSVPEventDetail from "../screens/RSVP/RSVPEventDetail";
 
-////
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const navigationRef = createNavigationContainerRef();
@@ -100,8 +105,8 @@ export const navigate = (name, params) => {
 const BottomTabs = () => {
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === "agent";
-   const insets = useSafeAreaInsets(); 
-  
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -112,7 +117,8 @@ const BottomTabs = () => {
           backgroundColor: color.white,
           position: "absolute",
           // bottom: Platform.OS === "ios" ? 20 : 10,
-         bottom: Platform.OS === "ios" ? insets.bottom + 10 : insets.bottom + 5, 
+          bottom:
+            Platform.OS === "ios" ? insets.bottom - 20 : insets.bottom + 5,
           left: 15,
           right: 15,
           borderRadius: 50,
@@ -155,35 +161,35 @@ const BottomTabs = () => {
             ),
         }}
       />
-    <Tab.Screen
-  name="allLead"
-  children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
-  options={{
-    tabBarLabel: "",
-    headerShown: false,
-    tabBarIcon: ({ focused }) =>
-      focused ? (
-        <CallingFocus style={styles.iconPosition} />
-      ) : (
-        <CallingInfocus style={styles.iconPosition} />
-      ),
-  }}
-/>
+      <Tab.Screen
+        name="allLead"
+        children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
+        options={{
+          tabBarLabel: "",
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <CallingFocus style={styles.iconPosition} />
+            ) : (
+              <CallingInfocus style={styles.iconPosition} />
+            ),
+        }}
+      />
 
-<Tab.Screen
-  name="allLead2"
-  children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
-  options={{
-    tabBarLabel: "",
-    headerShown: false,
-    tabBarIcon: ({ focused }) =>
-      focused ? (
-        <LeadFocus style={styles.iconPosition} />
-      ) : (
-        <LeadIcons style={styles.iconPosition} />
-      ),
-  }}
-/>
+      <Tab.Screen
+        name="allLead2"
+        children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
+        options={{
+          tabBarLabel: "",
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <LeadFocus style={styles.iconPosition} />
+            ) : (
+              <LeadIcons style={styles.iconPosition} />
+            ),
+        }}
+      />
 
       <Tab.Screen
         name="BookingNavigator"
@@ -201,7 +207,6 @@ const BottomTabs = () => {
             ),
         }}
       />
- 
     </Tab.Navigator>
   );
 };
@@ -264,12 +269,12 @@ const MeetingsNavigator = () => {
   );
 };
 
-const LeadsNavigator = ({tabType}) => {
+const LeadsNavigator = ({ tabType }) => {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="allLead"
-       children={() => <AllLeads tabType={tabType} />} 
+        children={() => <AllLeads tabType={tabType} />}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -384,6 +389,45 @@ const UsersNavigator = () => {
   );
 };
 
+//ProjectNavigator
+const RSVPNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="RSVPInvitationList"
+        component={RSVPInvitationList}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="RSVPInvitationDetail"
+        component={RSVPInvitationDetail}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RSVPManagerList"
+        component={RSVPManagerList}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SendInvitation"
+        component={SendInvitation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AddEvent"
+        component={AddEvent}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="RSVPEventDetail"
+        component={RSVPEventDetail}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
 //ProjectNavigator
 const ProjectNavigator = () => {
   return (
@@ -599,6 +643,11 @@ const StackNavigation = () => {
         <Tab.Screen
           name="ProjectNavigator"
           component={ProjectNavigator}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen
+          name="RSVPNavigator"
+          component={RSVPNavigator}
           options={{ headerShown: false }}
         />
         <Tab.Screen

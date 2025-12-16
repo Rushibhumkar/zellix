@@ -66,7 +66,11 @@ const AllBookings = () => {
   //
   // const [filteredData, setFilteredData] = useState(copyBooking)
   const [searchValue, setSearchValue] = useState("");
-  //
+
+  const [showHeaderActions, setShowHeaderActions] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
+  const [focusSearch, setFocusSearch] = useState(false);
+
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -224,43 +228,71 @@ const AllBookings = () => {
   // myConsole("permissionnnn", permission);
   return (
     <View style={{ flex: 1 }}>
-      <Header title={"Bookings"} showBackIcon={false} />
+      <Header
+        title={"Bookings"}
+        showBackIcon={false}
+        isWithAnimation
+        showActions={showHeaderActions}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setTimeout(() => {
+            setFocusSearch((prev) => !prev); // toggles every time
+          }, 100);
+        }}
+        onPressFilter={() => navigate("AdvanceSearch", { type: "booking" })}
+        onPressAdd={
+          canAddBooking
+            ? () => navigate("DeveloperInformation")
+            : () =>
+                setSnackBar({
+                  visible: true,
+                  text: "You are not authorized to add booking details.",
+                  error: true,
+                })
+        }
+      />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {/* {isLoading && <ActivityIndicator />} */}
 
       <Container>
-        <TitleWithAddDelete
-          arrLength={selectedBookings?.length}
-          title="Bookings"
-          showAddBtn={canAddBooking}
-          onPressToNavigate={
-            canAddBooking
-              ? () => navigate("DeveloperInformation")
-              : () =>
-                  setSnackBar({
-                    visible: true,
-                    text: "You are not authorized to add booking details.",
-                    error: true,
-                  })
-          }
-          onPressToDelete={
-            canDeleteBooking && user?.role === roleEnum?.sup_admin
-              ? toggleModal
-              : undefined
-          }
-          onPressToFilter={() => navigate("AdvanceSearch", { type: "booking" })}
-          onCloseSearch={
-            bookingQueryKey !== null
-              ? () => dispatch(setBookingQueryKey(null))
-              : undefined
-          }
-          onSelectLeadType={() => {
-            modalBusinessStatus.openModal();
-          }}
-        />
+        {!showHeaderActions && (
+          <TitleWithAddDelete
+            isWithAnimation
+            arrLength={selectedBookings?.length}
+            title="Bookings"
+            showAddBtn={canAddBooking}
+            onPressToNavigate={
+              canAddBooking
+                ? () => navigate("DeveloperInformation")
+                : () =>
+                    setSnackBar({
+                      visible: true,
+                      text: "You are not authorized to add booking details.",
+                      error: true,
+                    })
+            }
+            onPressToDelete={
+              canDeleteBooking && user?.role === roleEnum?.sup_admin
+                ? toggleModal
+                : undefined
+            }
+            onPressToFilter={() =>
+              navigate("AdvanceSearch", { type: "booking" })
+            }
+            onCloseSearch={
+              bookingQueryKey !== null
+                ? () => dispatch(setBookingQueryKey(null))
+                : undefined
+            }
+            onSelectLeadType={() => {
+              modalBusinessStatus.openModal();
+            }}
+          />
+        )}
 
         <FlatList
           data={bookingData}
+          ref={flatListRef}
           renderItem={({ item, index }) => {
             return (
               <BookingRowItem
@@ -293,8 +325,12 @@ const AllBookings = () => {
             <>
               <SearchBar
                 value={searchValue}
-                onClickCancel={() => handleSearchChange("")}
+                onClickCancel={() => {
+                  handleSearchChange(""), setFocusSearch(false);
+                }}
                 onChangeText={(v) => handleSearchChange(v)}
+                isWithAnimation
+                autoFocus={focusSearch}
               />
               <BookingListHeading />
             </>
@@ -321,6 +357,13 @@ const AllBookings = () => {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          onScroll={(e) => {
+            const offsetY = e.nativeEvent.contentOffset.y;
+            const show = offsetY > 180;
+            if (show !== showHeaderActions) {
+              setShowHeaderActions(show);
+            }
+          }}
         />
       </Container>
 

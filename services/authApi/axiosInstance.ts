@@ -1,7 +1,8 @@
 import axios from "axios";
 import { getData } from "../../hooks/useAsyncStorage";
 
-let testURL = "https://zellix-backend.onrender.com";
+// let testURL = "https://zellix-backend.onrender.com";
+let testURL = "https://zellix-backend-1.onrender.com";
 
 const isLive = true;
 

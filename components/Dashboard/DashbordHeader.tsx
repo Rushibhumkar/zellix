@@ -22,6 +22,7 @@ import MenuModal from "./MenuModal";
 import { logOut } from "../../services/authApi/auth";
 import { removeItemValue } from "../../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../../redux/action";
+import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
@@ -83,22 +84,50 @@ const DashbordHeader = () => {
         >
           {/* Left Side — User Info */}
           <View style={styles.leftContainer}>
-            <CustomText style={styles.userName}>{user?.name || ""}</CustomText>
-            {user?.role === "sup_admin" && (
+            {/* USER NAME */}
+            {isLoading ? (
+              <SkeletonView
+                wrapperStyle={{ width: 120, height: 18, borderRadius: 6 }}
+              />
+            ) : (
+              <CustomText style={styles.userName}>
+                {user?.name || ""}
+              </CustomText>
+            )}
+
+            {/* USER ROLE */}
+            {isLoading ? (
+              <SkeletonView
+                wrapperStyle={{
+                  width: 90,
+                  height: 14,
+                  borderRadius: 5,
+                  marginTop: 4,
+                }}
+              />
+            ) : user?.role === "sup_admin" ? (
               <CustomText style={styles.userRole}>Super Admin</CustomText>
-            )}
-
-            {user?.role === "sub_admin" && (
+            ) : user?.role === "sub_admin" ? (
               <CustomText style={styles.userRole}>Sub Admin</CustomText>
-            )}
-
-            {user?.role === "admin" && (
+            ) : user?.role === "admin" ? (
               <CustomText style={styles.userRole}>Admin</CustomText>
-            )}
+            ) : null}
 
-            <CustomText style={styles.userEmail}>
-              {user?.email || ""}
-            </CustomText>
+            {/* USER EMAIL */}
+            {isLoading ? (
+              <SkeletonView
+                wrapperStyle={{
+                  width: 180,
+                  height: 14,
+                  borderRadius: 5,
+                  marginTop: 6,
+                }}
+              />
+            ) : (
+              <CustomText style={styles.userEmail}>
+                {user?.email || ""}
+              </CustomText>
+            )}
           </View>
 
           {/* Right Side — Icons */}

@@ -388,6 +388,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: 0,
+    fontSize: 12,
   },
   label: {
     color: color.mainTxtColor,

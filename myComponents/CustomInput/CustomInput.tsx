@@ -29,6 +29,12 @@ interface TCustomInput {
   numberOfLines?: number;
   leftIcon?: React.ReactNode;
   isShadow?: boolean;
+  keyboardType?:
+    | "default"
+    | "email-address"
+    | "number-pad"
+    | "url"
+    | "decimal-pad";
 }
 
 const CustomInput = ({
@@ -47,6 +53,7 @@ const CustomInput = ({
   numberOfLines,
   leftIcon,
   isShadow = false,
+  keyboardType = "default",
 }: TCustomInput) => {
   const [isFocused, setIsFocused] = useState(false);
   return (
@@ -73,6 +80,7 @@ const CustomInput = ({
         {leftIcon && leftIcon}
         <TextInput
           value={typeof value === "number" ? value.toString() : value}
+          keyboardType={keyboardType}
           onChangeText={onChangeText}
           style={[
             {
@@ -124,5 +132,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: 0,
+    fontSize: 12,
   },
 });

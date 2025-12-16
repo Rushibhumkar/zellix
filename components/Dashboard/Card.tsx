@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { StyleSheet, TouchableOpacity, View, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
@@ -13,30 +13,108 @@ import { color } from "../../const/color";
 const Card = ({ item, loading }: any) => {
   const { navigate } = useNavigation();
 
-  // ✅ Reusable Card Component
+  // Reusable Card Component
   const SingleCard = ({ count, title, onPress, isLoading }: any) => {
-    if (isLoading) {
-      return (
-        <TouchableOpacity
-          style={[styles.cardContainer, { justifyContent: "center" }]}
-          activeOpacity={1}
-        >
-          <SkeletonRow />
-        </TouchableOpacity>
-      );
-    }
+    const progress = useRef(new Animated.Value(0)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      if (!isLoading) {
+        let targetProgress;
+
+        // Fixed progress percentages for each card type
+        switch (title) {
+          case "Leads":
+            targetProgress = 75;
+            break;
+          case "Calling Data":
+            targetProgress = 60;
+            break;
+          case "Meetings":
+            targetProgress = 55;
+            break;
+          case "Bookings":
+            targetProgress = 45;
+            break;
+          default:
+            targetProgress = 65;
+        }
+
+        Animated.timing(progress, {
+          toValue: count === 0 ? 1 : targetProgress,
+          duration: 700,
+          useNativeDriver: false,
+        }).start();
+
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [isLoading]);
 
     const iconColor = title === "Bookings" ? "#34C759" : "#4A68FF";
 
+    // ---------------------
+    // SKELETON MODE
+    // ---------------------
+    if (isLoading) {
+      return (
+        <View
+          style={{
+            width: "47%",
+            backgroundColor: "#FFFFFF",
+            borderRadius: 14,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+          }}
+        >
+          <SkeletonView
+            wrapperStyle={{ width: 40, height: 40, borderRadius: 12 }}
+          />
+          <View style={{ marginTop: 4, marginLeft: 4 }}>
+            <SkeletonView
+              wrapperStyle={{ width: 80, height: 10, borderRadius: 5 }}
+            />
+            <SkeletonView
+              wrapperStyle={{
+                width: 60,
+                height: 14,
+                borderRadius: 5,
+                marginTop: 6,
+              }}
+            />
+          </View>
+          {/* <SkeletonView
+            wrapperStyle={{
+              width: "100%",
+              height: 4,
+              borderRadius: 2,
+              marginTop: 12,
+            }}
+          /> */}
+        </View>
+      );
+    }
+
+    // ---------------------
+    // NORMAL MODE (Animated)
+    // ---------------------
     return (
       <TouchableOpacity
         style={styles.cardContainer}
         onPress={onPress}
         activeOpacity={0.8}
       >
-        {/* Row: Icon + Title + Count */}
         <View style={styles.rowAlign}>
-          <View style={[styles.iconBox, { backgroundColor: `${iconColor}1A` }]}>
+          <Animated.View
+            style={[
+              styles.iconBox,
+              { backgroundColor: `${iconColor}1A`, opacity: fadeAnim },
+            ]}
+          >
             {title === "Leads" && (
               <Feather name="users" size={20} color={iconColor} />
             )}
@@ -49,21 +127,29 @@ const Card = ({ item, loading }: any) => {
             {title === "Bookings" && (
               <Feather name="check-square" size={20} color={iconColor} />
             )}
-          </View>
+          </Animated.View>
 
-          <View style={styles.textBox}>
+          <Animated.View style={[styles.textBox, { opacity: fadeAnim }]}>
             <CustomText style={styles.titleText}>{title}</CustomText>
             <CustomText style={styles.countText}>
               {formatCount(count)}
             </CustomText>
-          </View>
+          </Animated.View>
         </View>
 
-        {/* Progress Bar */}
-        <View
+        <Animated.View
           style={[
             styles.progressBar,
-            { backgroundColor: iconColor, width: "65%" },
+            {
+              backgroundColor: iconColor,
+              width:
+                count === 0
+                  ? "1%"
+                  : progress.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ["0%", "100%"],
+                    }),
+            },
           ]}
         />
       </TouchableOpacity>
@@ -110,17 +196,7 @@ const Card = ({ item, loading }: any) => {
   );
 };
 
-// ✅ Skeleton Loader
-const SkeletonRow = () => (
-  <View style={styles.skeletonWrapper}>
-    <SkeletonView wrapperStyle={{ width: 32, height: 32, borderRadius: 16 }} />
-    <SkeletonView
-      wrapperStyle={{ width: 90, height: 10, borderRadius: 8, marginTop: 12 }}
-    />
-  </View>
-);
-
-// ✅ Styles
+// STYLES
 const styles = StyleSheet.create({
   wrapper: {
     width: sizes.width,
@@ -141,13 +217,14 @@ const styles = StyleSheet.create({
     width: "47%",
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 6,
     elevation: 3,
+    // flexDirection: "row",
   },
   rowAlign: {
     flexDirection: "row",
@@ -176,7 +253,7 @@ const styles = StyleSheet.create({
   progressBar: {
     height: 4,
     borderRadius: 2,
-    marginTop: 6,
+    marginTop: 8,
   },
   skeletonWrapper: {
     justifyContent: "center",

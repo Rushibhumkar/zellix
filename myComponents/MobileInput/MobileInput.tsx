@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 import CountryPicker, {
   Country,
   CountryCode,
@@ -16,6 +23,7 @@ interface TMobileInput {
   error?: any;
   isCountryPicker: boolean;
   onBlur: () => void;
+  customStyle?: StyleProp<ViewStyle>;
 }
 
 interface TOnSelect {
@@ -35,11 +43,18 @@ const MobileInput = ({
   error,
   isCountryPicker = false,
   onBlur,
+  customStyle,
 }: TMobileInput) => {
   const [number, setNumber] = useState({
     pin: value ? value?.split("-")[0] : "",
     phone: value ? value?.split("-")[1] : "",
   });
+  useEffect(() => {
+    if (value && value.includes("-")) {
+      const [pin, phone] = value.split("-");
+      setNumber({ pin, phone });
+    }
+  }, [value]);
   const handleChangeMobile = (e: string, key: "pin" | "phone") => {
     if (!!e || e === "") {
       setNumber((prev) => {
@@ -97,13 +112,16 @@ const MobileInput = ({
     <>
       {!isCountryPicker && (
         <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 4,
-            marginBottom: 15,
-          }}
+          style={[
+            {
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 4,
+              marginBottom: 15,
+            },
+            customStyle,
+          ]}
         >
           <DropdownRNE
             placeholderStyle={"#a9a9a9"}
@@ -192,7 +210,7 @@ const MobileInput = ({
             )}
           </View>
           {error && (
-            <CustomText marginBottom={10} color={"red"}>
+            <CustomText marginBottom={10} color={"red"} fontSize={12}>
               {error}
             </CustomText>
           )}

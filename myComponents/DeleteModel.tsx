@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import React from "react";
 import CustomModal from "./CustomModal/CustomModal";
 import { color } from "../const/color";
@@ -15,7 +15,7 @@ const DeleteModel = ({
   isLoading,
   handleDeleteUser,
   selectedUser,
-}) => {
+}: any) => {
   return (
     <View>
       <CustomModal visible={modalVisible} onClose={toggleModal} hasBackdrop>

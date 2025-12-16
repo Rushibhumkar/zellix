@@ -71,3 +71,13 @@ export const routeInvoice = {
   InvoiceList: "InvoiceList",
   InvoiceDetail: "InvoiceDetail",
 };
+
+export const routeRSVP = {
+  RSVPNavigator: "RSVPNavigator",
+  RSVPInvitationList: "RSVPInvitationList",
+  RSVPInvitationDetail: "RSVPInvitationDetail",
+  RSVPManagerDetails: "RSVPManagerDetails",
+  RSVPManagerList: "RSVPManagerList",
+  SendInvitation: "SendInvitation",
+  AddEvent: "AddEvent",
+};

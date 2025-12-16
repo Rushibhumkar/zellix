@@ -1,25 +1,27 @@
 import { Text, StyleSheet, View } from "react-native";
 import React, { Component } from "react";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 
 const SkeletonLoadingBooking = () => {
   return (
     <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
       {[...new Array(6)].map((el, i) => {
-        return <View
-          key={i}
-          style={{
-            ...shadow1,
-            width: "100%",
-            backgroundColor: "white",
-            marginVertical: 10,
-            borderRadius: 5,
-            padding: 15,
-          }}
-        >
-          <SKeletonItem />
-        </View>
+        return (
+          <View
+            key={i}
+            style={{
+              ...shadowPrimaryColor,
+              width: "100%",
+              backgroundColor: "white",
+              marginVertical: 10,
+              borderRadius: 14,
+              padding: 15,
+            }}
+          >
+            <SKeletonItem />
+          </View>
+        );
       })}
     </View>
   );
@@ -45,15 +47,17 @@ const SKeletonItem = () => {
           borderRadius: 15,
         }}
       />
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        flex: 1.5
-      }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          flex: 1.5,
+        }}
+      >
         <Skeleton />
         <Skeleton />
       </View>
-      <View style={{ flex: 1, gap: 10, alignItems: 'flex-end' }}>
+      <View style={{ flex: 1, gap: 10, alignItems: "flex-end" }}>
         <SkeletonView
           wrapperStyle={{
             width: 80,

@@ -75,7 +75,7 @@ const AllLeads = ({ tabType }) => {
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
   const flatListRef = React.useRef<FlatList>(null);
-
+  const [focusSearch, setFocusSearch] = useState(false);
   //
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -254,6 +254,9 @@ const AllLeads = ({ tabType }) => {
         showActions={showHeaderActions}
         onPressSearch={() => {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setTimeout(() => {
+            setFocusSearch((prev) => !prev); // toggles every time
+          }, 100);
         }}
         onPressFilter={() =>
           navigation.navigate("AdvanceSearch", { type: "lead" })
@@ -358,7 +361,10 @@ const AllLeads = ({ tabType }) => {
                 <SearchBar
                   onChangeText={(v) => handleSearchChange(v)}
                   value={searchValue}
-                  onClickCancel={() => handleSearchChange("")}
+                  onClickCancel={() => {
+                    handleSearchChange(""), setFocusSearch(false);
+                  }}
+                  autoFocus={focusSearch}
                   isWithAnimation
                 />
                 <LeadListHeading
@@ -389,8 +395,20 @@ const AllLeads = ({ tabType }) => {
             }
             onScroll={(e) => {
               const offsetY = e.nativeEvent.contentOffset.y;
-              setShowHeaderActions(offsetY > 180); // ✅ Hide title/add/delete bar when scrolled up
+              const show = offsetY > 180;
+              if (show !== showHeaderActions) {
+                setShowHeaderActions(show);
+              }
             }}
+            removeClippedSubviews={true}
+            initialNumToRender={15}
+            maxToRenderPerBatch={15}
+            windowSize={10}
+            getItemLayout={(data, index) => ({
+              length: 80,
+              offset: 80 * index,
+              index,
+            })}
             scrollEventThrottle={16}
           />
         </Container>
@@ -429,117 +447,116 @@ const AllLeads = ({ tabType }) => {
   );
 };
 
-const LeadRowItem = ({
-  item,
-  index,
-  onPress,
-  onLongPress,
-  selected,
-  bgColor,
-}) => {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.5}
-      style={[
-        styles.mainlistcontainer,
-        {
-          marginTop: index === 0 ? 25 : 12,
-          backgroundColor: selected
-            ? color.primary200
-            : bgColor
-            ? bgColor
-            : "white",
-        },
-      ]}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: "8%", paddingEnd: 2 }}>
-          {index === "S.No" ? (
+const LeadRowItem = React.memo(
+  ({ item, index, onPress, onLongPress, selected, bgColor }: any) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={[
+          styles.mainlistcontainer,
+          {
+            marginTop: index === 0 ? 25 : 12,
+            backgroundColor: selected
+              ? color.primary200
+              : bgColor
+              ? bgColor
+              : "white",
+          },
+        ]}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: "8%", paddingEnd: 2 }}>
+            {index === "S.No" ? (
+              <CustomText
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "500",
+                  textTransform: "capitalize",
+                }}
+              >
+                No.
+              </CustomText>
+            ) : (
+              <CustomText
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "500",
+                  textTransform: "capitalize",
+                }}
+              >
+                {index < 9 && `0`}
+                {index + 1}
+              </CustomText>
+            )}
+          </View>
+          <View style={{ width: "37%", paddingEnd: 2 }}>
             <CustomText
+              numberOfLines={1}
               style={{
                 color: color.mainTxtColor,
-                fontWeight: "500",
+                fontWeight: "700",
+                fontSize: 15,
                 textTransform: "capitalize",
               }}
             >
-              No.
+              {item?.clientName}
             </CustomText>
-          ) : (
             <CustomText
+              numberOfLines={1}
               style={{
-                color: color.mainTxtColor,
-                fontWeight: "500",
+                color: color.strokeColor,
+                fontWeight: "400",
+                marginTop: 5,
                 textTransform: "capitalize",
               }}
             >
-              {index < 9 && `0`}
-              {index + 1}
+              {item?.clientMobile}
             </CustomText>
-          )}
-        </View>
-        <View style={{ width: "37%", paddingEnd: 2 }}>
-          <CustomText
-            numberOfLines={1}
+          </View>
+          <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.assign?.name}
+            </CustomText>
+          </View>
+          <View
             style={{
-              color: color.mainTxtColor,
-              fontWeight: "700",
-              fontSize: 15,
-              textTransform: "capitalize",
+              width: "25%",
+              alignItems: "flex-start",
+              paddingEnd: 2,
             }}
           >
-            {item?.clientName}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.strokeColor,
-              fontWeight: "400",
-              marginTop: 5,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.clientMobile}
-          </CustomText>
+            <CustomText
+              numberOfLines={2}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+                //textTransform: "capitalize",
+              }}
+            >
+              {statusObj[item?.status]}
+            </CustomText>
+          </View>
         </View>
-        <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.assign?.name}
-          </CustomText>
-        </View>
-        <View
-          style={{
-            width: "25%",
-            alignItems: "flex-start",
-            paddingEnd: 2,
-          }}
-        >
-          <CustomText
-            numberOfLines={2}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-              //textTransform: "capitalize",
-            }}
-          >
-            {statusObj[item?.status]}
-          </CustomText>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
+      </TouchableOpacity>
+    );
+  },
+  (prev, next) =>
+    prev.selected === next.selected &&
+    prev.item?._id === next.item?._id &&
+    prev.item?.status === next.item?.status
+);
 
 const styles = StyleSheet.create({
   divider: {

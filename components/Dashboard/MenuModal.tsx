@@ -104,6 +104,11 @@ const MenuModal: React.FC<MenuModalProps> = ({
               icon: "briefcase",
               route: "HRManagementStack",
             },
+            {
+              label: "RSVP Invitation",
+              icon: "calendar",
+              route: "RSVPNavigator",
+            },
             { label: "Project", icon: "folder", route: "ProjectNavigator" },
             {
               label: "Incentive",

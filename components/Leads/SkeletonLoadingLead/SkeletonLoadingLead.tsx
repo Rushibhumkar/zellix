@@ -1,12 +1,9 @@
 import { Text, StyleSheet, View } from "react-native";
 import React, { Component } from "react";
 import SkeletonView from "../../../myComponents/SkeletonView/SkeletonView";
-import { shadow1 } from "../../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 
-
-export default function SkeletonLoadingLead({
-  isTeam
-}: { isTeam: boolean }) {
+export default function SkeletonLoadingLead({ isTeam }: { isTeam: boolean }) {
   {
     const SkeltonItem = () => {
       return (
@@ -22,17 +19,19 @@ export default function SkeletonLoadingLead({
             wrapperStyle={{
               width: 25,
               height: 15,
-              borderRadius: 15,
+              borderRadius: 18,
             }}
           />
           <View style={{ flexDirection: "column", flex: 1, gap: 10 }}>
-            {!isTeam && <SkeletonView
-              wrapperStyle={{
-                width: 40,
-                height: 10,
-                borderRadius: 15,
-              }}
-            />}
+            {!isTeam && (
+              <SkeletonView
+                wrapperStyle={{
+                  width: 40,
+                  height: 10,
+                  borderRadius: 18,
+                }}
+              />
+            )}
             <List />
           </View>
           <List />
@@ -43,28 +42,28 @@ export default function SkeletonLoadingLead({
     return (
       <View style={{ paddingHorizontal: 20, marginTop: isTeam ? 0 : 20 }}>
         {[...new Array(6)].map((el, i) => {
-          return <View
-            key={i}
-            style={{
-              ...shadow1,
-              width: "100%",
-              backgroundColor: "white",
-              marginVertical: 10,
-              borderRadius: 5,
-              padding: 15,
-            }}
-          >
-            <SkeltonItem />
-          </View>
-        })
-        }
+          return (
+            <View
+              key={i}
+              style={{
+                ...shadowPrimaryColor,
+                width: "100%",
+                backgroundColor: "white",
+                marginVertical: 10,
+                borderRadius: 14,
+                padding: 15,
+              }}
+            >
+              <SkeltonItem />
+            </View>
+          );
+        })}
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({});
-
 
 const List = () => {
   return (

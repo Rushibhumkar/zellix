@@ -229,11 +229,7 @@ const ContainerHRM = ({
 
   return (
     <View style={{ flex: 1, backgroundColor: "transparent" }}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" style="light" />
       {!!isBAck?.title ? <GoBackHeaderHRM /> : <HeaderHRM />}
       <View
         style={[
