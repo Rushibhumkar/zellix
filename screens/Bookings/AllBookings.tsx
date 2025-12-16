@@ -230,7 +230,6 @@ const AllBookings = () => {
     <View style={{ flex: 1 }}>
       <Header
         title={"Bookings"}
-        showBackIcon={false}
         isWithAnimation
         showActions={showHeaderActions}
         onPressSearch={() => {

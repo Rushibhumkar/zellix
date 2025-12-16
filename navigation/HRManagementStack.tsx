@@ -41,6 +41,10 @@ import LeadFocus from "../assets/svg/LeadFocus";
 import LeadIcons from "../assets/svg/Lead";
 import MeetingFocus from "../assets/svg/Meeting";
 import MeetingIcon from "../assets/svg/MeetingIcon";
+import UsersBottomFocus from "../assets/svg/UsersBottomFocus";
+import UsersBottomInFocus from "../assets/svg/UsersBottomInFocus";
+import AttendanceBottomFocus from "../assets/svg/AttendanceBottomFocus";
+import AttendanceBottomInfocus from "../assets/svg/AttendanceBottomInfocus";
 
 ////
 const Stack = createNativeStackNavigator();
@@ -79,7 +83,7 @@ export const HRManagementStack = () => {
           component={AllUsersHRMStack}
           options={{
             tabBarIcon: ({ focused }) =>
-              focused ? <LeadFocus /> : <LeadIcons />,
+              focused ? <UsersBottomFocus /> : <UsersBottomInFocus />,
           }}
         />
       )}
@@ -88,7 +92,7 @@ export const HRManagementStack = () => {
         component={AttendanceStack}
         options={{
           tabBarIcon: ({ focused }) =>
-            focused ? <MeetingFocus /> : <MeetingIcon />,
+            focused ? <AttendanceBottomFocus /> : <AttendanceBottomInfocus />,
         }}
       />
       <Tab.Screen

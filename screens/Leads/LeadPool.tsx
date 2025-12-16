@@ -18,7 +18,7 @@ import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { debounce } from "../../utils/debounce";
 import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import { useNavigation } from "@react-navigation/native";
-import { shadow1 } from "../../const/globalStyle";
+import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import { leadTypeObj, roleEnum, statusObj } from "../../utils/data";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { popupModal2 } from "../../utils/toastFunction";
@@ -28,6 +28,8 @@ import { selectUser } from "../../redux/userSlice";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 // let bgByStatus = {
 //     assign: '#FECBA6',
@@ -167,7 +169,11 @@ const LeadPool = () => {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage && (
-              <ActivityIndicator size={"small"} color={"#002E6B"} />
+              <ActivityIndicator
+                size={"small"}
+                color={color.mainTxtColor}
+                style={{ marginTop: 20 }}
+              />
             )
           }
           refreshControl={
@@ -189,7 +195,7 @@ const LeadPoolRowItem = ({
   bgColor,
   onLongPress,
   onPressClaim,
-}) => {
+}: any) => {
   const { user, leadQueryKey } = useSelector(selectUser);
   const isSubSup =
     user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
@@ -216,7 +222,7 @@ const LeadPoolRowItem = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "700",
               fontSize: 16,
               textTransform: "capitalize",
@@ -227,7 +233,7 @@ const LeadPoolRowItem = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               marginTop: 5,
               textTransform: "capitalize",
@@ -240,7 +246,7 @@ const LeadPoolRowItem = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -251,7 +257,7 @@ const LeadPoolRowItem = ({
           <CustomText
             numberOfLines={1}
             style={{
-              color: "#000000",
+              color: color.mainTxtColor,
               fontWeight: "400",
               fontSize: 15,
               textTransform: "capitalize",
@@ -264,7 +270,7 @@ const LeadPoolRowItem = ({
       </View>
       <CustomBtn
         title="Claim"
-        textStyle={{ fontSize: 16, paddingVertical: 5 }}
+        textStyle={{ fontSize: 16 }}
         containerStyle={{ marginTop: 20 }}
         onPress={onPressClaim}
       />
@@ -313,13 +319,13 @@ const styles = StyleSheet.create({
   mainlistcontainer: {
     borderWidth: 1,
     padding: 13,
-    borderRadius: 10,
+    borderRadius: 14,
     borderColor: "#2D67C6",
     marginHorizontal: 20,
-    ...shadow1,
+    ...shadowPrimaryColor,
   },
   headingContainer: {
-    backgroundColor: "#3E3E3E",
+    backgroundColor: color.primary200,
     flexDirection: "row",
     padding: 10,
     borderRadius: 11,

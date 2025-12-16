@@ -161,6 +161,7 @@ const RSVPManagerList = () => {
       <Header
         title="RSVP Manager"
         isWithAnimation
+        showBackIcon={false}
         showActions={showHeaderActions}
         onPressSearch={() => setFocusSearch(true)}
       />

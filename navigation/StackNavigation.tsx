@@ -91,6 +91,8 @@ import RSVPManagerList from "../screens/RSVP/RSVPManagerList";
 import SendInvitation from "../screens/RSVP/SendInvitation";
 import AddEvent from "../screens/RSVP/AddEvent";
 import RSVPEventDetail from "../screens/RSVP/RSVPEventDetail";
+import RsvpFocus from "../assets/svg/RsvpFocus";
+import RsvpInfocus from "../assets/svg/RsvpInfocus";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -121,8 +123,8 @@ const BottomTabs = () => {
             Platform.OS === "ios" ? insets.bottom - 20 : insets.bottom + 5,
           left: 15,
           right: 15,
-          borderRadius: 50,
-          height: 60,
+          borderRadius: 24,
+          height: 68,
           borderWidth: 0.8,
           borderColor: color.saffronMango,
           ...shadow1,
@@ -135,7 +137,7 @@ const BottomTabs = () => {
         options={{
           tabBarLabel: "",
           tableBarShowLable: false,
-          tabBarLabelStyle: false,
+          tabBarLabelStyle: { marginLeft: 12 },
           headerShown: false,
           tabBarIcon: ({ focused }) =>
             focused ? (
@@ -192,8 +194,8 @@ const BottomTabs = () => {
       />
 
       <Tab.Screen
-        name="BookingNavigator"
-        component={BookingNavigator}
+        name="RSVPNavigator"
+        component={RSVPNavigator}
         options={{
           tabBarLabel: "",
           tableBarShowLable: false,
@@ -201,9 +203,9 @@ const BottomTabs = () => {
           headerShown: false,
           tabBarIcon: ({ focused }) =>
             focused ? (
-              <BookingFocus style={styles.iconPosition} />
+              <RsvpFocus style={styles.iconPosition} />
             ) : (
-              <BookingIcon style={styles.iconPosition} />
+              <RsvpInfocus style={styles.iconPosition} />
             ),
         }}
       />
@@ -646,8 +648,8 @@ const StackNavigation = () => {
           options={{ headerShown: false }}
         />
         <Tab.Screen
-          name="RSVPNavigator"
-          component={RSVPNavigator}
+          name="BookingNavigator"
+          component={BookingNavigator}
           options={{ headerShown: false }}
         />
         <Tab.Screen
