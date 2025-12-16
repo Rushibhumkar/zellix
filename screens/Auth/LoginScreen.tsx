@@ -33,8 +33,8 @@ import { iconWrapperStyle } from "../../const/globalStyle";
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
-    email: "kumarvishalpost1@gmail.com",
-    password: "123456789",
+    // email: "kumarvishalpost1@gmail.com",
+    // password: "123456789",
     // email: "suurajkummargupta@gmail.com",
     // password: "123456789",
     // email: "kashif22@mailinator.com",
@@ -45,8 +45,8 @@ const LoginScreen = () => {
     // password: "123456789",
     // email: "dev20@swavishtek.com",
     // password: "123456789",
-    // email: "",
-    // password: "",
+    email: "",
+    password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
@@ -286,30 +286,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 30,
   },
-  // input: {
-  //   height: 50,
-  //   borderColor: "#000000",
-  //   backgroundColor: "#FFFFFF",
-  //   borderWidth: 0.5,
-  //   borderRadius: 14,
-  //   padding: 10,
-  //   width: "100%",
-  // },
-
-  // loginbtn: {
-  //   backgroundColor: "#2D67C6",
-  //   padding: 14,
-  //   marginTop: 50,
-  //   width: "100%",
-  //   borderRadius: 10,
-  //   alignSelf: "center",
-  // },
-  // loginbtntext: {
-  //   color: "#fff",
-  //   fontWeight: "600",
-  //   textAlign: "center",
-  //   fontSize: 16,
-  // },
   authlogo: {
     height: 60,
     width: 140,
