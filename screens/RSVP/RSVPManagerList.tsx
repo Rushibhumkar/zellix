@@ -22,10 +22,7 @@ import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import moment from "moment";
 import { deleteEvents, useRSVPEventsList } from "./rsvpApi";
-import { Feather } from "@expo/vector-icons";
 import { routeRSVP } from "../../utils/routes";
-import { myConsole } from "../../hooks/useConsole";
-import RSVPListHeading from "./components/RSVPListHeading";
 import SkeletonLoadingEvents from "./components/SkeletonLoadingEvents";
 import RSVPEventsHeading from "./components/RSVPEventsHeading";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
@@ -322,10 +319,11 @@ const EventsRowItem = ({
         {
           marginTop: index === 0 ? 25 : 14,
           backgroundColor: selected ? "rgba(227, 238, 252, 1)" : "#F8F9FC",
+          paddingBottom: 0,
         },
       ]}
     >
-      <View style={{ width: "28%", gap: 4 }}>
+      <View style={{ width: "26%", gap: 4 }}>
         <CustomText style={styles.title}>{item?.title}</CustomText>
       </View>
 
@@ -334,7 +332,7 @@ const EventsRowItem = ({
         <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
       </View>
 
-      <View style={{ width: "40%", alignItems: "flex-end", gap: 4 }}>
+      <View style={{ width: "42%", alignItems: "flex-end", gap: 4 }}>
         <CustomText style={styles.date}>
           {moment(item?.startDateTime).format("DD/MM/YYYY • hh:mm A")}
         </CustomText>

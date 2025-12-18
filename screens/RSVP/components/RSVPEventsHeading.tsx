@@ -13,7 +13,7 @@ const RSVPEventsHeading = () => {
         end={{ x: 0, y: 1 }}
         style={styles.headingContainer}
       >
-        <View style={{ width: "28%" }}>
+        <View style={{ width: "26%" }}>
           <CustomText style={styles.headingText}>Name</CustomText>
         </View>
 
@@ -23,7 +23,7 @@ const RSVPEventsHeading = () => {
 
         <View
           style={{
-            width: "40%",
+            width: "42%",
             alignItems: "flex-end",
           }}
         >

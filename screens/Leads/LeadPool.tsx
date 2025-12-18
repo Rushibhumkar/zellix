@@ -136,7 +136,7 @@ const LeadPool = () => {
                       !!item?._id && (await claimLead(item?._id));
                       refetch();
                     },
-                    title: "Do yo want to claim!",
+                    title: "Do you want to claim!",
                   });
                 }}
               />

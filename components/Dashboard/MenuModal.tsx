@@ -1,12 +1,13 @@
 import {
   ActivityIndicator,
+  Linking,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { myConsole } from "../../hooks/useConsole";
 import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
 import Entypo from "react-native-vector-icons/Entypo";
@@ -19,6 +20,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Feather from "react-native-vector-icons/Feather";
 import { StatusBar } from "expo-status-bar";
 import { prepareDataForValidation } from "formik";
+import * as Application from "expo-application";
 
 interface MenuModalProps {
   visible: boolean;
@@ -35,13 +37,25 @@ const MenuModal: React.FC<MenuModalProps> = ({
   handleLogout,
   logoutLoading,
 }) => {
+  const latestStoreVersion = "1.5.8";
+
+  const [isUpdateAvailable, setIsUpdateAvailable] = React.useState(false);
+  const [showDot, setShowDot] = useState(false);
+  const appVersion = Application.nativeApplicationVersion || "1.0.0";
+  React.useEffect(() => {
+    if (appVersion !== latestStoreVersion) {
+      setIsUpdateAvailable(true);
+    }
+  }, []);
+  // myConsole("Application.", Application);
+
   return (
     <Modal
       visible={visible}
       modalAnimation={new SlideAnimation({ slideFrom: "top" })}
       onTouchOutside={onClose}
       width={1}
-      height={0.7}
+      height={Platform.OS === "ios" ? 0.71 : 0.73}
       rounded
       overlayOpacity={0.3}
       modalStyle={{
@@ -197,12 +211,49 @@ const MenuModal: React.FC<MenuModalProps> = ({
         </View>
 
         {/* Logout Button */}
-        <View style={{ paddingHorizontal: 20 }}>
+        <View
+          style={{
+            paddingHorizontal: 20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 10,
+          }}
+        >
+          {/* Update Button (only visible if update is available) */}
+          {false && (
+            // {isUpdateAvailable && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                if (Platform.OS === "ios") {
+                  Linking.openURL("https://apps.apple.com/app/id6748918861");
+                } else {
+                  Linking.openURL(
+                    "https://play.google.com/store/apps/details?id=com.skg.zellix"
+                  );
+                }
+              }}
+              style={{
+                backgroundColor: "#2452FA",
+                borderRadius: 12,
+                paddingVertical: 14,
+                paddingHorizontal: 18,
+                marginRight: 10,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                Update Available
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Logout Button */}
           <TouchableOpacity
             activeOpacity={0.6}
             onPress={() => {
               onClose();
-              handleLogout?.(); // ✅ replace with your logout handler
+              handleLogout?.();
             }}
             style={{
               backgroundColor: "#FF3B30",
@@ -211,11 +262,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
               alignItems: "center",
               justifyContent: "center",
               paddingVertical: 14,
-              gap: 8,
-              shadowColor: "#FF3B30",
-              shadowOpacity: 0.25,
-              shadowRadius: 5,
-              elevation: 3,
+              flex: 1,
             }}
           >
             {logoutLoading ? (
@@ -224,7 +271,12 @@ const MenuModal: React.FC<MenuModalProps> = ({
               <>
                 <Feather name="log-out" size={20} color="#fff" />
                 <CustomText
-                  style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
+                  style={{
+                    color: "#fff",
+                    fontSize: 16,
+                    fontWeight: "600",
+                    marginLeft: 6,
+                  }}
                 >
                   Log Out
                 </CustomText>
@@ -232,6 +284,32 @@ const MenuModal: React.FC<MenuModalProps> = ({
             )}
           </TouchableOpacity>
         </View>
+
+        <Text
+          style={{
+            textAlign: "center",
+            marginTop: 12,
+            color: "#666",
+            fontSize: 13,
+            marginBottom: 8,
+          }}
+          onPress={() => {
+            if (isUpdateAvailable) {
+              if (Platform.OS === "ios") {
+                Linking.openURL("https://apps.apple.com/app/id6748918861");
+              } else {
+                Linking.openURL(
+                  "https://play.google.com/store/apps/details?id=com.skg.zellix"
+                );
+              }
+            } else {
+              setShowDot(true);
+            }
+          }}
+        >
+          App Version: {appVersion}
+          {showDot && <Text style={{ color: color.mainTxtColorFade }}>.</Text>}
+        </Text>
       </ModalContent>
     </Modal>
   );

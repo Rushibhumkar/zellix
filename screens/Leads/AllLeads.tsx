@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -45,6 +46,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { useRoute } from "@react-navigation/native";
 import { sizes } from "../../const";
+
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
   new: "#C9DCFA", // lighter blue for new
@@ -52,7 +54,7 @@ let bgByStatus = {
 
 // Debounce function
 
-const AllLeads = ({ tabType }) => {
+const AllLeads = ({ tabType }: any) => {
   const queryClient = useQueryClient();
   const route = useRoute();
   const [refreshing, setRefreshing] = useState(false);
@@ -314,18 +316,17 @@ const AllLeads = ({ tabType }) => {
             />
           )}
 
-          {isPoolRestricted === false && (
+          {false === false && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}
               style={{
                 position: "absolute",
-                bottom: 100,
+                bottom: Platform.OS === "ios" ? 100 : 110,
                 right: 20,
                 zIndex: 5,
               }}
             >
-              <CustomText style={{ color: "white", fontWeight: 800 }} />
               <LeadPoolIcon width={60} height={60} />
             </TouchableOpacity>
           )}
