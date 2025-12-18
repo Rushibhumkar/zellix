@@ -100,7 +100,7 @@ const AddLead = () => {
                   <View style={{ flexDirection: "row", gap: 10 }}>
                     <TextInput
                       style={styles.countycode}
-                      placeholder=" +91"
+                      placeholder=" +971"
                       keyboardType="phone-pad"
                       value={countryCode}
                       onChangeText={(text) => setCountryCode(text)}

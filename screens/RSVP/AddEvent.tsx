@@ -230,7 +230,7 @@ const AddEvent = ({ route }: any) => {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 18,
-    paddingBottom: 100,
+    paddingBottom: 180,
   },
   sectionTitle: {
     fontSize: 20,

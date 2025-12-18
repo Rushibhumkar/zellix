@@ -217,7 +217,7 @@ const AddMeeting = () => {
       <Container  >
         <ScrollViewWithKeyboardAvoid
         >
-          <View style={{ padding: 20, paddingBottom: 100 }}>
+          <View style={{ padding: 20, paddingBottom: 120 }}>
             <CustomModelMessage
               isVisible={isVisible}
               setIsVisible={setIsVisible}

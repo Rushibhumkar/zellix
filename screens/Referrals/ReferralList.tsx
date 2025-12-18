@@ -21,6 +21,8 @@ import { routeReferral } from "../../utils/routes";
 import CardReferral, { HeaderReferralList } from "./components/CardReferral";
 import { deleteReferral } from "../../services/rootApi/referralApi";
 import { useAppToast } from "../../components/AppToast";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 const ReferralList = () => {
   const { navigate } = useNavigation();
@@ -136,7 +138,20 @@ const ReferralList = () => {
             loading ? (
               <SkeletonLoadingLead />
             ) : (
-              <NoDataFound height={200} width={200} />
+              <View
+                style={{
+                  flex: 1,
+                  marginTop: 60,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 20,
+                }}
+              >
+                <NoDataFound height={200} width={200} />
+                <CustomText style={{ color: color.mainTxtColor }}>
+                  No referrals found
+                </CustomText>
+              </View>
             )
           }
           onEndReached={onEndReach}

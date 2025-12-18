@@ -70,8 +70,8 @@ const MobileInput = ({
   //////////////////////////////////////////////
   const [phone, setPhone] = useState<TPhone>({
     number: "",
-    countryCode: "+91",
-    countryCodeAlphabet: "IN",
+    countryCode: "+971",
+    countryCodeAlphabet: "AE",
   });
   const [isInitial, setIsInitial] = useState(!value ? false : true);
   const onSelect = ({ country, numb }: TOnSelect) => {
@@ -129,7 +129,7 @@ const MobileInput = ({
             containerStyle={{
               width: "28%",
             }}
-            placeholder="+91"
+            placeholder="+971"
             arrOfObj={formattedCodes}
             keyValueGetOnSelect="_id"
             // keyValueShowInBox="displayName"
