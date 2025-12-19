@@ -17,6 +17,7 @@ import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { LinearGradient } from "expo-linear-gradient";
 import { shadowPrimaryColor } from "../../../const/globalStyle";
+import { formatCount } from "../../../utils/commonFunctions";
 
 // Horizontal separator
 const Line = () => <View style={styles.line} />;
@@ -114,7 +115,7 @@ export default function DashboardCard({ title = "" }) {
                     Property Value
                   </CustomText>
                   <CustomText style={styles.primaryValue}>
-                    {formatText(item?.total?.total)}
+                    {formatCount(item?.total?.total)}
                   </CustomText>
                 </View>
                 <View style={styles.valueItem}>
@@ -122,7 +123,7 @@ export default function DashboardCard({ title = "" }) {
                     Gross {"\n"}Revenue
                   </CustomText>
                   <CustomText style={styles.primaryValue}>
-                    {formatText(item?.commission?.total)}
+                    {formatCount(item?.commission?.total)}
                   </CustomText>
                 </View>
               </View>
@@ -153,7 +154,7 @@ export default function DashboardCard({ title = "" }) {
                       Net Revenue
                     </CustomText>
                     <CustomText style={styles.detailValue}>
-                      {formatText(item?.clientLoyalty?.total)}
+                      {formatCount(item?.clientLoyalty?.total)}
                     </CustomText>
                   </View>
                   <View style={styles.detailItem}>
@@ -161,13 +162,13 @@ export default function DashboardCard({ title = "" }) {
                       Client Loyalty
                     </CustomText>
                     <CustomText style={styles.detailValue}>
-                      {formatText(item?.netCommission?.total)}
+                      {formatCount(item?.netCommission?.total)}
                     </CustomText>
                   </View>
                   <View style={styles.detailItem}>
                     <CustomText style={styles.detailLabel}>Broker</CustomText>
                     <CustomText style={styles.detailValue}>
-                      {formatText(item?.brokerReferral?.total)}
+                      {formatCount(item?.brokerReferral?.total)}
                     </CustomText>
                   </View>
                 </View>

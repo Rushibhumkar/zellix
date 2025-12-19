@@ -137,6 +137,9 @@ export default function GraphData({
                 {formatLabel(item.status.substring(0, 25))}
               </CustomText>
               <CustomText style={styles.valueText}>
+                {item?.count || "N/A"}
+              </CustomText>
+              <CustomText style={styles.valueText}>
                 {item?.totalValue || "N/A"}
               </CustomText>
             </View>
@@ -210,11 +213,11 @@ const styles = StyleSheet.create({
   keyText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#1E293B",
+    color: color.mainTxtColor,
   },
   valueText: {
     fontWeight: "700",
     fontSize: 14,
-    color: "#0F172A",
+    color: color.mainTxtColor,
   },
 });

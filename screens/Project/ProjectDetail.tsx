@@ -27,7 +27,6 @@ const ProjectDetail = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const { data, isLoading, refetch } = useGetProjectById(params?.item?._id);
-  myConsole("data", data);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -73,6 +72,11 @@ const ProjectDetail = () => {
           containerStyle={{ marginBottom: 10 }}
         />
         <RowItem
+          title={"Road Show"}
+          value={data?.isRoadShow ? "Yes" : "No"}
+          containerStyle={{ marginBottom: 10 }}
+        />
+        <RowItem
           title={"Creation Date"}
           value={moment(data?.createdAt).format("DD-MM-YYYY")}
           containerStyle={{ marginBottom: 10 }}
@@ -101,7 +105,8 @@ const ProjectDetail = () => {
               {data?.members?.map((x, i, a) => {
                 return (
                   <CustomText key={x?._id} color={color.mainTxtColor}>
-                    {x?.name} {a?.length - 1 !== i ? "," : ""}
+                    {x?.name} {x?.lastName || ""}{" "}
+                    {a?.length - 1 !== i ? "," : ""}
                   </CustomText>
                 );
               })}

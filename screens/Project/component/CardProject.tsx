@@ -23,7 +23,7 @@ const CardProject = ({
         {
           marginTop: index === 0 ? 25 : 12,
           backgroundColor: selected
-            ? "rgba(252, 244, 227, 1)"
+            ? color.primaryFade
             : bgColor
             ? bgColor
             : "white",

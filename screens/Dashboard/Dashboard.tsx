@@ -10,9 +10,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Card from "../../components/Dashboard/Card";
-import CommissionCount from "../../components/Dashboard/CommissionCount";
 import DashbordHeader from "../../components/Dashboard/DashbordHeader";
-import LeadCount from "../../components/Dashboard/LeadCount";
 import { getDataJson, removeItemValue } from "../../hooks/useAsyncStorage";
 import Container from "../../myComponents/Container/Container";
 import {
@@ -66,6 +64,8 @@ import LeadQualityCard from "../../components/Dashboard/LeadQualityCard";
 import LeadProjectCard from "../../components/Dashboard/LeadProjectCard";
 import ClosingLeadProjCard from "../../components/Dashboard/ClosingLeadProjCard";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { checkPermission } from "../../utils/commonFunctions";
+import CallingDataQuality from "../../components/Dashboard/CallingDataQuality";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export let socket = io(`${baseURL}`);
@@ -369,6 +369,7 @@ const Dashboard = () => {
 
   // const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
+  // myConsole("dashpermisison", permission);
 
   useEffect(() => {
     console.log("callDetect", callDetect);
@@ -390,13 +391,16 @@ const Dashboard = () => {
           );
         }
 
-        if (status !== "granted" && Platform.OS === "android") {
-          Alert.alert(
-            "Permission Denied",
-            "Phone state permission is required for call detection. Please grant the permission in the app settings."
-          );
-          return;
-        }
+        // <--------------->
+        // if (status !== "granted" && Platform.OS === "android") {
+        //   Alert.alert(
+        //     "Permission Denied",
+        //     "Phone state permission is required for call detection. Please grant the permission in the app settings."
+        //   );
+        //   return;
+        // }
+        // <-------------->
+
         // console.log('status', status)
         ////
         let startTime;
@@ -481,6 +485,56 @@ const Dashboard = () => {
     // }
   }, [callDetect?.isCall]); // Empty dependency array ensures the effect runs only once on mount
 
+  const canViewLeadQuality = checkPermission(
+    permission,
+    "Dashboard",
+    "leadQuality",
+    user?.role
+  );
+  const canViewLeadProjectWise = checkPermission(
+    permission,
+    "Dashboard",
+    "leadProjectWise",
+    user?.role
+  );
+  const canViewClosingLeadProjectWise = checkPermission(
+    permission,
+    "Dashboard",
+    "closingLeadProjectWise",
+    user?.role
+  );
+  const canViewConfirmBusiness = checkPermission(
+    permission,
+    "Dashboard",
+    "confirmedBusiness",
+    user?.role
+  );
+  const canViewExpOfInterest = checkPermission(
+    permission,
+    "Dashboard",
+    "eoi",
+    user?.role
+  );
+  const canViewSummary = checkPermission(
+    permission,
+    "Dashboard",
+    "summary",
+    user?.role
+  );
+
+  const canViewCommissionGraph = checkPermission(
+    permission,
+    "Dashboard",
+    "commission",
+    user?.role
+  );
+  const canViewCallingDataQuality = checkPermission(
+    permission,
+    "Dashboard",
+    "callingDataQuality",
+    user?.role
+  );
+
   return (
     <Container>
       <DashbordHeader />
@@ -507,15 +561,28 @@ const Dashboard = () => {
               </View>
               {isShowGraphs && (
                 <>
-                  <LeadQualityCard onRefresh={refreshing} />
-                  <LeadProjectCard onRefresh={refreshing} />
-                  <ClosingLeadProjCard onRefresh={refreshing} />
+                  {canViewLeadQuality && (
+                    <LeadQualityCard onRefresh={refreshing} />
+                  )}
+                  {canViewCallingDataQuality && (
+                    <CallingDataQuality onRefresh={refreshing} />
+                  )}
+                  {canViewLeadProjectWise && (
+                    <LeadProjectCard onRefresh={refreshing} />
+                  )}
+                  {canViewClosingLeadProjectWise && (
+                    <ClosingLeadProjCard onRefresh={refreshing} />
+                  )}
                 </>
               )}
 
-              <GraphData header={"Confirmed Business"} />
-              <GraphData header={"Expression of Interest"} />
-              <DashboardCard title="Summary" />
+              {canViewConfirmBusiness && (
+                <GraphData header={"Confirmed Business"} />
+              )}
+              {canViewExpOfInterest && (
+                <GraphData header={"Expression of Interest"} />
+              )}
+              {canViewSummary && <DashboardCard title="Summary" />}
               {!loadingBookingCount ? (
                 <BookingCard item={bookingCount} />
               ) : (
@@ -529,10 +596,12 @@ const Dashboard = () => {
               ) : (
                 <BookingMeetingLoader />
               )}
-              <CommissionGraph
-                isLoading={loadingCommissionCount}
-                item={commissionCount}
-              />
+              {canViewCommissionGraph && (
+                <CommissionGraph
+                  isLoading={loadingCommissionCount}
+                  item={commissionCount}
+                />
+              )}
             </>
           ) : (
             <SkeletonLoadingDashboard />

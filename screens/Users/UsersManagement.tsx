@@ -38,9 +38,6 @@ const UsersManagement = () => {
     item.roles.includes(user?.role)
   );
 
-  myConsole("filteredMenuItems", filteredMenuItems);
-  myConsole("usersss", user?.role);
-
   return (
     <View style={styles.container}>
       <Header title={"Users Management"} />

@@ -21,6 +21,10 @@ import Feather from "react-native-vector-icons/Feather";
 import { StatusBar } from "expo-status-bar";
 import { prepareDataForValidation } from "formik";
 import * as Application from "expo-application";
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/userSlice";
+import { checkPermission } from "../../utils/commonFunctions";
 
 interface MenuModalProps {
   visible: boolean;
@@ -37,7 +41,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
   handleLogout,
   logoutLoading,
 }) => {
-  const latestStoreVersion = "1.5.9";
+  const latestStoreVersion = "1.6.0";
 
   const [isUpdateAvailable, setIsUpdateAvailable] = React.useState(false);
   const [showDot, setShowDot] = useState(false);
@@ -48,6 +52,22 @@ const MenuModal: React.FC<MenuModalProps> = ({
     }
   }, []);
   // myConsole("Application.", Application);
+
+  const { user } = useSelector(selectUser);
+  const { data: permission = {} } = useGetUserPermission(user?._id);
+
+  const canViewExpensesSidebar = checkPermission(
+    permission,
+    "Expenses",
+    "sidebar",
+    user?.role
+  );
+  const canViewInvoicesSidebar = checkPermission(
+    permission,
+    "Invoices",
+    "sidebar",
+    user?.role
+  );
 
   return (
     <Modal
@@ -117,97 +137,112 @@ const MenuModal: React.FC<MenuModalProps> = ({
               label: "HRMS",
               icon: "briefcase",
               route: "HRManagementStack",
+              visible: true,
             },
             {
               label: "Bookings",
               icon: "calendar",
               route: "BookingNavigator",
+              visible: true,
             },
-            { label: "Project", icon: "folder", route: "ProjectNavigator" },
+            {
+              label: "Project",
+              icon: "folder",
+              route: "ProjectNavigator",
+              visible: true,
+            },
             {
               label: "Incentive",
               icon: "gift",
               route: "IncentiveNavigator",
+              visible: true,
             },
             {
               label: "Referrals",
               icon: "user-plus",
               route: "ReferralNavigator",
+              visible: true,
             },
             {
               label: "Invoice",
               icon: "file-text",
               route: "InvoiceNavigator",
+              visible: canViewInvoicesSidebar,
             },
             {
               label: "Expense",
               icon: "dollar-sign",
               route: "ExpenseNavigator",
+              visible: canViewExpensesSidebar,
             },
             {
               label: "User Management",
               icon: "users",
               route: "UsersNavigator",
+              visible: true,
             },
             {
               label: "Change Password",
               icon: "lock",
               route: "ChangePassword",
+              visible: true,
             },
-          ].map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              activeOpacity={0.6}
-              onPress={() => {
-                onClose();
-                navigate(item.route);
-              }}
-              style={{
-                width: "30%",
-                aspectRatio: 1,
-                backgroundColor: "#F9FBFD",
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "#739fe12a",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-                paddingVertical: 8,
-              }}
-            >
-              <LinearGradient
-                colors={["#2E67BE", "#4985F2"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+          ]
+            .filter((item) => item.visible)
+            .map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                activeOpacity={0.6}
+                onPress={() => {
+                  onClose();
+                  navigate(item.route);
+                }}
                 style={{
-                  borderRadius: 12,
-                  padding: 10,
-                  marginBottom: 6,
-                  shadowColor: "#2452FA",
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
+                  width: "30%",
+                  aspectRatio: 1,
+                  backgroundColor: "#F9FBFD",
+                  borderRadius: 14,
                   alignItems: "center",
                   justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "#739fe12a",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 3,
+                  elevation: 2,
+                  paddingVertical: 8,
                 }}
               >
-                <Feather name={item.icon} size={22} color="#fff" />
-              </LinearGradient>
-              <CustomText
-                style={{
-                  fontSize: 13,
-                  color: color.mainTxtColor,
-                  textAlign: "center",
-                  paddingHorizontal: 4,
-                }}
-              >
-                {item.label}
-              </CustomText>
-            </TouchableOpacity>
-          ))}
+                <LinearGradient
+                  colors={["#2E67BE", "#4985F2"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    borderRadius: 12,
+                    padding: 10,
+                    marginBottom: 6,
+                    shadowColor: "#2452FA",
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Feather name={item.icon} size={22} color="#fff" />
+                </LinearGradient>
+                <CustomText
+                  style={{
+                    fontSize: 13,
+                    color: color.mainTxtColor,
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  {item.label}
+                </CustomText>
+              </TouchableOpacity>
+            ))}
         </View>
 
         {/* Logout Button */}

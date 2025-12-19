@@ -86,7 +86,20 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
           style={{ height: 270 }}
         />
       ) : errorClosingLeadProjectWise ? (
-        <NoDataFound width={250} height={280} />
+        <NoDataFound width={120} height={120} />
+      ) : transformedData.length === 0 ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderRadius: 10,
+            borderColor: "#E2E8F0",
+            padding: 12,
+            backgroundColor: "#F8FAFC",
+            marginTop: 10,
+          }}
+        >
+          <NoDataFound width={120} height={120} />
+        </View>
       ) : (
         <BarChart
           barWidth={35}

@@ -35,7 +35,7 @@ const logDetailKey = {
 const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
   const logsInfo = useGetLogsInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
-  myConsole("logsInfoss", logsInfo);
+  // myConsole("logsInfoss", logsInfo);
 
   const onRefresh = () => {
     setRefreshing(true);

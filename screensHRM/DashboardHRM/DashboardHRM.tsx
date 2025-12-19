@@ -24,6 +24,9 @@ import CheckInOut from "./CheckInOut";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { color } from "../../const/color";
+import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { myConsole } from "../../hooks/useConsole";
+import { checkPermission } from "../../utils/commonFunctions";
 
 const DashboardHRM = () => {
   const { user } = useSelector(selectUser);
@@ -67,6 +70,16 @@ const DashboardHRM = () => {
         queryKey: [queryKeyHRM.getAttendanceChart],
       });
   };
+
+  const { data: permission = {} } = useGetUserPermission(user?._id);
+  myConsole("permissionnsdfdsf", permission);
+
+  const canViewExpensesSidebar = checkPermission(
+    permission,
+    "HrmsDashboard",
+    "sidebar",
+    user?.role
+  );
 
   return (
     <ContainerHRM>

@@ -9,10 +9,10 @@ import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 
 import { color } from "../../const/color";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import { useGetCallingDataQuality } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
-import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 
-const LeadQualityCard = ({ onRefresh }: any) => {
+const CallingDataQuality = ({ onRefresh }: any) => {
   const [startDate, setStartDate] = useState(
     moment("2025-06-01", "YYYY-MM-DD")
   );
@@ -24,7 +24,7 @@ const LeadQualityCard = ({ onRefresh }: any) => {
     isFetching,
     isError,
     refetch: refetchCallingData,
-  } = useGetLeadQuality(startDate, endDate);
+  } = useGetCallingDataQuality(startDate, endDate);
 
   const leadCount = data?.leadCount || {};
 
@@ -55,7 +55,7 @@ const LeadQualityCard = ({ onRefresh }: any) => {
   return (
     <View style={styles.card}>
       {/* ---------- Title ---------- */}
-      <CustomText style={styles.title}>Lead Quality</CustomText>
+      <CustomText style={styles.title}>Calling Data Quality</CustomText>
 
       {/* ---------- Date Pickers ---------- */}
       <View style={styles.dateRow}>
@@ -159,7 +159,7 @@ const LeadQualityCard = ({ onRefresh }: any) => {
   );
 };
 
-export default LeadQualityCard;
+export default CallingDataQuality;
 
 /* ---------- Styles ---------- */
 const styles = StyleSheet.create({

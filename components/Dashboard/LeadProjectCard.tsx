@@ -20,7 +20,7 @@ import {
 } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
 
-const LeadProjectCard = ({ onRefresh }) => {
+const LeadProjectCard = ({ onRefresh }: any) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
 
   const today = new Date();

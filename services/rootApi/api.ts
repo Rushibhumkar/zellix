@@ -77,12 +77,31 @@ export const getCommissionCount = () => {
     });
 };
 
-export const getLeadQuality = () => {
+export const getLeadQuality = (startDate, endDate) => {
   return axiosInstance
-    .get("/api/dashboard/lead-quality")
+    .get("/api/dashboard/lead-quality", {
+      params: {
+        startDate,
+        endDate,
+      },
+    })
     .then((res) => res?.data)
     .catch((err) => {
       throw new Error("getLeadQualityErr", err);
+    });
+};
+
+export const getCallingDataQuality = (startDate, endDate) => {
+  return axiosInstance
+    .get("/api/dashboard/calling-data-quality", {
+      params: {
+        startDate,
+        endDate,
+      },
+    })
+    .then((res) => res?.data)
+    .catch(() => {
+      throw new Error("getCallingDataQualityErr");
     });
 };
 
