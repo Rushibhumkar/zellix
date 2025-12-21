@@ -29,7 +29,7 @@ const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
   }, [activeTab]);
 
   const tabs = [
-    { id: 1, label: "Lead Info" },
+    { id: 1, label: "Info" },
     { id: 2, label: "User Info" },
     { id: 3, label: "Logs Info" },
     { id: 4, label: "Meeting Info" },

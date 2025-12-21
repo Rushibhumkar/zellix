@@ -51,6 +51,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
       setIsUpdateAvailable(true);
     }
   }, []);
+
   // myConsole("Application.", Application);
 
   const { user } = useSelector(selectUser);
@@ -65,6 +66,12 @@ const MenuModal: React.FC<MenuModalProps> = ({
   const canViewInvoicesSidebar = checkPermission(
     permission,
     "Invoices",
+    "sidebar",
+    user?.role
+  );
+  const canViewBookingsSidebar = checkPermission(
+    permission,
+    "Bookings",
     "sidebar",
     user?.role
   );
@@ -143,7 +150,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
               label: "Bookings",
               icon: "calendar",
               route: "BookingNavigator",
-              visible: true,
+              visible: canViewBookingsSidebar,
             },
             {
               label: "Project",

@@ -32,9 +32,6 @@ import LeadListHeading from "../../components/Leads/LeadHeading/LeadListHeading"
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
 import { leadTypeObj, roleEnum, statusObj } from "../../utils/data";
-import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
-import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
-import CustomCheckBox from "../../myComponentsHRM/CutomCheckBox/CustomCheckBox";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
@@ -342,7 +339,10 @@ const AllLeads = ({ tabType }: any) => {
                 bgColor={bgByStatus[item?.status]}
                 onPress={() =>
                   selected?.length === 0
-                    ? navigation.navigate("LeadsDetails", { item })
+                    ? navigation.navigate("LeadsDetails", {
+                        item,
+                        selectLeadType,
+                      })
                     : handleSelect(item?._id)
                 }
                 onLongPress={

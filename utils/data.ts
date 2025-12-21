@@ -220,9 +220,17 @@ export const inputStatusOptions = [
   { _id: "rejected", name: "Rejected" },
   { _id: "deal_cancelled", name: "Deal Cancelled" },
   { _id: "eoi_picked", name: "EOI Picked" },
-  { _id: "partial_dp_complete", name: "Partial DP Completed" },
-  { _id: "204complete_spa_pending", name: "20% + 4% Complete SPA Pending" },
+  { _id: "clear_case_confirmed", name: "Clear Case / Confirmed" },
+  { _id: "invoice_raised", name: "Invoice Raised" },
+  { _id: "commission_received_half", name: "Commission Received - Half" },
+  { _id: "commission_received_full", name: "Commission Received - Full" },
+  { _id: "24percent_spa_done", name: "24% SPA Done" },
   { _id: "eoi_canceled", name: "EOI Cancelled" },
+  { _id: "partial_dp_complete", name: "Partial DP Complete" },
+  {
+    _id: "204complete_spa_pending",
+    name: "20% + 4% Complete SPA Pending",
+  },
 ];
 
 export const PaymentStatus = [

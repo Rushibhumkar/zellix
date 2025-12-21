@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  Button,
   PermissionsAndroid,
   Platform,
   RefreshControl,
@@ -546,66 +544,62 @@ const Dashboard = () => {
         contentContainerStyle={{ paddingBottom: 80 }}
       >
         <View style={{ paddingBottom: 100 }}>
-          {1 ? (
-            <>
-              <View
-                style={{
-                  padding: 20,
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 20,
-                  justifyContent: "space-between",
-                }}
-              >
-                <Card item={dashboardCount} loading={loadingDashboardCount} />
-              </View>
-              {isShowGraphs && (
-                <>
-                  {canViewLeadQuality && (
-                    <LeadQualityCard onRefresh={refreshing} />
-                  )}
-                  {canViewCallingDataQuality && (
-                    <CallingDataQuality onRefresh={refreshing} />
-                  )}
-                  {canViewLeadProjectWise && (
-                    <LeadProjectCard onRefresh={refreshing} />
-                  )}
-                  {canViewClosingLeadProjectWise && (
-                    <ClosingLeadProjCard onRefresh={refreshing} />
-                  )}
-                </>
-              )}
+          <>
+            <View
+              style={{
+                padding: 20,
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 20,
+                justifyContent: "space-between",
+              }}
+            >
+              <Card item={dashboardCount} loading={loadingDashboardCount} />
+            </View>
+            {isShowGraphs && (
+              <>
+                {canViewLeadQuality && (
+                  <LeadQualityCard onRefresh={refreshing} />
+                )}
+                {canViewCallingDataQuality && (
+                  <CallingDataQuality onRefresh={refreshing} />
+                )}
+                {canViewLeadProjectWise && (
+                  <LeadProjectCard onRefresh={refreshing} />
+                )}
+                {canViewClosingLeadProjectWise && (
+                  <ClosingLeadProjCard onRefresh={refreshing} />
+                )}
+              </>
+            )}
 
-              {canViewConfirmBusiness && (
-                <GraphData header={"Confirmed Business"} />
-              )}
-              {canViewExpOfInterest && (
-                <GraphData header={"Expression of Interest"} />
-              )}
-              {canViewSummary && <DashboardCard title="Summary" />}
-              {!loadingBookingCount ? (
-                <BookingCard item={bookingCount} />
-              ) : (
-                <BookingMeetingLoader />
-              )}
-              {!loadingMeetingCount ? (
-                <MeetingCard
-                  item={meetingCount}
-                  // isLoading={loadingMeetingCount}
-                />
-              ) : (
-                <BookingMeetingLoader />
-              )}
-              {canViewCommissionGraph && (
-                <CommissionGraph
-                  isLoading={loadingCommissionCount}
-                  item={commissionCount}
-                />
-              )}
-            </>
-          ) : (
-            <SkeletonLoadingDashboard />
-          )}
+            {canViewConfirmBusiness && (
+              <GraphData header={"Confirmed Business"} />
+            )}
+            {canViewExpOfInterest && (
+              <GraphData header={"Expression of Interest"} />
+            )}
+            {canViewSummary && <DashboardCard title="Summary" />}
+            {!loadingBookingCount ? (
+              <BookingCard item={bookingCount} />
+            ) : (
+              <BookingMeetingLoader />
+            )}
+            {!loadingMeetingCount ? (
+              <MeetingCard
+                item={meetingCount}
+                // isLoading={loadingMeetingCount}
+              />
+            ) : (
+              <BookingMeetingLoader />
+            )}
+            {canViewCommissionGraph && (
+              <CommissionGraph
+                isLoading={loadingCommissionCount}
+                item={commissionCount}
+              />
+            )}
+          </>
         </View>
       </ScrollView>
     </Container>

@@ -115,6 +115,7 @@ const LeadsDetails = () => {
   // let detail = params?.item;
   // let detail = {};
   let details = params?.item;
+  let selectLeadType = params?.selectLeadType;
   //detail nam se state btao waha leadDetailById ka data save kro ##start
   // const { data: detail, isLoading: isLoadingQuery } = useGetLeadDetail(params?.item?._id);
   const {
@@ -348,7 +349,11 @@ const LeadsDetails = () => {
             }}
           />
           <Header
-            title={"Lead Details"}
+            title={
+              selectLeadType === "calling_data"
+                ? "Calling Data Info"
+                : "Lead Details"
+            }
             onBack={() => navigate(routeLead.allLead)}
           />
           {isSubSupSrMng && (
