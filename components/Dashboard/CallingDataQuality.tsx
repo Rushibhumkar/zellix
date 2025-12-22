@@ -11,6 +11,7 @@ import { color } from "../../const/color";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { useGetCallingDataQuality } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
+import { formatCount } from "../../utils/commonFunctions";
 
 const CallingDataQuality = ({ onRefresh }: any) => {
   const [startDate, setStartDate] = useState(
@@ -98,7 +99,7 @@ const CallingDataQuality = ({ onRefresh }: any) => {
               strokeWidth={2}
               centerLabelComponent={() => (
                 <View style={styles.centerLabel}>
-                  <Text style={styles.centerValue}>{total}</Text>
+                  <Text style={styles.centerValue}>{formatCount(total)}</Text>
                   <Text style={styles.centerText}>Total</Text>
                 </View>
               )}
@@ -114,7 +115,7 @@ const CallingDataQuality = ({ onRefresh }: any) => {
                 <View style={styles.labelValueView}>
                   <Text style={styles.legendLabel}>Qualified</Text>
                   <Text style={styles.legendValue}>
-                    {leadCount?.Qualified || 0}
+                    {formatCount(leadCount?.Qualified) || 0}
                   </Text>
                 </View>
               </View>
@@ -125,7 +126,7 @@ const CallingDataQuality = ({ onRefresh }: any) => {
                 <View style={styles.labelValueView}>
                   <Text style={styles.legendLabel}>Pending</Text>
                   <Text style={styles.legendValue}>
-                    {leadCount?.Pending || 0}
+                    {formatCount(leadCount?.Pending) || 0}
                   </Text>
                 </View>
               </View>
@@ -138,7 +139,7 @@ const CallingDataQuality = ({ onRefresh }: any) => {
                 <View style={styles.labelValueView}>
                   <Text style={styles.legendLabel}>Disqualified</Text>
                   <Text style={styles.legendValue}>
-                    {leadCount?.Disqualified || 0}
+                    {formatCount(leadCount?.Disqualified) || 0}
                   </Text>
                 </View>
               </View>
@@ -148,7 +149,9 @@ const CallingDataQuality = ({ onRefresh }: any) => {
                 <View style={[styles.square, { backgroundColor: "#E5E7EB" }]} />
                 <View style={styles.labelValueView}>
                   <Text style={styles.legendLabel}>Lost</Text>
-                  <Text style={styles.legendValue}>{leadCount?.Lost || 0}</Text>
+                  <Text style={styles.legendValue}>
+                    {formatCount(leadCount?.Lost) || 0}
+                  </Text>
                 </View>
               </View>
             </View>
