@@ -17,6 +17,7 @@ import { BackHandler } from "react-native";
 import { myConsole } from "./hooks/useConsole";
 import * as Updates from "expo-updates";
 import { Alert, Linking } from "react-native";
+import GlobalPopupManager from "./myComponents/GlobalPopup/GlobalPopupManager";
 
 if (!BackHandler.removeEventListener) {
   BackHandler.removeEventListener = (type, handler) => true;
@@ -107,6 +108,7 @@ export default function App() {
               swipeEnabled
             >
               <StackNavigation />
+              <GlobalPopupManager />
               <UpdateChecker />
               <ModalPortal />
             </ToastProvider>

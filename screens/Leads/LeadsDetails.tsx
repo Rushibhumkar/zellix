@@ -575,6 +575,7 @@ const LeadsDetails = () => {
                       initialValue={fields?.status}
                       onChange={(v) => onChange("status", v)}
                       mode="auto"
+                      dropdownStyle={{ height: 36 }}
                     />
                   ) : (
                     <CustomText>{statusObj[detail?.status]}</CustomText>
@@ -585,19 +586,25 @@ const LeadsDetails = () => {
                 <RowItem
                   title="Follow Up Time"
                   component={
-                    <View
+                    <TouchableOpacity
                       style={{
                         flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
+                      onPress={FUTModal.openModal}
                     >
-                      <TouchableOpacity onPress={FUTModal.openModal}>
+                      <View>
                         <CustomText style={{ color: color.mainTxtColor }}>
                           {detail?.status !== "followUp_required"
                             ? "Click for Date and Time"
                             : formatDateTime(tdForFUT.date, tdForFUT.time)}
                         </CustomText>
-                      </TouchableOpacity>
-                    </View>
+                      </View>
+                      <IconWrapper>
+                        <Feather name="calendar" size={14} color={"#fff"} />
+                      </IconWrapper>
+                    </TouchableOpacity>
                   }
                 />
               )}
@@ -758,6 +765,7 @@ const LeadsDetails = () => {
           <View style={{ height: 15 }} />
           <DatePickerExpo
             title="Date"
+            minimumDate={new Date()}
             boxContainerStyle={{ marginBottom: 15 }}
             onSelect={(v) => {
               setTdForFUT((prev) => {
@@ -769,6 +777,12 @@ const LeadsDetails = () => {
           <DatePickerExpo
             title="Time"
             mode="time"
+            minuteInterval={5} // 👈 ADD THIS (00,05,10...)
+            minimumDate={
+              moment(tdForFUT.date).isSame(new Date(), "day")
+                ? new Date() // 👈 SAME DAY → past time block
+                : undefined
+            }
             boxContainerStyle={{ marginBottom: 20 }}
             onSelect={(v) => {
               setTdForFUT((prev) => {
@@ -777,6 +791,7 @@ const LeadsDetails = () => {
             }}
             initialValue={tdForFUT.time}
           />
+
           <CustomBtn
             title="Submit"
             containerStyle={{

@@ -41,7 +41,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
   handleLogout,
   logoutLoading,
 }) => {
-  const latestStoreVersion = "1.6.1";
+  const latestStoreVersion = "1.6.3";
 
   const [isUpdateAvailable, setIsUpdateAvailable] = React.useState(false);
   const [showDot, setShowDot] = useState(false);

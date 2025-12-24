@@ -24,6 +24,7 @@ interface TDatePickerExpo {
   mode?: "date" | "time" | "datetime";
   maximumDate?: any;
   minimumDate?: any;
+  minuteInterval?: number;
 }
 
 const DatePickerExpo = ({
@@ -34,6 +35,7 @@ const DatePickerExpo = ({
   mode = "date",
   maximumDate,
   minimumDate,
+  minuteInterval,
 }: TDatePickerExpo) => {
   const [date, setDate] = useState(new Date());
   const [getDate, setGetDate] = useState(null);
@@ -185,6 +187,7 @@ const DatePickerExpo = ({
                   minimumDate={minimumDate}
                   textColor={color.mainTxtColor}
                   accentColor={color.mainTxtColor}
+                  minuteInterval={minuteInterval}
                 />
               )}
               <>
@@ -224,6 +227,7 @@ const DatePickerExpo = ({
               onChange={onChange}
               maximumDate={maximumDate}
               minimumDate={minimumDate}
+              minuteInterval={minuteInterval}
             />
           )}
           {showTimePicker && (
@@ -232,6 +236,7 @@ const DatePickerExpo = ({
               display="default"
               value={date}
               onChange={onChange}
+              minuteInterval={minuteInterval}
             />
           )}
         </>

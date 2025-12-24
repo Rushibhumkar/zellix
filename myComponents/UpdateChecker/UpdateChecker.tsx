@@ -19,7 +19,6 @@ const UpdateChecker = () => {
     }
   };
   useEffect(() => {
-    if (__DEV__) return;
     checkForUpdates();
   }, []);
 

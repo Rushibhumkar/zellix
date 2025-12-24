@@ -2,7 +2,7 @@
   "expo": {
     "name": "zellix",
     "slug": "zellix",
-    "version": "1.6.1",
+    "version": "1.6.3",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -16,9 +16,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.6.1",
+      "bundleNumber": "1.6.3",
       "supportsTablet": true,
-      "buildNumber": "103",
+      "buildNumber": "106",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features."
@@ -26,13 +26,20 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 99,
+      "versionCode": 102,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.READ_PHONE_NUMBERS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.READ_PHONE_STATE",
         "android.permission.READ_PHONE_NUMBERS",
@@ -78,11 +85,12 @@
       "expo-notifications"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "1.6.1",
+    "runtimeVersion": "1.6.3",
     "updates": {
       "enabled": true,
       "fallbackToCacheTimeout": 0,
-      "checkAutomatically": "ON_LOAD"
+      "checkAutomatically": "ON_LOAD",
+      "url": "https://u.expo.dev/e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
     },
     "extra": {
       "eas": {
