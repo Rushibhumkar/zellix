@@ -18,6 +18,7 @@ import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { LinearGradient } from "expo-linear-gradient";
 import { shadowPrimaryColor } from "../../../const/globalStyle";
 import { formatCount } from "../../../utils/commonFunctions";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 // Horizontal separator
 const Line = () => <View style={styles.line} />;
@@ -69,33 +70,41 @@ export default function DashboardCard({ title = "" }) {
   return (
     <View style={styles.cardWrapper}>
       {/* Header */}
-      <CustomText style={styles.titleText}>{title}</CustomText>
+      <SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.titleText}>{title}</CustomText>
+        </SlideFadeIn>
+      </SlideFadeIn>
       {/* Dropdown & Date Pickers */}
       <View style={styles.dropdownSection}>
-        <DropdownRNE
-          containerStyle={styles.dropdownBox}
-          placeholder="Select Value"
-          arrOfObj={summaryList}
-          keyValueShowInBox="name"
-          keyValueGetOnSelect="value"
-          onChange={(v) => setSelectedItem(v)}
-          initialValue={"confirm_business"}
-        />
+        <SlideFadeIn>
+          <DropdownRNE
+            containerStyle={styles.dropdownBox}
+            placeholder="Select Value"
+            arrOfObj={summaryList}
+            keyValueShowInBox="name"
+            keyValueGetOnSelect="value"
+            onChange={(v) => setSelectedItem(v)}
+            initialValue={"confirm_business"}
+          />
+        </SlideFadeIn>
 
-        <View style={styles.datePickersRow}>
-          <DatePickerExpo
-            title="Start Date"
-            boxContainerStyle={styles.datePickerBox}
-            onSelect={setStartDate}
-            initialValue={startDate}
-          />
-          <DatePickerExpo
-            title="End Date"
-            boxContainerStyle={styles.datePickerBox}
-            onSelect={setEndDate}
-            initialValue={endDate}
-          />
-        </View>
+        <SlideFadeIn>
+          <View style={styles.datePickersRow}>
+            <DatePickerExpo
+              title="Start Date"
+              boxContainerStyle={styles.datePickerBox}
+              onSelect={setStartDate}
+              initialValue={startDate}
+            />
+            <DatePickerExpo
+              title="End Date"
+              boxContainerStyle={styles.datePickerBox}
+              onSelect={setEndDate}
+              initialValue={endDate}
+            />
+          </View>
+        </SlideFadeIn>
       </View>
       {/* Summary Cards */}
       {summaryData?.data?.length > 0 ? (
@@ -111,20 +120,28 @@ export default function DashboardCard({ title = "" }) {
             <View style={styles.headerSection}>
               <View style={styles.mainValues}>
                 <View style={styles.valueItem}>
-                  <CustomText style={styles.valueLabel}>
-                    Property Value
-                  </CustomText>
-                  <CustomText style={styles.primaryValue}>
-                    {formatCount(item?.total?.total)}
-                  </CustomText>
+                  <SlideFadeIn>
+                    <CustomText style={styles.valueLabel}>
+                      Property Value
+                    </CustomText>
+                  </SlideFadeIn>
+                  <SlideFadeIn>
+                    <CustomText style={styles.primaryValue}>
+                      {formatCount(item?.total?.total)}
+                    </CustomText>
+                  </SlideFadeIn>
                 </View>
                 <View style={styles.valueItem}>
-                  <CustomText style={styles.valueLabel}>
-                    Gross {"\n"}Revenue
-                  </CustomText>
-                  <CustomText style={styles.primaryValue}>
-                    {formatCount(item?.commission?.total)}
-                  </CustomText>
+                  <SlideFadeIn>
+                    <CustomText style={styles.valueLabel}>
+                      Gross {"\n"}Revenue
+                    </CustomText>
+                  </SlideFadeIn>
+                  <SlideFadeIn>
+                    <CustomText style={styles.primaryValue}>
+                      {formatCount(item?.commission?.total)}
+                    </CustomText>
+                  </SlideFadeIn>
                 </View>
               </View>
 
@@ -150,26 +167,38 @@ export default function DashboardCard({ title = "" }) {
                 <View style={styles.divider} />
                 <View style={styles.detailGrid}>
                   <View style={styles.detailItem}>
-                    <CustomText style={styles.detailLabel}>
-                      Net Revenue
-                    </CustomText>
-                    <CustomText style={styles.detailValue}>
-                      {formatCount(item?.clientLoyalty?.total)}
-                    </CustomText>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailLabel}>
+                        Net Revenue
+                      </CustomText>
+                    </SlideFadeIn>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailValue}>
+                        {formatCount(item?.clientLoyalty?.total)}
+                      </CustomText>
+                    </SlideFadeIn>
                   </View>
                   <View style={styles.detailItem}>
-                    <CustomText style={styles.detailLabel}>
-                      Client Loyalty
-                    </CustomText>
-                    <CustomText style={styles.detailValue}>
-                      {formatCount(item?.netCommission?.total)}
-                    </CustomText>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailLabel}>
+                        Client Loyalty
+                      </CustomText>
+                    </SlideFadeIn>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailValue}>
+                        {formatCount(item?.netCommission?.total)}
+                      </CustomText>
+                    </SlideFadeIn>
                   </View>
                   <View style={styles.detailItem}>
-                    <CustomText style={styles.detailLabel}>Broker</CustomText>
-                    <CustomText style={styles.detailValue}>
-                      {formatCount(item?.brokerReferral?.total)}
-                    </CustomText>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailLabel}>Broker</CustomText>
+                    </SlideFadeIn>
+                    <SlideFadeIn>
+                      <CustomText style={styles.detailValue}>
+                        {formatCount(item?.brokerReferral?.total)}
+                      </CustomText>
+                    </SlideFadeIn>
                   </View>
                 </View>
                 <View style={[styles.divider, { marginBottom: 0 }]} />
@@ -183,19 +212,25 @@ export default function DashboardCard({ title = "" }) {
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={color.primaryColor} />
-                <CustomText style={styles.loadingText}>
-                  Loading summary data...
-                </CustomText>
+                <SlideFadeIn>
+                  <CustomText style={styles.loadingText}>
+                    Loading summary data...
+                  </CustomText>
+                </SlideFadeIn>
               </View>
             ) : (
               <View style={styles.noDataContent}>
                 <NoDataFound width={150} height={150} />
-                <CustomText style={styles.noDataText}>
-                  No summary data available
-                </CustomText>
-                <CustomText style={styles.noDataSubtext}>
-                  Try adjusting your filters or date range
-                </CustomText>
+                <SlideFadeIn>
+                  <CustomText style={styles.noDataText}>
+                    No summary data available
+                  </CustomText>
+                </SlideFadeIn>
+                <SlideFadeIn>
+                  <CustomText style={styles.noDataSubtext}>
+                    Try adjusting your filters or date range
+                  </CustomText>
+                </SlideFadeIn>
               </View>
             )}
           </View>

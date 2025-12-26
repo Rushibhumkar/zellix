@@ -4,6 +4,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const MeetingCard = ({ item, isLoading }) => {
   const [meetingCount, setMeetingCount] = useState({
@@ -53,50 +54,66 @@ const MeetingCard = ({ item, isLoading }) => {
   return (
     <View style={styles.card}>
       {/* ---------- Header ---------- */}
-      <CustomText style={styles.title}>Meetings</CustomText>
+      <SlideFadeIn>
+        <CustomText style={styles.title}>Meetings</CustomText>
+      </SlideFadeIn>
 
       {/* ---------- Dropdown ---------- */}
       <View style={styles.dropdownBox}>
-        <DropdownRNE
-          arrOfObj={[
-            { name: "Weekly", _id: "weekly" },
-            { name: "Monthly", _id: "monthly" },
-            { name: "Yearly", _id: "yearly" },
-          ]}
-          initialValue={"weekly"}
-          keyValueGetOnSelect="_id"
-          keyValueShowInBox="name"
-          label=""
-          placeholder=" "
-          onChange={(a) => handleSelectInterval(a)}
-          labelTextStyle={{ color: "white" }}
-        />
+        <SlideFadeIn>
+          <DropdownRNE
+            arrOfObj={[
+              { name: "Weekly", _id: "weekly" },
+              { name: "Monthly", _id: "monthly" },
+              { name: "Yearly", _id: "yearly" },
+            ]}
+            initialValue={"weekly"}
+            keyValueGetOnSelect="_id"
+            keyValueShowInBox="name"
+            label=""
+            placeholder=" "
+            onChange={(a) => handleSelectInterval(a)}
+            labelTextStyle={{ color: "white" }}
+          />
+        </SlideFadeIn>
       </View>
 
       {/* ---------- Status Boxes ---------- */}
       <View style={styles.row}>
         {/* Scheduled */}
         <View style={[styles.statusBox, { backgroundColor: "#3B82F6" }]}>
-          <CustomText style={styles.statusTitle}>Scheduled</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((meetingCount?.schedule || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Scheduled</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((meetingCount?.schedule || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Conducted */}
         <View style={[styles.statusBox, { backgroundColor: "#22C55E" }]}>
-          <CustomText style={styles.statusTitle}>Conducted</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((meetingCount?.conducted || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Conducted</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((meetingCount?.conducted || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Rescheduled */}
         <View style={[styles.statusBox, { backgroundColor: "#F97316" }]}>
-          <CustomText style={styles.statusTitle}>Rescheduled</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((meetingCount?.reschedule || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Rescheduled</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((meetingCount?.reschedule || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
     </View>

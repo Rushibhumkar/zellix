@@ -137,9 +137,12 @@ const AdvanceSearch = () => {
     a?.name === b?.name ? 0 : a?.name < b?.name ? -1 : 1
   );
   const { params } = useRoute();
+  const sourceTab = params?.sourceTab || "lead";
+
   const [category, setCategory] = useState<"booking" | "meeting" | "lead">(
-    params?.type ?? ""
-  ); //booking,meeting,lead
+    params?.type ?? "lead"
+  );
+
   const [isLoading, setIsLoading] = useState(false);
   const onlyBooking = category === "booking";
   const onlyLead = category === "lead";
@@ -188,44 +191,31 @@ const AdvanceSearch = () => {
     onSubmit: async (value) => {
       setIsLoading(true);
       try {
-        if (category === "booking") {
-          let sendData = {
-            ...values,
-            ...(values?.code &&
-              values?.code && {
-                clientMobile: `${values?.code}-${values?.mobile}`,
-              }),
-          };
-          // let bookingRes = await getASBooking(sendData)
-          dispatch(setBookingQueryKey(sendData));
-          navigate(routeBooking.bookingNavigator);
-        }
-        if (category === "meeting") {
-          let sendData = {
-            ...values,
-            ...(values?.code &&
-              values?.code && {
-                clientMobile: `${values?.code}-${values?.mobile}`,
-              }),
-          };
-          dispatch(setMeetingQueryKey(sendData));
-          // let meetingRes = await getASMeeting(sendData)
-          // await dispatch(setAdvanceMeeting(meetingRes?.data));
-          navigate(routeMeeting.MeetingsNavigator);
-        }
-        if (category === "lead") {
-          let sendData = {
-            ...values,
-            individual: teamOption === "myLead" ? true : false,
-          };
+        const sendData = { ...values };
 
-          await dispatch(setLeadQueryKey(sendData));
-          // let meetingRes = await getASLead(sendData)
-          // await dispatch(setAdvanceLead(meetingRes?.data));
-          navigate(routeLead.leadNavigator);
+        if (category === "booking") {
+          dispatch(setBookingQueryKey(sendData));
+          navigate("BookingNavigator");
+        } else if (category === "meeting") {
+          dispatch(setMeetingQueryKey(sendData));
+          navigate("MeetingsNavigator");
+        } else if (category === "lead") {
+          dispatch(
+            setLeadQueryKey({
+              ...sendData,
+              type: "lead",
+            })
+          );
+
+          navigate("Dashboard", {
+            screen: sourceTab === "calling_data" ? "allLead" : "allLead2",
+            params: {
+              screen: "allLead",
+            },
+          });
         }
       } catch (error) {
-        myConsole("error in bookingRes", error);
+        console.log("error in bookingRes", error);
       } finally {
         setIsLoading(false);
       }

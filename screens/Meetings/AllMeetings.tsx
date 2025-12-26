@@ -40,6 +40,7 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -346,85 +347,99 @@ const MeetingRowItem = ({
   bgColor = "#fff",
 }) => {
   return (
-    <TouchableOpacity
-      style={[
-        styles.mainlistcontainer,
-        {
-          // backgroundColor: selected ? "rgba(252, 244, 227, 1)" : "#FCFAFA",
-          marginTop: index === 0 ? 25 : 12,
-          backgroundColor: selected ? "rgba(252, 244, 227, 1)" : bgColor,
-        },
-      ]}
-      activeOpacity={0.5}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <View style={{ width: "36%" }}>
-        <CustomText
-          style={{ color: color.mainTxtColor, fontWeight: "600", fontSize: 14 }}
-        >
-          {item?.lead?.clientName}
-        </CustomText>
-        <CustomText
-          style={{
-            color: color.mainTxtColor,
-            fontWeight: "300",
-            fontSize: 14,
-          }}
-        >
-          {item?.productPitch}
-        </CustomText>
-      </View>
-      <View style={{ width: "32%", alignItems: "center" }}>
-        <CustomText
-          style={{
-            color: color.mainTxtColor,
-            fontWeight: "600",
-            fontSize: 14,
-            textTransform: "capitalize",
-          }}
-        >
-          {item?.meetings[item?.meetings?.length - 1]?.status}
-        </CustomText>
-        <CustomText
-          style={{ color: color.strokeColor, fontWeight: "300", fontSize: 14 }}
-        >
-          <CustomText style={{ color: color.mainTxtColor }}>
-            {`${item?.createdBy?.name} (${item?.createdBy?.role
-              ?.replace(/_/g, " ")
-              .replace(/\b\w/g, (char) => char.toUpperCase())})`}
+    <SlideFadeIn>
+      <TouchableOpacity
+        style={[
+          styles.mainlistcontainer,
+          {
+            // backgroundColor: selected ? "rgba(252, 244, 227, 1)" : "#FCFAFA",
+            marginTop: index === 0 ? 25 : 12,
+            backgroundColor: selected ? "rgba(252, 244, 227, 1)" : bgColor,
+          },
+        ]}
+        activeOpacity={0.5}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        <View style={{ width: "36%" }}>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+          >
+            {item?.lead?.clientName}
           </CustomText>
-        </CustomText>
-      </View>
-      <View style={{ width: "32%", alignItems: "flex-end" }}>
-        <CustomText
-          style={{ color: color.mainTxtColor, fontWeight: "600", fontSize: 12 }}
-        >
-          Scheduled
-        </CustomText>
-        {item?.scheduleDate === "Schedule Date" ? (
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "300",
+              fontSize: 14,
+            }}
+          >
+            {item?.productPitch}
+          </CustomText>
+        </View>
+        <View style={{ width: "32%", alignItems: "center" }}>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 14,
+              textTransform: "capitalize",
+            }}
+          >
+            {item?.meetings[item?.meetings?.length - 1]?.status}
+          </CustomText>
           <CustomText
             style={{
               color: color.strokeColor,
               fontWeight: "300",
-              fontSize: 12,
+              fontSize: 14,
             }}
           >
-            Schedule Date
+            <CustomText style={{ color: color.mainTxtColor }}>
+              {`${item?.createdBy?.name} (${item?.createdBy?.role
+                ?.replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())})`}
+            </CustomText>
           </CustomText>
-        ) : (
+        </View>
+        <View style={{ width: "32%", alignItems: "flex-end" }}>
           <CustomText
             style={{
               color: color.mainTxtColor,
-              fontWeight: "400",
+              fontWeight: "600",
               fontSize: 12,
             }}
           >
-            {moment(item?.scheduleDate).format("DD/MM/YYYY")}
+            Scheduled
           </CustomText>
-        )}
-      </View>
-    </TouchableOpacity>
+          {item?.scheduleDate === "Schedule Date" ? (
+            <CustomText
+              style={{
+                color: color.strokeColor,
+                fontWeight: "300",
+                fontSize: 12,
+              }}
+            >
+              Schedule Date
+            </CustomText>
+          ) : (
+            <CustomText
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 12,
+              }}
+            >
+              {moment(item?.scheduleDate).format("DD/MM/YYYY")}
+            </CustomText>
+          )}
+        </View>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

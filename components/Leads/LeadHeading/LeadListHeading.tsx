@@ -3,6 +3,7 @@ import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Container from "../../../myComponents/Container/Container";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 interface LeadListHeadingProps {
   noText: string;
@@ -28,19 +29,27 @@ const LeadListHeading: React.FC<LeadListHeadingProps> = ({
         style={styles.headingContainer}
       >
         <View style={{ width: "10%" }}>
-          <CustomText style={styles.headingText}>{noText}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>{noText}</CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={{ width: "36%" }}>
-          <CustomText style={styles.headingText}>{nameText}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>{nameText}</CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={{ width: "27%", alignItems: "center" }}>
-          <CustomText style={styles.headingText}>{typeText}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>{typeText}</CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={{ width: "27%", alignItems: "center" }}>
-          <CustomText style={styles.headingText}>{statusText}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>{statusText}</CustomText>
+          </SlideFadeIn>
         </View>
       </LinearGradient>
     </Container>

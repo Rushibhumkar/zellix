@@ -23,6 +23,7 @@ import { logOut } from "../../services/authApi/auth";
 import { removeItemValue } from "../../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../../redux/action";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
@@ -83,7 +84,7 @@ const DashbordHeader = () => {
           ]}
         >
           {/* Left Side — User Info */}
-          <View style={styles.leftContainer}>
+          <SlideFadeIn style={styles.leftContainer}>
             {/* USER NAME */}
             {isLoading ? (
               <SkeletonView
@@ -128,25 +129,28 @@ const DashbordHeader = () => {
                 {user?.email || ""}
               </CustomText>
             )}
-          </View>
+          </SlideFadeIn>
 
           {/* Right Side — Icons */}
-          <View style={styles.iconWrapper}>
-            <Pressable
-              onPress={() => navigate("Notification")}
-              style={styles.iconBtn}
-            >
-              <View style={styles.iconBadge} />
-              <Feather name="bell" size={22} color="#fff" />
-            </Pressable>
-            <Pressable
-              onPress={() => setMenuVisible(true)}
-              style={styles.iconBtn}
-            >
-              <Feather name="menu" size={22} color="#fff" />
-            </Pressable>
-          </View>
+          <SlideFadeIn from={-10}>
+            <View style={styles.iconWrapper}>
+              <Pressable
+                onPress={() => navigate("Notification")}
+                style={styles.iconBtn}
+              >
+                <View style={styles.iconBadge} />
+                <Feather name="bell" size={22} color="#fff" />
+              </Pressable>
+              <Pressable
+                onPress={() => setMenuVisible(true)}
+                style={styles.iconBtn}
+              >
+                <Feather name="menu" size={22} color="#fff" />
+              </Pressable>
+            </View>
+          </SlideFadeIn>
         </View>
+
         <MenuModal
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}

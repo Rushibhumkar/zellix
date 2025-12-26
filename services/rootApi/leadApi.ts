@@ -21,7 +21,6 @@ export const addLead = (data, toast) => {
       .post("/api/lead", data)
       // .then((res) => res?.data)
       .then((res) => {
-        myConsole("res?.data", res?.data);
         // popUpConfToast.successMessage(res?.data)
         return res?.data;
       })
@@ -172,7 +171,6 @@ export const assigningUser = ({ srManager = null, search = null }) => {
       },
     })
     .then((res) => {
-      myConsole("res?.data", res?.data);
       return res?.data;
     })
     .catch((err) => {

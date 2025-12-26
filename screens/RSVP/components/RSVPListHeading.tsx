@@ -3,6 +3,7 @@ import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Container from "../../../myComponents/Container/Container";
 import CustomText from "../../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const RSVPListHeading = () => {
   return (
@@ -14,13 +15,21 @@ const RSVPListHeading = () => {
         style={styles.headingContainer}
       >
         <View style={{ width: "36%" }}>
-          <CustomText style={styles.headingText}>Client Name</CustomText>
-          <CustomText style={styles.headingText}>Client Mobile</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Client Name</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Client Mobile</CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={{ width: "36%", alignItems: "center" }}>
-          <CustomText style={styles.headingText}>Response Status</CustomText>
-          <CustomText style={styles.headingText}>Attend Status</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Response Status</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Attend Status</CustomText>
+          </SlideFadeIn>
         </View>
 
         <View
@@ -30,8 +39,12 @@ const RSVPListHeading = () => {
             paddingRight: 8,
           }}
         >
-          <CustomText style={styles.headingText}>Date</CustomText>
-          <CustomText style={styles.headingText}>Time</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Date</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Time</CustomText>
+          </SlideFadeIn>
         </View>
       </LinearGradient>
     </Container>

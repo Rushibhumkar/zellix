@@ -17,6 +17,7 @@ const Card = ({ item, loading }: any) => {
   const SingleCard = ({ count, title, onPress, isLoading }: any) => {
     const progress = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(-20)).current;
 
     useEffect(() => {
       if (!isLoading) {
@@ -46,11 +47,18 @@ const Card = ({ item, loading }: any) => {
           useNativeDriver: false,
         }).start();
 
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }).start();
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+        ]).start();
       }
     }, [isLoading]);
 
@@ -108,12 +116,17 @@ const Card = ({ item, loading }: any) => {
         onPress={onPress}
         activeOpacity={0.8}
       >
-        <View style={styles.rowAlign}>
+        <Animated.View
+          style={[
+            styles.rowAlign,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateX: slideAnim }],
+            },
+          ]}
+        >
           <Animated.View
-            style={[
-              styles.iconBox,
-              { backgroundColor: `${iconColor}1A`, opacity: fadeAnim },
-            ]}
+            style={[styles.iconBox, { backgroundColor: `${iconColor}1A` }]}
           >
             {title === "Leads" && (
               <Feather name="users" size={20} color={iconColor} />
@@ -129,13 +142,13 @@ const Card = ({ item, loading }: any) => {
             )}
           </Animated.View>
 
-          <Animated.View style={[styles.textBox, { opacity: fadeAnim }]}>
+          <Animated.View style={styles.textBox}>
             <CustomText style={styles.titleText}>{title}</CustomText>
             <CustomText style={styles.countText}>
               {formatCount(count)}
             </CustomText>
           </Animated.View>
-        </View>
+        </Animated.View>
 
         <Animated.View
           style={[

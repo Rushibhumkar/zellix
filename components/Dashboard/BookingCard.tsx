@@ -5,6 +5,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const BookingCard = ({ item }) => {
   const [bookingCount, setBookingCount] = useState({
@@ -52,49 +53,64 @@ const BookingCard = ({ item }) => {
   return (
     <View style={styles.card}>
       {/* ---------- Header ---------- */}
-      <CustomText style={styles.title}>Booking</CustomText>
+      <SlideFadeIn>
+        <CustomText style={styles.title}>Booking</CustomText>
+      </SlideFadeIn>
 
       {/* ---------- Dropdown ---------- */}
-      <DropdownRNE
-        arrOfObj={[
-          { name: "Weekly", _id: "weekly" },
-          { name: "Monthly", _id: "monthly" },
-          { name: "Yearly", _id: "yearly" },
-        ]}
-        initialValue={"weekly"}
-        keyValueGetOnSelect="_id"
-        keyValueShowInBox="name"
-        label=""
-        placeholder=" "
-        onChange={(a) => handleSelectInterval(a)}
-        labelTextStyle={{ color: "white" }}
-        containerStyle={styles.dropdownBox}
-      />
-
+      <SlideFadeIn>
+        <DropdownRNE
+          arrOfObj={[
+            { name: "Weekly", _id: "weekly" },
+            { name: "Monthly", _id: "monthly" },
+            { name: "Yearly", _id: "yearly" },
+          ]}
+          initialValue={"weekly"}
+          keyValueGetOnSelect="_id"
+          keyValueShowInBox="name"
+          label=""
+          placeholder=" "
+          onChange={(a) => handleSelectInterval(a)}
+          labelTextStyle={{ color: "white" }}
+          containerStyle={styles.dropdownBox}
+        />
+      </SlideFadeIn>
       {/* ---------- Status Blocks ---------- */}
       <View style={styles.row}>
         {/* Approved */}
         <View style={[styles.statusBox, { backgroundColor: "#22C55E" }]}>
-          <CustomText style={styles.statusTitle}>Approved</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((bookingCount?.approved || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Approved</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((bookingCount?.approved || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Rejected */}
         <View style={[styles.statusBox, { backgroundColor: "#EF4444" }]}>
-          <CustomText style={styles.statusTitle}>Rejected</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((bookingCount?.rejected || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Rejected</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((bookingCount?.rejected || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Pending */}
         <View style={[styles.statusBox, { backgroundColor: "#3B82F6" }]}>
-          <CustomText style={styles.statusTitle}>Pending</CustomText>
-          <CustomText style={styles.statusValue}>
-            {Math.round((bookingCount?.pending || 0) * 100)}%
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.statusTitle}>Pending</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.statusValue}>
+              {Math.round((bookingCount?.pending || 0) * 100)}%
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
     </View>

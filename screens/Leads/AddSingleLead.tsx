@@ -71,7 +71,6 @@ const AddSingleLead = ({ data }) => {
           ...restData,
           whatsapp: `https://wa.me/${whatsapp}`,
         };
-        myConsole("payload_to_send", sendData);
         if (isUpdate) {
           let updateLeadRes = await updateLead(
             {

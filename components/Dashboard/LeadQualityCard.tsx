@@ -12,6 +12,7 @@ import { shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetLeadQuality } from "../../hooks/useCRMgetQuerry";
 import { formatCount } from "../../utils/commonFunctions";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const LeadQualityCard = ({ onRefresh }: any) => {
   const [startDate, setStartDate] = useState(
@@ -56,23 +57,27 @@ const LeadQualityCard = ({ onRefresh }: any) => {
   return (
     <View style={styles.card}>
       {/* ---------- Title ---------- */}
-      <CustomText style={styles.title}>Lead Quality</CustomText>
+      <SlideFadeIn from={-10}>
+        <CustomText style={styles.title}>Lead Quality</CustomText>
+      </SlideFadeIn>
 
       {/* ---------- Date Pickers ---------- */}
-      <View style={styles.dateRow}>
-        <DatePickerExpo
-          title="Start Date"
-          boxContainerStyle={styles.dateBox}
-          onSelect={setStartDate}
-          initialValue={startDate}
-        />
-        <DatePickerExpo
-          title="End Date"
-          boxContainerStyle={styles.dateBox}
-          onSelect={setEndDate}
-          initialValue={endDate}
-        />
-      </View>
+      <SlideFadeIn from={-10}>
+        <View style={styles.dateRow}>
+          <DatePickerExpo
+            title="Start Date"
+            boxContainerStyle={styles.dateBox}
+            onSelect={setStartDate}
+            initialValue={startDate}
+          />
+          <DatePickerExpo
+            title="End Date"
+            boxContainerStyle={styles.dateBox}
+            onSelect={setEndDate}
+            initialValue={endDate}
+          />
+        </View>
+      </SlideFadeIn>
 
       {/* ---------- Loader ---------- */}
       {isFetching && (
@@ -89,73 +94,85 @@ const LeadQualityCard = ({ onRefresh }: any) => {
       {/* ---------- Chart ---------- */}
       {!isFetching && total > 0 && (
         <>
-          <View style={styles.chartWrapper}>
-            <PieChart
-              data={chartData}
-              donut
-              radius={80}
-              innerRadius={45}
-              strokeColor="#F8FAFC"
-              strokeWidth={2}
-              centerLabelComponent={() => (
-                <View style={styles.centerLabel}>
-                  <Text style={styles.centerValue}>{formatCount(total)}</Text>
-                  <Text style={styles.centerText}>Total</Text>
-                </View>
-              )}
-            />
-          </View>
+          <SlideFadeIn from={0}>
+            <View style={styles.chartWrapper}>
+              <PieChart
+                data={chartData}
+                donut
+                radius={80}
+                innerRadius={45}
+                strokeColor="#F8FAFC"
+                strokeWidth={2}
+                centerLabelComponent={() => (
+                  <View style={styles.centerLabel}>
+                    <Text style={styles.centerValue}>{formatCount(total)}</Text>
+                    <Text style={styles.centerText}>Total</Text>
+                  </View>
+                )}
+              />
+            </View>
+          </SlideFadeIn>
 
           {/* ---------- Legend ---------- */}
-          <View style={styles.legendContainer}>
-            <View style={styles.legendColumn}>
-              {/* Qualified */}
-              <View style={styles.legendItem}>
-                <View style={[styles.square, { backgroundColor: "#3B82F6" }]} />
-                <View style={styles.labelValueView}>
-                  <Text style={styles.legendLabel}>Qualified</Text>
-                  <Text style={styles.legendValue}>
-                    {formatCount(leadCount?.Qualified) || 0}
-                  </Text>
+          <SlideFadeIn from={-10}>
+            <View style={styles.legendContainer}>
+              <View style={styles.legendColumn}>
+                {/* Qualified */}
+                <View style={styles.legendItem}>
+                  <View
+                    style={[styles.square, { backgroundColor: "#3B82F6" }]}
+                  />
+                  <View style={styles.labelValueView}>
+                    <Text style={styles.legendLabel}>Qualified</Text>
+                    <Text style={styles.legendValue}>
+                      {formatCount(leadCount?.Qualified) || 0}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Pending */}
+                <View style={styles.legendItem}>
+                  <View
+                    style={[styles.square, { backgroundColor: "#93C5FD" }]}
+                  />
+                  <View style={styles.labelValueView}>
+                    <Text style={styles.legendLabel}>Pending</Text>
+                    <Text style={styles.legendValue}>
+                      {formatCount(leadCount?.Pending) || 0}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
-              {/* Pending */}
-              <View style={styles.legendItem}>
-                <View style={[styles.square, { backgroundColor: "#93C5FD" }]} />
-                <View style={styles.labelValueView}>
-                  <Text style={styles.legendLabel}>Pending</Text>
-                  <Text style={styles.legendValue}>
-                    {formatCount(leadCount?.Pending) || 0}
-                  </Text>
+              <View style={styles.legendColumn}>
+                {/* Disqualified */}
+                <View style={styles.legendItem}>
+                  <View
+                    style={[styles.square, { backgroundColor: "#60A5FA" }]}
+                  />
+                  <View style={styles.labelValueView}>
+                    <Text style={styles.legendLabel}>Disqualified</Text>
+                    <Text style={styles.legendValue}>
+                      {formatCount(leadCount?.Disqualified) || 0}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Lost */}
+                <View style={styles.legendItem}>
+                  <View
+                    style={[styles.square, { backgroundColor: "#E5E7EB" }]}
+                  />
+                  <View style={styles.labelValueView}>
+                    <Text style={styles.legendLabel}>Lost</Text>
+                    <Text style={styles.legendValue}>
+                      {formatCount(leadCount?.Lost) || 0}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
-
-            <View style={styles.legendColumn}>
-              {/* Disqualified */}
-              <View style={styles.legendItem}>
-                <View style={[styles.square, { backgroundColor: "#60A5FA" }]} />
-                <View style={styles.labelValueView}>
-                  <Text style={styles.legendLabel}>Disqualified</Text>
-                  <Text style={styles.legendValue}>
-                    {formatCount(leadCount?.Disqualified) || 0}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Lost */}
-              <View style={styles.legendItem}>
-                <View style={[styles.square, { backgroundColor: "#E5E7EB" }]} />
-                <View style={styles.labelValueView}>
-                  <Text style={styles.legendLabel}>Lost</Text>
-                  <Text style={styles.legendValue}>
-                    {formatCount(leadCount?.Lost) || 0}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
+          </SlideFadeIn>
         </>
       )}
     </View>

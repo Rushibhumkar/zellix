@@ -8,6 +8,7 @@ import { WIDTH } from "../../const/deviceInfo";
 import NoDataIcon from "../../assets/svg/NoDataIcon";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const CommissionGraph = ({ isLoading, item }) => {
   const [chart, setChart] = useState([]);
@@ -56,47 +57,55 @@ const CommissionGraph = ({ isLoading, item }) => {
         <View>
           {/* ---------- Header ---------- */}
           <View style={styles.headerRow}>
-            <CustomText style={styles.title}>Commission</CustomText>
-            <View style={styles.dropdownBox}>
-              <DropdownRNE
-                arrOfObj={[
-                  { name: "Weekly", _id: "weeklyCommission" },
-                  { name: "Monthly", _id: "monthlyCommission" },
-                  { name: "Yearly", _id: "yearlyCommission" },
-                ]}
-                initialValue={"weeklyCommission"}
-                keyValueGetOnSelect="_id"
-                keyValueShowInBox="name"
-                label=""
-                placeholder=" "
-                onChange={(a) => handleSelect(a)}
-                labelTextStyle={{ color: "white" }}
-              />
-            </View>
+            <SlideFadeIn>
+              <CustomText style={styles.title}>Commission</CustomText>
+            </SlideFadeIn>
+            <SlideFadeIn>
+              <View style={styles.dropdownBox}>
+                <DropdownRNE
+                  arrOfObj={[
+                    { name: "Weekly", _id: "weeklyCommission" },
+                    { name: "Monthly", _id: "monthlyCommission" },
+                    { name: "Yearly", _id: "yearlyCommission" },
+                  ]}
+                  initialValue={"weeklyCommission"}
+                  keyValueGetOnSelect="_id"
+                  keyValueShowInBox="name"
+                  label=""
+                  placeholder=" "
+                  onChange={(a) => handleSelect(a)}
+                  labelTextStyle={{ color: "white" }}
+                />
+              </View>
+            </SlideFadeIn>
           </View>
 
           {/* ---------- Bar Chart ---------- */}
           {chart?.length > 0 ? (
-            <View style={styles.chartWrapper}>
-              <BarChart
-                barWidth={26}
-                barBorderRadius={6}
-                frontColor="#177AD5"
-                data={chart}
-                yAxisThickness={0}
-                xAxisThickness={0}
-                noOfSections={5}
-                yAxisLabelSuffix="L"
-                width={WIDTH - 140}
-                hideRules
-              />
-            </View>
+            <SlideFadeIn>
+              <View style={styles.chartWrapper}>
+                <BarChart
+                  barWidth={26}
+                  barBorderRadius={6}
+                  frontColor="#177AD5"
+                  data={chart}
+                  yAxisThickness={0}
+                  xAxisThickness={0}
+                  noOfSections={5}
+                  yAxisLabelSuffix="L"
+                  width={WIDTH - 140}
+                  hideRules
+                />
+              </View>
+            </SlideFadeIn>
           ) : (
             <View style={styles.noDataContainer}>
-              <NoDataIcon width={120} height={120} />
-              <CustomText style={styles.noDataText}>
-                No data available
-              </CustomText>
+              <SlideFadeIn>
+                <NoDataIcon width={120} height={120} />
+                <CustomText style={styles.noDataText}>
+                  No data available
+                </CustomText>
+              </SlideFadeIn>
             </View>
           )}
         </View>

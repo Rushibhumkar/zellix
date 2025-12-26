@@ -50,7 +50,6 @@ const InterviewMain = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useGetAllCandidates({ search: "" });
-  myConsole("candidatessss", candidates);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);

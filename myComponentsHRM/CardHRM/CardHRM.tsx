@@ -7,6 +7,7 @@ import { color } from "../../const/color";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetAttendanceChart } from "../../hooks/useGetQuerryHRM";
 import { formatCount } from "../../utils/commonFunctions";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const CARD_CONFIG = [
   {
@@ -52,12 +53,6 @@ const CardHRM = () => {
     isEnable: true,
   });
 
-  useEffect(() => {
-    if (data) {
-      myConsole("getAttendanceChartss", data);
-    }
-  }, [data]);
-
   if (!data || isLoading || isError) {
     return null;
   }
@@ -77,14 +72,20 @@ const CardHRM = () => {
   );
 };
 
-const SingleCard = ({ number, title, icon, color }) => (
+const SingleCard = ({ number, title, icon, color }: any) => (
   <TouchableOpacity style={styles.cardContainer} activeOpacity={0.85}>
-    <View style={[styles.iconBox, { backgroundColor: color }]}>
-      <MaterialCommunityIcons name={icon} size={24} color="#fff" />
-    </View>
+    <SlideFadeIn>
+      <View style={[styles.iconBox, { backgroundColor: color }]}>
+        <MaterialCommunityIcons name={icon} size={24} color="#fff" />
+      </View>
+    </SlideFadeIn>
     <View style={styles.detailsBox}>
-      <CustomText style={styles.numberText}>{number}</CustomText>
-      <CustomText style={styles.titleText}>{title}</CustomText>
+      <SlideFadeIn>
+        <CustomText style={styles.numberText}>{number}</CustomText>
+      </SlideFadeIn>
+      <SlideFadeIn>
+        <CustomText style={styles.titleText}>{title}</CustomText>
+      </SlideFadeIn>
     </View>
   </TouchableOpacity>
 );

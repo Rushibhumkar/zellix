@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 import { Entypo } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import {
   shadowSecondaryColor,
 } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const LeadProjectCard = ({ onRefresh }: any) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -65,10 +67,13 @@ const LeadProjectCard = ({ onRefresh }: any) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View>
-          <CustomText style={styles.title}>Lead Project Wise</CustomText>
-          <CustomText style={styles.totalText}>Total: {total}</CustomText>
-        </View>
+        <SlideFadeIn from={-10}>
+          <View>
+            <CustomText style={styles.title}>Lead Project Wise</CustomText>
+            <CustomText style={styles.totalText}>Total: {total}</CustomText>
+          </View>
+        </SlideFadeIn>
+
         <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
           <Entypo
             name="dots-three-vertical"
@@ -87,80 +92,87 @@ const LeadProjectCard = ({ onRefresh }: any) => {
       ) : errorLeadProjectWise ? (
         <NoDataFound width={220} height={240} />
       ) : (
-        <LineChart
-          data={transformedData}
-          thickness={2}
-          color={color.saffronMango}
-          curved
-          hideRules={false}
-          yAxisColor="#ccc"
-          xAxisColor="#ccc"
-          noOfSections={4}
-          maxValue={Math.max(...transformedData.map((d) => d.value), 5)}
-          areaChart={false}
-          //   showDataPoint
-          dataPointsColor={color.mainTxtColor}
-          startFillColor="#fff"
-          startOpacity={0.1}
-          endOpacity={0.1}
-          yAxisTextStyle={{ color: color.strokeColor }}
-          xAxisLabelTextStyle={{
-            color: color.strokeColor,
-            transform: [{ rotate: "-25deg" }],
-          }}
-          isAnimated
-          showValuesAsDataPointsText
-          dataPointsHeight={6}
-          dataPointsWidth={6}
-          textFontSize={12}
-          spacing={40}
-        />
+        <SlideFadeIn from={0}>
+          <LineChart
+            data={transformedData}
+            thickness={2}
+            color={color.saffronMango}
+            curved
+            hideRules={false}
+            yAxisColor="#ccc"
+            xAxisColor="#ccc"
+            noOfSections={4}
+            maxValue={Math.max(...transformedData.map((d) => d.value), 5)}
+            areaChart={false}
+            //   showDataPoint
+            dataPointsColor={color.mainTxtColor}
+            startFillColor="#fff"
+            startOpacity={0.1}
+            endOpacity={0.1}
+            yAxisTextStyle={{ color: color.strokeColor }}
+            xAxisLabelTextStyle={{
+              color: color.strokeColor,
+              transform: [{ rotate: "-25deg" }],
+            }}
+            isAnimated
+            showValuesAsDataPointsText
+            dataPointsHeight={6}
+            dataPointsWidth={6}
+            textFontSize={12}
+            spacing={40}
+          />
+        </SlideFadeIn>
       )}
 
       {showDatePopup && (
-        <View style={styles.datePopup}>
-          <CustomText style={styles.dateLabel}>Start Date</CustomText>
-          <TouchableOpacity
-            onPress={() => setShowStartPicker(true)}
-            style={styles.dateBox}
-          >
-            <CustomText>{startDate.toLocaleDateString("en-GB")}</CustomText>
-          </TouchableOpacity>
+        <Pressable
+          style={styles.backdrop}
+          onPress={() => setShowDatePopup(false)}
+        >
+          <View style={styles.datePopup}>
+            <CustomText style={styles.dateLabel}>Start Date</CustomText>
+            <TouchableOpacity
+              onPress={() => setShowStartPicker(true)}
+              style={styles.dateBox}
+            >
+              <CustomText>{startDate.toLocaleDateString("en-GB")}</CustomText>
+            </TouchableOpacity>
 
-          <CustomText style={styles.dateLabel}>End Date</CustomText>
-          <TouchableOpacity
-            onPress={() => setShowEndPicker(true)}
-            style={styles.dateBox}
-          >
-            <CustomText>{endDate.toLocaleDateString("en-GB")}</CustomText>
-          </TouchableOpacity>
+            <CustomText style={styles.dateLabel}>End Date</CustomText>
+            <TouchableOpacity
+              onPress={() => setShowEndPicker(true)}
+              style={styles.dateBox}
+            >
+              <CustomText>{endDate.toLocaleDateString("en-GB")}</CustomText>
+            </TouchableOpacity>
 
-          {showStartPicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              onChange={(e, selectedDate) => {
-                setShowStartPicker(false);
-                if (selectedDate) setStartDate(selectedDate);
-              }}
-              textColor={color.mainTxtColor}
-            />
-          )}
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  setShowStartPicker(false);
+                  if (selectedDate) setStartDate(selectedDate);
+                }}
+                textColor={color.mainTxtColor}
+              />
+            )}
 
-          {showEndPicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              onChange={(e, selectedDate) => {
-                setShowEndPicker(false);
-                if (selectedDate) setEndDate(selectedDate);
-              }}
-              textColor={color.mainTxtColor}
-            />
-          )}
-        </View>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  setShowEndPicker(false);
+                  if (selectedDate) setEndDate(selectedDate);
+                }}
+                textColor={color.mainTxtColor}
+              />
+            )}
+          </View>
+        </Pressable>
       )}
     </View>
   );
@@ -179,6 +191,14 @@ const styles = StyleSheet.create({
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
     borderLeftColor: color.mainTxtColorFade,
+  },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
   header: {
     flexDirection: "row",

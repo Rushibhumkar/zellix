@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const MeetingListHeading = () => {
   return (
@@ -14,20 +15,32 @@ const MeetingListHeading = () => {
       >
         {/* Left Section */}
         <View style={styles.column}>
-          <CustomText style={styles.headingText}>Client Name</CustomText>
-          <CustomText style={styles.subText}>Product Pitch</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Client Name</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.subText}>Product Pitch</CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Middle Section */}
         <View style={[styles.column, styles.centerColumn]}>
-          <CustomText style={styles.headingText}>Status</CustomText>
-          <CustomText style={styles.subText}>Created By</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Status</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.subText}>Created By</CustomText>
+          </SlideFadeIn>
         </View>
 
         {/* Right Section */}
         <View style={[styles.column, styles.rightColumn]}>
-          <CustomText style={styles.headingText}>Scheduled</CustomText>
-          <CustomText style={styles.subText}>Schedule Date</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Scheduled</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.subText}>Schedule Date</CustomText>
+          </SlideFadeIn>
         </View>
       </LinearGradient>
     </View>

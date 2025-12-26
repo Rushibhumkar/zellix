@@ -43,6 +43,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { useRoute } from "@react-navigation/native";
 import { sizes } from "../../const";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -258,7 +259,10 @@ const AllLeads = ({ tabType }: any) => {
           }, 100);
         }}
         onPressFilter={() =>
-          navigation.navigate("AdvanceSearch", { type: "lead" })
+          navigation.navigate("AdvanceSearch", {
+            type: "lead",
+            sourceTab: tabType,
+          })
         }
         onPressAdd={() => {
           if (canAddLead) navigation.navigate("AddLeads");
@@ -300,7 +304,10 @@ const AllLeads = ({ tabType }: any) => {
                   : () => toggleModalAssignLead()
               }
               onPressToFilter={() =>
-                navigation.navigate("AdvanceSearch", { type: "lead" })
+                navigation.navigate("AdvanceSearch", {
+                  type: "lead",
+                  sourceTab: tabType,
+                })
               }
               onCloseSearch={
                 leadQueryKey !== null
@@ -451,106 +458,108 @@ const AllLeads = ({ tabType }: any) => {
 const LeadRowItem = React.memo(
   ({ item, index, onPress, onLongPress, selected, bgColor }: any) => {
     return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        style={[
-          styles.mainlistcontainer,
-          {
-            marginTop: index === 0 ? 25 : 12,
-            backgroundColor: selected
-              ? color.primary200
-              : bgColor
-              ? bgColor
-              : "white",
-          },
-        ]}
-        onPress={onPress}
-        onLongPress={onLongPress}
-      >
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ width: "8%", paddingEnd: 2 }}>
-            {index === "S.No" ? (
+      <SlideFadeIn>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={[
+            styles.mainlistcontainer,
+            {
+              marginTop: index === 0 ? 25 : 12,
+              backgroundColor: selected
+                ? color.primary200
+                : bgColor
+                ? bgColor
+                : "white",
+            },
+          ]}
+          onPress={onPress}
+          onLongPress={onLongPress}
+        >
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ width: "8%", paddingEnd: 2 }}>
+              {index === "S.No" ? (
+                <CustomText
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "500",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  No.
+                </CustomText>
+              ) : (
+                <CustomText
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "500",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {index < 9 && `0`}
+                  {index + 1}
+                </CustomText>
+              )}
+            </View>
+            <View style={{ width: "37%", paddingEnd: 2 }}>
               <CustomText
+                numberOfLines={1}
                 style={{
                   color: color.mainTxtColor,
-                  fontWeight: "500",
+                  fontWeight: "700",
+                  fontSize: 15,
                   textTransform: "capitalize",
                 }}
               >
-                No.
+                {item?.clientName}
               </CustomText>
-            ) : (
               <CustomText
+                numberOfLines={1}
                 style={{
-                  color: color.mainTxtColor,
-                  fontWeight: "500",
+                  color: color.strokeColor,
+                  fontWeight: "400",
+                  marginTop: 5,
                   textTransform: "capitalize",
                 }}
               >
-                {index < 9 && `0`}
-                {index + 1}
+                {item?.clientMobile}
               </CustomText>
-            )}
-          </View>
-          <View style={{ width: "37%", paddingEnd: 2 }}>
-            <CustomText
-              numberOfLines={1}
+            </View>
+            <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
+              <CustomText
+                numberOfLines={1}
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "400",
+                  fontSize: 15,
+                  textTransform: "capitalize",
+                }}
+              >
+                {item?.assign?.name}
+              </CustomText>
+            </View>
+            <View
               style={{
-                color: color.mainTxtColor,
-                fontWeight: "700",
-                fontSize: 15,
-                textTransform: "capitalize",
+                width: "25%",
+                alignItems: "flex-start",
+                paddingEnd: 2,
               }}
             >
-              {item?.clientName}
-            </CustomText>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.strokeColor,
-                fontWeight: "400",
-                marginTop: 5,
-                textTransform: "capitalize",
-              }}
-            >
-              {item?.clientMobile}
-            </CustomText>
+              <CustomText
+                numberOfLines={2}
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "400",
+                  fontSize: 15,
+                  textTransform: "capitalize",
+                  //textTransform: "capitalize",
+                }}
+              >
+                {statusObj[item?.status]}
+              </CustomText>
+            </View>
           </View>
-          <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "400",
-                fontSize: 15,
-                textTransform: "capitalize",
-              }}
-            >
-              {item?.assign?.name}
-            </CustomText>
-          </View>
-          <View
-            style={{
-              width: "25%",
-              alignItems: "flex-start",
-              paddingEnd: 2,
-            }}
-          >
-            <CustomText
-              numberOfLines={2}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "400",
-                fontSize: 15,
-                textTransform: "capitalize",
-                //textTransform: "capitalize",
-              }}
-            >
-              {statusObj[item?.status]}
-            </CustomText>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </SlideFadeIn>
     );
   },
   (prev, next) =>

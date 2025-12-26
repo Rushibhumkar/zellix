@@ -12,6 +12,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { color } from "../../const/color";
 import { iconWrapperStyle, shadowPrimaryColor } from "../../const/globalStyle";
 import { LinearGradient } from "expo-linear-gradient";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TTitleHRM {
   title?: string;
@@ -41,31 +42,35 @@ const TitleHRM = ({
       ]}
     >
       <View>
-        <CustomText
-          fontSize={16}
-          fontWeight="600"
-          style={{ color: color.mainTxtColor, marginLeft: 4 }}
-        >
-          {title ?? "  Employees on Leave Today"}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText
+            fontSize={16}
+            fontWeight="600"
+            style={{ color: color.mainTxtColor, marginLeft: 4 }}
+          >
+            {title ?? "  Employees on Leave Today"}
+          </CustomText>
+        </SlideFadeIn>
       </View>
       {!!onPressFilter && (
-        <LinearGradient
-          colors={["#2E67BE", "#4985F2"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{
-            borderRadius: 12,
-            padding: 6,
-            borderColor: "#ffffff29",
-            borderWidth: 2,
-            ...shadowPrimaryColor,
-          }}
-        >
-          <TouchableOpacity onPress={onPressFilter}>
-            <Feather name="filter" size={20} color={color.white} />
-          </TouchableOpacity>
-        </LinearGradient>
+        <SlideFadeIn from={-10}>
+          <LinearGradient
+            colors={["#2E67BE", "#4985F2"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{
+              borderRadius: 12,
+              padding: 6,
+              borderColor: "#ffffff29",
+              borderWidth: 2,
+              ...shadowPrimaryColor,
+            }}
+          >
+            <TouchableOpacity onPress={onPressFilter}>
+              <Feather name="filter" size={20} color={color.white} />
+            </TouchableOpacity>
+          </LinearGradient>
+        </SlideFadeIn>
       )}
     </View>
   );

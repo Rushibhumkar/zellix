@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import DropdownRNE from "../../../myComponents/DropdownRNE/DropdownRNE";
 import HorizontalBarChart from "./HorizontalChart";
@@ -23,6 +17,8 @@ import moment from "moment";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { LinearGradient } from "expo-linear-gradient";
 import { shadowPrimaryColor } from "../../../const/globalStyle";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
+import { formatCount } from "../../../utils/commonFunctions";
 
 export default function GraphData({
   header,
@@ -82,74 +78,95 @@ export default function GraphData({
   return (
     <View style={styles.cardContainer}>
       {/* ---------- Header ---------- */}
-      <CustomText style={styles.headerTitle}>{header}</CustomText>
+      <SlideFadeIn>
+        <CustomText style={styles.headerTitle}>{header}</CustomText>
+      </SlideFadeIn>
 
       {/* ---------- Dropdown ---------- */}
-      <DropdownRNE
-        containerStyle={styles.dropdownBox}
-        arrOfObj={dropdownList}
-        keyValueShowInBox="name"
-        keyValueGetOnSelect="value"
-        onChange={(selectedValue) => {
-          setSelectedItem(selectedValue);
-        }}
-        initialValue={"total"}
-      />
+      <SlideFadeIn>
+        <DropdownRNE
+          containerStyle={styles.dropdownBox}
+          arrOfObj={dropdownList}
+          keyValueShowInBox="name"
+          keyValueGetOnSelect="value"
+          onChange={(selectedValue) => {
+            setSelectedItem(selectedValue);
+          }}
+          initialValue={"total"}
+        />
+      </SlideFadeIn>
 
       {/* ---------- Date Pickers ---------- */}
-      <View style={styles.datePickersContainer}>
-        <DatePickerExpo
-          title="Start Date"
-          boxContainerStyle={styles.datePickerBox}
-          onSelect={setStartDate}
-          initialValue={startDate}
-        />
-        <DatePickerExpo
-          title="End Date"
-          boxContainerStyle={styles.datePickerBox}
-          onSelect={setEndDate}
-          initialValue={endDate}
-        />
-      </View>
+      <SlideFadeIn>
+        <View style={styles.datePickersContainer}>
+          <DatePickerExpo
+            title="Start Date"
+            boxContainerStyle={styles.datePickerBox}
+            onSelect={setStartDate}
+            initialValue={startDate}
+          />
+          <DatePickerExpo
+            title="End Date"
+            boxContainerStyle={styles.datePickerBox}
+            onSelect={setEndDate}
+            initialValue={endDate}
+          />
+        </View>
+      </SlideFadeIn>
 
       {/* ---------- Chart ---------- */}
       {summaryData?.data?.length > 0 && (
-        <View style={{ marginTop: 20 }}>
-          <HorizontalBarChart
-            data={summaryData.data.map((item) => ({
-              label: `${formatLabel(item.status)}: ${item.totalValue}`,
-              value: item.totalValue,
-            }))}
-            maxValue={Math.max(
-              ...summaryData.data.map((item) => item.totalValue),
-              100
-            )}
-          />
-        </View>
+        <SlideFadeIn>
+          <View style={{ marginTop: 20 }}>
+            <HorizontalBarChart
+              data={summaryData.data.map((item) => ({
+                label: `${formatLabel(item.status)}: ${item.totalValue}`,
+                value: item.totalValue,
+              }))}
+              maxValue={Math.max(
+                ...summaryData.data.map((item) => item.totalValue),
+                100
+              )}
+            />
+          </View>
+        </SlideFadeIn>
       )}
 
       {/* ---------- Summary List ---------- */}
       <View style={styles.summaryContainer}>
         {summaryData?.data?.length > 0 ? (
           summaryData?.data?.map((item, index) => (
-            <View key={index} style={styles.rowContainer}>
-              <CustomText style={styles.keyText}>
-                {formatLabel(item.status.substring(0, 25))}
-              </CustomText>
-              <CustomText style={styles.valueText}>
-                {item?.count || "N/A"}
-              </CustomText>
-              <CustomText style={styles.valueText}>
-                {item?.totalValue || "N/A"}
-              </CustomText>
-            </View>
+            <SlideFadeIn key={`${item.status}-${index}`}>
+              <View key={index} style={styles.rowContainer}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "80%",
+                  }}
+                >
+                  <CustomText style={styles.keyText}>
+                    {formatLabel(item.status.substring(0, 25))}
+                  </CustomText>
+                  <CustomText style={styles.valueText}>
+                    {item?.count || "N/A"} :
+                  </CustomText>
+                </View>
+                <CustomText style={styles.valueText}>
+                  {formatCount(item?.totalValue) || "N/A"}
+                </CustomText>
+              </View>
+            </SlideFadeIn>
           ))
         ) : (
           <>
             {isLoading ? (
               <ActivityIndicator />
             ) : (
-              <NoDataFound width={120} height={120} />
+              <SlideFadeIn>
+                <NoDataFound width={120} height={120} />
+              </SlideFadeIn>
             )}
           </>
         )}

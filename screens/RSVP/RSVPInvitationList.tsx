@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useAppToast } from "../../components/AppToast";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const RSVPInvitationList = () => {
   const toast = useAppToast();
@@ -349,38 +350,40 @@ const InvitationRowItem = ({
   index,
 }: any) => {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={onLongPress}
-      activeOpacity={0.6}
-      style={[
-        styles.card,
-        {
-          marginTop: index === 0 ? 25 : 14,
-          backgroundColor: selected ? "rgba(227, 238, 252, 1)" : "#F8F9FC",
-        },
-      ]}
-    >
-      <View style={{ width: "40%", gap: 4 }}>
-        <CustomText style={styles.title}>{item?.clientName}</CustomText>
-        <CustomText style={styles.subTitle}>{item?.clientMobile}</CustomText>
-      </View>
+    <SlideFadeIn>
+      <TouchableOpacity
+        onPress={onPress}
+        onLongPress={onLongPress}
+        activeOpacity={0.6}
+        style={[
+          styles.card,
+          {
+            marginTop: index === 0 ? 25 : 14,
+            backgroundColor: selected ? "rgba(227, 238, 252, 1)" : "#F8F9FC",
+          },
+        ]}
+      >
+        <View style={{ width: "40%", gap: 4 }}>
+          <CustomText style={styles.title}>{item?.clientName}</CustomText>
+          <CustomText style={styles.subTitle}>{item?.clientMobile}</CustomText>
+        </View>
 
-      <View style={{ width: "30%", alignItems: "center", gap: 4 }}>
-        <CustomText style={styles.status}>{item?.responseStatus}</CustomText>
-        <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
-      </View>
+        <View style={{ width: "30%", alignItems: "center", gap: 4 }}>
+          <CustomText style={styles.status}>{item?.responseStatus}</CustomText>
+          <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
+        </View>
 
-      <View style={{ width: "30%", alignItems: "flex-end", gap: 4 }}>
-        <CustomText style={styles.dateLabel}>
-          {moment(item?.dateTime).format("DD/MM/YYYY")}
-        </CustomText>
+        <View style={{ width: "30%", alignItems: "flex-end", gap: 4 }}>
+          <CustomText style={styles.dateLabel}>
+            {moment(item?.dateTime).format("DD/MM/YYYY")}
+          </CustomText>
 
-        <CustomText style={styles.date}>
-          {moment(item?.dateTime).format("hh:mm A")}
-        </CustomText>
-      </View>
-    </TouchableOpacity>
+          <CustomText style={styles.date}>
+            {moment(item?.dateTime).format("hh:mm A")}
+          </CustomText>
+        </View>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

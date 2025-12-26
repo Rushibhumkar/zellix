@@ -12,6 +12,7 @@ import {
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TCustomBtn {
   title: string;
@@ -54,15 +55,17 @@ const CustomBtn = ({
         style={[styles.gradientContainer, gradientContStyle]}
       >
         <View style={styles.textView}>
-          <CustomText
-            style={[
-              styles.text,
-              { color: disabled ? color?.textGray : color.white },
-              textStyle,
-            ]}
-          >
-            {title}
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText
+              style={[
+                styles.text,
+                { color: disabled ? color?.textGray : color.white },
+                textStyle,
+              ]}
+            >
+              {title}
+            </CustomText>
+          </SlideFadeIn>
           {isLoading && (
             <ActivityIndicator
               style={{ marginStart: 4 }}

@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { Entypo } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ import {
   shadowSecondaryColor,
 } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const ClosingLeadProjCard = ({ onRefresh }) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
@@ -64,19 +66,24 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View>
-          <CustomText style={styles.title}>
-            Closing Lead Project Wise
-          </CustomText>
-          <CustomText style={styles.totalText}>Total: {total}</CustomText>
-        </View>
-        <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
-          <Entypo
-            name="dots-three-vertical"
-            size={18}
-            color={color.mainTxtColor}
-          />
-        </TouchableOpacity>
+        <SlideFadeIn>
+          <View>
+            <CustomText style={styles.title}>
+              Closing Lead Project Wise
+            </CustomText>
+            <CustomText style={styles.totalText}>Total: {total}</CustomText>
+          </View>
+        </SlideFadeIn>
+
+        <SlideFadeIn from={20}>
+          <TouchableOpacity onPress={() => setShowDatePopup(!showDatePopup)}>
+            <Entypo
+              name="dots-three-vertical"
+              size={18}
+              color={color.mainTxtColor}
+            />
+          </TouchableOpacity>
+        </SlideFadeIn>
       </View>
 
       {loadingClosingLeadProjectWise ? (
@@ -120,47 +127,52 @@ const ClosingLeadProjCard = ({ onRefresh }) => {
       )}
 
       {showDatePopup && (
-        <View style={styles.datePopup}>
-          <CustomText style={styles.dateLabel}>Start Date</CustomText>
-          <TouchableOpacity
-            onPress={() => setShowStartPicker(true)}
-            style={styles.dateBox}
-          >
-            <CustomText>{startDate.toLocaleDateString("en-GB")}</CustomText>
-          </TouchableOpacity>
+        <Pressable
+          style={styles.backdrop}
+          onPress={() => setShowDatePopup(false)}
+        >
+          <View style={styles.datePopup}>
+            <CustomText style={styles.dateLabel}>Start Date</CustomText>
+            <TouchableOpacity
+              onPress={() => setShowStartPicker(true)}
+              style={styles.dateBox}
+            >
+              <CustomText>{startDate.toLocaleDateString("en-GB")}</CustomText>
+            </TouchableOpacity>
 
-          <CustomText style={styles.dateLabel}>End Date</CustomText>
-          <TouchableOpacity
-            onPress={() => setShowEndPicker(true)}
-            style={styles.dateBox}
-          >
-            <CustomText>{endDate.toLocaleDateString("en-GB")}</CustomText>
-          </TouchableOpacity>
+            <CustomText style={styles.dateLabel}>End Date</CustomText>
+            <TouchableOpacity
+              onPress={() => setShowEndPicker(true)}
+              style={styles.dateBox}
+            >
+              <CustomText>{endDate.toLocaleDateString("en-GB")}</CustomText>
+            </TouchableOpacity>
 
-          {showStartPicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              onChange={(e, selectedDate) => {
-                setShowStartPicker(false);
-                if (selectedDate) setStartDate(selectedDate);
-              }}
-            />
-          )}
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  setShowStartPicker(false);
+                  if (selectedDate) setStartDate(selectedDate);
+                }}
+              />
+            )}
 
-          {showEndPicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              onChange={(e, selectedDate) => {
-                setShowEndPicker(false);
-                if (selectedDate) setEndDate(selectedDate);
-              }}
-            />
-          )}
-        </View>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  setShowEndPicker(false);
+                  if (selectedDate) setEndDate(selectedDate);
+                }}
+              />
+            )}
+          </View>
+        </Pressable>
       )}
     </View>
   );
@@ -179,6 +191,14 @@ const styles = StyleSheet.create({
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
     borderLeftColor: color.mainTxtColorFade,
+  },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
   header: {
     flexDirection: "row",
