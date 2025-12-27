@@ -45,6 +45,7 @@ import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
 import HeaderRowUserAtt from "../../myComponentsHRM/Row/rowHeader/HeaderRowUserAtt";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
@@ -99,7 +100,6 @@ const AllAttendance = () => {
       setRefreshing(false);
     }
   };
-  myConsole("issueAttList", issueAttList?.length);
   return (
     <ContainerHRM headingTitle="Attendance">
       <FlatList
@@ -119,17 +119,19 @@ const AllAttendance = () => {
                 <>
                   {isLoadingIssue && <LoadingCompo />}
                   {issueAttList?.length === 0 && (
-                    <View
-                      style={{
-                        backgroundColor: "#fff",
-                        borderWidth: 0.8,
-                        borderColor: color.borderColor,
-                        borderRadius: 12,
-                        paddingBottom: 12,
-                      }}
-                    >
-                      <NoDataFound height={140} width={140} />
-                    </View>
+                    <SlideFadeIn>
+                      <View
+                        style={{
+                          backgroundColor: "#fff",
+                          borderWidth: 0.8,
+                          borderColor: color.borderColor,
+                          borderRadius: 12,
+                          paddingBottom: 12,
+                        }}
+                      >
+                        <NoDataFound height={140} width={140} />
+                      </View>
+                    </SlideFadeIn>
                   )}
                 </>
               }

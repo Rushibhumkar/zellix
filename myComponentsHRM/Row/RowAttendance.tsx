@@ -17,6 +17,7 @@ import {
 import moment from "moment";
 import { color } from "../../const/color";
 import { myConsole } from "../../hooks/useConsole";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowAttendance {
   containerStyle?: StyleProp<ViewStyle>;
@@ -54,42 +55,54 @@ const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
       ]}
     >
       <View style={styles.row1}>
-        <CustomText style={styles.text1}>{item?.name}</CustomText>
-        <CustomText style={styles.text2}>{roleHRM[item?.role]}</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>{item?.name}</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>{roleHRM[item?.role]}</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={styles.row2}>
-        <CustomText
-          style={{ textTransform: "capitalize" }}
-          fontWeight="900"
-          color={
-            item?.punchedInType === "office"
-              ? color?.strokeColor
-              : color?.mainTxtColor
-          }
-        >
-          {punchType[item?.punchedInType]}
-        </CustomText>
-        {
+        <SlideFadeIn>
           <CustomText
-            // style={styles.text1}
-            fontWeight="600"
-            color={!!item?.resolve ? color?.strokeColor : color?.strokeColor}
-            numberOfLines={1}
+            style={{ textTransform: "capitalize" }}
+            fontWeight="900"
+            color={
+              item?.punchedInType === "office"
+                ? color?.strokeColor
+                : color?.mainTxtColor
+            }
           >
-            {!item?.issue ? "-" : item?.resolve ? "Resolve" : "Unresolved"}
+            {punchType[item?.punchedInType]}
           </CustomText>
+        </SlideFadeIn>
+        {
+          <SlideFadeIn>
+            <CustomText
+              // style={styles.text1}
+              fontWeight="600"
+              color={!!item?.resolve ? color?.strokeColor : color?.strokeColor}
+              numberOfLines={1}
+            >
+              {!item?.issue ? "-" : item?.resolve ? "Resolve" : "Unresolved"}
+            </CustomText>
+          </SlideFadeIn>
         }
       </View>
       <View style={styles.row3}>
-        <CustomText
-          style={styles.text1}
-          color={statusColorAttend[item?.status]}
-        >
-          {statusAttend[item?.status]}
-        </CustomText>
-        <CustomText style={styles.text2}>
-          {moment(item?.createdAt).format("DD/MM/YYYY")}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText
+            style={styles.text1}
+            color={statusColorAttend[item?.status]}
+          >
+            {statusAttend[item?.status]}
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>
+            {moment(item?.createdAt).format("DD/MM/YYYY")}
+          </CustomText>
+        </SlideFadeIn>
       </View>
     </TouchableOpacity>
   );

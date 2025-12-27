@@ -15,6 +15,7 @@ import {
   shadowPrimaryColor,
   shadowSecondaryColor,
 } from "../../const/globalStyle";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowAbsent {
   containerStyle: StyleProp<ViewStyle>;
@@ -31,15 +32,23 @@ const RowAbsent = ({ containerStyle, item, onPress }: TRowAbsent) => {
     <TouchableOpacity onPress={onPress} style={[styles.card, containerStyle]}>
       <View style={styles.contentContainer}>
         <View style={styles.mainInfo}>
-          <CustomText style={styles.nameText}>{item?.name}</CustomText>
-          <CustomText style={styles.roleText}>{roleHRM[item?.role]}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.nameText}>{item?.name}</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.roleText}>
+              {roleHRM[item?.role]}
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={styles.statusContainer}>
           <View style={styles.statusBadge}>
-            <CustomText style={styles.statusText}>
-              {statusAttend[item?.status]}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.statusText}>
+                {statusAttend[item?.status]}
+              </CustomText>
+            </SlideFadeIn>
           </View>
         </View>
       </View>

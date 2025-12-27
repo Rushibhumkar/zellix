@@ -37,6 +37,7 @@ import { selectUser } from "../../redux/userSlice";
 import { checkPermission } from "../../utils/commonFunctions";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const InterviewMain = () => {
   const { navigate } = useNavigation();
@@ -144,13 +145,19 @@ const InterviewMain = () => {
           style={{ flex: 1 }}
           onPress={() => navigate("CandidateDetails", { item })}
         >
-          <CustomText style={styles.name}>{item?.name}</CustomText>
-          <CustomText style={styles.email}>{item?.email}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.name}>{item?.name}</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.email}>{item?.email}</CustomText>
+          </SlideFadeIn>
         </TouchableOpacity>
-        <CustomText style={[styles.status, { color: statusColor }]}>
-          {status.charAt(0).toUpperCase() +
-            status.slice(1).toLowerCase().replace(/_/g, " ")}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={[styles.status, { color: statusColor }]}>
+            {status.charAt(0).toUpperCase() +
+              status.slice(1).toLowerCase().replace(/_/g, " ")}
+          </CustomText>
+        </SlideFadeIn>
 
         <TouchableOpacity
           onPress={() => {
@@ -158,7 +165,9 @@ const InterviewMain = () => {
             setShowOptionsModal(true);
           }}
         >
-          <CustomText style={styles.more}>More</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.more}>More</CustomText>
+          </SlideFadeIn>
         </TouchableOpacity>
       </View>
     );
@@ -210,9 +219,17 @@ const InterviewMain = () => {
                 borderColor: "#ddd",
               }}
             >
-              <CustomText style={{ fontSize: 16, textAlign: "center" }}>
-                {option}
-              </CustomText>
+              <SlideFadeIn>
+                <CustomText
+                  style={{
+                    fontSize: 16,
+                    textAlign: "center",
+                    color: color.mainTxtColor,
+                  }}
+                >
+                  {option}
+                </CustomText>
+              </SlideFadeIn>
             </TouchableOpacity>
           )
         )}
@@ -226,7 +243,9 @@ const InterviewMain = () => {
           }}
           onPress={() => setShowOptionsModal(false)}
         >
-          <CustomText style={{ color: "#fff" }}>Cancel</CustomText>
+          <SlideFadeIn>
+            <CustomText style={{ color: "#fff" }}>Cancel</CustomText>
+          </SlideFadeIn>
         </TouchableOpacity>
       </ModalWithBlur>
 
@@ -282,12 +301,20 @@ const InterviewMain = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.headerBox}>
-          <CustomText style={styles.headerText}>Schedule Interview</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headerText}>
+              Schedule Interview
+            </CustomText>
+          </SlideFadeIn>
           <TouchableOpacity
             style={styles.scheduleButton}
             onPress={() => navigate("ScheduleInterview")}
           >
-            <CustomText style={styles.scheduleButtonText}>Schedule</CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.scheduleButtonText}>
+                Schedule
+              </CustomText>
+            </SlideFadeIn>
           </TouchableOpacity>
         </View>
 
@@ -299,10 +326,12 @@ const InterviewMain = () => {
             marginBottom: 12,
           }}
         >
-          <CustomText style={styles.subHeading}>Interviews</CustomText>
-          <TouchableOpacity activeOpacity={0.6} onPress={() => null}>
+          <SlideFadeIn>
+            <CustomText style={styles.subHeading}>Interviews</CustomText>
+          </SlideFadeIn>
+          {/* <TouchableOpacity activeOpacity={0.6} onPress={() => null}>
             <ExportIcon />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* List */}
@@ -409,22 +438,18 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 0.7,
-    borderColor: "#ddd",
-    shadowColor: "#000",
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 12,
+    borderWidth: 1.4,
+    borderColor: color.borderColor,
   },
   name: {
     fontWeight: "600",
     fontSize: 15,
+    color: color.mainTxtColor,
   },
   email: {
     fontSize: 13,
-    color: "#666",
+    color: color.mainTxtColor,
   },
   status: {
     marginHorizontal: 10,
@@ -432,7 +457,7 @@ const styles = StyleSheet.create({
     marginRight: 40,
   },
   more: {
-    color: "#333",
+    color: color.mainTxtColor,
     textDecorationLine: "underline",
   },
   errorText: {

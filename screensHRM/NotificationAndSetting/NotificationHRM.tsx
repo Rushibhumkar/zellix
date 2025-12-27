@@ -155,10 +155,10 @@ const NotificationHRM = () => {
               {isLoading && <LoadingCompo />}
               {!isLoading && data?.length === 0 && (
                 <View style={styles.emptyContainer}>
+                  <NoDataFound height={200} width={200} />
                   <CustomText style={styles.emptyText}>
                     No notifications found
                   </CustomText>
-                  <NoDataFound height={200} width={200} />
                 </View>
               )}
             </>

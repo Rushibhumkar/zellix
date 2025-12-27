@@ -5,6 +5,7 @@ import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { monthsStatic } from "../../../utils/data";
 import { color } from "../../../const/color";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 interface TIncentiveCard {
   item: any;
@@ -13,57 +14,59 @@ interface TIncentiveCard {
 }
 const IncentiveCard = ({ item, onPress, index }: TIncentiveCard) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.5}
-      onPress={onPress}
-      style={{
-        marginTop: index === 0 ? 24 : 12,
-        borderWidth: 1.8,
-        padding: 13,
-        borderRadius: 14,
-        borderColor: color.borderColor,
-        marginHorizontal: 20,
-        ...shadowPrimaryColor,
-        backgroundColor: color.white,
-      }}
-    >
-      <View
+    <SlideFadeIn>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={onPress}
         style={{
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexDirection: "row",
-          marginBottom: 8,
+          marginTop: index === 0 ? 24 : 12,
+          borderWidth: 1.8,
+          padding: 13,
+          borderRadius: 14,
+          borderColor: color.borderColor,
+          marginHorizontal: 20,
+          ...shadowPrimaryColor,
+          backgroundColor: color.white,
         }}
       >
-        <CustomText style={{ color: color.mainTxtColor }}>
-          {item?.user?.name || "N/A"}
-        </CustomText>
-        <CustomText style={{ color: color.mainTxtColor }}>
-          {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
-        </CustomText>
-      </View>
-      <View
-        style={{
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexDirection: "row",
-        }}
-      >
-        <CustomText style={{ color: color.strokeColor }}>
-          {item?.year || "N/A"}{" "}
-        </CustomText>
-        <CustomText
-          style={{ textTransform: "capitalize", color: color.strokeColor }}
+        <View
+          style={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexDirection: "row",
+            marginBottom: 8,
+          }}
         >
-          {item?.status || "N/A"}
-        </CustomText>
-        <CustomText style={{ color: color.mainTxtColor }}>
-          {monthsStatic?.[item?.month] || "N/A"}
-        </CustomText>
-      </View>
-    </TouchableOpacity>
+          <CustomText style={{ color: color.mainTxtColor }}>
+            {item?.user?.name || "N/A"}
+          </CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
+            {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
+          </CustomText>
+        </View>
+        <View
+          style={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexDirection: "row",
+          }}
+        >
+          <CustomText style={{ color: color.strokeColor }}>
+            {item?.year || "N/A"}{" "}
+          </CustomText>
+          <CustomText
+            style={{ textTransform: "capitalize", color: color.strokeColor }}
+          >
+            {item?.status || "N/A"}
+          </CustomText>
+          <CustomText style={{ color: color.mainTxtColor }}>
+            {monthsStatic?.[item?.month] || "N/A"}
+          </CustomText>
+        </View>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

@@ -26,6 +26,7 @@ import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { remarkValidate } from "../../utils/validation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const CandidateDetailsScreen = () => {
   const { params } = useRoute();
@@ -172,18 +173,21 @@ const CandidateDetailsScreen = () => {
         visible={showStatusModal}
         onClose={() => setShowStatusModal(false)}
       >
-        <CustomText
-          style={{
-            fontSize: 16,
-            fontWeight: "bold",
-            borderBottomWidth: 1,
-            paddingBottom: 6,
-            borderColor: color.saffronMango,
-            marginBottom: 14,
-          }}
-        >
-          Status Change
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+              borderBottomWidth: 1,
+              paddingBottom: 6,
+              borderColor: color.mainTxtColor,
+              marginBottom: 14,
+              color: color.mainTxtColor,
+            }}
+          >
+            Status Change
+          </CustomText>
+        </SlideFadeIn>
 
         <DropdownRNE
           arrOfObj={[
@@ -207,6 +211,8 @@ const CandidateDetailsScreen = () => {
           onChangeText={formik.handleChange("remark")}
           onBlur={formik.handleBlur("remark")}
           error={formik.touched.remark && formik.errors.remark}
+          containerStyle={{ marginTop: 12 }}
+          inputStyle={{ height: 80 }}
         />
 
         <View
@@ -225,9 +231,11 @@ const CandidateDetailsScreen = () => {
               borderRadius: 8,
             }}
           >
-            <CustomText style={{ color: "white", fontWeight: "bold" }}>
-              Cancel
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={{ color: "white", fontWeight: "bold" }}>
+                Cancel
+              </CustomText>
+            </SlideFadeIn>
           </Pressable>
 
           <Pressable
@@ -241,9 +249,11 @@ const CandidateDetailsScreen = () => {
               opacity: loadingStatusUpdate ? 0.6 : 1,
             }}
           >
-            <CustomText style={{ color: "white", fontWeight: "bold" }}>
-              {loadingStatusUpdate ? "Submitting..." : "Submit"}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={{ color: "white", fontWeight: "bold" }}>
+                {loadingStatusUpdate ? "Submitting..." : "Submit"}
+              </CustomText>
+            </SlideFadeIn>
           </Pressable>
         </View>
       </ModalWithBlur>

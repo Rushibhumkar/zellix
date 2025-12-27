@@ -3,6 +3,7 @@ import React from "react";
 import { color } from "../../const/color";
 import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 interface TUserRowItem {
   serialNo: number;
   userName: string;
@@ -25,56 +26,58 @@ const UserRowItem = ({
   bgColor,
 }: TUserRowItem) => {
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={[
-        styles.container,
-        {
-          backgroundColor: isSelected
-            ? color.selectedBg
-            : bgColor
-            ? bgColor
-            : color.listCardBg,
-        },
-      ]}
-      onPress={!!onPress ? onPress : undefined}
-      onLongPress={!onLongPress ? undefined : onLongPress}
-    >
-      <View style={{ flexDirection: "row" }}>
-        {typeof serialNo !== "string" ? (
-          <CustomText style={styles.box1}>
-            {serialNo < 9 && 0}
-            {serialNo + 1}
-          </CustomText>
-        ) : (
-          <CustomText style={styles.box1}>{serialNo}</CustomText>
-        )}
-        <View style={styles.box2}>
+    <SlideFadeIn>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[
+          styles.container,
+          {
+            backgroundColor: isSelected
+              ? color.selectedBg
+              : bgColor
+              ? bgColor
+              : color.listCardBg,
+          },
+        ]}
+        onPress={!!onPress ? onPress : undefined}
+        onLongPress={!onLongPress ? undefined : onLongPress}
+      >
+        <View style={{ flexDirection: "row" }}>
+          {typeof serialNo !== "string" ? (
+            <CustomText style={styles.box1}>
+              {serialNo < 9 && 0}
+              {serialNo + 1}
+            </CustomText>
+          ) : (
+            <CustomText style={styles.box1}>{serialNo}</CustomText>
+          )}
+          <View style={styles.box2}>
+            <CustomText
+              numberOfLines={2}
+              style={[
+                styles.bold,
+                {
+                  textTransform: "capitalize",
+                  color: color.mainTxtColor,
+                  marginBottom: 4,
+                },
+              ]}
+            >
+              {userName ?? "N/A"}
+            </CustomText>
+            <CustomText numberOfLines={2} style={styles.lightText}>
+              {role ?? "N/A"}
+            </CustomText>
+          </View>
           <CustomText
             numberOfLines={2}
-            style={[
-              styles.bold,
-              {
-                textTransform: "capitalize",
-                color: color.mainTxtColor,
-                marginBottom: 4,
-              },
-            ]}
+            style={[styles.box3, { textAlign: "right" }]}
           >
-            {userName ?? "N/A"}
-          </CustomText>
-          <CustomText numberOfLines={2} style={styles.lightText}>
-            {role ?? "N/A"}
+            {email ?? "N/A"}
           </CustomText>
         </View>
-        <CustomText
-          numberOfLines={2}
-          style={[styles.box3, { textAlign: "right" }]}
-        >
-          {email ?? "N/A"}
-        </CustomText>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

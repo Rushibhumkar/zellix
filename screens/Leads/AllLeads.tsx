@@ -320,7 +320,7 @@ const AllLeads = ({ tabType }: any) => {
             />
           )}
 
-          {false === false && (
+          {tabType === "lead" && isPoolRestricted === false && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}

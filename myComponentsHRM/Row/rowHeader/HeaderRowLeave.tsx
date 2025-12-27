@@ -3,6 +3,7 @@ import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "../../../const/color";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const HeaderRowLeave = () => {
   return (
@@ -22,31 +23,41 @@ const HeaderRowLeave = () => {
       ]}
     >
       <View style={styles.row1}>
-        <CustomText style={styles.text1}>
-          Name
-          {/* {item?.name} */}
-        </CustomText>
-        <CustomText style={styles.text2}>
-          Days
-          {/* {item?.days} */}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>
+            Name
+            {/* {item?.name} */}
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>
+            Days
+            {/* {item?.days} */}
+          </CustomText>
+        </SlideFadeIn>
       </View>
       <View style={styles.row2}>
-        <CustomText style={styles.text1}>
-          Role
-          {/* {roleHRM[item?.role]} */}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>
+            Role
+            {/* {roleHRM[item?.role]} */}
+          </CustomText>
+        </SlideFadeIn>
         {/* <CustomText style={styles.text2}>03</CustomText> */}
       </View>
       <View style={styles.row3}>
-        <CustomText color={"white"} fontSize={14} fontWeight="600">
-          {/* {statusHRM[item?.status]} */}
-          Status
-        </CustomText>
-        <CustomText style={styles.text2}>
-          Date
-          {/* {moment(item?.createdAt).format('DD/MM/YYYY') ?? 'NA'} */}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText color={"white"} fontSize={14} fontWeight="600">
+            {/* {statusHRM[item?.status]} */}
+            Status
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>
+            Date
+            {/* {moment(item?.createdAt).format('DD/MM/YYYY') ?? 'NA'} */}
+          </CustomText>
+        </SlideFadeIn>
       </View>
     </LinearGradient>
   );

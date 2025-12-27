@@ -3,6 +3,7 @@ import React from "react";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const UserListHeading = () => {
   return (
@@ -23,25 +24,32 @@ const UserListHeading = () => {
       ]}
     >
       <View style={{ flexDirection: "row", gap: 12 }}>
-        <CustomText style={styles.headingText}>No</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>No</CustomText>
+        </SlideFadeIn>
         <View style={{ flexDirection: "column", gap: 5 }}>
-          <CustomText style={styles.headingText}>Name</CustomText>
-          <CustomText
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: "#FFFFFF",
-              lineHeight: 18,
-            }}
-          >
-            Role
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>Name</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#FFFFFF",
+                lineHeight: 18,
+              }}
+            >
+              Role
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
-
-      <CustomText style={[styles.headingText, { marginLeft: 20 }]}>
-        Email
-      </CustomText>
+      <SlideFadeIn>
+        <CustomText style={[styles.headingText, { marginLeft: 20 }]}>
+          Email
+        </CustomText>
+      </SlideFadeIn>
     </LinearGradient>
   );
 };

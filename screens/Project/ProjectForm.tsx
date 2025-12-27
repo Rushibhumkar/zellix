@@ -120,7 +120,7 @@ const ProjectForm = () => {
 
   return (
     <Container>
-      <Header title={"Add Project"} />
+      <Header title={detail ? "Update Project" : "Add Project"} />
       <ScrollViewWithKeyboardAvoid isAndroidIssue={Platform.OS === "android"}>
         <View style={{ padding: 20, paddingBottom: 140 }}>
           <CustomInput

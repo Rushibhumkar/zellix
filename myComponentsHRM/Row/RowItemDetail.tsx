@@ -10,6 +10,8 @@ import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import moment from "moment";
 import { roleHRM } from "../../utils/hrmKeysMatchToBE";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import { myConsole } from "../../hooks/useConsole";
 
 interface TRowItem {
   title: string;
@@ -31,18 +33,33 @@ const RowItemDetail = ({
   isDate,
   isTime,
 }: TRowItem) => {
+  const safeValue = Array.isArray(value) ? value.join(", ") : value;
+  const safeTitle =
+    typeof title === "string"
+      ? title
+      : typeof title === "object" && "props" in title
+      ? title.props?.children ?? "N/A"
+      : "N/A";
   let customValue = "-";
-  if (title === "Interview Date & Time") {
-    customValue = !!value ? moment(value).format("DD/MM/YYYY hh:mm A") : "-";
+  if (safeTitle === "Interview Date & Time") {
+    customValue =
+      value && moment(value).isValid()
+        ? moment(value).format("DD/MM/YYYY hh:mm A")
+        : "-";
   } else if (isDate) {
-    customValue = !!value ? moment(value).format("DD/MM/YYYY") : "-";
+    customValue =
+      value && moment(value).isValid()
+        ? moment(value).format("DD/MM/YYYY")
+        : "-";
   } else if (isTime) {
-    customValue = value !== "-" ? moment(value).format("hh:mm A") : "-";
+    customValue =
+      value && moment(value).isValid() ? moment(value).format("hh:mm A") : "-";
   } else if (title === "Role") {
     customValue = roleHRM[value];
   } else {
     customValue = value;
   }
+
   return (
     <View
       style={[
@@ -61,9 +78,11 @@ const RowItemDetail = ({
           width: "35%",
         }}
       >
-        <CustomText numberOfLines={2} style={styles.text}>
-          {title ?? "N/A"}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText numberOfLines={2} style={styles.text}>
+            {title ?? "N/A"}
+          </CustomText>
+        </SlideFadeIn>
       </View>
       <View
         style={{
@@ -71,15 +90,17 @@ const RowItemDetail = ({
           paddingHorizontal: 3,
         }}
       >
-        <CustomText
-          style={{
-            color: color.mainTxtColor,
-            fontWeight: "600",
-            fontSize: 18,
-          }}
-        >
-          :
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 18,
+            }}
+          >
+            :
+          </CustomText>
+        </SlideFadeIn>
       </View>
       {!!component ? (
         <View
@@ -95,26 +116,25 @@ const RowItemDetail = ({
             width: "56%",
           }}
         >
-          {!!value && (
-            <CustomText style={styles.text2} numberOfLines={1}>
-              {!!value ? customValue : "N/A"}
-            </CustomText>
+          {customValue !== "-" && (
+            <SlideFadeIn>
+              <CustomText style={styles.text2} numberOfLines={1}>
+                {customValue}
+              </CustomText>
+            </SlideFadeIn>
           )}
-          {/* {!!value && isDate &&
-                        <CustomText
-                            style={styles.text2}
-                            numberOfLines={1}
-                        >
-                            {!!value ? moment(value).format('DD/MM/YYYY') : 'N/A'}
-                        </CustomText>
-                    } */}
-          {/* {icon && <TouchableOpacity
-                        style={{ width: 30 }}
-                        onPress={onPressIcon}
-                    >
-                        {icon === 'whatsapp' && <WhatsappIcon width={15} height={15} />}
-                        {icon === 'n/a' && <CustomText>N/A</CustomText>}
-                    </TouchableOpacity>} */}
+
+          {/* {!!value && isDate && (
+            <CustomText style={styles.text2} numberOfLines={1}>
+              {!!value ? moment(value).format("DD/MM/YYYY") : "N/A"}
+            </CustomText>
+          )} */}
+          {/* {icon && (
+            <TouchableOpacity style={{ width: 30 }} onPress={onPressIcon}>
+              {icon === "whatsapp" && <WhatsappIcon width={15} height={15} />}
+              {icon === "n/a" && <CustomText>N/A</CustomText>}
+            </TouchableOpacity>
+          )} */}
         </View>
       )}
     </View>

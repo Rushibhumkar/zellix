@@ -16,12 +16,14 @@ import CustomModelMessage from "../../myComponents/CustomModelMessage";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
+import { myConsole } from "../../hooks/useConsole";
 
 const AddUsers = () => {
   const dispatch = useDispatch();
   const { navigate } = useNavigation();
   const { params } = useRoute();
   const data = params?.data;
+  myConsole("dataaaa", data);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
@@ -63,7 +65,7 @@ const AddUsers = () => {
 
   return (
     <Container>
-      <Header title={"Add Users"} />
+      <Header title={data ? "Update Users" : "Add Users"} />
       <ScrollViewWithKeyboardAvoid>
         <View style={{ paddingBottom: 20 }}>
           <CustomModelMessage

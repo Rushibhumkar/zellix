@@ -85,26 +85,29 @@ const IncentiveDetail = () => {
               title="Detail"
               containerStyle={styles.mainTitle}
               icon={
-                isSubSupSrMng ? <CustomBtn
-                  title="Payout"
-                  containerStyle={{ backgroundColor: "gray" }}
-                  textStyle={{ fontSize: 14 }}
-                  onPress={() => {
-                    confirmPayout({
-                      callback: () => {
-                        handlePayout();
-                        confirmPayout({
-                          callback: () => console.log("first2"),
-                          isLoading: true,
-                        });
-                      },
-                      isLoading: false,
-                    });
-                  }}
-                /> : <></>
+                isSubSupSrMng ? (
+                  <CustomBtn
+                    title="Payout"
+                    containerStyle={{ backgroundColor: "gray" }}
+                    textStyle={{ fontSize: 14 }}
+                    onPress={() => {
+                      confirmPayout({
+                        callback: () => {
+                          handlePayout();
+                          confirmPayout({
+                            callback: () => console.log("first2"),
+                            isLoading: true,
+                          });
+                        },
+                        isLoading: false,
+                      });
+                    }}
+                  />
+                ) : (
+                  <></>
+                )
               }
             />
-
             <RowItem
               title="Name"
               value={data?.userId?.name}
@@ -140,7 +143,6 @@ const IncentiveDetail = () => {
               value={data?.totalIncentive - data?.paidIncentive || "0"}
               containerStyle={styles.rowItem}
             />
-
             <CustomText
               fontWeight="700"
               fontSize={19}
@@ -149,7 +151,6 @@ const IncentiveDetail = () => {
             >
               Booking Detail
             </CustomText>
-
             {renderPayCards(data?.bookings || [], "Closed Booking")}
             {renderPayCards(data?.pendingBookings || [], "Pending Booking")}
             {renderPayDetails()}

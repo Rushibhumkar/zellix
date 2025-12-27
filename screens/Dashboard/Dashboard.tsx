@@ -368,7 +368,6 @@ const Dashboard = () => {
   // const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   // myConsole("dashpermisison", permission);
-  console.log("iOS OTA test 1");
 
   useEffect(() => {
     console.log("callDetect", callDetect);

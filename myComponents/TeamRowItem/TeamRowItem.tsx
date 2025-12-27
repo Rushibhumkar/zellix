@@ -8,6 +8,7 @@ import {
 } from "../../const/globalStyle";
 import { string } from "yup";
 import CustomText from "../CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TeamRowItem {
   serial: number;
@@ -31,40 +32,42 @@ const TeamRowItem = ({
   index,
 }: TeamRowItem) => {
   return (
-    <TouchableOpacity
-      style={[
-        styles.container,
-        {
-          backgroundColor: isSelected
-            ? color.selectedBg
-            : bgColor
-            ? bgColor
-            : color.listCardBg,
-        },
-      ]}
-      activeOpacity={1}
-      onLongPress={!!onLongPress ? onLongPress : undefined}
-    >
-      {typeof serial === "string" ? (
-        <CustomText numberOfLines={2} style={styles.box1}>
-          {serial}
+    <SlideFadeIn>
+      <TouchableOpacity
+        style={[
+          styles.container,
+          {
+            backgroundColor: isSelected
+              ? color.selectedBg
+              : bgColor
+              ? bgColor
+              : color.listCardBg,
+          },
+        ]}
+        activeOpacity={1}
+        onLongPress={!!onLongPress ? onLongPress : undefined}
+      >
+        {typeof serial === "string" ? (
+          <CustomText numberOfLines={2} style={styles.box1}>
+            {serial}
+          </CustomText>
+        ) : (
+          <CustomText numberOfLines={2} style={styles.box1}>
+            {serial < 10 && "0"}
+            {serial}
+          </CustomText>
+        )}
+        <CustomText numberOfLines={2} style={styles.box2}>
+          {teamName}
         </CustomText>
-      ) : (
-        <CustomText numberOfLines={2} style={styles.box1}>
-          {serial < 10 && "0"}
-          {serial}
+        <CustomText numberOfLines={2} style={styles.box3}>
+          {managerName}
         </CustomText>
-      )}
-      <CustomText numberOfLines={2} style={styles.box2}>
-        {teamName}
-      </CustomText>
-      <CustomText numberOfLines={2} style={styles.box3}>
-        {managerName}
-      </CustomText>
-      <CustomText numberOfLines={2} style={styles.box4}>
-        {teamLeadName}
-      </CustomText>
-    </TouchableOpacity>
+        <CustomText numberOfLines={2} style={styles.box4}>
+          {teamLeadName}
+        </CustomText>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

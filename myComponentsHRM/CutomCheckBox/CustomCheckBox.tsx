@@ -2,6 +2,7 @@ import { TouchableOpacity, StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TCustomCheckBox {
   title: string;
@@ -42,7 +43,9 @@ const CustomCheckBox = ({
       }}
     >
       <View style={isChecked ? styles.checked : styles.unChecked} />
-      <CustomText style={{ color: color.mainTxtColor }}>{title}</CustomText>
+      <SlideFadeIn>
+        <CustomText style={{ color: color.mainTxtColor }}>{title}</CustomText>
+      </SlideFadeIn>
     </TouchableOpacity>
   );
 };

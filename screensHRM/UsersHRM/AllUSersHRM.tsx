@@ -32,6 +32,7 @@ import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import { roleEnum } from "../../utils/data";
 import { Feather } from "@expo/vector-icons";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const AllUSersHRM = () => {
   const { navigate } = useNavigation();
@@ -138,10 +139,12 @@ const AllUSersHRM = () => {
             <>
               {isLoading && <LoadingCompo />}
               {allUsers?.length === 0 && (
-                <View style={styles.emptyContainer}>
-                  <NoDataFound height={200} width={200} />
-                  <Text style={styles.emptyText}>No employees found</Text>
-                </View>
+                <SlideFadeIn>
+                  <View style={styles.emptyContainer}>
+                    <NoDataFound height={200} width={200} />
+                    <Text style={styles.emptyText}>No employees found</Text>
+                  </View>
+                </SlideFadeIn>
               )}
             </>
           }
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#718096",
+    color: color.mainTxtColor,
     fontWeight: "500",
   },
 });

@@ -6,6 +6,7 @@ import { myConsole } from "../../../hooks/useConsole";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "../../../const/color";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const CardReferral = ({
   item,
@@ -14,56 +15,58 @@ const CardReferral = ({
   selected,
   bgColor,
   onLongPress,
-}) => {
+}: any) => {
   return (
-    <TouchableOpacity
-      key={index}
-      style={[
-        styles.mainlistcontainer,
-        {
-          marginTop: index === 0 ? 25 : 12,
-          backgroundColor: selected
-            ? "rgba(252, 244, 227, 1)"
-            : bgColor || "white",
-        },
-      ]}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <View style={{ flexDirection: "row" }}>
-        {/* Left Column: Client Info */}
-        <View style={{ width: "40%", paddingEnd: 3 }}>
-          <CustomText numberOfLines={1} style={styles.labelText}>
-            {item?.clientName || "N/A"}
-          </CustomText>
-          <CustomText numberOfLines={1} style={styles.valueText}>
-            {item?.email || "N/A"}
-          </CustomText>
-        </View>
+    <SlideFadeIn>
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.mainlistcontainer,
+          {
+            marginTop: index === 0 ? 25 : 12,
+            backgroundColor: selected
+              ? "rgba(252, 244, 227, 1)"
+              : bgColor || "white",
+          },
+        ]}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        <View style={{ flexDirection: "row" }}>
+          {/* Left Column: Client Info */}
+          <View style={{ width: "40%", paddingEnd: 3 }}>
+            <CustomText numberOfLines={1} style={styles.labelText}>
+              {item?.clientName || "N/A"}
+            </CustomText>
+            <CustomText numberOfLines={1} style={styles.valueText}>
+              {item?.email || "N/A"}
+            </CustomText>
+          </View>
 
-        {/* Middle Column: Amount and Status */}
-        <View style={{ width: "40%", paddingEnd: 3, paddingStart: 12 }}>
-          <CustomText numberOfLines={1} style={styles.labelText}>
-            ₹ {item?.referralAmount || 0}
-          </CustomText>
-          <CustomText numberOfLines={1} style={styles.valueText}>
-            {item?.status || "N/A"}
-          </CustomText>
-        </View>
+          {/* Middle Column: Amount and Status */}
+          <View style={{ width: "40%", paddingEnd: 3, paddingStart: 12 }}>
+            <CustomText numberOfLines={1} style={styles.labelText}>
+              ₹ {item?.referralAmount || 0}
+            </CustomText>
+            <CustomText numberOfLines={1} style={styles.valueText}>
+              {item?.status || "N/A"}
+            </CustomText>
+          </View>
 
-        {/* Right Column: Date */}
-        <View
-          style={{
-            width: "25%",
-            alignItems: "flex-end",
-          }}
-        >
-          <CustomText numberOfLines={1} style={styles.dateText}>
-            {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
-          </CustomText>
+          {/* Right Column: Date */}
+          <View
+            style={{
+              width: "25%",
+              alignItems: "flex-end",
+            }}
+          >
+            <CustomText numberOfLines={1} style={styles.dateText}>
+              {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
+            </CustomText>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 
@@ -89,15 +92,25 @@ export const HeaderReferralList = () => {
       ]}
     >
       <View style={{ width: "40%", paddingEnd: 3 }}>
-        <CustomText style={styles.headingText}>Client</CustomText>
-        <CustomText style={styles.headingText}>Email</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Client</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Email</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={{ width: "40%", paddingEnd: 3 }}>
-        <CustomText style={styles.headingText}>Amount</CustomText>
-        <CustomText style={styles.headingText}>Status</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Amount</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Status</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={{ width: "20%" }}>
-        <CustomText style={styles.headingText}>Date</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Date</CustomText>
+        </SlideFadeIn>
       </View>
     </LinearGradient>
   );

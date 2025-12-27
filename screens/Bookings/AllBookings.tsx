@@ -46,6 +46,7 @@ import useModal from "../../hooks/useModal";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { sizes } from "../../const";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 let bookingStatus = [
   { value: "", label: "All" },
@@ -386,9 +387,15 @@ const AllBookings = () => {
             width: 250,
           }}
         >
-          <CustomText fontSize={16} fontWeight="600" color={color.mainTxtColor}>
-            Business Status
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText
+              fontSize={16}
+              fontWeight="600"
+              color={color.mainTxtColor}
+            >
+              Business Status
+            </CustomText>
+          </SlideFadeIn>
           <View style={{ height: 15 }} />
           {bookingStatus?.map((item, index) => {
             return (
@@ -424,108 +431,110 @@ const BookingRowItem = ({
     pending: "rgb(242,146,57)",
   };
   return (
-    <TouchableOpacity
-      style={[
-        styles.mainlistcontainer,
-        {
-          marginTop: index === 0 ? 25 : 12,
-          marginHorizontal: 20,
-          backgroundColor: selected
-            ? color.primaryFade
-            : bgColor
-            ? bgColor
-            : "#FCFAFA",
-        },
-      ]}
-      activeOpacity={0.5}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      {/* <View> */}
-      {/* <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+    <SlideFadeIn>
+      <TouchableOpacity
+        style={[
+          styles.mainlistcontainer,
+          {
+            marginTop: index === 0 ? 25 : 12,
+            marginHorizontal: 20,
+            backgroundColor: selected
+              ? color.primaryFade
+              : bgColor
+              ? bgColor
+              : "#FCFAFA",
+          },
+        ]}
+        activeOpacity={0.5}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        {/* <View> */}
+        {/* <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
         <CustomText
           fontSize={12}
           fontWeight="600"
           color={color.green}
         >{item?.status}</CustomText>
       </View> */}
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: "10%", paddingEnd: 3 }}>
-          {index === "S.No" ? (
-            <CustomText
-              fontSize={14}
-              fontWeight="500"
-              color={color.mainTxtColor}
-            >
-              No.
-            </CustomText>
-          ) : (
-            <CustomText
-              fontSize={14}
-              fontWeight="500"
-              color={color.mainTxtColor}
-            >
-              {" "}
-              {index < 9 && "0"}
-              {index + 1}
-            </CustomText>
-          )}
-        </View>
-        <View style={{ width: "33%", paddingEnd: 3 }}>
-          <View>
-            <CustomText
-              fontSize={16}
-              fontWeight="500"
-              marginBottom={5}
-              numberOfLines={2}
-              color={color.mainTxtColor}
-            >
-              {item?.projectName}
-            </CustomText>
-            {/* <CustomText
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: "10%", paddingEnd: 3 }}>
+            {index === "S.No" ? (
+              <CustomText
+                fontSize={14}
+                fontWeight="500"
+                color={color.mainTxtColor}
+              >
+                No.
+              </CustomText>
+            ) : (
+              <CustomText
+                fontSize={14}
+                fontWeight="500"
+                color={color.mainTxtColor}
+              >
+                {" "}
+                {index < 9 && "0"}
+                {index + 1}
+              </CustomText>
+            )}
+          </View>
+          <View style={{ width: "33%", paddingEnd: 3 }}>
+            <View>
+              <CustomText
+                fontSize={16}
+                fontWeight="500"
+                marginBottom={5}
+                numberOfLines={2}
+                color={color.mainTxtColor}
+              >
+                {item?.projectName}
+              </CustomText>
+              {/* <CustomText
               fontSize={12}
               fontWeight="300"
             >{item?.bookingAmount}
             </CustomText> */}
+            </View>
           </View>
-        </View>
-        <View style={{ width: "32%", paddingEnd: 3 }}>
-          {/* <CustomText
+          <View style={{ width: "32%", paddingEnd: 3 }}>
+            {/* <CustomText
             color={color.green}
             fontWeight="500"
           >  {item?.token ? 'Paid' : 'Unpaid'}
           </CustomText> */}
-          <CustomText
-            // fontSize={12}
-            fontWeight="600"
-            color={statusColor[item?.status]}
-            style={{ textTransform: "capitalize", color: color.mainTxtColor }}
-          >
-            {item?.status}
-          </CustomText>
-        </View>
-        <View style={{ width: "25%" }}>
-          <View style={{ alignItems: "flex-end" }}>
             <CustomText
-              marginBottom={5}
-              numberOfLines={1}
-              color={color.mainTxtColor}
+              // fontSize={12}
+              fontWeight="600"
+              color={statusColor[item?.status]}
+              style={{ textTransform: "capitalize", color: color.mainTxtColor }}
             >
-              {" "}
-              {item?.propertyDetails}
-            </CustomText>
-            <CustomText
-              fontSize={10}
-              fontWeight="300"
-              color={color.mainTxtColor}
-            >
-              {" "}
-              {moment(item?.date).format("DD/MM/YYYY")}
+              {item?.status}
             </CustomText>
           </View>
+          <View style={{ width: "25%" }}>
+            <View style={{ alignItems: "flex-end" }}>
+              <CustomText
+                marginBottom={5}
+                numberOfLines={1}
+                color={color.mainTxtColor}
+              >
+                {" "}
+                {item?.propertyDetails}
+              </CustomText>
+              <CustomText
+                fontSize={10}
+                fontWeight="300"
+                color={color.mainTxtColor}
+              >
+                {" "}
+                {moment(item?.date).format("DD/MM/YYYY")}
+              </CustomText>
+            </View>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

@@ -97,9 +97,9 @@ const UserDetailHRM = () => {
 
   const userApprovedByAdmin = async () => {
     try {
-      popUpConfToast.plzWait({
-        bodyComponent: () => <PleaseWait />,
-      });
+      // popUpConfToast.plzWait({
+      //   bodyComponent: () => <PleaseWait />,
+      // });
       let resUserApprove = await userApproved({ id: params?.item?._id });
       refetch();
       queryClient.invalidateQueries({
@@ -295,7 +295,7 @@ const UserDetailHRM = () => {
           contentContainerStyle={{
             paddingTop: 10,
             paddingHorizontal: 20,
-            paddingBottom: 180,
+            paddingBottom: 290,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

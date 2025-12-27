@@ -13,6 +13,7 @@ import moment from "moment";
 import { truncateString } from "../../utils/commonFunctions";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowOnLeave {
   containerStyle?: StyleProp<ViewStyle>;
@@ -31,24 +32,39 @@ const RowOnLeave = ({ containerStyle, item, onPress }: TRowOnLeave) => {
     <TouchableOpacity onPress={onPress} style={[styles.card, containerStyle]}>
       <View style={styles.contentContainer}>
         <View style={styles.mainInfo}>
-          <CustomText style={styles.nameText}>{item?.name ?? "N/A"}</CustomText>
-
-          <CustomText style={styles.roleText}>{roleHRM[item?.role]}</CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.nameText}>
+              {item?.name ?? "N/A"}
+            </CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={styles.roleText}>
+              {roleHRM[item?.role]}
+            </CustomText>
+          </SlideFadeIn>
         </View>
 
         <View style={styles.detailsContainer}>
           <View style={styles.detailItem}>
-            <CustomText style={styles.detailLabel}>Days</CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.detailLabel}>Days</CustomText>
+            </SlideFadeIn>
             <View style={styles.daysBadge}>
-              <CustomText style={styles.daysText}>{item?.days}</CustomText>
+              <SlideFadeIn>
+                <CustomText style={styles.daysText}>{item?.days}</CustomText>
+              </SlideFadeIn>
             </View>
           </View>
 
           <View style={styles.detailItem}>
-            <CustomText style={styles.detailLabel}>Applied On</CustomText>
-            <CustomText style={styles.dateText}>
-              {moment(item.createdAt).format("DD/MM/YYYY")}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.detailLabel}>Applied On</CustomText>
+            </SlideFadeIn>
+            <SlideFadeIn>
+              <CustomText style={styles.dateText}>
+                {moment(item.createdAt).format("DD/MM/YYYY")}
+              </CustomText>
+            </SlideFadeIn>
           </View>
         </View>
       </View>

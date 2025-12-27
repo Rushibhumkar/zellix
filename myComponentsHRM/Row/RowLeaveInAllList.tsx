@@ -15,6 +15,7 @@ import {
   shadowPrimaryColor,
   shadowSecondaryColor,
 } from "../../const/globalStyle";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowLeaveInAllList {
   containerStyle?: StyleProp<ViewStyle>;
@@ -56,17 +57,26 @@ const RowLeaveInAllList = ({
       {!isAgent && (
         <View style={styles.contentContainer}>
           <View style={styles.mainInfo}>
-            <CustomText style={styles.nameText}>{item?.name}</CustomText>
-            <CustomText style={styles.roleText}>
-              {roleHRM[item?.role]}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.nameText}>{item?.name}</CustomText>
+            </SlideFadeIn>
+            <SlideFadeIn>
+              <CustomText style={styles.roleText}>
+                {roleHRM[item?.role]}
+              </CustomText>
+            </SlideFadeIn>
           </View>
 
           <View style={styles.detailsContainer}>
             <View style={styles.detailItem}>
-              <CustomText style={styles.detailLabel}>Days</CustomText>
+              <SlideFadeIn>
+                <CustomText style={styles.detailLabel}>Days</CustomText>
+              </SlideFadeIn>
+
               <View style={styles.daysBadge}>
-                <CustomText style={styles.daysText}>{item?.days}</CustomText>
+                <SlideFadeIn>
+                  <CustomText style={styles.daysText}>{item?.days}</CustomText>
+                </SlideFadeIn>
               </View>
             </View>
 
@@ -77,18 +87,22 @@ const RowLeaveInAllList = ({
                   { backgroundColor: `${statusColor[item?.status]}20` },
                 ]}
               >
-                <CustomText
-                  style={[
-                    styles.statusText,
-                    { color: statusColor[item?.status] },
-                  ]}
-                >
-                  {statusHRM[item?.status]}
-                </CustomText>
+                <SlideFadeIn>
+                  <CustomText
+                    style={[
+                      styles.statusText,
+                      { color: statusColor[item?.status] },
+                    ]}
+                  >
+                    {statusHRM[item?.status]}
+                  </CustomText>
+                </SlideFadeIn>
               </View>
-              <CustomText style={styles.dateText}>
-                {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
-              </CustomText>
+              <SlideFadeIn>
+                <CustomText style={styles.dateText}>
+                  {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
+                </CustomText>
+              </SlideFadeIn>
             </View>
           </View>
         </View>
@@ -96,14 +110,20 @@ const RowLeaveInAllList = ({
       {isAgent && (
         <View style={styles.contentContainer}>
           <View style={styles.daysSection}>
-            <CustomText style={styles.daysText}>{item?.days}</CustomText>
-            <CustomText style={styles.detailLabel}>Days</CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.daysText}>{item?.days}</CustomText>
+            </SlideFadeIn>
+            <SlideFadeIn>
+              <CustomText style={styles.detailLabel}>Days</CustomText>
+            </SlideFadeIn>
           </View>
 
           <View style={styles.mainInfo}>
-            <CustomText style={styles.roleText}>
-              {roleHRM[item?.role]}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.roleText}>
+                {roleHRM[item?.role]}
+              </CustomText>
+            </SlideFadeIn>
           </View>
 
           <View style={styles.statusSection}>
@@ -113,18 +133,22 @@ const RowLeaveInAllList = ({
                 { backgroundColor: `${statusColor[item?.status]}20` },
               ]}
             >
-              <CustomText
-                style={[
-                  styles.statusText,
-                  { color: statusColor[item?.status] },
-                ]}
-              >
-                {statusHRM[item?.status]}
-              </CustomText>
+              <SlideFadeIn>
+                <CustomText
+                  style={[
+                    styles.statusText,
+                    { color: statusColor[item?.status] },
+                  ]}
+                >
+                  {statusHRM[item?.status]}
+                </CustomText>
+              </SlideFadeIn>
             </View>
-            <CustomText style={styles.dateText}>
-              {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
-            </CustomText>
+            <SlideFadeIn>
+              <CustomText style={styles.dateText}>
+                {moment(item?.createdAt).format("DD/MM/YYYY") ?? "NA"}
+              </CustomText>
+            </SlideFadeIn>
           </View>
         </View>
       )}

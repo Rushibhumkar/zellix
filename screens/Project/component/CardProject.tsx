@@ -5,6 +5,7 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "../../../const/color";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const CardProject = ({
   item,
@@ -14,101 +15,103 @@ const CardProject = ({
   bgColor,
   onLongPress,
   onPressClaim,
-}) => {
+}: any) => {
   return (
-    <TouchableOpacity
-      key={index}
-      style={[
-        styles.mainlistcontainer,
-        {
-          marginTop: index === 0 ? 25 : 12,
-          backgroundColor: selected
-            ? color.primaryFade
-            : bgColor
-            ? bgColor
-            : "white",
-        },
-      ]}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: "45%", paddingEnd: 3 }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              // fontWeight: "700",
-              fontSize: 16,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.source || "N/A"}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.strokeColor,
-              fontWeight: "400",
-              marginTop: 5,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.projectName || "N/A"}
-          </CustomText>
+    <SlideFadeIn>
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.mainlistcontainer,
+          {
+            marginTop: index === 0 ? 25 : 12,
+            backgroundColor: selected
+              ? color.primaryFade
+              : bgColor
+              ? bgColor
+              : "white",
+          },
+        ]}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: "45%", paddingEnd: 3 }}>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                // fontWeight: "700",
+                fontSize: 16,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.source || "N/A"}
+            </CustomText>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.strokeColor,
+                fontWeight: "400",
+                marginTop: 5,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.projectName || "N/A"}
+            </CustomText>
+          </View>
+          <View style={{ width: "40%", paddingEnd: 3 }}>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.pageName || "N/A"}
+            </CustomText>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.strokeColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+                marginTop: 5,
+              }}
+            >
+              {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
+            </CustomText>
+          </View>
+          <View style={{ width: "15%", paddingEnd: 3, alignItems: "center" }}>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.totalLeads || "0"}
+            </CustomText>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+                marginTop: 5,
+              }}
+            >
+              {item?.totalMembers || "0"}
+            </CustomText>
+          </View>
         </View>
-        <View style={{ width: "40%", paddingEnd: 3 }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.pageName || "N/A"}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.strokeColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-              marginTop: 5,
-            }}
-          >
-            {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
-          </CustomText>
-        </View>
-        <View style={{ width: "15%", paddingEnd: 3, alignItems: "center" }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.totalLeads || "0"}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-              marginTop: 5,
-            }}
-          >
-            {item?.totalMembers || "0"}
-          </CustomText>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 
@@ -133,24 +136,36 @@ export const HeaderProjectList = () => {
       ]}
     >
       <View style={{ width: "45%", paddingEnd: 3 }}>
-        <CustomText color="white" marginBottom={5}>
-          Source
-        </CustomText>
-        <CustomText color="white">Project Name</CustomText>
+        <SlideFadeIn>
+          <CustomText color="white" marginBottom={5}>
+            Source
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText color="white">Project Name</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={{ width: "40%", paddingEnd: 3 }}>
-        <CustomText color="white" marginBottom={5}>
-          Page Name
-        </CustomText>
-        <CustomText color="white">Creation Date</CustomText>
+        <SlideFadeIn>
+          <CustomText color="white" marginBottom={5}>
+            Page Name
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText color="white">Creation Date</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={{ width: "15%", paddingEnd: 3 }}>
-        <CustomText color="white" marginBottom={5} numberOfLines={1}>
-          Leads
-        </CustomText>
-        <CustomText color="white" numberOfLines={1}>
-          Members
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText color="white" marginBottom={5} numberOfLines={1}>
+            Leads
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText color="white" numberOfLines={1}>
+            Members
+          </CustomText>
+        </SlideFadeIn>
       </View>
     </LinearGradient>
   );

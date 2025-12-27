@@ -27,6 +27,7 @@ import { color } from "../../const/color";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { myConsole } from "../../hooks/useConsole";
 import { checkPermission } from "../../utils/commonFunctions";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const DashboardHRM = () => {
   const { user } = useSelector(selectUser);
@@ -118,15 +119,17 @@ const DashboardHRM = () => {
                       <>
                         {isLoadingTodayLeave && <LoadingCompo />}
                         {todayLeaveList?.data?.length === 0 && (
-                          <View
-                            style={{
-                              backgroundColor: "#fff",
-                              borderRadius: 12,
-                              paddingBottom: 12,
-                            }}
-                          >
-                            <NoDataFound height={120} width={120} />
-                          </View>
+                          <SlideFadeIn>
+                            <View
+                              style={{
+                                backgroundColor: "#fff",
+                                borderRadius: 12,
+                                paddingBottom: 12,
+                              }}
+                            >
+                              <NoDataFound height={120} width={120} />
+                            </View>
+                          </SlideFadeIn>
                         )}
                       </>
                     }

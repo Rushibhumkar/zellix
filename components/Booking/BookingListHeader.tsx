@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const BookingListHeading = () => {
   return (
@@ -13,15 +14,23 @@ const BookingListHeading = () => {
         style={styles.headingContainer}
       >
         <View style={{ flexDirection: "row", gap: 5 }}>
-          <CustomText style={styles.headingText}>No</CustomText>
-          <CustomText numberOfLines={1} style={styles.headingText}>
-            Project Name
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.headingText}>No</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText numberOfLines={1} style={styles.headingText}>
+              Project Name
+            </CustomText>
+          </SlideFadeIn>
         </View>
-        <CustomText style={styles.headingText}>Status</CustomText>
-        <CustomText numberOfLines={1} style={styles.headingText}>
-          Project Details
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.headingText}>Status</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText numberOfLines={1} style={styles.headingText}>
+            Project Details
+          </CustomText>
+        </SlideFadeIn>
       </LinearGradient>
     </View>
   );

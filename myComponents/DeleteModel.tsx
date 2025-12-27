@@ -6,6 +6,7 @@ import { AntDesign } from "@expo/vector-icons";
 import CustomBtn from "./CustomBtn/CustomBtn";
 import CustomText from "./CustomText/CustomText";
 import { sizes } from "../const";
+import SlideFadeIn from "../utils/animations/SlideFadeIn";
 
 const { width } = Dimensions.get("window");
 
@@ -21,28 +22,36 @@ const DeleteModel = ({
       <CustomModal visible={modalVisible} onClose={toggleModal} hasBackdrop>
         <View style={styles.container}>
           {/* Warning Icon */}
-          <View style={styles.iconContainer}>
-            <AntDesign name="warning" size={22} color="red" />
-          </View>
+          <SlideFadeIn>
+            <View style={styles.iconContainer}>
+              <AntDesign name="warning" size={22} color="red" />
+            </View>
+          </SlideFadeIn>
 
           {/* Title */}
-          <CustomText style={styles.title}>
-            Are you sure you want to delete {selectedUser}?
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={styles.title}>
+              Are you sure you want to delete {selectedUser}?
+            </CustomText>
+          </SlideFadeIn>
 
           {/* Buttons */}
           <View style={styles.btnRow}>
-            <CustomBtn
-              textStyle={{ fontSize: 14 }}
-              title="Cancel"
-              onPress={toggleModal}
-            />
-            <CustomBtn
-              textStyle={{ fontSize: 14 }}
-              title="Delete"
-              isLoading={isLoading}
-              onPress={handleDeleteUser}
-            />
+            <SlideFadeIn>
+              <CustomBtn
+                textStyle={{ fontSize: 14 }}
+                title="Cancel"
+                onPress={toggleModal}
+              />
+            </SlideFadeIn>
+            <SlideFadeIn>
+              <CustomBtn
+                textStyle={{ fontSize: 14 }}
+                title="Delete"
+                isLoading={isLoading}
+                onPress={handleDeleteUser}
+              />
+            </SlideFadeIn>
           </View>
         </View>
       </CustomModal>

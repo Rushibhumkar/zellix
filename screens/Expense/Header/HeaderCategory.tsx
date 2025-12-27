@@ -3,6 +3,7 @@ import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
 import { LinearGradient } from "expo-linear-gradient";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const HeaderCategoryExpense = () => {
   return (
@@ -23,23 +24,31 @@ const HeaderCategoryExpense = () => {
       ]}
     >
       <View style={styles.row1}>
-        <CustomText style={styles.text1}>Expense Category</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>Expense Category</CustomText>
+        </SlideFadeIn>
         <View>
-          <CustomText color={"white"} fontSize={14} fontWeight="600">
-            Creation Date
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText color={"white"} fontSize={14} fontWeight="600">
+              Creation Date
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
       <View style={styles.row2}>
-        <CustomText style={styles.text1}>
-          Sub Category
-          {/* {roleHRM[item?.role]} */}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>
+            Sub Category
+            {/* {roleHRM[item?.role]} */}
+          </CustomText>
+        </SlideFadeIn>
         {/* <CustomText style={styles.text2}>03</CustomText> */}
         <View>
-          <CustomText color={"white"} fontSize={14} fontWeight="600">
-            Update Date
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText color={"white"} fontSize={14} fontWeight="600">
+              Update Date
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
     </LinearGradient>

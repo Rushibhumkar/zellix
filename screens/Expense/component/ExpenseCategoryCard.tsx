@@ -4,6 +4,7 @@ import { shadow1, shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
 import { color } from "../../../const/color";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 interface TExpenseCategoryCard {
   item: any;
@@ -17,50 +18,55 @@ const ExpenseCategoryCard = ({
   index,
 }: TExpenseCategoryCard) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.5}
-      onPress={onPress}
-      style={{
-        marginTop: index === 0 ? 25 : 12,
-        borderWidth: 1.8,
-        padding: 13,
-        borderRadius: 14,
-        borderColor: color.borderColor,
-        marginHorizontal: 20,
-        ...shadowPrimaryColor,
-        backgroundColor: color.white,
-      }}
-    >
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
-        <View style={{ width: "48%" }}>
-          <CustomText style={{ color: color.mainTxtColor, fontWeight: "500" }}>
-            {item?.CategoryName || "N/A"}
-          </CustomText>
+    <SlideFadeIn>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={onPress}
+        style={{
+          marginTop: index === 0 ? 25 : 12,
+          borderWidth: 1.8,
+          padding: 13,
+          borderRadius: 14,
+          borderColor: color.borderColor,
+          marginHorizontal: 20,
+          ...shadowPrimaryColor,
+          backgroundColor: color.white,
+        }}
+      >
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <View style={{ width: "48%" }}>
+            <CustomText
+              style={{ color: color.mainTxtColor, fontWeight: "500" }}
+            >
+              {item?.CategoryName || "N/A"}
+            </CustomText>
+          </View>
+          <View style={{ width: "50%" }}>
+            <CustomText
+              style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
+            >
+              {item?.subCategory
+                ?.map((sub) => sub.subCategoryName)
+                .join(", ") || "N/A"}
+            </CustomText>
+          </View>
         </View>
-        <View style={{ width: "50%" }}>
-          <CustomText
-            style={{ alignSelf: "flex-end", color: color.mainTxtColor }}
-          >
-            {item?.subCategory?.map((sub) => sub.subCategoryName).join(", ") ||
-              "N/A"}
-          </CustomText>
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <View style={{ width: "48%" }}>
+            <CustomText style={{ color: color.strokeColor }}>
+              {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
+            </CustomText>
+          </View>
+          <View style={{ width: "50%" }}>
+            <CustomText
+              style={{ alignSelf: "flex-end", color: color.strokeColor }}
+            >
+              {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
+            </CustomText>
+          </View>
         </View>
-      </View>
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
-        <View style={{ width: "48%" }}>
-          <CustomText style={{ color: color.strokeColor }}>
-            {moment(item?.createdAt).format("DD/MM/YYYY") || "N/A"}
-          </CustomText>
-        </View>
-        <View style={{ width: "50%" }}>
-          <CustomText
-            style={{ alignSelf: "flex-end", color: color.strokeColor }}
-          >
-            {moment(item?.updatedAt).format("DD/MM/YYYY") || "N/A"}
-          </CustomText>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 

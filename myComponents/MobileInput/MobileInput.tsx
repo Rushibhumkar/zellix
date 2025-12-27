@@ -205,7 +205,9 @@ const MobileInput = ({
                   paddingHorizontal: 5,
                 }}
               >
-                <CustomText>{value}</CustomText>
+                <CustomText style={{ color: color.mainTxtColor }}>
+                  {value}
+                </CustomText>
               </TouchableOpacity>
             )}
           </View>

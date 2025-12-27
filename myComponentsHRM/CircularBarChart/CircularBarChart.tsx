@@ -14,6 +14,7 @@ import {
   useGetUserStatusChart,
 } from "../../hooks/useGetQuerryHRM";
 import { myConsole } from "../../hooks/useConsole";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TCircularBarChart {
   // pieData: [{
@@ -106,14 +107,16 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
             backgroundColor: color,
           }}
         />
-        <CustomText
-          fontSize={12}
-          fontWeight="400"
-          style={{ textTransform: "uppercase", color: "#2E67BE" }}
-        >
-          {text}
-          <CustomText color={color} fontSize={11}>{`(${value})`}</CustomText>
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText
+            fontSize={12}
+            fontWeight="400"
+            style={{ textTransform: "uppercase", color: "#2E67BE" }}
+          >
+            {text}
+            <CustomText color={color} fontSize={11}>{`(${value})`}</CustomText>
+          </CustomText>
+        </SlideFadeIn>
       </View>
     );
   };
@@ -155,14 +158,16 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
         ...shadowPrimaryColor,
       }}
     >
-      <CustomText
-        fontSize={16}
-        fontWeight="600"
-        marginBottom={10}
-        color={color.mainTxtColor}
-      >
-        {titleH[type]}
-      </CustomText>
+      <SlideFadeIn>
+        <CustomText
+          fontSize={16}
+          fontWeight="600"
+          marginBottom={10}
+          color={color.mainTxtColor}
+        >
+          {titleH[type]}
+        </CustomText>
+      </SlideFadeIn>
       <View style={{ flexDirection: "row", gap: 15, alignItems: "center" }}>
         <PieChart
           data={pieCirData?.length ? pieCirData : dummyUser}

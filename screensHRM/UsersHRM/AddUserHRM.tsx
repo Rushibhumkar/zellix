@@ -100,7 +100,7 @@ const AddUserHRM = () => {
   return (
     <ContainerHRM
       isBAck={{
-        title: "Add User",
+        title: update ? "Update User" : "Add User",
         isGoBack: () => console.log("first"),
       }}
     >

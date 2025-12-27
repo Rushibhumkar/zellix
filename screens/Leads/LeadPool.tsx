@@ -30,6 +30,7 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 // let bgByStatus = {
 //     assign: '#FECBA6',
@@ -219,53 +220,61 @@ const LeadPoolRowItem = ({
     >
       <View style={{ flexDirection: "row" }}>
         <View style={{ width: "65%", paddingEnd: 3 }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "700",
-              fontSize: 16,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.name}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              marginTop: 5,
-              textTransform: "capitalize",
-            }}
-          >
-            {item?.clientName}
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "700",
+                fontSize: 16,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.name}
+            </CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                marginTop: 5,
+                textTransform: "capitalize",
+              }}
+            >
+              {item?.clientName}
+            </CustomText>
+          </SlideFadeIn>
         </View>
         <View style={{ width: "35%", paddingEnd: 3 }}>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-            }}
-          >
-            {leadTypeObj?.[item?.type]}
-          </CustomText>
-          <CustomText
-            numberOfLines={1}
-            style={{
-              color: color.mainTxtColor,
-              fontWeight: "400",
-              fontSize: 15,
-              textTransform: "capitalize",
-              marginTop: 5,
-            }}
-          >
-            {item?.source || "N/A"}
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+              }}
+            >
+              {leadTypeObj?.[item?.type]}
+            </CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText
+              numberOfLines={1}
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 15,
+                textTransform: "capitalize",
+                marginTop: 5,
+              }}
+            >
+              {item?.source || "N/A"}
+            </CustomText>
+          </SlideFadeIn>
         </View>
       </View>
       <CustomBtn
@@ -283,25 +292,33 @@ const LeadPoolHeading = () => {
     <Container style={[{ paddingHorizontal: 20 }]}>
       <View style={styles.headingContainer}>
         <View style={{ width: "65%" }}>
-          <CustomText style={[styles.headingText]}>{"Project Name"}</CustomText>
-          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
-            {"Client Name"}
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={[styles.headingText]}>
+              {"Project Name"}
+            </CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={[styles.headingText, { marginTop: 5 }]}>
+              {"Client Name"}
+            </CustomText>
+          </SlideFadeIn>
         </View>
         <View style={{ width: "35%" }}>
-          <CustomText style={[styles.headingText]}>{"Type"}</CustomText>
-          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
-            {"Source"}
-          </CustomText>
+          <SlideFadeIn>
+            <CustomText style={[styles.headingText]}>{"Type"}</CustomText>
+          </SlideFadeIn>
+          <SlideFadeIn>
+            <CustomText style={[styles.headingText, { marginTop: 5 }]}>
+              {"Source"}
+            </CustomText>
+          </SlideFadeIn>
         </View>
-        {/* <View style={{ width: "32%", alignItems: 'center' }}>
-                    <CustomText
-                        style={[styles.headingText]}>{'Status'}
-                    </CustomText>
-                    <CustomText
-                        style={[styles.headingText, { marginTop: 5 }]}>{'Assigned'}
-                    </CustomText>
-                </View> */}
+        {/* <View style={{ width: "32%", alignItems: "center" }}>
+          <CustomText style={[styles.headingText]}>{"Status"}</CustomText>
+          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
+            {"Assigned"}
+          </CustomText>
+        </View> */}
       </View>
     </Container>
   );

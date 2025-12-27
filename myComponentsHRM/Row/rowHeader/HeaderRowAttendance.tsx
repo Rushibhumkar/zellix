@@ -4,6 +4,7 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
 import { LinearGradient } from "expo-linear-gradient";
 import { headerRowItemsStyle } from "../../../const/globalStyle";
+import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const HeaderRowAttendance = () => {
   return (
@@ -14,20 +15,32 @@ const HeaderRowAttendance = () => {
       style={headerRowItemsStyle}
     >
       <View style={styles.row1}>
-        <CustomText style={styles.text1}>Name</CustomText>
-        <CustomText style={styles.text2}>Role</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>Name</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>Role</CustomText>
+        </SlideFadeIn>
       </View>
       <View style={styles.row2}>
-        <CustomText style={styles.text1}>P.I.T</CustomText>
-        <CustomText style={styles.text2} numberOfLines={1}>
-          Issue
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1}>P.I.T</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2} numberOfLines={1}>
+            Issue
+          </CustomText>
+        </SlideFadeIn>
       </View>
       <View style={styles.row3}>
-        <CustomText style={styles.text1} color={"white"}>
-          Status
-        </CustomText>
-        <CustomText style={styles.text2}>Date</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.text1} color={"white"}>
+            Status
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.text2}>Date</CustomText>
+        </SlideFadeIn>
       </View>
     </LinearGradient>
   );
