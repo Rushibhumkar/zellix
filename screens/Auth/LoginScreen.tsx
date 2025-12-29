@@ -179,9 +179,7 @@ const LoginScreen = () => {
                               />
                             </View>
                           }
-                          props={{
-                            secureTextEntry: true,
-                          }}
+                          showPasswordToggle
                         />
                         {errors.password && touched?.password && (
                           <CustomText style={{ color: "red", marginTop: -44 }}>

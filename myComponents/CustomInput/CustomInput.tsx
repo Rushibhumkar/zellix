@@ -5,6 +5,7 @@ import {
   Text,
   TextInput,
   TextInputProps,
+  TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
@@ -12,6 +13,7 @@ import React, { useState } from "react";
 import { color } from "../../const/color";
 import CustomText from "../CustomText/CustomText";
 import { shadow2 } from "../../const/globalStyle";
+import { Feather } from "@expo/vector-icons";
 
 interface TCustomInput {
   value: string | number;
@@ -29,6 +31,7 @@ interface TCustomInput {
   numberOfLines?: number;
   leftIcon?: React.ReactNode;
   isShadow?: boolean;
+  showPasswordToggle?: boolean;
   keyboardType?:
     | "default"
     | "email-address"
@@ -54,8 +57,13 @@ const CustomInput = ({
   leftIcon,
   isShadow = false,
   keyboardType = "default",
+  showPasswordToggle = false,
 }: TCustomInput) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [hidePassword, setHidePassword] = useState(
+    showPasswordToggle ? true : props?.secureTextEntry === true
+  );
+
   return (
     <View style={[{ marginBottom }, containerStyle]}>
       {label && (
@@ -100,8 +108,23 @@ const CustomInput = ({
           multiline={multiline}
           numberOfLines={numberOfLines}
           editable={editable}
+          secureTextEntry={
+            showPasswordToggle ? hidePassword : props?.secureTextEntry
+          }
           {...props}
         />
+        {showPasswordToggle && (
+          <TouchableOpacity
+            onPress={() => setHidePassword((p) => !p)}
+            style={{ paddingRight: 6 }}
+          >
+            <Feather
+              name={hidePassword ? "eye-off" : "eye"}
+              size={20}
+              color={color.color1}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {errors && <CustomText style={styles.errorText}>{errors}</CustomText>}
