@@ -20,7 +20,7 @@ import {
 import Container from "../../myComponents/Container/Container";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import { deleteLead } from "../../services/rootApi/leadApi";
-import { getAllLeadFunc } from "../../redux/action";
+import * as reduxAction from "../../redux/action";
 import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
@@ -190,9 +190,11 @@ const AllLeads = ({ tabType }: any) => {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      await queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLead],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLead] }),
+        dispatch(reduxAction.refetchLoggedInUser()),
+        console.log("refreshed"),
+      ]);
     } catch (e) {
       console.log("refreshGetAllLeave", e);
     } finally {
