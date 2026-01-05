@@ -29,6 +29,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const RSVPManagerList = () => {
   const navigation = useNavigation();
@@ -324,22 +325,31 @@ const EventsRowItem = ({
       ]}
     >
       <View style={{ width: "26%", gap: 4 }}>
-        <CustomText style={styles.title}>{item?.title}</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.title}>{item?.title}</CustomText>
+        </SlideFadeIn>
       </View>
 
       <View style={{ width: "32%", alignItems: "center", gap: 4 }}>
-        <CustomText style={styles.status}>{item?.eventType}</CustomText>
-        <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.status}>{item?.eventType}</CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
+        </SlideFadeIn>
       </View>
 
       <View style={{ width: "42%", alignItems: "flex-end", gap: 4 }}>
-        <CustomText style={styles.date}>
-          {moment(item?.startDateTime).format("DD/MM/YYYY • hh:mm A")}
-        </CustomText>
-
-        <CustomText style={styles.date}>
-          {moment(item?.endDateTime).format("DD/MM/YYYY • hh:mm A")}
-        </CustomText>
+        <SlideFadeIn>
+          <CustomText style={styles.date}>
+            {moment(item?.startDateTime).format("DD/MM/YYYY • hh:mm A")}
+          </CustomText>
+        </SlideFadeIn>
+        <SlideFadeIn>
+          <CustomText style={styles.date}>
+            {moment(item?.endDateTime).format("DD/MM/YYYY • hh:mm A")}
+          </CustomText>
+        </SlideFadeIn>
       </View>
     </TouchableOpacity>
   );

@@ -4,7 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 import Feather from "react-native-vector-icons/Feather";
-import { routeBooking, routeMeeting } from "../../utils/routes";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { routeBooking, routeMeeting, routeRSVP } from "../../utils/routes";
 import { sizes } from "../../const";
 import { LinearGradient } from "expo-linear-gradient";
 import { formatCount } from "../../utils/commonFunctions";
@@ -137,8 +138,12 @@ const Card = ({ item, loading }: any) => {
             {title === "Meetings" && (
               <Feather name="calendar" size={20} color={iconColor} />
             )}
-            {title === "Bookings" && (
-              <Feather name="check-square" size={20} color={iconColor} />
+            {title === "RSVP" && (
+              <MaterialCommunityIcons
+                name="ticket-confirmation-outline"
+                size={20}
+                color={iconColor}
+              />
             )}
           </Animated.View>
 
@@ -199,9 +204,9 @@ const Card = ({ item, loading }: any) => {
           isLoading={loading}
         />
         <SingleCard
-          count={item?.bookings ?? 0}
-          title="Bookings"
-          onPress={() => navigate(routeBooking.bookingNavigator)}
+          count={item?.rsvp ?? 0}
+          title="RSVP"
+          onPress={() => navigate(routeRSVP.RSVPNavigator)}
           isLoading={loading}
         />
       </View>

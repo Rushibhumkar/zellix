@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Platform,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -17,6 +18,8 @@ import { EvilIcons } from "@expo/vector-icons";
 import CRMLogoIcon from "../../assets/svgHRM/CRMLogoIcon";
 import ChangePassLogo from "../../assets/svg/ChangePassLogo";
 import LogoutLogo from "../../assets/svg/LogoutLogo";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import * as Application from "expo-application";
 
 interface HRMMenuModalProps {
   visible: boolean;
@@ -36,6 +39,14 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
   user,
 }) => {
   const isAgent = user?.role === "agent";
+  const latestStoreVersion = "1.6.3";
+  const [isUpdateAvailable, setIsUpdateAvailable] = React.useState(false);
+  const appVersion = Application.nativeApplicationVersion || "1.0.0";
+  React.useEffect(() => {
+    if (appVersion !== latestStoreVersion) {
+      setIsUpdateAvailable(true);
+    }
+  }, []);
 
   const menuItems = [
     {
@@ -141,33 +152,37 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
                 marginTop: Platform.OS === "ios" ? -12 : 8,
               }}
             >
-              <LinearGradient
-                colors={["#2E67BE", "#4985F2"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  borderRadius: 12,
-                  padding: 10,
-                  marginBottom: 6,
-                  shadowColor: "#2452FA",
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {item.icon}
-              </LinearGradient>
-              <CustomText
-                style={{
-                  fontSize: 13,
-                  color: color.mainTxtColor,
-                  textAlign: "center",
-                  paddingHorizontal: 4,
-                }}
-              >
-                {item.label}
-              </CustomText>
+              <SlideFadeIn>
+                <LinearGradient
+                  colors={["#2E67BE", "#4985F2"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    borderRadius: 12,
+                    padding: 10,
+                    marginBottom: 6,
+                    shadowColor: "#2452FA",
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </LinearGradient>
+              </SlideFadeIn>
+              <SlideFadeIn>
+                <CustomText
+                  style={{
+                    fontSize: 13,
+                    color: color.mainTxtColor,
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  {item.label}
+                </CustomText>
+              </SlideFadeIn>
             </TouchableOpacity>
           ))}
         </View>
@@ -207,6 +222,17 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
               </>
             )}
           </TouchableOpacity>
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 12,
+              color: "#666",
+              fontSize: 13,
+              marginBottom: 8,
+            }}
+          >
+            App Version: {appVersion}
+          </Text>
         </View>
       </ModalContent>
     </Modal>

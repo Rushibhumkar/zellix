@@ -24,9 +24,11 @@ import { removeItemValue } from "../../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../../redux/action";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import { myConsole } from "../../hooks/useConsole";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
+  myConsole("userrrrr", user);
   const { navigate } = useNavigation();
   const insets = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = React.useState(false);

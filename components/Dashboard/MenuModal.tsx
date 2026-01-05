@@ -25,6 +25,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { checkPermission } from "../../utils/commonFunctions";
+import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface MenuModalProps {
   visible: boolean;
@@ -236,18 +237,22 @@ const MenuModal: React.FC<MenuModalProps> = ({
                     justifyContent: "center",
                   }}
                 >
-                  <Feather name={item.icon} size={22} color="#fff" />
+                  <SlideFadeIn>
+                    <Feather name={item.icon} size={22} color="#fff" />
+                  </SlideFadeIn>
                 </LinearGradient>
-                <CustomText
-                  style={{
-                    fontSize: 13,
-                    color: color.mainTxtColor,
-                    textAlign: "center",
-                    paddingHorizontal: 4,
-                  }}
-                >
-                  {item.label}
-                </CustomText>
+                <SlideFadeIn>
+                  <CustomText
+                    style={{
+                      fontSize: 13,
+                      color: color.mainTxtColor,
+                      textAlign: "center",
+                      paddingHorizontal: 4,
+                    }}
+                  >
+                    {item.label}
+                  </CustomText>
+                </SlideFadeIn>
               </TouchableOpacity>
             ))}
         </View>
@@ -262,34 +267,6 @@ const MenuModal: React.FC<MenuModalProps> = ({
             marginTop: 10,
           }}
         >
-          {/* Update Button (only visible if update is available) */}
-          {false && (
-            // {isUpdateAvailable && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                if (Platform.OS === "ios") {
-                  Linking.openURL("https://apps.apple.com/app/id6748918861");
-                } else {
-                  Linking.openURL(
-                    "https://play.google.com/store/apps/details?id=com.skg.zellix"
-                  );
-                }
-              }}
-              style={{
-                backgroundColor: "#2452FA",
-                borderRadius: 12,
-                paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginRight: 10,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
-                Update Available
-              </Text>
-            </TouchableOpacity>
-          )}
-
           {/* Logout Button */}
           <TouchableOpacity
             activeOpacity={0.6}
@@ -311,17 +288,22 @@ const MenuModal: React.FC<MenuModalProps> = ({
               <ActivityIndicator color={color.mainTxtColor} size="small" />
             ) : (
               <>
-                <Feather name="log-out" size={20} color="#fff" />
-                <CustomText
-                  style={{
-                    color: "#fff",
-                    fontSize: 16,
-                    fontWeight: "600",
-                    marginLeft: 6,
-                  }}
-                >
-                  Log Out
-                </CustomText>
+                <SlideFadeIn>
+                  <Feather name="log-out" size={20} color="#fff" />
+                </SlideFadeIn>
+
+                <SlideFadeIn>
+                  <CustomText
+                    style={{
+                      color: "#fff",
+                      fontSize: 16,
+                      fontWeight: "600",
+                      marginLeft: 6,
+                    }}
+                  >
+                    Log Out
+                  </CustomText>
+                </SlideFadeIn>
               </>
             )}
           </TouchableOpacity>
@@ -335,22 +317,21 @@ const MenuModal: React.FC<MenuModalProps> = ({
             fontSize: 13,
             marginBottom: 8,
           }}
-          onPress={() => {
-            if (isUpdateAvailable) {
-              if (Platform.OS === "ios") {
-                Linking.openURL("https://apps.apple.com/app/id6748918861");
-              } else {
-                Linking.openURL(
-                  "https://play.google.com/store/apps/details?id=com.skg.zellix"
-                );
-              }
-            } else {
-              setShowDot(true);
-            }
-          }}
+          // onPress={() => {
+          //   if (isUpdateAvailable) {
+          //     if (Platform.OS === "ios") {
+          //       Linking.openURL("https://apps.apple.com/app/id6748918861");
+          //     } else {
+          //       Linking.openURL(
+          //         "https://play.google.com/store/apps/details?id=com.skg.zellix"
+          //       );
+          //     }
+          //   } else {
+          //     setShowDot(true);
+          //   }
+          // }}
         >
           App Version: {appVersion}
-          {showDot && <Text style={{ color: color.mainTxtColorFade }}>.</Text>}
         </Text>
       </ModalContent>
     </Modal>
