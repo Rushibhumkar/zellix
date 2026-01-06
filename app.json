@@ -2,7 +2,7 @@
   "expo": {
     "name": "zellix",
     "slug": "zellix",
-    "version": "1.6.4",
+    "version": "1.6.5",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -16,9 +16,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.6.4",
+      "bundleNumber": "1.6.5",
       "supportsTablet": true,
-      "buildNumber": "107",
+      "buildNumber": "108",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features."
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 104,
+      "versionCode": 105,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -85,7 +85,7 @@
       "expo-notifications"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "1.6.4",
+    "runtimeVersion": "1.6.5",
     "updates": {
       "enabled": true,
       "fallbackToCacheTimeout": 0,
