@@ -93,10 +93,11 @@ import AddEvent from "../screens/RSVP/AddEvent";
 import RSVPEventDetail from "../screens/RSVP/RSVPEventDetail";
 import RsvpFocus from "../assets/svg/RsvpFocus";
 import RsvpInfocus from "../assets/svg/RsvpInfocus";
+import { navigationRef } from "./navigationRef";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const navigationRef = createNavigationContainerRef();
+// const navigationRef = createNavigationContainerRef();
 
 export const navigate = (name, params) => {
   if (navigationRef.isReady()) {

@@ -82,14 +82,15 @@
         }
       ],
       "expo-mail-composer",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-updates"
     ],
     "owner": "rushibhumkar14",
     "runtimeVersion": "1.6.5",
     "updates": {
       "enabled": true,
       "fallbackToCacheTimeout": 0,
-      "checkAutomatically": "ON_LOAD",
+     "checkAutomatically": "NEVER",
       "url": "https://u.expo.dev/e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
     },
     "extra": {

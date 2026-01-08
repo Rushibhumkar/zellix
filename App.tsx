@@ -95,6 +95,18 @@ export default function App() {
   }, []);
 
   LogBox.ignoreAllLogs(true);
+  console.log("insedeappp.tsxfile");
+  console.log("OTA enabled:", Updates.isEnabled);
+  console.log("OTA channel:", Updates.channel);
+  console.log("OTA runtime:", Updates.runtimeVersion);
+  console.log("OTA FINAL TEST");
+
+  useEffect(() => {
+    setTimeout(async () => {
+      const update = await Updates.checkForUpdateAsync();
+      Alert.alert("OTA DEBUG", JSON.stringify(update));
+    }, 3000);
+  }, []);
 
   return (
     <>

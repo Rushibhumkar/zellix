@@ -1,6 +1,5 @@
-// UpdateChecker.tsx
 import React, { useEffect, useState } from "react";
-import { Modal, View, Text, Button, StyleSheet } from "react-native";
+import { Modal, View, AppState } from "react-native";
 import * as Updates from "expo-updates";
 import CustomBtn from "../CustomBtn/CustomBtn";
 import CustomText from "../CustomText/CustomText";
@@ -8,45 +7,51 @@ import CustomText from "../CustomText/CustomText";
 const UpdateChecker = () => {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
-  const checkForUpdates = async () => {
+  const check = async () => {
     try {
       const update = await Updates.checkForUpdateAsync();
+      console.log("OTA check result:", update);
+
       if (update.isAvailable) {
         setIsUpdateAvailable(true);
       }
-    } catch (error) {
-      console.log("Update check failed:", error);
+    } catch (e) {
+      console.log("OTA check error:", e);
     }
   };
+
   useEffect(() => {
-    checkForUpdates();
+    check();
+
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        check();
+      }
+    });
+
+    return () => sub.remove();
   }, []);
 
   const handleUpdateNow = async () => {
-    try {
-      const result = await Updates.fetchUpdateAsync();
-      if (result.isNew) {
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      console.log("Update failed:", error);
-    }
+    await Updates.fetchUpdateAsync();
+    await Updates.reloadAsync();
   };
 
   return (
     <Modal visible={isUpdateAvailable} transparent animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <CustomText style={styles.title}>New Update Available</CustomText>
-          <CustomText style={styles.message}>
-            Please update the app to get the latest features.
-          </CustomText>
-          {/* <Button title="Update Now" onPress={handleUpdateNow} /> */}
-          <CustomBtn
-            title="Update Now"
-            onPress={handleUpdateNow}
-            textStyle={{ fontSize: 15 }}
-          />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
+      >
+        <View
+          style={{ backgroundColor: "white", padding: 20, borderRadius: 12 }}
+        >
+          <CustomText>New update available</CustomText>
+          <CustomBtn title="Update Now" onPress={handleUpdateNow} />
         </View>
       </View>
     </Modal>
@@ -54,29 +59,3 @@ const UpdateChecker = () => {
 };
 
 export default UpdateChecker;
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modal: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 12,
-    width: "80%",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  message: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-});

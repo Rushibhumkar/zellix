@@ -1,5 +1,10 @@
 import axios from "axios";
-import { getData } from "../../hooks/useAsyncStorage";
+import { getData, removeItemValue } from "../../hooks/useAsyncStorage";
+import { onLogOutEmpty } from "../../redux/action";
+import store from "../../redux/store";
+import { CommonActions } from "@react-navigation/native";
+import { navigationRef } from "../../navigation/navigationRef";
+import { myConsole } from "../../hooks/useConsole";
 
 // let testURL = "https://zellix-backend.onrender.com";
 let testURL = "https://zellix-backend-1.onrender.com";
@@ -41,7 +46,45 @@ axiosInstance.interceptors.request.use(
 //     },
 //     err => axiosError(err),
 //   );
-export const setBaseUrl = (newBaseUrl) => {
+
+myConsole("axiosInstance.interceptors", axiosInstance);
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error?.response?.status;
+    const message = error?.response?.data;
+    if (status === 401 && message === "SESSION_EXPIRED") {
+      // console.log("SESSION_EXPIRED → Auto logout");
+
+      await removeItemValue("token");
+      await removeItemValue("userDetail");
+
+      store.dispatch(onLogOutEmpty());
+
+      // 🔥 Reset navigation stack
+
+      // if (navigationRef.isReady()) {
+      //   navigationRef.dispatch(
+      //     CommonActions.reset({
+      //       index: 0,
+      //       routes: [{ name: "Login" }],
+      //     })
+      //   );
+      // }
+      setTimeout(() => {
+        navigationRef.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          })
+        );
+      }, 100);
+    }
+
+    return Promise.reject(error);
+  }
+);
+export const setBaseUrl = (newBaseUrl: any) => {
   baseURL = newBaseUrl;
   axiosInstance.defaults.baseURL = baseURL;
 };

@@ -28,7 +28,6 @@ import { myConsole } from "../../hooks/useConsole";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
-  myConsole("userrrrr", user);
   const { navigate } = useNavigation();
   const insets = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = React.useState(false);
