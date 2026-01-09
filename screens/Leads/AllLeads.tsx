@@ -193,10 +193,8 @@ const AllLeads = ({ tabType }: any) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLead] }),
         dispatch(reduxAction.refetchLoggedInUser()),
-        console.log("refreshed"),
       ]);
     } catch (e) {
-      console.log("refreshGetAllLeave", e);
     } finally {
       setRefreshing(false);
     }
@@ -236,7 +234,7 @@ const AllLeads = ({ tabType }: any) => {
       } else if (tabType === "lead") {
         handleLeadTypeSelect("lead", false);
       } else {
-        console.log("⚠️ Unknown tabType prop:", tabType);
+        // console.log("⚠️ Unknown tabType prop:", tabType);
       }
     }
   }, [isFocused, tabType]);

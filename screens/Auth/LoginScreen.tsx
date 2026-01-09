@@ -33,14 +33,14 @@ import { iconWrapperStyle } from "../../const/globalStyle";
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
-    email: "kumarvishalpost1@gmail.com",
-    password: "123456789",
+    // email: "kumarvishalpost1@gmail.com",
+    // password: "123456789",
     // email: "suurajkummargupta@gmail.com",
     // password: "123456789",
     // email: "kashif22@mailinator.com",
     // password: "123456789",
-    // email: "mohdkashif1008@gmail.com",
-    // password: "123456789",
+    email: "mohdkashif1008@gmail.com",
+    password: "123456789",
     // password: "12345678",
     // email: "test@test.com",
     // password: "123456789",

@@ -19,7 +19,13 @@ import TabButton from "./TabButton";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
 
-const LeadUserInfo = ({ leadId = "", onTabPress, activeTab, setActiveTab }) => {
+const LeadUserInfo = ({
+  leadId = "",
+  onTabPress,
+  activeTab,
+  setActiveTab,
+  selectLeadType,
+}: any) => {
   const userInfo = useGetUserInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -31,7 +37,13 @@ const LeadUserInfo = ({ leadId = "", onTabPress, activeTab, setActiveTab }) => {
 
   return (
     <Container>
-      <Header title={"Lead Details"} />
+      <Header
+        title={
+          selectLeadType === "calling_data"
+            ? "Calling Data Info"
+            : "Lead Details"
+        }
+      />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
       {userInfo?.isLoading && <ActivityIndicator />}
       <ScrollView

@@ -32,7 +32,12 @@ const logDetailKey = {
   commentFrom: "Comment From",
 };
 
-const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
+const LeadLogsInfo = ({
+  leadId = "",
+  setActiveTab,
+  activeTab,
+  selectLeadType,
+}: any) => {
   const logsInfo = useGetLogsInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
   // myConsole("logsInfoss", logsInfo);
@@ -45,7 +50,13 @@ const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
 
   return (
     <Container>
-      <Header title={"Lead Details"} />
+      <Header
+        title={
+          selectLeadType === "calling_data"
+            ? "Calling Data Info"
+            : "Lead Details"
+        }
+      />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
       {logsInfo?.isLoading && <ActivityIndicator />}
       <ScrollView
@@ -69,7 +80,7 @@ const LeadLogsInfo = ({ leadId = "", setActiveTab, activeTab }) => {
             </View>
           )}
           {logsInfo.data?.map((x, i, arr) => {
-            console.log("x", x);
+            // console.log("x", x);
             const date = moment(x?.assignedAt).format("DD/MM/YYYY hh:ss a");
             const statusTo = inLeadStatus.find((y) => y._id === x?.to)?.name;
             const statusFrom = inLeadStatus.find(

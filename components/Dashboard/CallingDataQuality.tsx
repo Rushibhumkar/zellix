@@ -19,7 +19,7 @@ const CallingDataQuality = ({ onRefresh }: any) => {
     moment("2025-06-01", "YYYY-MM-DD")
   );
 
-  const [endDate, setEndDate] = useState(moment("2025-12-31", "YYYY-MM-DD"));
+  const [endDate, setEndDate] = useState(moment("2026-01-31", "YYYY-MM-DD"));
 
   const {
     data,

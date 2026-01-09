@@ -14,11 +14,7 @@ import { useGetLeadProjectWise } from "../../hooks/useCRMgetQuerry";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import { color } from "../../const/color";
-import {
-  shadow1,
-  shadowPrimaryColor,
-  shadowSecondaryColor,
-} from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 

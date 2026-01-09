@@ -68,15 +68,6 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
       />
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <CustomBtn
-          title="Add Note"
-          onPress={formik.handleSubmit}
-          isLoading={formik.isSubmitting}
-          containerStyle={{ width: 150, padding: 0 }}
-          textStyle={{ fontSize: 15, padding: 5 }}
-          disabled={!leadID && !formik.values.note}
-          gradientContStyle={{ paddingVertical: 8 }}
-        />
-        <CustomBtn
           title="Close"
           onPress={() => {
             formik.resetForm();
@@ -87,6 +78,15 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
             padding: 0,
           }}
           textStyle={{ fontSize: 15, padding: 5 }}
+          gradientContStyle={{ paddingVertical: 8 }}
+        />
+        <CustomBtn
+          title="Add Note"
+          onPress={formik.handleSubmit}
+          isLoading={formik.isSubmitting}
+          containerStyle={{ width: 150, padding: 0 }}
+          textStyle={{ fontSize: 15, padding: 5 }}
+          disabled={!leadID && !formik.values.note}
           gradientContStyle={{ paddingVertical: 8 }}
         />
       </View>

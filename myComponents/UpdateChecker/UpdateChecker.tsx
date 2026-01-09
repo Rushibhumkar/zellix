@@ -10,13 +10,10 @@ const UpdateChecker = () => {
   const check = async () => {
     try {
       const update = await Updates.checkForUpdateAsync();
-      console.log("OTA check result:", update);
-
-      if (update.isAvailable) {
-        setIsUpdateAvailable(true);
-      }
+      console.log("OTA check:", update);
+      setIsUpdateAvailable(update.isAvailable);
     } catch (e) {
-      console.log("OTA check error:", e);
+      console.log("OTA check failed:", e);
     }
   };
 
@@ -33,8 +30,23 @@ const UpdateChecker = () => {
   }, []);
 
   const handleUpdateNow = async () => {
-    await Updates.fetchUpdateAsync();
-    await Updates.reloadAsync();
+    try {
+      console.log("Manual update started");
+
+      const update = await Updates.checkForUpdateAsync();
+      console.log("checkForUpdate:", update);
+
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        setIsUpdateAvailable(false);
+        console.log("Update fetched, reloading...");
+        await Updates.reloadAsync();
+      } else {
+        console.log("No update available on server");
+      }
+    } catch (e) {
+      console.log("Update failed:", e);
+    }
   };
 
   return (
@@ -48,7 +60,13 @@ const UpdateChecker = () => {
         }}
       >
         <View
-          style={{ backgroundColor: "white", padding: 20, borderRadius: 12 }}
+          style={{
+            backgroundColor: "white",
+            padding: 20,
+            borderRadius: 12,
+            minWidth: 250,
+            alignItems: "center",
+          }}
         >
           <CustomText>New update available</CustomText>
           <CustomBtn title="Update Now" onPress={handleUpdateNow} />

@@ -334,7 +334,6 @@ const LeadsDetails = () => {
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
-
   return (
     <>
       {activeTab === 1 && (
@@ -728,6 +727,7 @@ const LeadsDetails = () => {
       )}
       {activeTab === 2 && (
         <LeadUserInfo
+          selectLeadType={selectLeadType}
           leadId={detail?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -735,6 +735,7 @@ const LeadsDetails = () => {
       )}
       {activeTab === 3 && (
         <LeadLogsInfo
+          selectLeadType={selectLeadType}
           leadId={detail?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -742,6 +743,7 @@ const LeadsDetails = () => {
       )}
       {activeTab === 4 && (
         <MeetingInfo
+          selectLeadType={selectLeadType}
           leadId={params?.item?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}

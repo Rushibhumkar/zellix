@@ -93,7 +93,7 @@ const DashbordHeader = () => {
               />
             ) : (
               <CustomText style={styles.userName}>
-                {user?.name || ""}
+                {`${user?.name || ""} ${user?.lastName || ""}`.trim()}
               </CustomText>
             )}
 

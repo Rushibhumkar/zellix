@@ -21,7 +21,12 @@ import { sizes } from "../../../const";
 import { color } from "../../../const/color";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 
-const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
+const MeetingInfo = ({
+  leadId = "",
+  setActiveTab,
+  activeTab,
+  selectLeadType,
+}: any) => {
   const logsInfo = useLatestMeetings(leadId);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -33,7 +38,13 @@ const MeetingInfo = ({ leadId = "", setActiveTab, activeTab }) => {
 
   return (
     <Container>
-      <Header title="Lead Details" />
+      <Header
+        title={
+          selectLeadType === "calling_data"
+            ? "Calling Data Info"
+            : "Lead Details"
+        }
+      />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
       {logsInfo?.isLoading && <ActivityIndicator color={color.mainTxtColor} />}
       <ScrollView

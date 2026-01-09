@@ -99,13 +99,29 @@ export default function App() {
   console.log("OTA enabled:", Updates.isEnabled);
   console.log("OTA channel:", Updates.channel);
   console.log("OTA runtime:", Updates.runtimeVersion);
-  console.log("OTA FINAL TEST");
+  console.log("🔥 OTA VERSION 2");
 
   useEffect(() => {
     setTimeout(async () => {
       const update = await Updates.checkForUpdateAsync();
       Alert.alert("OTA DEBUG", JSON.stringify(update));
     }, 3000);
+  }, []);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        console.log("🟢 OTA enabled:", Updates.isEnabled);
+        console.log("🟢 OTA channel:", Updates.channel);
+        console.log("🟢 OTA runtime:", Updates.runtimeVersion);
+        console.log("🟢 OTA check result:", update);
+      } catch (e) {
+        console.log("🔴 OTA check error:", e);
+      }
+    };
+
+    setTimeout(check, 3000);
   }, []);
 
   return (

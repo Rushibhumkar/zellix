@@ -88,15 +88,16 @@
     "owner": "rushibhumkar14",
     "runtimeVersion": "1.6.5",
     "updates": {
-      "enabled": true,
-      "fallbackToCacheTimeout": 0,
-     "checkAutomatically": "NEVER",
+     "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
     },
     "extra": {
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
-      }
+      },
+      "appVersion": "1.6.6"
     },
     "android.buildType": "app-bundle"
   }
