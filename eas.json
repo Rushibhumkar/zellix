@@ -18,11 +18,13 @@
       "distribution": "internal",
       "channel": "preview"
     },
-   "production": {
+  "production": {
   "autoIncrement": true,
   "channel": "production",
   "env": {
-    "DISABLE_XCODE_SANDBOX": "1"
+    "DISABLE_XCODE_SANDBOX": "1",
+    "XCODE_DISABLE_PACKAGE_SANDBOX": "1",
+    "XCODE_DISABLE_SCRIPT_SANDBOX": "1"
   },
   "android": {
     "buildType": "app-bundle",
