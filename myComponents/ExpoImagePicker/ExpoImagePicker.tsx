@@ -83,7 +83,7 @@ const ExpoImagePicker = ({
        * 🖼 GALLERY PICKER
        * -------------------------------------------------- */
       if (mode === "gallery") {
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+        // await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
