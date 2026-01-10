@@ -18,14 +18,17 @@
       "distribution": "internal",
       "channel": "preview"
     },
-    "production": {
-          "autoIncrement": true,
-          "channel": "production",
-          "android": {
-            "buildType": "app-bundle",
-            "credentialsSource": "remote"
-          }
-    }
+   "production": {
+  "autoIncrement": true,
+  "channel": "production",
+  "env": {
+    "DISABLE_XCODE_SANDBOX": "1"
+  },
+  "android": {
+    "buildType": "app-bundle",
+    "credentialsSource": "remote"
+  }
+}
   },
   "submit": {
     "production": {
