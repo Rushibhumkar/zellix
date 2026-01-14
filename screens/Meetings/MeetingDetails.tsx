@@ -77,7 +77,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 //   return Linking.openURL(url);
 // }
 
-export const getAddressFromCoordinates = async (coordinates) => {
+export const getAddressFromCoordinates = async (coordinates: any) => {
   const { latitude, longitude } = coordinates;
   try {
     console.log("latitude", latitude, "longitude", longitude);
@@ -130,12 +130,9 @@ const MeetingDetails = () => {
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [mapLatLng, setMapLatLng] = useState({});
   const { allUsers, user } = useSelector(selectUser);
-  const [isLoadingMeeting, setIsLoadingMeeting] = useState(false);
   const [isLoadingOtp, setIsLoadingOtp] = useState(false);
   const [isLoadingRemark, setIsLoadingRemark] = useState(false);
-  const [isLoadingBooking, setIsLoadingBooking] = useState(false);
   const [isLoadingConduct, setIsLoadingConduct] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [followUpId, setFollowUpId] = useState("");
   const [token, setToken] = useState("");
   const [location, setLocation] = useState(null);
@@ -143,6 +140,7 @@ const MeetingDetails = () => {
   //react query
   const { data: detail, isLoading: isLoadingQuery } = useGetMeetingById(id);
 
+  // myConsole("meededetailll", detail);
   //location
   useEffect(() => {
     console.log("detail?.createdBy?._id", detail?.createdBy?._id);
@@ -221,7 +219,7 @@ const MeetingDetails = () => {
       setFollowUpId(_id);
       toggleModalOtpVerify();
     } catch (error) {
-      myConsole(error);
+      console.log(error);
     }
     setIsLoadingConduct(false);
   };
@@ -537,7 +535,6 @@ const MeetingDetails = () => {
                         <CustomBtn
                           title="Reschedule"
                           textStyle={{ fontSize: 12, color: "#fff" }}
-                          isLoading={isLoading}
                           //  onPress={toggleModal}
                           onPress={rescheduleMeeting}
                           containerStyle={{

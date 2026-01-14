@@ -37,7 +37,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
-import { checkPermission } from "../../utils/commonFunctions";
+import { checkPermission, formatDate } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
@@ -378,7 +378,9 @@ const AllLeads = ({ tabType }: any) => {
                 <LeadListHeading
                   noText={"No"}
                   nameText={"Client Name"}
+                  belowNameText={"Mobile no."}
                   typeText={"Assigned"}
+                  belowTypeText={"Assigned At"}
                   statusText={"Status"}
                 />
               </View>
@@ -517,7 +519,7 @@ const LeadRowItem = React.memo(
                 style={{
                   color: color.strokeColor,
                   fontWeight: "400",
-                  marginTop: 5,
+                  marginTop: 4,
                   textTransform: "capitalize",
                 }}
               >
@@ -535,6 +537,18 @@ const LeadRowItem = React.memo(
                 }}
               >
                 {item?.assign?.name}
+              </CustomText>
+              <CustomText
+                numberOfLines={1}
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "400",
+                  fontSize: 12,
+                  textTransform: "capitalize",
+                  marginTop: 4,
+                }}
+              >
+                {formatDate(item?.assignedAt, "dd/mm/yyyy hh:MM")}
               </CustomText>
             </View>
             <View

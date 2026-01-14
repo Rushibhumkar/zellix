@@ -48,6 +48,7 @@ const Notification = () => {
       fetchNextPage && fetchNextPage();
     }
   };
+
   const onRefresh = () => {
     setRefreshing(true);
     refetch();
@@ -87,31 +88,80 @@ const Notification = () => {
     "viewDetails",
     user?.role
   );
+  const canViewBookings = checkPermission(
+    permission,
+    "Bookings",
+    "sidebar",
+    user?.role
+  );
+  const canViewMeetings = checkPermission(
+    permission,
+    "Meeting",
+    "sidebar",
+    user?.role
+  );
 
   // const groupedNotifications = groupNotificationsByDate(user?.notifications);
   const groupedNotifications = groupNotificationsByDate(notifiData ?? []);
   const handleNotificationSeen = async (item) => {
-    // myConsole('item', item)
     try {
       if (!item?.seen) {
         await getNotificationSeenById(user?._id, item?._id);
         refetch();
       }
+
       if (item?.type === "Lead") {
-        navigate(routeLead.allLead);
-      } else if (item?.type === "Meeting") {
-        navigate(routeMeeting.MeetingsNavigator);
-      } else if (item?.type === "Booking") {
-        if (canViewBookingDetails) {
-          navigate(routeBooking.bookingNavigator);
+        navigate("allLead2");
+        return;
+      }
+
+      if (item?.type === "Meeting") {
+        if (!canViewMeetings) {
+          Alert.alert(
+            "Access Denied",
+            "You don't have access to view meetings."
+          );
+          return;
+        }
+
+        if (item?.dataId) {
+          navigate(routeMeeting.MeetingsNavigator, {
+            screen: routeMeeting.MeetingDetails,
+            params: { item: { _id: item.dataId } },
+          });
         } else {
+          navigate(routeMeeting.MeetingsNavigator);
+        }
+        return;
+      }
+
+      if (item?.type === "Booking") {
+        if (!canViewBookings) {
+          Alert.alert(
+            "Access Denied",
+            "You don't have access to view bookings."
+          );
+          return;
+        }
+
+        if (!canViewBookingDetails && item?.dataId) {
           Alert.alert(
             "Access Denied",
             "You don't have access to view booking details."
           );
+          return;
         }
+
+        if (item?.dataId) {
+          navigate(routeBooking.bookingNavigator, {
+            screen: routeBooking.BookingDetail,
+            params: { item: { _id: item.dataId } },
+          });
+        } else {
+          navigate(routeBooking.bookingNavigator);
+        }
+        return;
       }
-      // getNotification();
     } catch (err) {
       console.log("err", err);
     }

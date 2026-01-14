@@ -8,7 +8,9 @@ import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 interface LeadListHeadingProps {
   noText: string;
   nameText: string;
+  belowNameText: string;
   typeText: string;
+  belowTypeText: string;
   statusText: string;
   containerStyle?: StyleProp<ViewStyle>;
 }
@@ -16,7 +18,9 @@ interface LeadListHeadingProps {
 const LeadListHeading: React.FC<LeadListHeadingProps> = ({
   noText,
   nameText,
+  belowNameText,
   typeText,
+  belowTypeText,
   statusText,
   containerStyle,
 }) => {
@@ -37,12 +41,14 @@ const LeadListHeading: React.FC<LeadListHeadingProps> = ({
         <View style={{ width: "36%" }}>
           <SlideFadeIn>
             <CustomText style={styles.headingText}>{nameText}</CustomText>
+            <CustomText style={styles.headingText}>{belowNameText}</CustomText>
           </SlideFadeIn>
         </View>
 
         <View style={{ width: "27%", alignItems: "center" }}>
           <SlideFadeIn>
             <CustomText style={styles.headingText}>{typeText}</CustomText>
+            <CustomText style={styles.headingText}>{belowTypeText}</CustomText>
           </SlideFadeIn>
         </View>
 
@@ -64,7 +70,6 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     marginBottom: -8,
     marginTop: 16,
-    alignItems: "center",
   },
   headingText: {
     fontSize: 14,

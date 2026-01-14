@@ -54,7 +54,7 @@ import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import CancelIcon from "../../assets/svg/CancelIcon";
 import { sendFollowUpNotification } from "../../services/rootApi/notificationApi";
-import { checkPermission } from "../../utils/commonFunctions";
+import { checkPermission, formatDate } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
 import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
@@ -115,6 +115,7 @@ const LeadsDetails = () => {
   // let detail = params?.item;
   // let detail = {};
   let details = params?.item;
+
   let selectLeadType = params?.selectLeadType;
   //detail nam se state btao waha leadDetailById ka data save kro ##start
   // const { data: detail, isLoading: isLoadingQuery } = useGetLeadDetail(params?.item?._id);
@@ -124,8 +125,6 @@ const LeadsDetails = () => {
     refetch: refetchLeadDetail,
   } = useGetLeadById(params?.item?._id);
   const useLatest = useLatestMeetings(params?.item?._id);
-  // myConsole('params?.item', params?.item)
-  //##end
 
   const dispatch = useDispatch();
   const [isVisible, setIsVisible] = useState(false);
@@ -618,6 +617,17 @@ const LeadsDetails = () => {
                 value={detail?.assign?.name}
                 containerStyle={{ marginBottom: 10 }}
               />
+              <RowItem
+                title="Assigned At"
+                value={formatDate(
+                  detail?.assignedAt ||
+                    detail?.assignedUsers?.[detail.assignedUsers.length - 1]
+                      ?.assignedAt,
+                  "dd/mm/yyyy hh:MM"
+                )}
+                containerStyle={{ marginBottom: 10 }}
+              />
+
               <RowItem
                 title="Role"
                 value={userTypes[detail?.assign?.role]}

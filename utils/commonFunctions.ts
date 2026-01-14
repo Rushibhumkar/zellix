@@ -28,3 +28,43 @@ export function truncateString(value, length = 18) {
   if (value.length <= length) return value;
   return value.slice(0, length - 3) + "...";
 }
+
+type DateFormat =
+  | "dd/mm/yyyy"
+  | "dd/mm/yyyy hh:MM"
+  | "dd-mm-yyyy hh:MM"
+  | "yyyy-mm-dd"
+  | "dd Mon yyyy"
+  | "dd Mon yyyy hh:MM"
+  | string;
+
+export function formatDate(
+  dateString: string,
+  format: DateFormat = "dd/mm/yyyy"
+): string {
+  if (!dateString) return "—";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid date";
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  const map: Record<string, string> = {
+    dd: pad(date.getDate()),
+    mm: pad(date.getMonth() + 1),
+    yyyy: date.getFullYear().toString(),
+    yy: date.getFullYear().toString().slice(-2),
+    hh: pad(date.getHours()),
+    MM: pad(date.getMinutes()),
+    ss: pad(date.getSeconds()),
+    Mon: date.toLocaleString("en-US", { month: "short" }),
+  };
+
+  let result = format;
+
+  Object.keys(map).forEach((token) => {
+    result = result.replace(new RegExp(token, "g"), map[token]);
+  });
+
+  return result;
+}

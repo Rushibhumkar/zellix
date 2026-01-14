@@ -93,6 +93,8 @@ const BookingDetail = () => {
   // const data = params?.item ?? null;
   const [isApproveExecuted, setisApproveExecuted] = useState(false);
   const { data, isLoading } = useGetBookingById(params?.item?._id);
+
+  // myConsole("bodetailsss", data);
   const dispatch = useDispatch();
   const { user, lead, allUsers } = useSelector(selectUser);
   // const filterLead = lead.find((lead) => lead._id === data?.meeting?.lead);

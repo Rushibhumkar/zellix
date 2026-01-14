@@ -33,8 +33,8 @@ import { iconWrapperStyle } from "../../const/globalStyle";
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
-    // email: "kumarvishalpost1@gmail.com",
-    // password: "123456789",
+    email: "vishal@skgestates.com",
+    password: "Application@2025*!",
     // email: "suurajkummargupta@gmail.com",
     // password: "123456789",
     // email: "kashif22@mailinator.com",
@@ -46,8 +46,8 @@ const LoginScreen = () => {
     // password: "123456789",
     // email: "dev20@swavishtek.com",
     // password: "123456789",
-    email: "",
-    password: "",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
