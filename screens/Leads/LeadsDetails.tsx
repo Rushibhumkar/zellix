@@ -108,6 +108,7 @@ const LeadsDetails = () => {
     user?.role === roleEnum?.sub_admin ||
     user?.role === roleEnum?.sup_admin ||
     user?.role === roleEnum?.sr_manager;
+
   const { params } = useRoute();
 
   const modalNote = useModal();
@@ -143,6 +144,7 @@ const LeadsDetails = () => {
       statusInfo: detail?.statusInfo ?? "",
     });
   }, [detail]);
+
   const [isMailAvail, setIsMailAvail] = useState(false);
   const isAdminOrAssigne =
     user?.role === "sup_admin" ||
@@ -250,7 +252,7 @@ const LeadsDetails = () => {
       setCallDetect({
         isCall: true,
         leadId: detail?._id,
-      })
+      }),
     );
     await Linking.openURL(`tel:+${detail?.clientMobile}`);
   };
@@ -406,24 +408,26 @@ const LeadsDetails = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <TouchableOpacity
-              style={{
-                alignSelf: "flex-end",
-                backgroundColor: color.mainTxtColorFade,
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-                borderRadius: 8,
-                marginBottom: 8,
-                borderWidth: 2,
-                borderColor: color.borderColor,
-              }}
-              activeOpacity={0.6}
-              onPress={() => setShowNotiPopup(true)}
-            >
-              <CustomText style={{ color: color.mainTxtColor }}>
-                Send Follow Up Notification
-              </CustomText>
-            </TouchableOpacity>
+            {isSubSupSrMng && (
+              <TouchableOpacity
+                style={{
+                  alignSelf: "flex-end",
+                  backgroundColor: color.mainTxtColorFade,
+                  paddingHorizontal: 16,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  marginBottom: 8,
+                  borderWidth: 2,
+                  borderColor: color.borderColor,
+                }}
+                activeOpacity={0.6}
+                onPress={() => setShowNotiPopup(true)}
+              >
+                <CustomText style={{ color: color.mainTxtColor }}>
+                  Send Follow Up Notification
+                </CustomText>
+              </TouchableOpacity>
+            )}
             <View style={{ paddingBottom: 150 }}>
               {isLoadingQuery && <ActivityIndicator />}
               <MainTitle
@@ -623,7 +627,7 @@ const LeadsDetails = () => {
                   detail?.assignedAt ||
                     detail?.assignedUsers?.[detail.assignedUsers.length - 1]
                       ?.assignedAt,
-                  "dd/mm/yyyy hh:MM"
+                  "dd/mm/yyyy hh:MM",
                 )}
                 containerStyle={{ marginBottom: 10 }}
               />
@@ -684,7 +688,7 @@ const LeadsDetails = () => {
               />
               {!!detail?.additionalQuestions &&
                 Object.entries(
-                  extractStringObj(detail?.additionalQuestions)
+                  extractStringObj(detail?.additionalQuestions),
                 ).map(([key, value], index) => {
                   return (
                     <RowItem
@@ -708,7 +712,7 @@ const LeadsDetails = () => {
                       key={el?._id || i}
                       title={`Call Info ${i + 1}`}
                       value={`${duration.hours()}:${duration.minutes()}:${duration.seconds()} , ${moment(
-                        el?.callTime
+                        el?.callTime,
                       ).format("MM-DD-YYYY HH:mm")}`}
                       containerStyle={{ marginBottom: 10 }}
                     />
