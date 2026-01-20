@@ -1,77 +1,140 @@
-import React, { useEffect, useState } from "react";
-import { Modal, View, AppState } from "react-native";
-import * as Updates from "expo-updates";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Modal,
+  View,
+  Linking,
+  Platform,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from "react-native";
+import * as Application from "expo-application";
 import CustomBtn from "../CustomBtn/CustomBtn";
 import CustomText from "../CustomText/CustomText";
+import { getAppVersion } from "../../services/rootApi/api";
+import { myConsole } from "../../hooks/useConsole";
+import { Feather } from "@expo/vector-icons";
+
+/* ---------- VERSION COMPARE ---------- */
+const compareVersions = (current: string, target: string) => {
+  const c = current.split(".").map(Number);
+  const t = target.split(".").map(Number);
+
+  for (let i = 0; i < Math.max(c.length, t.length); i++) {
+    const diff = (c[i] || 0) - (t[i] || 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+};
 
 const UpdateChecker = () => {
-  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
+  const hasCheckedRef = useRef(false);
 
-  const check = async () => {
-    try {
-      const update = await Updates.checkForUpdateAsync();
-      console.log("OTA check:", update);
-      setIsUpdateAvailable(update.isAvailable);
-    } catch (e) {
-      console.log("OTA check failed:", e);
-    }
-  };
+  const [visible, setVisible] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(false);
+  const [storeUrl, setStoreUrl] = useState("");
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    check();
+    if (hasCheckedRef.current) return;
+    hasCheckedRef.current = true;
 
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") {
-        check();
+    const checkVersion = async () => {
+      try {
+        const res = await getAppVersion();
+        const data = res?.data?.data;
+
+        const platformData =
+          Platform.OS === "android" ? data.android : data.ios;
+
+        if (!platformData?.isActive) return;
+
+        const currentVersion = Application.applicationVersion || "0.0.0";
+
+        const {
+          latestVersion,
+          minSupportedVersion,
+          forceUpdate,
+          appStoreUrl,
+          releaseNotes,
+        } = platformData;
+
+        const belowMin =
+          compareVersions(currentVersion, minSupportedVersion) < 0;
+        const belowLatest = compareVersions(currentVersion, latestVersion) < 0;
+
+        if (belowMin || belowLatest) {
+          setForceUpdate(forceUpdate);
+          setStoreUrl(appStoreUrl);
+          setNotes(releaseNotes || "");
+          setVisible(true);
+        }
+      } catch (e) {
+        console.log("❌ App version check failed:", e);
       }
-    });
+    };
 
-    return () => sub.remove();
+    checkVersion();
   }, []);
 
-  const handleUpdateNow = async () => {
-    try {
-      console.log("Manual update started");
+  const handleUpdate = () => {
+    if (storeUrl) Linking.openURL(storeUrl);
+  };
 
-      const update = await Updates.checkForUpdateAsync();
-      console.log("checkForUpdate:", update);
-
-      if (update.isAvailable) {
-        await Updates.fetchUpdateAsync();
-        setIsUpdateAvailable(false);
-        console.log("Update fetched, reloading...");
-        await Updates.reloadAsync();
-      } else {
-        console.log("No update available on server");
-      }
-    } catch (e) {
-      console.log("Update failed:", e);
+  const handleClose = () => {
+    if (!forceUpdate) {
+      console.log("✅ Popup closed");
+      setVisible(false);
     }
   };
 
+  if (!visible) return null;
   return (
-    <Modal visible={isUpdateAvailable} transparent animationType="fade">
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "rgba(0,0,0,0.5)",
-        }}
-      >
+    <Modal visible transparent animationType="fade">
+      <TouchableWithoutFeedback disabled={forceUpdate} onPress={handleClose}>
         <View
           style={{
-            backgroundColor: "white",
-            padding: 20,
-            borderRadius: 12,
-            minWidth: 250,
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <CustomText>New update available</CustomText>
-          <CustomBtn title="Update Now" onPress={handleUpdateNow} />
+          <View
+            pointerEvents="box-none"
+            style={{
+              backgroundColor: "#fff",
+              padding: 20,
+              borderRadius: 12,
+              width: "80%",
+              alignItems: "center",
+            }}
+          >
+            {!forceUpdate && (
+              <TouchableOpacity
+                style={{ position: "absolute", top: 8, right: 6, padding: 8 }}
+                onPress={handleClose}
+              >
+                <Feather name="x" size={20} color="grey" />
+              </TouchableOpacity>
+            )}
+            <CustomText style={{ fontSize: 16, fontWeight: "600" }}>
+              {forceUpdate ? "Update Required" : "Update Available"}
+            </CustomText>
+
+            {!!notes && (
+              <CustomText style={{ marginVertical: 10, textAlign: "center" }}>
+                {notes}
+              </CustomText>
+            )}
+
+            <CustomBtn
+              title="Update Now"
+              onPress={handleUpdate}
+              containerStyle={{ marginTop: 20 }}
+            />
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

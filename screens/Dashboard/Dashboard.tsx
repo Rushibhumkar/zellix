@@ -90,7 +90,7 @@ const Dashboard = () => {
   const [user, setUser] = useState({});
 
   const isShowGraphs = ["sup_admin", "sub_admin", "manager"].includes(
-    user?.role
+    user?.role,
   );
 
   //rect query
@@ -139,7 +139,7 @@ const Dashboard = () => {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
     }
 
@@ -385,7 +385,7 @@ const Dashboard = () => {
               buttonNeutral: "Ask Me Later",
               buttonNegative: "Cancel",
               buttonPositive: "OK",
-            }
+            },
           );
         }
 
@@ -487,50 +487,50 @@ const Dashboard = () => {
     permission,
     "Dashboard",
     "leadQuality",
-    user?.role
+    user?.role,
   );
   const canViewLeadProjectWise = checkPermission(
     permission,
     "Dashboard",
     "leadProjectWise",
-    user?.role
+    user?.role,
   );
   const canViewClosingLeadProjectWise = checkPermission(
     permission,
     "Dashboard",
     "closingLeadProjectWise",
-    user?.role
+    user?.role,
   );
   const canViewConfirmBusiness = checkPermission(
     permission,
     "Dashboard",
     "confirmedBusiness",
-    user?.role
+    user?.role,
   );
   const canViewExpOfInterest = checkPermission(
     permission,
     "Dashboard",
     "eoi",
-    user?.role
+    user?.role,
   );
   const canViewSummary = checkPermission(
     permission,
     "Dashboard",
     "summary",
-    user?.role
+    user?.role,
   );
 
   const canViewCommissionGraph = checkPermission(
     permission,
     "Dashboard",
     "commission",
-    user?.role
+    user?.role,
   );
   const canViewCallingDataQuality = checkPermission(
     permission,
     "Dashboard",
     "callingDataQuality",
-    user?.role
+    user?.role,
   );
 
   return (

@@ -133,4 +133,8 @@ export const getClosingLeadProjectWise = (startDate, endDate) => {
     });
 };
 
+export const getAppVersion = () => {
+  return axiosInstance.get("api/app-version");
+};
+
 // api/booking/getCommissionData
