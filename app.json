@@ -2,7 +2,7 @@
   "expo": {
     "name": "zellix",
     "slug": "zellix",
-    "version": "1.6.7",
+    "version": "1.6.8",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.6.7",
+      "bundleNumber": "1.6.8",
       "supportsTablet": true,
       "buildNumber": "113",
       "infoPlist": {
@@ -79,7 +79,7 @@
       "expo-updates"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "1.6.7",
+    "runtimeVersion": "1.6.8",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
@@ -90,7 +90,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "1.6.7"
+      "appVersion": "1.6.8"
     },
     "android.buildType": "app-bundle"
   }

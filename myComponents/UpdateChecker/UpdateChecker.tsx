@@ -13,6 +13,7 @@ import CustomText from "../CustomText/CustomText";
 import { getAppVersion } from "../../services/rootApi/api";
 import { myConsole } from "../../hooks/useConsole";
 import { Feather } from "@expo/vector-icons";
+import { color } from "../../const/color";
 
 /* ---------- VERSION COMPARE ---------- */
 const compareVersions = (current: string, target: string) => {
@@ -46,9 +47,11 @@ const UpdateChecker = () => {
         const platformData =
           Platform.OS === "android" ? data.android : data.ios;
 
-        if (!platformData?.isActive) return;
+        // if (!platformData?.isActive) return;
 
-        const currentVersion = Application.applicationVersion || "0.0.0";
+        const currentVersion = Application.nativeApplicationVersion || "0.0.0";
+
+        // myConsole("currentVersionnn", currentVersion);
 
         const {
           latestVersion,
@@ -117,12 +120,24 @@ const UpdateChecker = () => {
                 <Feather name="x" size={20} color="grey" />
               </TouchableOpacity>
             )}
-            <CustomText style={{ fontSize: 16, fontWeight: "600" }}>
+            <CustomText
+              style={{
+                fontSize: 22,
+                fontWeight: "600",
+                color: color.mainTxtColor,
+              }}
+            >
               {forceUpdate ? "Update Required" : "Update Available"}
             </CustomText>
 
             {!!notes && (
-              <CustomText style={{ marginVertical: 10, textAlign: "center" }}>
+              <CustomText
+                style={{
+                  marginVertical: 10,
+                  textAlign: "center",
+                  color: "grey",
+                }}
+              >
                 {notes}
               </CustomText>
             )}

@@ -26,6 +26,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (request: any) => {
     const token = await getData("token");
+
+    // myConsole("tokennn", token);r
+
     if (request.headers) {
       if (token !== "null") {
         request.headers.token = `Bearer ${token}`;
@@ -36,7 +39,7 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     throw error;
-  }
+  },
 );
 // Add a response interceptor
 // axiosInstance.interceptors.response.use(
@@ -75,13 +78,13 @@ axiosInstance.interceptors.response.use(
           CommonActions.reset({
             index: 0,
             routes: [{ name: "Login" }],
-          })
+          }),
         );
       }, 100);
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 export const setBaseUrl = (newBaseUrl: any) => {
   baseURL = newBaseUrl;
