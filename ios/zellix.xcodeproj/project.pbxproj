@@ -22,7 +22,7 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = zellix/Info.plist; sourceTree = "<group>"; };
 		28F66FBAD51CF5F83018C2A0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-zellix/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		7565F9A3A51CEF0448DBA257 /* Pods-zellix.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.release.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.release.xcconfig"; sourceTree = "<group>"; };
-		7F25F57838A7F1B7EDB311FA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = zellix/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7F25F57838A7F1B7EDB311FA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = zellix/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A97EFB6673A9F7073444DDE6 /* Pods-zellix.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-zellix.debug.xcconfig"; path = "Target Support Files/Pods-zellix/Pods-zellix.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = zellix/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
@@ -128,7 +128,6 @@
 				A97EFB6673A9F7073444DDE6 /* Pods-zellix.debug.xcconfig */,
 				7565F9A3A51CEF0448DBA257 /* Pods-zellix.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -353,6 +352,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = zellix/zellix.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2ZUBH53J8W;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -389,6 +389,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = zellix/zellix.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2ZUBH53J8W;
 				INFOPLIST_FILE = zellix/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
