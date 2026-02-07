@@ -73,13 +73,13 @@ const DashboardHRM = () => {
   };
 
   const { data: permission = {} } = useGetUserPermission(user?._id);
-  myConsole("permissionnsdfdsf", permission);
+  // myConsole("permissionnsdfdsf", permission);
 
   const canViewExpensesSidebar = checkPermission(
     permission,
     "HrmsDashboard",
     "sidebar",
-    user?.role
+    user?.role,
   );
 
   return (

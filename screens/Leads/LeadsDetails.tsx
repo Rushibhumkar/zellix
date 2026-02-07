@@ -61,6 +61,7 @@ import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import IconWrapper from "../../components/IconWrapper";
 import { useAppToast } from "../../components/AppToast";
+import { initiateCall } from "../../services/rootApi/callApi";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -123,8 +124,10 @@ const LeadsDetails = () => {
   const {
     data: detail,
     isLoading: isLoadingQuery,
+    isFetching,
     refetch: refetchLeadDetail,
   } = useGetLeadById(params?.item?._id);
+
   const useLatest = useLatestMeetings(params?.item?._id);
 
   const dispatch = useDispatch();
@@ -134,7 +137,6 @@ const LeadsDetails = () => {
   //
   const [isLoading, setIsLoading] = useState(false);
   const [fields, setFields] = useState({});
-  const [refreshing, setRefreshing] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
   useEffect(() => {
@@ -257,12 +259,6 @@ const LeadsDetails = () => {
     await Linking.openURL(`tel:+${detail?.clientMobile}`);
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    refetchLeadDetail();
-    setRefreshing(false);
-  };
-
   const deleteNotes = async (notesId) => {
     try {
       setIsLoadingDelete(notesId);
@@ -331,10 +327,33 @@ const LeadsDetails = () => {
       setShowNotiPopup(false);
     }
   };
-
+  // myConsole("detaillll", detail);
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
+
+  const handleCall = async (leadId: any) => {
+    try {
+      const res = await initiateCall({ leadId });
+
+      const successMsg =
+        res?.message || res?.data?.message || "Call initiated successfully";
+
+      toast.success(successMsg);
+
+      myConsole("Call started", res);
+    } catch (err: any) {
+      const errorMsg =
+        err?.message ||
+        err?.response?.data?.message ||
+        "Failed to initiate call";
+
+      toast.error(errorMsg);
+
+      myConsole("Call failed", err);
+    }
+  };
+
   return (
     <>
       {activeTab === 1 && (
@@ -405,7 +424,10 @@ const LeadsDetails = () => {
           <ScrollView
             style={{ padding: 20 }}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl
+                refreshing={isFetching}
+                onRefresh={refetchLeadDetail}
+              />
             }
           >
             {isSubSupSrMng && (
@@ -429,7 +451,10 @@ const LeadsDetails = () => {
               </TouchableOpacity>
             )}
             <View style={{ paddingBottom: 150 }}>
-              {isLoadingQuery && <ActivityIndicator />}
+              {isLoadingQuery && (
+                <ActivityIndicator style={{ marginVertical: 10 }} />
+              )}
+
               <MainTitle
                 title="Client Details"
                 containerStyle={{ marginBottom: 20 }}
@@ -491,7 +516,8 @@ const LeadsDetails = () => {
                 component={
                   detail?.clientMobile ? (
                     <TouchableOpacity
-                      onPress={() => navToCall()}
+                      onPress={() => handleCall(detail?._id)}
+                      // onPress={() => navToCall()}
                       style={{
                         flexDirection: "row",
                         alignItems: "center",

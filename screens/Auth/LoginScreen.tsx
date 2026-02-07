@@ -46,8 +46,10 @@ const LoginScreen = () => {
     // password: "123456789",
     // email: "dev20@swavishtek.com",
     // password: "123456789",
-    email: "",
-    password: "",
+    email: "tech@skgestates.com",
+    password: "Rohit@zellix1112",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
@@ -74,7 +76,7 @@ const LoginScreen = () => {
           CommonActions.reset({
             index: 0,
             routes: [{ name: "Dashboard" }],
-          })
+          }),
         );
       })
       .catch((err) => {

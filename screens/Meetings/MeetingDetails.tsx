@@ -13,6 +13,7 @@ import {
   Alert,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -83,7 +84,7 @@ export const getAddressFromCoordinates = async (coordinates: any) => {
     console.log("latitude", latitude, "longitude", longitude);
     if (!!latitude) {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDUjsrrYwsQnZZX6ocF7jQcXevrhoK9ruU`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDUjsrrYwsQnZZX6ocF7jQcXevrhoK9ruU`,
       );
       const json = await response.json();
       myConsole("json@@", json.results[0]?.formatted_address);
@@ -100,7 +101,7 @@ export const getLocationLatLng = async () => {
   if (status !== "granted") {
     Alert.alert(
       "Location Permission",
-      "Permission to access location was denied. Give Permission to access location for conduct meeting "
+      "Permission to access location was denied. Give Permission to access location for conduct meeting ",
     );
     return;
   }
@@ -138,7 +139,12 @@ const MeetingDetails = () => {
   const [location, setLocation] = useState(null);
 
   //react query
-  const { data: detail, isLoading: isLoadingQuery } = useGetMeetingById(id);
+  const {
+    data: detail,
+    isLoading: isLoadingQuery,
+    refetch,
+    isFetching,
+  } = useGetMeetingById(id);
 
   // myConsole("meededetailll", detail);
   //location
@@ -249,7 +255,7 @@ const MeetingDetails = () => {
       setCallDetect({
         isCall: true,
         leadId: detail?.lead?._id,
-      })
+      }),
     );
     await Linking.openURL(`tel:+${detail?.lead?.clientMobile}`);
   };
@@ -260,9 +266,15 @@ const MeetingDetails = () => {
         <ScrollView
           style={{ padding: 20 }}
           contentContainerStyle={{ paddingBottom: 120 }}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
         >
           <View style={{ paddingBottom: 70 }}>
-            {isLoadingQuery && <ActivityIndicator />}
+            {isFetching && (
+              <ActivityIndicator size="small" style={{ marginVertical: 10 }} />
+            )}
+
             <MainTitle
               title="Client Details"
               containerStyle={{ marginBottom: 20 }}
@@ -388,7 +400,7 @@ const MeetingDetails = () => {
                   {detail?.agents
                     ?.map((agentId) => {
                       const agent = allUsers?.find(
-                        (user) => user._id === agentId
+                        (user) => user._id === agentId,
                       );
                       return agent?.name || "Unknown";
                     })
@@ -401,7 +413,7 @@ const MeetingDetails = () => {
               const isLastMeeting = index === detail?.meetings?.length - 1;
               const isCurrentDate = moment(el?.scheduleDate).isSame(
                 moment(),
-                "day"
+                "day",
               );
               return (
                 <View key={index}>
@@ -413,7 +425,7 @@ const MeetingDetails = () => {
                     <RowItem
                       title="Date"
                       value={moment(el?.scheduleDate).format(
-                        "DD/MM/YYYY, hh:mm A"
+                        "DD/MM/YYYY, hh:mm A",
                       )}
                       containerStyle={{ marginBottom: 10 }}
                     />

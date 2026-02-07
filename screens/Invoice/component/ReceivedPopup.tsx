@@ -78,7 +78,6 @@ const CustomModalInvoice = ({ invoiceId, isVisible, onClose, title }) => {
       name: item.name, // Name to display
     })) || [];
 
-  console.log("dataListOfReceived", namesList);
   usePersonNameList;
   function initialValues() {
     return {

@@ -31,6 +31,7 @@ import { navigateToMapApp } from "../../utils/navigateToMapApp";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
+import { color } from "../../const/color";
 
 const ASPECT_RATIO = WIDTH / HEIGHT;
 const LATITUDE_DELTA = 0.04;
@@ -53,8 +54,11 @@ const MeetingReschedule = () => {
   const [isLoadingMeeting, setIsLoadingMeeting] = useState(false);
   const id = params?.id;
   const meetings = params?.meetingDetails?.meetings;
+  const lastMeeting = meetings?.[meetings.length - 1];
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
+
+  myConsole("meetingsssss", meetings);
 
   const {
     handleChange,
@@ -70,13 +74,18 @@ const MeetingReschedule = () => {
       // location: meetings?.[meetings?.length - 1]?.location ?? "",
       // remarks: meetings?.[meetings?.length - 1]?.remarks ?? "",
       // coordinates: meetings?.[meetings?.length - 1]?.coordinates ?? ""
-      date: new Date(),
-      time: new Date(),
-      location: meetings?.[meetings?.length - 1]?.location || "",
-      remarks: "",
-      coordinates: {},
-    },
+      date: lastMeeting?.scheduleDate
+        ? new Date(lastMeeting.scheduleDate)
+        : new Date(),
 
+      time: lastMeeting?.scheduleDate
+        ? new Date(lastMeeting.scheduleDate)
+        : new Date(),
+
+      location: lastMeeting?.location || "",
+      remarks: lastMeeting?.remarks || "",
+      coordinates: lastMeeting?.coordinates || {},
+    },
     validationSchema: resheduleSchema,
     onSubmit: async (value) => {
       try {
@@ -112,7 +121,18 @@ const MeetingReschedule = () => {
     },
   });
 
-  const toggleMapViewModal = (v) => {
+  const formattedTime = new Date("2026-01-28T13:30:48.623Z").toLocaleTimeString(
+    "en-IN",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    },
+  );
+
+  myConsole("Formatted Time", formattedTime);
+
+  const toggleMapViewModal = (v: any) => {
     setIsMapModalVisible(!isMapModalVisible);
     setMapLatLng(v);
   };
@@ -158,6 +178,7 @@ const MeetingReschedule = () => {
               onSelect={(a) => setFieldValue("time", a)}
               initialValue={values?.time}
               mode="time"
+              minuteInterval={1} // ✅ FIX: prevents 5-min rounding
             />
           </View>
 
@@ -168,7 +189,12 @@ const MeetingReschedule = () => {
               justifyContent: "space-between",
             }}
           >
-            <CustomText marginBottom={10} fontSize={16} fontWeight="500">
+            <CustomText
+              marginBottom={10}
+              fontSize={16}
+              fontWeight="500"
+              color={color.mainTxtColor}
+            >
               Meeting Location
             </CustomText>
             {values?.coordinates?.lng && (

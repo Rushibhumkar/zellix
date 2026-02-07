@@ -3,6 +3,7 @@ import moment from "moment";
 import React from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -23,6 +24,7 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetIndividualIncentiveDetail } from "./query/useIncentive";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
+import { sizes } from "../../const";
 
 const IncentiveDetail = () => {
   const { params } = useRoute();
@@ -60,14 +62,14 @@ const IncentiveDetail = () => {
   const handlePayout = async () => {
     try {
       const res = await axiosInstance.post(
-        `/api/incentive/payIncentive/${item?._id}`
+        `/api/incentive/payIncentive/${item?._id}`,
       );
       popUpConfToast.successMessage(res?.data || "Payout Successfully!");
       refetch();
     } catch (err) {
       myConsole("errPayout", err?.response?.data);
       popUpConfToast.errorMessage(
-        err?.response?.data || "Something went wrong"
+        err?.response?.data || "Something went wrong",
       );
     }
     // finally {
@@ -75,11 +77,29 @@ const IncentiveDetail = () => {
     // }
   };
 
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } catch (e) {
+      console.log("Incentive refresh error", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <>
       <Header title="Incentive Detail" />
       <Container>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <View style={styles.content}>
             <MainTitle
               title="Detail"
@@ -240,6 +260,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
+    borderColor: color?.borderColor,
   },
   cardTitle: {
     marginBottom: 10,
@@ -248,14 +269,15 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   noDataText: {
-    marginLeft: 100,
-    marginBottom: 20,
+    marginLeft: sizes.width / 2 - 40,
+    color: color.mainTxtColor,
+    marginVertical: 40,
   },
 });
 
 export default IncentiveDetail;
 
-const confirmPayout = ({ callback, isLoading }) => {
+const confirmPayout = ({ callback, isLoading }: any) => {
   Popup.show({
     type: "confirm",
     title: "Confirm!",

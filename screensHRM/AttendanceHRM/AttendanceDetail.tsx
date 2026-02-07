@@ -27,7 +27,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 
 const AttendanceDetail = () => {
   const [attendanceDetailById, setAttendanceDetailById] = useState(
-    dummyAttendanceDetails
+    dummyAttendanceDetails,
   );
   const { params } = useRoute();
   const { user } = useSelector(selectUser);
@@ -45,7 +45,7 @@ const AttendanceDetail = () => {
     remarks: "",
   });
   const [issueRiseUpdate, setIssueRiseUpdate] = useState<"raise" | "update">(
-    "raise"
+    "raise",
   );
   const [refreshing, setRefreshing] = useState(false);
 
@@ -197,7 +197,7 @@ const AttendanceDetail = () => {
               <RowItemDetail
                 title={"Punch In Meeting Time"}
                 value={moment(data?.punchInMeetingTime).format(
-                  "YYYY-MM-DD HH:mm A"
+                  "YYYY-MM-DD HH:mm A",
                 )}
                 containerStyle={{ marginBottom: 10 }}
               />
@@ -216,7 +216,7 @@ const AttendanceDetail = () => {
               <RowItemDetail
                 title={" Punch Out Meeting Time"}
                 value={moment(data?.punchOutMeetingTime).format(
-                  "h:mm A , DD-MM-YYYY"
+                  "h:mm A , DD-MM-YYYY",
                 )}
                 containerStyle={{ marginBottom: 10 }}
               />

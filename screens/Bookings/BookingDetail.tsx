@@ -4,6 +4,7 @@ import {
   Keyboard,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -90,6 +91,7 @@ const BookingDetail = () => {
   const queryClient = useQueryClient();
   const { params } = useRoute();
   const { navigate, goBack } = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
   // const data = params?.item ?? null;
   const [isApproveExecuted, setisApproveExecuted] = useState(false);
   const { data, isLoading } = useGetBookingById(params?.item?._id);
@@ -101,7 +103,7 @@ const BookingDetail = () => {
   // const filterLead = data?.lead || {};
   const [filterLead, setFilterLead] = useState({}); //
   const { data: developerList, isLoading: loadingDev } = useGetDeveloperList(
-    data?.developer
+    data?.developer,
   );
   useEffect(() => {
     let temp = {
@@ -131,7 +133,7 @@ const BookingDetail = () => {
   const [appRejRemarks, setAppRejRemarks] = useState("");
   const [modalApproveReject, setModalApproveReject] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<"approve" | "reject">(
-    null
+    null,
   );
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
   const [isModalUpdateCase, setIsModalUpdateCase] = useState(false);
@@ -147,20 +149,20 @@ const BookingDetail = () => {
     permission,
     "Bookings",
     "update",
-    user?.role
+    user?.role,
   );
 
   const canApproveRejectBooking = checkPermission(
     permission,
     "Bookings",
     "approveReject",
-    user?.role
+    user?.role,
   );
   const canChangePaymentStatus = checkPermission(
     permission,
     "Bookings",
     "changePaymentStatus",
-    user?.role
+    user?.role,
   );
 
   const isUpdateBooking =
@@ -252,18 +254,41 @@ const BookingDetail = () => {
       setCallDetect({
         isCall: true,
         leadId: data?.lead,
-      })
+      }),
     );
     await Linking.openURL(`tel:+${filterLead?.clientMobile}`);
   };
 
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+
+      await queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getBookingById, params?.item?._id],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getBooking],
+      });
+    } catch (e) {
+      console.log("Booking refresh error", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   // myConsole("ownerInfo.passport1", ownerInfo.passport1);
   // myConsole("dataaadsdfdsf", data);
+
   return (
     <>
       <Header title={"Booking Details"} />
       <Container>
-        <ScrollView>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <View style={{ padding: 20, paddingBottom: 100 }}>
             {isLoading && <ActivityIndicator />}
             <>
@@ -300,11 +325,11 @@ const BookingDetail = () => {
                         <TouchableOpacity
                           style={styles.modalOption}
                           onPress={() => {
-                            navigate("ReferralNavigator", {
+                            (navigate("ReferralNavigator", {
                               screen: "AddReferrals",
                               params: { data: data, type: "clientLoyality" },
                             }),
-                              setShowPopup(false);
+                              setShowPopup(false));
                           }}
                         >
                           <CustomText style={styles.modalText}>
@@ -314,11 +339,11 @@ const BookingDetail = () => {
                         <TouchableOpacity
                           style={styles.modalOption}
                           onPress={() => {
-                            navigate("ReferralNavigator", {
+                            (navigate("ReferralNavigator", {
                               screen: "AddReferrals",
                               params: { data: data, type: "bookingRefferal" },
                             }),
-                              setShowPopup(false);
+                              setShowPopup(false));
                           }}
                         >
                           <CustomText style={styles.modalText}>

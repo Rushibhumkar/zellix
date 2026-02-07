@@ -70,7 +70,7 @@ const RSVPManagerList = () => {
   // SEARCH DEBOUNCE
   const debounceSearch = React.useCallback(
     debounce((text) => setDebouncedSearch(text), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -111,20 +111,20 @@ const RSVPManagerList = () => {
     permission,
     "Event",
     "viewList",
-    user?.role
+    user?.role,
   );
   const canAddEvent = checkPermission(permission, "Event", "add", user?.role);
   const canDeleteEvent = checkPermission(
     permission,
     "Event",
     "delete",
-    user?.role
+    user?.role,
   );
   const canViewEventDetails = checkPermission(
     permission,
     "Event",
     "viewDetails",
-    user?.role
+    user?.role,
   );
 
   const handleDeleteEvent = async () => {
@@ -219,8 +219,10 @@ const RSVPManagerList = () => {
                   selected.length > 0
                     ? handleSelect(item?._id)
                     : canViewEventDetails
-                    ? navigation.navigate("RSVPEventDetail", { id: item?._id })
-                    : null
+                      ? navigation.navigate("RSVPEventDetail", {
+                          id: item?._id,
+                        })
+                      : null
                 }
                 onLongPress={() => handleSelect(item?._id)}
               />

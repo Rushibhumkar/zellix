@@ -59,7 +59,7 @@ const UserDetailHRM = () => {
   const { user } = useSelector(selectUser);
 
   const [isPoolRestrict, setIsPoolRestrict] = useState(
-    params?.item?.isPoolRestrict
+    params?.item?.isPoolRestrict,
   );
   const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Add loading state
   const [isDeleting, setIsDeleting] = useState(false);
@@ -112,16 +112,16 @@ const UserDetailHRM = () => {
   };
 
   //
-  const onRefresh = async () => {
+  const onRefresh = React.useCallback(async () => {
     try {
       setRefreshing(true);
-      refetch();
+      await refetch();
     } catch (e) {
       console.log("refreshInUser", e);
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [refetch]);
 
   const [openModal, setOpenModal] = useState({
     open: false,
@@ -216,7 +216,7 @@ const UserDetailHRM = () => {
         } catch (error) {
           console.error(
             "Error deleting devices:",
-            error?.response?.data || error.message
+            error?.response?.data || error.message,
           );
           toast.error("Failed to clear devices. Please try again.");
         }
@@ -352,13 +352,13 @@ const UserDetailHRM = () => {
                       >
                         {Array.isArray(item?.value)
                           ? item?.value.join(", ")
-                          : item?.value ?? "-"}
+                          : (item?.value ?? "-")}
                       </CustomText>
 
                       {isSubSup && <DeleteIcon onPress={handleDeleteDevices} />}
                     </View>
                   ) : (
-                    item?.value ?? "-"
+                    (item?.value ?? "-")
                   )
                 }
                 containerStyle={{ marginBottom: item?.mb }}

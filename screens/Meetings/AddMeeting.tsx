@@ -37,18 +37,20 @@ import { navigateToMapApp } from "../../utils/navigateToMapApp";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
-import { useGetLeadById, useGetLeadInAddMeeting } from "../../hooks/useCRMgetQuerry";
+import {
+  useGetLeadById,
+  useGetLeadInAddMeeting,
+} from "../../hooks/useCRMgetQuerry";
 import { debounce } from "../../utils/debounce";
 import IllusionBox from "../../myComponents/IllusionBoxForUpdate/IllusionBox";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { color } from "../../const/color";
+import moment from "moment";
 
 const agents = [
   { label: "Ahmed", value: "Ahmed" },
   { label: "Soud", value: "Soud" },
 ];
-
-
 
 const AddMeeting = () => {
   const queryClient = useQueryClient();
@@ -67,32 +69,37 @@ const AddMeeting = () => {
   // let leadNameToClientName = lead?.map((el) => { return { ...el, name: el?.clientName } }).sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1)
   // const textInput2 = useRef(null);
   const [tempDate, setTempDate] = useState({
-    date: '',
-    time: ''
+    date: "",
+    time: "",
   });
+
+  const isTodaySelected = moment(tempDate.date).isSame(moment(), "day");
+
   const [refreshing, setRefreshing] = useState(false);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [isUpdateFrom, setIsUpdateFrom] = useState(data?.lead?._id);
   //react query lead
-  const { data: leadList,
+  const {
+    data: leadList,
     isLoading: loading,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = useGetLeadInAddMeeting({
-    search: debouncedSearch
-  })
+    search: debouncedSearch,
+  });
 
-  const { data: leadDetail, isLoading: loadingLead } = useGetLeadById(data?.lead?._id)
-
+  const { data: leadDetail, isLoading: loadingLead } = useGetLeadById(
+    data?.lead?._id,
+  );
 
   useEffect(() => {
     setTempDate({
       date: data?.scheduleDate?.date ?? new Date(),
-      time: data?.scheduleDate?.time ?? new Date()
-    })
-  }, [])
+      time: data?.scheduleDate?.time ?? new Date(),
+    });
+  }, []);
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
@@ -117,15 +124,12 @@ const AddMeeting = () => {
       status: data?.meetings?.length > 0 ? data?.meetings[0]?.status : "",
       agents: data?.agents ?? "",
       scheduleDate: data?.scheduleDate ?? new Date(),
-
-
-
     },
     onSubmit: async (value) => {
       setLoading(true);
       let tempDa = `${tempDate?.date.toString().slice(0, 13)}${tempDate?.time
         .toString()
-        .slice(13)}`
+        .slice(13)}`;
       try {
         let sendData = {
           ...values,
@@ -142,14 +146,14 @@ const AddMeeting = () => {
           // setMessage(resUpdate?.data);
           // await dispatch(getAllMeetingFunc());
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getMeetingById, data?._id]
-          })
+            queryKey: [queryKeyCRM.getMeetingById, data?._id],
+          });
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getMeeting]
+            queryKey: [queryKeyCRM.getMeeting],
           });
           goBack();
           // navigate(routeMeeting.AllMeetings);
-          popUpConfToast.successMessage(res?.data)
+          popUpConfToast.successMessage(res?.data);
         } else {
           let res = await addMeeting(sendData);
           // myConsole("resAddMeeting", res)
@@ -157,17 +161,17 @@ const AddMeeting = () => {
           // await setMessage(res?.data);
           // await dispatch(getAllMeetingFunc());
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getMeeting]
+            queryKey: [queryKeyCRM.getMeeting],
           });
-          popUpConfToast.successMessage(res?.data)
+          popUpConfToast.successMessage(res?.data);
           queryClient.invalidateQueries({
-            queryKey: [queryKeyCRM.getDashboardCount]
+            queryKey: [queryKeyCRM.getDashboardCount],
           });
           goBack();
           // await navigate(routeMeeting.AllMeetings);
         }
       } catch (error) {
-        popUpConfToast.errorMessage('Server error')
+        popUpConfToast.errorMessage("Server error");
         // setMessage(error?.response?.data);
         // setIsVisible(false);
       } finally {
@@ -183,28 +187,26 @@ const AddMeeting = () => {
 
   const onEndReach = () => {
     if (hasNextPage && !loading && leadList?.length > 0) {
-      fetchNextPage && fetchNextPage()
+      fetchNextPage && fetchNextPage();
     }
-  }
+  };
 
   const onRefresh = async () => {
     try {
-      setRefreshing(true)
+      setRefreshing(true);
       await queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLeadInAddMeeting]
-      })
+        queryKey: [queryKeyCRM.getLeadInAddMeeting],
+      });
+    } catch (e) {
+      console.log("refreshGetAllLeave", e);
+    } finally {
+      setRefreshing(false);
     }
-    catch (e) {
-      console.log('refreshGetAllLeave', e)
-    }
-    finally {
-      setRefreshing(false)
-    }
-  }
+  };
 
   const debounceSearch = React.useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -213,15 +215,14 @@ const AddMeeting = () => {
   };
   return (
     <>
-      <Header title={isUpdate ? 'Update Meetings' : "Add Meetings"} />
-      <Container  >
-        <ScrollViewWithKeyboardAvoid
-        >
+      <Header title={isUpdate ? "Update Meetings" : "Add Meetings"} />
+      <Container>
+        <ScrollViewWithKeyboardAvoid>
           <View style={{ padding: 20, paddingBottom: 120 }}>
             <CustomModelMessage
               isVisible={isVisible}
               setIsVisible={setIsVisible}
-              message={message ?? 'Meeting is added successfully'}
+              message={message ?? "Meeting is added successfully"}
               onClose={() => {
                 setIsVisible(false);
                 setMessage(null);
@@ -230,50 +231,61 @@ const AddMeeting = () => {
             />
 
             <CustomText
-              style={{ fontSize: 20, fontWeight: "bold", marginBottom: 20 ,color:color.mainTxtColor}}
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                marginBottom: 20,
+                color: color.mainTxtColor,
+              }}
             >
               Client{" "}
             </CustomText>
 
-            {!isUpdateFrom ? <DropdownRNE
-              arrOfObj={leadList?.map((el) => {
-                return {
-                  name: el?.clientName || el?.name,
-                  _id: el?._id
+            {!isUpdateFrom ? (
+              <DropdownRNE
+                arrOfObj={
+                  leadList?.map((el) => {
+                    return {
+                      name: el?.clientName || el?.name,
+                      _id: el?._id,
+                    };
+                  }) || []
                 }
-              }) || []}
-              keyValueGetOnSelect="_id"
-              keyValueShowInBox="name"
-              label="Choose Lead"
-              placeholder="Lead..."
-              onChange={(a) => setFieldValue("lead", a)}
-              containerStyle={{ marginBottom: 15 }}
-              onBlur={handleBlur("lead")}
-              initialValue={values?.lead}
-              isSearch
-              maxHeight={300}
-              mode="modal"
-              //
-              onEndReached={onEndReach}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={
-                isFetchingNextPage && <ActivityIndicator
-                  size={'small'}
-                  color={'#002E6B'}
-                />
-              }
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-              onChangeText={(v) => handleSearchChange(v)}
-              isLoading={loading}
-            /> :
+                keyValueGetOnSelect="_id"
+                keyValueShowInBox="name"
+                label="Choose Lead"
+                placeholder="Lead..."
+                onChange={(a) => setFieldValue("lead", a)}
+                containerStyle={{ marginBottom: 15 }}
+                onBlur={handleBlur("lead")}
+                initialValue={values?.lead}
+                isSearch
+                maxHeight={300}
+                mode="modal"
+                //
+                onEndReached={onEndReach}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isFetchingNextPage && (
+                    <ActivityIndicator size={"small"} color={"#002E6B"} />
+                  )
+                }
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                  />
+                }
+                onChangeText={(v) => handleSearchChange(v)}
+                isLoading={loading}
+              />
+            ) : (
               <IllusionBox
                 title="Lead"
-                value={leadDetail?.clientName || leadDetail?.name || ''}
+                value={leadDetail?.clientName || leadDetail?.name || ""}
                 onPress={() => setIsUpdateFrom(false)}
               />
-            }
+            )}
 
             {errors?.lead && touched?.lead && (
               <CustomText style={styles.errorText}>{errors?.lead}</CustomText>
@@ -287,7 +299,9 @@ const AddMeeting = () => {
               value={values?.productPitch}
             />
             {errors.productPitch && touched.productPitch && (
-              <CustomText style={styles.errorText}>{errors.productPitch}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.productPitch}
+              </CustomText>
             )}
 
             <CustomInput
@@ -298,7 +312,9 @@ const AddMeeting = () => {
               value={values?.clientAddress}
             />
             {errors.clientAddress && touched.clientAddress && (
-              <CustomText style={styles.errorText}>{errors.clientAddress}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.clientAddress}
+              </CustomText>
             )}
             <CustomInput
               label="Client City"
@@ -309,7 +325,9 @@ const AddMeeting = () => {
               onBlur={handleBlur("clientCity")}
             />
             {errors.clientCity && touched.clientCity && (
-              <CustomText style={styles.errorText}>{errors.clientCity}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.clientCity}
+              </CustomText>
             )}
 
             <CustomInput
@@ -321,48 +339,53 @@ const AddMeeting = () => {
               value={values?.clientCountry}
             />
             {errors.clientCountry && touched.clientCountry && (
-              <CustomText style={styles.errorText}>{errors.clientCountry}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.clientCountry}
+              </CustomText>
             )}
-            <View
-            >
+            <View>
               <View
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
                 <CustomText
                   marginBottom={10}
                   fontSize={16}
                   fontWeight="500"
-                  style={{color:color.mainTxtColor}}
+                  style={{ color: color.mainTxtColor }}
                 >
                   Meeting Location
                 </CustomText>
-                {values?.coordinates?.lng && <Feather
-                  name="map-pin"
-                  size={20}
-                  color="#2D67C6"
-                  style={{ padding: 5 }}
-                  onPress={() => navigateToMapApp(values?.coordinates)}
-                // onPress={toggleMapViewModal}
-                />}
+                {values?.coordinates?.lng && (
+                  <Feather
+                    name="map-pin"
+                    size={20}
+                    color="#2D67C6"
+                    style={{ padding: 5 }}
+                    onPress={() => navigateToMapApp(values?.coordinates)}
+                    // onPress={toggleMapViewModal}
+                  />
+                )}
               </View>
               <CustomGooglePlacesSearch
-               handleBlur={() => handleBlur('location')}
+                handleBlur={() => handleBlur("location")}
                 onPress={(data, details) => {
-                  setFieldValue('location', data.description)
-                  setFieldValue('coordinates', {
+                  setFieldValue("location", data.description);
+                  setFieldValue("coordinates", {
                     lat: details?.geometry?.location?.lat,
-                    lng: details?.geometry?.location?.lng
-                  })
+                    lng: details?.geometry?.location?.lng,
+                  });
                 }}
                 defaultValue={values?.location}
               />
             </View>
             {errors.location && touched.location && (
-              <CustomText style={styles.errorText}>{errors.location}</CustomText>
+              <CustomText style={styles.errorText}>
+                {errors.location}
+              </CustomText>
             )}
 
             <CustomInput
@@ -401,7 +424,7 @@ const AddMeeting = () => {
             {errors.status && touched.status && (
               <CustomText style={styles.errorText}>{errors.status}</CustomText>
             )}
-      
+
             <View
               style={{
                 flexDirection: "row",
@@ -409,20 +432,27 @@ const AddMeeting = () => {
                 marginTop: 5,
               }}
             >
-             <DatePickerExpo
+              <DatePickerExpo
                 title={"Date"}
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
-                onSelect={(date) => setTempDate(prevState => ({ ...prevState, date }))}
+                onSelect={(date) =>
+                  setTempDate((prev) => ({
+                    ...prev,
+                    date,
+                    time: isTodaySelected ? new Date() : prev.time, // reset time if today
+                  }))
+                }
                 initialValue={tempDate?.date}
-                minimumDate={new Date()}   
+                minimumDate={new Date()} // ⛔ past dates blocked
               />
+
               <DatePickerExpo
                 title={"Time"}
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
-                // onSelect={(a) => setFieldValue("time", a)}
-                onSelect={(time) => setTempDate(prevState => ({ ...prevState, time }))}
+                onSelect={(time) => setTempDate((prev) => ({ ...prev, time }))}
                 initialValue={tempDate?.time}
                 mode="time"
+                minimumDate={isTodaySelected ? new Date() : undefined} // ⛔ past time blocked
               />
             </View>
             <DropdownRNE
@@ -480,7 +510,7 @@ const styles = StyleSheet.create({
     color: "red",
     marginTop: -15,
     marginBottom: 10,
-    marginLeft:4
+    marginLeft: 4,
   },
 });
 

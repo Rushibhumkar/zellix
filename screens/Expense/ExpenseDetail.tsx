@@ -1,4 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useGetExpensesDetail } from "./query/useExpense";
@@ -15,13 +22,30 @@ const ExpenseDetail = () => {
   const nav = useNavigation();
   const { params } = useRoute();
   const item = params?.item;
-  const { data, isLoading } = useGetExpensesDetail({ id: item?._id });
+  const [refreshing, setRefreshing] = React.useState(false);
+  const { data, isLoading, refetch } = useGetExpensesDetail({ id: item?._id });
   const expense = data?.data || {};
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } catch (e) {
+      console.log("Expense refresh error", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <>
       <Header title={"Expense Detail"} />
       <Container>
-        <ScrollView>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <View
             style={{
               padding: 20,

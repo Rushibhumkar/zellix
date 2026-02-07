@@ -1,27 +1,27 @@
-import { myConsole } from "../../../hooks/useConsole"
-import { useMyInfinite } from "../../../hooks/useMyInfinite"
-import { useMyQuery } from "../../../hooks/useMyQuery"
+import { myConsole } from "../../../hooks/useConsole";
+import { useMyInfinite } from "../../../hooks/useMyInfinite";
+import { useMyQuery } from "../../../hooks/useMyQuery";
 
 export const useGetIndividualIncentiveList = ({ search }) => {
-    return useMyInfinite({
-        url: '/api/incentive/getIncentives',
-        pramsObj: { search },
-        queryKeyName: 'individualIncentiveList'
-    })
-}
+  return useMyInfinite({
+    url: "/api/incentive/getIncentives",
+    pramsObj: { search },
+    queryKeyName: "individualIncentiveList",
+  });
+};
 export const useGetIndividualIncentiveDetail = ({ id }) => {
-    return useMyQuery({
-        url: `/api/incentive/details/${id}`,
-        queryKeyName: ['individualIncentiveDetail', id],
-        enabled: !!id,
-        onError: (e) => {
-            myConsole('incentive_detail_errJavresponse', e?.response)
-        },
-        onSuccess: (s) => {
-            myConsole('incentive_detail_succJav', s)
-        }
-    })
-}
+  return useMyQuery({
+    url: `/api/incentive/details/${id}`,
+    queryKeyName: ["individualIncentiveDetail", id],
+    enabled: !!id,
+    onError: (e) => {
+      myConsole("incentive_detail_errJavresponse", e?.response);
+    },
+    onSuccess: (s) => {
+      // myConsole('incentive_detail_succJav', s)
+    },
+  });
+};
 // export const useGetIndividualIncentiveDetail = (id) => {
 //     return useQuery({
 //         queryKey: ['incentiveDetail', id],

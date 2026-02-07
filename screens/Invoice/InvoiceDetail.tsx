@@ -1,4 +1,10 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useState } from "react";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
@@ -27,14 +33,14 @@ const InvoiceDetail = () => {
   const handlePayout = async () => {
     try {
       const res = await axiosInstance.post(
-        `/api/incentive/payIncentive/${item?._id}`
+        `/api/incentive/payIncentive/${item?._id}`,
       );
       popUpConfToast.successMessage(res?.data || "Payout Successfully!");
       refetch();
     } catch (err) {
       myConsole("errPayout", err?.response?.data);
       popUpConfToast.errorMessage(
-        err?.response?.data || "Something went wrong"
+        err?.response?.data || "Something went wrong",
       );
     }
     // finally {
@@ -43,11 +49,28 @@ const InvoiceDetail = () => {
   };
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } catch (e) {
+      console.log("Invoice refresh error", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <Container>
       <Header title={"Invoice Details"} />
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.content}>
           <MainTitle
             title="Details"

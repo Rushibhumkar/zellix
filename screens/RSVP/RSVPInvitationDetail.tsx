@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   View,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import React from "react";
 import Header from "../../components/Header";
@@ -22,7 +23,8 @@ import IconWrapper from "../../components/IconWrapper";
 const RSVPInvitationDetail = ({ route }: any) => {
   const { id } = route.params || {};
 
-  const { data, isLoading, isError, error } = useRSVPInvitationDetails(id);
+  const { data, isLoading, isFetching, refetch, isError, error } =
+    useRSVPInvitationDetails(id);
 
   if (isLoading) {
     return (
@@ -98,6 +100,9 @@ const RSVPInvitationDetail = ({ route }: any) => {
         <ScrollView
           style={{ padding: 20 }}
           contentContainerStyle={{ paddingBottom: 120 }}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
         >
           <View style={{ paddingBottom: 70 }}>
             <CustomText
@@ -197,7 +202,7 @@ const RSVPInvitationDetail = ({ route }: any) => {
             <RowItem
               title="Date & Time"
               value={`${moment(detail.dateTime).format(
-                "DD/MM/YYYY • hh:mm A"
+                "DD/MM/YYYY • hh:mm A",
               )}`}
               containerStyle={{ marginBottom: 10 }}
             />
