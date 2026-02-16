@@ -1650,19 +1650,6 @@
   dependencies:
     "@tanstack/query-core" "5.90.2"
 
-"@twilio/voice-errors@1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@twilio/voice-errors/-/voice-errors-1.8.0.tgz#ab13ae8ee9bd53dc62acffa9631be4f391b8c695"
-  integrity sha512-Mh3CCCNOZ+OCFNv90ibml1VrsXiJy/1+/FP6382tUQuqZztndp41eqnJhsnM44UBkMAtlvVUSd1HuK8iCdHM/A==
-
-"@twilio/voice-react-native-sdk@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@twilio/voice-react-native-sdk/-/voice-react-native-sdk-1.7.0.tgz#b27ad7938c03cf944050be7c39cd7b06d93ada81"
-  integrity sha512-okuASZJffRZHRN7ayxhhK7UI86quKsXQTSm8G92Tmru1RPBqf0ek3jITCf90dRiOoFD3VxpdpcFFePZ3xEMNQw==
-  dependencies:
-    "@twilio/voice-errors" "1.8.0"
-    eventemitter3 "^4.0.7"
-
 "@types/babel__core@^7.1.14":
   version "7.20.5"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.20.5.tgz#3df15f27ba85319caa07ba08d0721889bb39c017"
@@ -3180,11 +3167,6 @@ event-target-shim@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/event-target-shim/-/event-target-shim-5.0.1.tgz#5d4d3ebdf9583d63a5333ce2deb7480ab2b05789"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
-
-eventemitter3@^4.0.7:
-  version "4.0.7"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
-  integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
 exec-async@^2.2.0:
   version "2.2.0"
@@ -5848,7 +5830,7 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
-shell-quote@^1.6.2:
+shell-quote@^1.6.1:
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.8.3.tgz#55e40ef33cf5c689902353a3d8cd1a6725f08b4b"
   integrity sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==

@@ -168,7 +168,7 @@ const AllLeads = ({ tabType }: any) => {
 
   const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -206,13 +206,13 @@ const AllLeads = ({ tabType }: any) => {
     permission,
     "Leads",
     "delete",
-    user?.role
+    user?.role,
   );
   const canAssignLead = checkPermission(
     permission,
     "Leads",
     "assign",
-    user?.role
+    user?.role,
   );
   // const canLeadPoolManagement = checkPermission(
   //   permission,
@@ -224,7 +224,7 @@ const AllLeads = ({ tabType }: any) => {
     permission,
     "Leads",
     "viewProjects",
-    user?.role
+    user?.role,
   );
 
   useEffect(() => {
@@ -246,8 +246,8 @@ const AllLeads = ({ tabType }: any) => {
           tabType === "calling_data"
             ? "Calling Data"
             : tabType === "lead"
-            ? "Leads"
-            : ""
+              ? "Leads"
+              : ""
         }
         isWithAnimation
         showBackIcon={false}
@@ -260,7 +260,6 @@ const AllLeads = ({ tabType }: any) => {
         }}
         onPressFilter={() =>
           navigation.navigate("AdvanceSearch", {
-            type: "lead",
             sourceTab: tabType,
           })
         }
@@ -280,15 +279,15 @@ const AllLeads = ({ tabType }: any) => {
                 tabType === "calling_data"
                   ? "Calling Data"
                   : tabType === "lead"
-                  ? "Leads"
-                  : ""
+                    ? "Leads"
+                    : ""
               }
               onPressToNavigate={() => {
                 if (canAddLead) {
                   navigation.navigate("AddLeads");
                 } else {
                   popUpConfToast.errorMessage(
-                    "You are not authorized to add new leads. Please contact your administrator."
+                    "You are not authorized to add new leads. Please contact your administrator.",
                   );
                 }
               }}
@@ -370,7 +369,7 @@ const AllLeads = ({ tabType }: any) => {
                   onChangeText={(v) => handleSearchChange(v)}
                   value={searchValue}
                   onClickCancel={() => {
-                    handleSearchChange(""), setFocusSearch(false);
+                    (handleSearchChange(""), setFocusSearch(false));
                   }}
                   autoFocus={focusSearch}
                   isWithAnimation
@@ -470,8 +469,8 @@ const LeadRowItem = React.memo(
               backgroundColor: selected
                 ? color.primary200
                 : bgColor
-                ? bgColor
-                : "white",
+                  ? bgColor
+                  : "white",
             },
           ]}
           onPress={onPress}
@@ -579,7 +578,7 @@ const LeadRowItem = React.memo(
   (prev, next) =>
     prev.selected === next.selected &&
     prev.item?._id === next.item?._id &&
-    prev.item?.status === next.item?.status
+    prev.item?.status === next.item?.status,
 );
 
 const styles = StyleSheet.create({

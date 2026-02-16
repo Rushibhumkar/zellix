@@ -139,7 +139,7 @@ const DropdownRNE = ({
           setData(allUsers);
         } else {
           const filterData = allUsers?.filter(
-            (el) => el?.role?.toLowerCase() === keyName?.toLowerCase()
+            (el) => el?.role?.toLowerCase() === keyName?.toLowerCase(),
           );
           setData(filterData);
         }
@@ -163,7 +163,7 @@ const DropdownRNE = ({
   };
 
   const validData = (arrOfObj?.length ? arrOfObj : data)?.filter(
-    (item) => typeof item?.[keyValueShowInBox] === "string"
+    (item) => typeof item?.[keyValueShowInBox] === "string",
   );
   return (
     <View style={[containerStyle]}>
@@ -190,7 +190,7 @@ const DropdownRNE = ({
               ? validData?.filter((item) =>
                   item[keyValueShowInBox]
                     .toLowerCase()
-                    .includes(searchText.toLowerCase())
+                    .includes(searchText.toLowerCase()),
                 )
               : validData
           }
@@ -279,7 +279,7 @@ const DropdownRNE = ({
               ? validData?.filter((item) =>
                   item[keyValueShowInBox]
                     .toLowerCase()
-                    .includes(searchText.toLowerCase())
+                    .includes(searchText.toLowerCase()),
                 )
               : validData
           }
@@ -315,7 +315,11 @@ const DropdownRNE = ({
                   padding: 20,
                 }}
               >
-                <CustomText fontSize={18} fontWeight="500">
+                <CustomText
+                  fontSize={16}
+                  fontWeight="500"
+                  color={color.mainTxtColor}
+                >
                   No Data Found
                 </CustomText>
               </View>

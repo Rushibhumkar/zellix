@@ -119,6 +119,7 @@ let advanceStatus = {
   meeting: inMeetingStatus,
   booking: inBookingStatus,
   lead: inLeadStatus,
+  callingData: inLeadStatus,
 };
 
 const AdvanceSearch = () => {
@@ -134,13 +135,19 @@ const AdvanceSearch = () => {
   //     console.log('meetingQueryKey', meetingQueryKey)
   // }, [leadQueryKey, meetingQueryKey, bookingQueryKey])
   const developerSort = [...developer]?.sort((a, b) =>
-    a?.name === b?.name ? 0 : a?.name < b?.name ? -1 : 1
+    a?.name === b?.name ? 0 : a?.name < b?.name ? -1 : 1,
   );
   const { params } = useRoute();
   const sourceTab = params?.sourceTab || "lead";
 
-  const [category, setCategory] = useState<"booking" | "meeting" | "lead">(
-    params?.type ?? "lead"
+  const [category, setCategory] = useState<
+    "booking" | "meeting" | "lead" | "callingData"
+  >(
+    sourceTab === "calling_data"
+      ? "callingData"
+      : sourceTab === "lead"
+        ? "lead"
+        : "lead",
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -172,7 +179,7 @@ const AdvanceSearch = () => {
   });
 
   const [teamOption, setTeamOption] = useState<"myLead" | "teamLead">(
-    "teamLead"
+    "teamLead",
   );
   const {
     values,
@@ -199,19 +206,16 @@ const AdvanceSearch = () => {
         } else if (category === "meeting") {
           dispatch(setMeetingQueryKey(sendData));
           navigate("MeetingsNavigator");
-        } else if (category === "lead") {
+        } else if (category === "lead" || category === "callingData") {
           dispatch(
             setLeadQueryKey({
               ...sendData,
-              type: "lead",
-            })
+              type: category === "callingData" ? "calling_data" : "lead",
+            }),
           );
 
           navigate("Dashboard", {
-            screen: sourceTab === "calling_data" ? "allLead" : "allLead2",
-            params: {
-              screen: "allLead",
-            },
+            screen: category === "callingData" ? "allLead" : "allLead2",
           });
         }
       } catch (error) {
@@ -228,7 +232,7 @@ const AdvanceSearch = () => {
     });
     setFieldValue(key, value);
   };
-
+  console.log("c:", category);
   useEffect(() => {
     if (category === "booking") {
       setValues(bookingQueryKey ?? {});
@@ -255,6 +259,7 @@ const AdvanceSearch = () => {
                 { name: "Meeting", _id: "meeting" },
                 { name: "Lead", _id: "lead" },
                 { name: "Booking", _id: "booking" },
+                { name: "Calling Data", _id: "callingData" },
               ]}
               containerStyle={{ marginBottom: 15, marginTop: 12 }}
               initialValue={category}
@@ -295,13 +300,13 @@ const AdvanceSearch = () => {
               label="Status"
               placeholder="Status"
               // arrOfObj={inMeetingStatus}
-              arrOfObj={advanceStatus[category]}
+              arrOfObj={advanceStatus[category] || inLeadStatus}
               containerStyle={{ marginBottom: 15 }}
               onChange={(v) => setFieldValue("status", v)}
               isAdvanceSearch
               initialValue={values?.status}
             />
-            {onlyLead && (
+            {/* {onlyLead && (
               <DropdownRNE
                 label="Type"
                 placeholder="Type"
@@ -312,7 +317,7 @@ const AdvanceSearch = () => {
                 initialValue={values?.type}
                 isAdvanceSearch
               />
-            )}
+            )} */}
             {onlyBooking && (
               <>
                 <DropdownRNE
