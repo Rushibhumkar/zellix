@@ -95,11 +95,11 @@ const DatePickerExpo = ({
       onSelect && onSelect(selectedDate);
     }
   };
-
   useEffect(() => {
-    if (!!initialValue) {
-      setGetDate(new Date(initialValue));
-      setDate(new Date(initialValue));
+    if (initialValue) {
+      const d = new Date(initialValue);
+      setGetDate(d);
+      setDate(d);
     }
   }, [initialValue]);
 
@@ -147,13 +147,13 @@ const DatePickerExpo = ({
               ? mode === "datetime"
                 ? moment(getDate).format("DD/MM/YYYY hh:mm A")
                 : mode === "date"
-                ? moment(getDate).format("DD/MM/YYYY")
-                : moment(getDate).format("hh:mm A")
+                  ? moment(getDate).format("DD/MM/YYYY")
+                  : moment(getDate).format("hh:mm A")
               : mode === "datetime"
-              ? "DD/MM/YYYY hh:mm A"
-              : mode === "date"
-              ? "DD/MM/YYYY"
-              : "Time"}
+                ? "DD/MM/YYYY hh:mm A"
+                : mode === "date"
+                  ? "DD/MM/YYYY"
+                  : "Time"}
           </CustomText>
 
           <Feather name="calendar" size={18} color={color.mainTxtColor} />
@@ -179,9 +179,9 @@ const DatePickerExpo = ({
                   display="spinner"
                   value={date}
                   onChange={(event, selectedDate) => {
-                    if (selectedDate) {
-                      setDate(selectedDate);
-                    }
+                    const current =
+                      selectedDate || new Date(event?.nativeEvent?.timestamp);
+                    setDate(current);
                   }}
                   maximumDate={maximumDate}
                   minimumDate={minimumDate}
@@ -202,11 +202,13 @@ const DatePickerExpo = ({
                   }}
                   color={color.darkBlack}
                 />
+
                 <Button
                   title="Ok"
                   onPress={() => {
-                    setGetDate(date);
-                    onSelect && onSelect(date);
+                    const finalDate = new Date(date);
+                    setGetDate(finalDate);
+                    onSelect && onSelect(finalDate); // ✅ yahi bhejna hai
                     setShowPicker(false);
                     setShowTimePicker(false);
                   }}

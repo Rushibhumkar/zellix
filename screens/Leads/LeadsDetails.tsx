@@ -133,6 +133,7 @@ const LeadsDetails = () => {
   const dispatch = useDispatch();
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
+  const [timePickerKey, setTimePickerKey] = useState(0);
 
   //
   const [isLoading, setIsLoading] = useState(false);
@@ -353,6 +354,22 @@ const LeadsDetails = () => {
       myConsole("Call failed", err);
     }
   };
+
+  const roundToNext5Min = (date: Date) => {
+    const d = new Date(date);
+    const minutes = d.getMinutes();
+    const remainder = minutes % 5;
+
+    if (remainder !== 0) {
+      d.setMinutes(minutes + (5 - remainder));
+    }
+
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+    return d;
+  };
+
+  const isFUTSubmitDisabled = !tdForFUT?.date || !tdForFUT?.time;
 
   return (
     <>
@@ -620,7 +637,14 @@ const LeadsDetails = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                       }}
-                      onPress={FUTModal.openModal}
+                      onPress={() => {
+                        setTdForFUT((prev) => ({
+                          ...prev,
+                          time: roundToNext5Min(prev.time || new Date()),
+                        }));
+                        setTimePickerKey((k) => k + 1); // 🔥 force remount
+                        FUTModal.openModal();
+                      }}
                     >
                       <View>
                         <CustomText style={{ color: color.mainTxtColor }}>
@@ -810,13 +834,15 @@ const LeadsDetails = () => {
             minimumDate={new Date()}
             boxContainerStyle={{ marginBottom: 15 }}
             onSelect={(v) => {
-              setTdForFUT((prev) => {
-                return { ...prev, date: v };
-              });
+              setTdForFUT((prev) => ({
+                ...prev,
+                date: v || null,
+              }));
             }}
             initialValue={tdForFUT.date}
           />
           <DatePickerExpo
+            key={timePickerKey}
             title="Time"
             mode="time"
             minuteInterval={5} // 👈 ADD THIS (00,05,10...)
@@ -827,9 +853,10 @@ const LeadsDetails = () => {
             }
             boxContainerStyle={{ marginBottom: 20 }}
             onSelect={(v) => {
-              setTdForFUT((prev) => {
-                return { ...prev, time: v };
-              });
+              setTdForFUT((prev) => ({
+                ...prev,
+                time: v ? roundToNext5Min(new Date(v)) : null,
+              }));
             }}
             initialValue={tdForFUT.time}
           />
@@ -844,6 +871,7 @@ const LeadsDetails = () => {
             onPress={handleStatusUpdate}
             isLoading={isLoading}
             textStyle={{ fontSize: 14 }}
+            disabled={isFUTSubmitDisabled}
           />
         </View>
       </CustomModal>
