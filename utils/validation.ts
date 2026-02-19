@@ -1,6 +1,8 @@
 import * as Yup from "yup";
 import { parsePhoneNumber } from "libphonenumber-js";
 
+const whatsappRegex = /^(\+?\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s-]?)?\d{6,12}$/;
+
 export const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .required("Email is required")
@@ -93,8 +95,9 @@ export const addSingleLeadSchema = Yup.object().shape({
     .email("Invalid email format")
     .required(" Field required"),
   whatsapp: Yup.string()
-    .required("WhatsApp number is required")
-    .min(5, "Minimum 5 digits required"),
+    .trim()
+    .matches(whatsappRegex, "Enter a valid WhatsApp number")
+    .required("WhatsApp number is required"),
 });
 export const addSingleLeadWithSrManagerSchema = Yup.object().shape({
   //srManager: Yup.string().required("Name is Required"),
@@ -107,8 +110,9 @@ export const addSingleLeadWithSrManagerSchema = Yup.object().shape({
     .email("Invalid email format")
     .required(" Field required"),
   whatsapp: Yup.string()
-    .required("WhatsApp number is required")
-    .min(5, "Minimum 5 digits required"),
+    .trim()
+    .matches(whatsappRegex, "Enter a valid WhatsApp number")
+    .required("WhatsApp number is required"),
 });
 
 export const addLeadInBulk = Yup.object().shape({
@@ -157,7 +161,7 @@ export const emailValidate = () =>
     .email("Invalid email format")
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Enter a valid email address"
+      "Enter a valid email address",
     )
     .required("Required");
 
@@ -165,7 +169,7 @@ export const alphabeticValidation = (
   required: boolean = true,
   minLength: number = 2,
   maxLength: number = 30,
-  message: string = "Required"
+  message: string = "Required",
 ) => {
   let schema = Yup.string()
     .matches(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed")
@@ -183,7 +187,7 @@ export const alphanumericValidation = (
   required: boolean = true,
   minLength: number = 3,
   maxLength: number = 20,
-  message: string = "Required"
+  message: string = "Required",
 ) => {
   let schema = Yup.string()
     .matches(/^[a-zA-Z0-9\s]+$/, "Only letters, numbers and spaces are allowed")
@@ -201,7 +205,7 @@ export const urlReq = (message: string = "Field is required") =>
   Yup.string()
     .matches(
       /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:[0-9]{1,5})?(\/\S*)?$/,
-      "Please enter a valid URL"
+      "Please enter a valid URL",
     )
     .required(message);
 
@@ -209,13 +213,13 @@ export const remarkValidate = (
   required: boolean = true,
   minLength: number = 5,
   maxLength: number = 20,
-  message: string = "Required"
+  message: string = "Required",
 ) => {
   let schema = Yup.string()
     .trim() // removes leading/trailing spaces
     .matches(
       /^[a-zA-Z0-9\s.,'-]+$/,
-      "Only letters, numbers, spaces, comma, period, hyphen and apostrophe allowed"
+      "Only letters, numbers, spaces, comma, period, hyphen and apostrophe allowed",
     )
     .min(minLength, `Minimum ${minLength} characters required`)
     .max(maxLength, `Maximum ${maxLength} characters allowed`);

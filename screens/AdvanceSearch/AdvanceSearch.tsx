@@ -174,8 +174,8 @@ const AdvanceSearch = () => {
   // console.log('user', isAdmin, 'ROLE', user?.role)
   let dd = new Date();
   const [tempDate, setTempDate] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: null,
+    endDate: null,
   });
 
   const [teamOption, setTeamOption] = useState<"myLead" | "teamLead">(
@@ -191,8 +191,10 @@ const AdvanceSearch = () => {
   } = useFormik({
     initialValues: {
       // startDate: dd.setDate(dd.getDate() - 5),
-      startDate: tempDate.startDate,
-      endDate: tempDate.endDate,
+      initialValues: {
+        startDate: null,
+        endDate: null,
+      },
       // ...(onlyLead && { type: 'lead' })
     },
     onSubmit: async (value) => {
@@ -226,13 +228,13 @@ const AdvanceSearch = () => {
     },
   });
   const onDateSelect = (key, value) => {
-    setTempDate({
-      ...tempDate,
-      [key]: value,
-    });
-    setFieldValue(key, value);
+    setTempDate((prev) => ({
+      ...prev,
+      [key]: value || null,
+    }));
+    setFieldValue(key, value || null);
   };
-  console.log("c:", category);
+
   useEffect(() => {
     if (category === "booking") {
       setValues(bookingQueryKey ?? {});

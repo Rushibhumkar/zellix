@@ -86,6 +86,7 @@ interface TDropdownRNE {
   dpWidth: number;
   onSelect: (a: any) => void;
   isCountryPicker?: boolean;
+  disabled?: boolean;
 }
 
 const DropdownRNE = ({
@@ -115,6 +116,7 @@ const DropdownRNE = ({
   dpWidth,
   dropdownStyle,
   isCountryPicker,
+  disabled = false,
   onSelect,
 }: TDropdownRNE) => {
   //
@@ -226,6 +228,8 @@ const DropdownRNE = ({
             maxHeight: 300,
             ...(dpWidth && { width: dpWidth }),
           }}
+          disable={disabled} // 👈 ADD
+          pointerEvents={disabled ? "none" : "auto"} // 👈 ADD (important)
           activeColor={color.selectedBg}
           flatListProps={{
             ListEmptyComponent: (
@@ -301,6 +305,8 @@ const DropdownRNE = ({
               transform={[{ rotate: !open ? "180deg" : "0deg" }]}
             />
           )}
+          disable={disabled} // 👈 ADD
+          pointerEvents={disabled ? "none" : "auto"} // 👈 ADD
           renderItem={renderItem}
           onFocus={() => setOpen((prev) => !prev)}
           onBlur={() => setOpen((prev) => !prev)}

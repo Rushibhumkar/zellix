@@ -9,11 +9,12 @@ import {
 } from "react-native";
 import { AddLeadSchema } from "../../utils/validation";
 import { Formik } from "formik";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import BasicDropdown from "../common/BasicDropdown";
 import ListAccordion from "../common/ListAccordion";
 import Button from "../common/Button";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { myConsole } from "../../hooks/useConsole";
 
 const data = [
   { label: "Lead", value: "Lead" },
@@ -31,6 +32,8 @@ const agents = [
 ];
 
 const AddLead = () => {
+  console.log("sdflkdjsfl");
+
   const [expanded, setExpanded] = React.useState(true);
   const [countryCode, setCountryCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");

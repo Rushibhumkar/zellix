@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { useFormik } from "formik";
@@ -7,9 +7,8 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import { addLead, updateLead } from "../../services/rootApi/leadApi";
 import { useNavigation } from "@react-navigation/native";
-import userSlice, { selectUser } from "../../redux/userSlice";
+import { selectUser } from "../../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllLeadFunc } from "../../redux/action";
 import {
   addSingleLeadSchema,
   addSingleLeadWithSrManagerSchema,
@@ -23,16 +22,33 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useAppToast } from "../../components/AppToast";
 
-const AddSingleLead = ({ data }) => {
+const AddSingleLead = ({ data, tabType }: any) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
   const dispatch = useDispatch();
   const { navigate, goBack } = useNavigation();
   const { user, team } = useSelector(selectUser);
   const [isLoading, setLoading] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isWhatsappManuallyEdited, setIsWhatsappManuallyEdited] =
+    useState(false);
+  const mobileDebounceRef = React.useRef<any>(null);
+
+  const parseMobile = (val: string) => {
+    if (!val || !val.includes("-")) {
+      return { countryCode: "", phone: "" };
+    }
+
+    const [code, phone] = val.split("-");
+
+    return {
+      countryCode: code.replace(/\D/g, ""), // "20"
+      phone: phone.replace(/\D/g, ""), // "9658412556"
+    };
+  };
+
   const {
     handleChange,
     handleBlur,
@@ -50,7 +66,8 @@ const AddSingleLead = ({ data }) => {
       clientName: data?.clientName ?? "",
       clientMobile: data?.clientMobile ?? "",
       clientEmail: data?.clientEmail ?? "",
-      type: data?.type ?? "",
+      type:
+        data?.type ?? (tabType === "calling_data" ? "calling_data" : "lead"),
       whatsapp: data?.whatsapp?.slice(14) ?? "",
       // name: data?.name ?? "sdfsdfdsf",
       // clientName: data?.clientName ?? "lksjdlkfjd",
@@ -81,7 +98,7 @@ const AddSingleLead = ({ data }) => {
                 assign: srManager,
               },
             },
-            toast
+            toast,
           );
 
           // setIsVisible(true);
@@ -102,7 +119,7 @@ const AddSingleLead = ({ data }) => {
               srManager,
               assign: srManager,
             },
-            toast
+            toast,
           );
           // setIsVisible(true);
           // setMessage("Lead saved successfully");
@@ -140,7 +157,7 @@ const AddSingleLead = ({ data }) => {
   useEffect(() => {
     let srManager = "";
     if (data?.self) {
-      team?.forEach((tm) => {
+      team?.forEach((tm: any) => {
         if (tm.srManager?._id === data?.assign?._id) {
           srManager = tm.srManager?._id;
           return;
@@ -154,7 +171,7 @@ const AddSingleLead = ({ data }) => {
           srManager = tm.srManager?._id;
           return;
         } else if (!!tm?.agents && tm?.agents?.length > 0) {
-          tm.agents.forEach((ag) => {
+          tm.agents.forEach((ag: any) => {
             if (ag._id === data?.assign?._id) {
               srManager = tm.srManager?._id;
               return;
@@ -165,6 +182,22 @@ const AddSingleLead = ({ data }) => {
       setFieldValue("srManager", srManager);
     }
   }, [!!data]);
+
+  useEffect(() => {
+    console.log("🟡 FINAL STATE", {
+      clientMobile: values.clientMobile,
+      whatsapp: values.whatsapp,
+      isWhatsappManuallyEdited,
+    });
+  }, [values.clientMobile, values.whatsapp, isWhatsappManuallyEdited]);
+
+  useEffect(() => {
+    if (selectAll) {
+      console.log("🟢 selection APPLIED", values?.whatsapp?.length);
+    } else {
+      console.log("🔵 selection CLEARED");
+    }
+  }, [selectAll]);
 
   return (
     <View>
@@ -205,17 +238,25 @@ const AddSingleLead = ({ data }) => {
         Client Mobile Number
       </CustomText>
       <MobileInput
-        onChange={(a) => setFieldValue("clientMobile", a)}
         value={values?.clientMobile}
+        onChange={(a) => {
+          const { countryCode, phone } = parseMobile(a);
+
+          // clientMobile = ONLY phone number
+          setFieldValue("clientMobile", phone);
+
+          if (mobileDebounceRef.current) {
+            clearTimeout(mobileDebounceRef.current);
+          }
+
+          mobileDebounceRef.current = setTimeout(() => {
+            if (!isWhatsappManuallyEdited && phone.length >= 8 && countryCode) {
+              const whatsappValue = `+${countryCode}${phone}`;
+              setFieldValue("whatsapp", whatsappValue);
+            }
+          }, 600);
+        }}
       />
-      {/* <CustomInput
-        label="Client Mobile"
-        placeholder="clientMobile"
-        containerStyle={{ marginBottom: 15 }}
-        onChangeText={handleChange("clientMobile")}
-        value={values?.whatsapp}
-        onBlur={handleBlur("clientMobile")}
-      /> */}
 
       {errors.clientMobile && touched.clientMobile && (
         <CustomText style={styles.errorText}>{errors.clientMobile}</CustomText>
@@ -245,6 +286,7 @@ const AddSingleLead = ({ data }) => {
         onBlur={handleBlur("type")}
         onChange={(a) => setFieldValue("type", a)}
         initialValue={values?.type}
+        disabled={!data}
       />
       {errors.type && touched.type && (
         <CustomText style={styles.errorText}>{errors.type}</CustomText>
@@ -262,14 +304,31 @@ const AddSingleLead = ({ data }) => {
           color={color.mainTxtColor}
         >{`  (with country code)`}</CustomText>
       </CustomText>
-
       <CustomInput
         label=""
-        placeholder="eg: 919989767895"
+        placeholder="eg: +9719878765789"
         containerStyle={{ marginBottom: 15 }}
-        onChangeText={handleChange("whatsapp")}
         value={values?.whatsapp}
-        onBlur={handleBlur("whatsapp")}
+        onChangeText={(text) => {
+          console.log("✏️ WhatsApp manual edit:", text);
+          setIsWhatsappManuallyEdited(true);
+          setSelectAll(false);
+          handleChange("whatsapp")(text);
+        }}
+        onBlur={() => {
+          setSelectAll(false);
+          handleBlur("whatsapp");
+        }}
+        props={{
+          selection: selectAll
+            ? { start: 0, end: values?.whatsapp?.length || 0 }
+            : undefined,
+          onFocus: () => {
+            if (!selectAll && values?.whatsapp) {
+              setSelectAll(true);
+            }
+          },
+        }}
       />
 
       {errors.whatsapp && touched.whatsapp && (

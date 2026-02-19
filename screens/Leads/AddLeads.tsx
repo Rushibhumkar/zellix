@@ -13,8 +13,11 @@ import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboa
 
 const AddLeads = () => {
   const { user } = useSelector(selectUser);
+
   const { params } = useRoute();
   let data = params?.detail;
+
+  console.log("tabteypss", params?.tabType);
   //
   const [openLeadField, setOpenLeadField] = useState({
     bulk: false,
@@ -28,7 +31,16 @@ const AddLeads = () => {
   };
   return (
     <>
-      <Header title={!!data ? "Update Lead" : "Add Leads"} />
+      <Header
+        title={
+          !!data
+            ? "Update Lead"
+            : params?.tabType === "calling_data"
+              ? "Add Calling Data"
+              : "Add Leads"
+        }
+      />
+
       <Container>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -43,7 +55,11 @@ const AddLeads = () => {
               {user?.isAdmin && !data && (
                 <>
                   <MainTitle
-                    title={"Add Leads In Bulk"}
+                    title={
+                      params?.tabType === "calling_data"
+                        ? "Add Calling Data In Bulk"
+                        : "Add Leads In Bulk"
+                    }
                     icon={
                       <UpDownIcon
                         transform={[
@@ -65,7 +81,11 @@ const AddLeads = () => {
               )}
 
               <MainTitle
-                title="Add SIngle Lead"
+                title={
+                  params?.tabType === "calling_data"
+                    ? "Add Single Calling Data"
+                    : "Add Single Lead"
+                }
                 icon={
                   <UpDownIcon
                     transform={[
@@ -76,7 +96,9 @@ const AddLeads = () => {
                 containerStyle={{ marginBottom: 20 }}
                 onPress={() => handleOpenField("single")}
               />
-              {openLeadField.single && <AddSingleLead data={data ?? null} />}
+              {openLeadField.single && (
+                <AddSingleLead data={data ?? null} tabType={params?.tabType} />
+              )}
             </View>
           </ScrollView>
         </KeyboardAvoidingView>

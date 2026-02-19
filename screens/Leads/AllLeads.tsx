@@ -264,7 +264,7 @@ const AllLeads = ({ tabType }: any) => {
           })
         }
         onPressAdd={() => {
-          if (canAddLead) navigation.navigate("AddLeads");
+          if (canAddLead) navigation.navigate("AddLeads", { tabType });
           else popUpConfToast.errorMessage("Not authorized to add leads.");
         }}
       />
@@ -284,7 +284,7 @@ const AllLeads = ({ tabType }: any) => {
               }
               onPressToNavigate={() => {
                 if (canAddLead) {
-                  navigation.navigate("AddLeads");
+                  navigation.navigate("AddLeads", { tabType });
                 } else {
                   popUpConfToast.errorMessage(
                     "You are not authorized to add new leads. Please contact your administrator.",
