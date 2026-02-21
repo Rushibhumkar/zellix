@@ -50,6 +50,7 @@ interface HeaderProps {
   onPressFilter?: () => void;
   onPressAdd?: () => void;
   isWithAnimation?: boolean;
+  totalCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -61,6 +62,7 @@ const Header: React.FC<HeaderProps> = ({
   onPressFilter,
   onPressAdd,
   isWithAnimation = false,
+  totalCount = 0,
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
@@ -82,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
       setMenuVisible(false);
     } catch (error) {
@@ -140,8 +142,26 @@ const Header: React.FC<HeaderProps> = ({
                   isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
                 }
                 exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <CustomText style={styles.titleText}>{title}</CustomText>
+                {totalCount > 0 && (
+                  <CustomText
+                    style={{
+                      color: "#fff",
+                      fontSize: 16,
+                      // backgroundColor: "#98989878",
+                      borderRadius: 8,
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      borderColor: "#ffffff29",
+                      borderWidth: 2,
+                    }}
+                  >
+                    {totalCount}
+                  </CustomText>
+                )}
               </AnimatedView>
             </View>
 

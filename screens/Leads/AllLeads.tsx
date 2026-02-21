@@ -94,6 +94,7 @@ const AllLeads = ({ tabType }: any) => {
   //get Query
   const {
     data: leadData,
+    totalCount,
     isLoading: loading,
     hasNextPage,
     fetchNextPage,
@@ -103,6 +104,10 @@ const AllLeads = ({ tabType }: any) => {
     type: leadQueryKey?.type ?? selectLeadType,
     ...leadQueryKey,
   });
+
+  // useEffect(() => {
+  //   console.log("🔴 totalCount received in screen:", totalCount);
+  // }, [totalCount]);
 
   const handleSelect = (id) => {
     let temp = [...selected];
@@ -238,7 +243,6 @@ const AllLeads = ({ tabType }: any) => {
       }
     }
   }, [isFocused, tabType]);
-
   return (
     <>
       <Header
@@ -249,6 +253,7 @@ const AllLeads = ({ tabType }: any) => {
               ? "Leads"
               : ""
         }
+        totalCount={totalCount}
         isWithAnimation
         showBackIcon={false}
         showActions={showHeaderActions}

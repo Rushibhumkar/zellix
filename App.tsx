@@ -62,7 +62,7 @@ export default function App() {
         setExpoPushToken(token);
       })
       .catch((error) =>
-        console.log("registerForPushNotificationsAsync ERROR:", error)
+        console.log("registerForPushNotificationsAsync ERROR:", error),
       );
 
     notificationListener.current =
@@ -75,14 +75,16 @@ export default function App() {
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification CLICK RESPONSE:", response);
 
-        let notData = response?.notification?.request?.content?.data;
-        console.log("Notification CLICK DATA:", notData);
+        const notData = response?.notification?.request?.content?.data;
+
+        console.log("📦 CLICK DATA:", notData);
 
         if (notData?.module === "leads" && notData?.id) {
-          console.log("Navigating to leads with ID:", notData.id);
-          navigate("allLeads", {
+          navigate("allLead2", {
             screen: "LeadsDetails",
-            params: { item: { _id: notData?.id } },
+            params: {
+              item: { _id: notData.id },
+            },
           });
         }
       });

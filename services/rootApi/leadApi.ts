@@ -99,7 +99,7 @@ export const getLead = async ({
   search = null,
   pageParam = 1,
   type = "lead",
-  limit,
+  limit = 400,
   status,
   individual,
   pagination = true,
@@ -132,6 +132,7 @@ export const getLead = async ({
         ...(skipType && { skipType }),
       },
     });
+    // console.log("🟢 getLead RAW response.data:", response.data);
     return response.data;
   } catch (err) {
     console.log("getLeadErrPag", err);

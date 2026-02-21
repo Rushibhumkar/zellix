@@ -113,11 +113,16 @@ export const useGetLead = ({
         : undefined;
     },
   });
+  // console.log("🟡 useGetLead res.data.pages:", res?.data?.pages);
+  // console.log("🟠 FIRST PAGE KEYS:", Object.keys(res?.data?.pages?.[0] ?? {}));
+  // console.log("🔵 pagination object:", res?.data?.pages?.[0]?.pagination);
   let data = [];
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const totalCount = res?.data?.pages?.[0]?.pagination?.totalItem ?? null;
+
+  return { ...res, data, totalCount };
 };
 export const useGetLeadInAddMeeting = ({
   search,
