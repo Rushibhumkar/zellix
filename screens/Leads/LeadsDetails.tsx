@@ -533,8 +533,8 @@ const LeadsDetails = () => {
                 component={
                   detail?.clientMobile ? (
                     <TouchableOpacity
-                      onPress={() => handleCall(detail?._id)}
-                      // onPress={() => navToCall()}
+                      // onPress={() => handleCall(detail?._id)}
+                      onPress={() => navToCall()}
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
