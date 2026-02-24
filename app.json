@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.skg.zellix",
       "bundleNumber": "1.7.5",
       "supportsTablet": true,
-      "buildNumber": "121",
+      "buildNumber": "122",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features."
@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 119,
+      "versionCode": 120,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
