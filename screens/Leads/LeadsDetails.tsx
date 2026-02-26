@@ -215,6 +215,9 @@ const LeadsDetails = () => {
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
         });
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getLead],
+        });
         // queryClient.invalidateQueries({
         //   queryKey: [queryKeyCRM.getLead],
         // });
@@ -700,6 +703,52 @@ const LeadsDetails = () => {
                   textStyle={{ fontSize: 14 }}
                 />
               )}
+
+              {!!detail?.additionalQuestions && (
+                <View
+                  style={{
+                    marginBottom: 8,
+                  }}
+                >
+                  <View
+                    style={{
+                      borderBottomWidth: 1,
+                      borderBottomColor: color.saffronMango,
+                      paddingRight: 20,
+                      paddingBottom: 5,
+                      alignSelf: "flex-start",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <CustomText
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "500",
+                        color: color.mainTxtColor,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Additional Questions
+                    </CustomText>
+                  </View>
+                  {Object.entries(
+                    extractStringObj(detail?.additionalQuestions),
+                  ).map(([key, value], index) => {
+                    return (
+                      <RowItem
+                        key={index}
+                        title={key}
+                        value={value}
+                        titleTextStyle={{ fontSize: 14 }}
+                        valueTextStyle={{ fontSize: 14 }}
+                        containerStyle={{
+                          marginBottom: 10,
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              )}
               {/* notes */}
               <MainTitle
                 title="Notes"
@@ -736,19 +785,7 @@ const LeadsDetails = () => {
                 }}
                 isLoadingDelete={isLoadingDelete}
               />
-              {!!detail?.additionalQuestions &&
-                Object.entries(
-                  extractStringObj(detail?.additionalQuestions),
-                ).map(([key, value], index) => {
-                  return (
-                    <RowItem
-                      key={index}
-                      title={key}
-                      value={value}
-                      containerStyle={{ marginBottom: 10 }}
-                    />
-                  );
-                })}
+
               <MainTitle
                 title="Call logs"
                 containerStyle={{ marginBottom: 20 }}

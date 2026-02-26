@@ -128,7 +128,7 @@ const SearchBar = ({
       </View>
       {/* </Animated.View> */}
 
-      {moduleName === "lead" && (
+      {/* {moduleName === "lead" && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -181,7 +181,7 @@ const SearchBar = ({
             </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
+      )} */}
     </LinearGradient>
   );
 };

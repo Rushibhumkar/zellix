@@ -2,6 +2,7 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
@@ -21,6 +22,8 @@ interface TRowItem {
   icon?: "whatsapp" | "n/a";
   onPressIcon?: () => void;
   component?: ReactNode;
+  titleTextStyle?: StyleProp<TextStyle>;
+  valueTextStyle?: StyleProp<TextStyle>;
 }
 const RowItem = ({
   title,
@@ -29,6 +32,8 @@ const RowItem = ({
   icon,
   onPressIcon,
   component,
+  titleTextStyle,
+  valueTextStyle,
 }: TRowItem) => {
   return (
     <View
@@ -48,7 +53,7 @@ const RowItem = ({
           width: "35%",
         }}
       >
-        <CustomText numberOfLines={2} style={styles.text}>
+        <CustomText numberOfLines={2} style={[styles.text, titleTextStyle]}>
           {title ?? "N/A"}
         </CustomText>
       </View>
@@ -59,20 +64,26 @@ const RowItem = ({
         }}
       >
         <CustomText
-          style={{
-            color: color.mainTxtColor,
-            fontWeight: "600",
-            fontSize: 18,
-          }}
+          style={[
+            {
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 18,
+            },
+            valueTextStyle,
+          ]}
         >
           :
         </CustomText>
       </View>
       {!!component ? (
         <View
-          style={{
-            width: "56%",
-          }}
+          style={[
+            {
+              width: "56%",
+            },
+            valueTextStyle,
+          ]}
         >
           {component}
         </View>
