@@ -40,7 +40,7 @@ export default function SkeletonLoadingLead({ isTeam }: { isTeam: boolean }) {
       );
     };
     return (
-      <View style={{ paddingHorizontal: 20, marginTop: isTeam ? 0 : 20 }}>
+      <View style={{ paddingHorizontal: 8, marginTop: isTeam ? 0 : 20 }}>
         {[...new Array(6)].map((el, i) => {
           return (
             <View

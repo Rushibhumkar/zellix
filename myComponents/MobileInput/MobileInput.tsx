@@ -55,6 +55,13 @@ const MobileInput = ({
       setNumber({ pin, phone });
     }
   }, [value]);
+
+  useEffect(() => {
+    if (!number.pin) {
+      setNumber((prev) => ({ ...prev, pin: "971" }));
+    }
+  }, []);
+
   const handleChangeMobile = (e: string, key: "pin" | "phone") => {
     if (!!e || e === "") {
       setNumber((prev) => {
@@ -62,12 +69,18 @@ const MobileInput = ({
       });
     }
   };
+  // useEffect(() => {
+  //   if (onChange && !!number.phone && !!number.phone) {
+  //     onChange(`${number.pin}-${number.phone}`);
+  //   }
+  // }, [number]);
+
   useEffect(() => {
-    if (onChange && !!number.phone && !!number.phone) {
-      onChange(`${number.pin}-${number.phone}`);
-    }
-  }, [number]);
-  //////////////////////////////////////////////
+    if (!number.phone) return;
+
+    onChange?.(`${number.pin || "971"}-${number.phone}`);
+  }, [number.pin, number.phone]);
+
   const [phone, setPhone] = useState<TPhone>({
     number: "",
     countryCode: "+971",
@@ -131,10 +144,10 @@ const MobileInput = ({
             }}
             placeholder="+971"
             arrOfObj={formattedCodes}
-            keyValueGetOnSelect="_id"
+            keyValueGetOnSelect="code"
             // keyValueShowInBox="displayName"
             onChange={(e) => handleChangeMobile(e, "pin")}
-            initialValue={number?.pin}
+            initialValue={String(number?.pin || "971")}
             mode="modal"
             isSearch
             dpWidth={250}

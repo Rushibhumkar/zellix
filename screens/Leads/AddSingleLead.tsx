@@ -153,7 +153,6 @@ const AddSingleLead = ({ data, tabType }: any) => {
       }
     },
   });
-
   useEffect(() => {
     let srManager = "";
     if (data?.self) {
@@ -238,12 +237,11 @@ const AddSingleLead = ({ data, tabType }: any) => {
         Client Mobile Number
       </CustomText>
       <MobileInput
-        value={values?.clientMobile}
+        value={values.clientMobile} // ✅ default 971
         onChange={(a) => {
           const { countryCode, phone } = parseMobile(a);
 
-          // clientMobile = ONLY phone number
-          setFieldValue("clientMobile", phone);
+          setFieldValue("clientMobile", `${countryCode}${phone}`);
 
           if (mobileDebounceRef.current) {
             clearTimeout(mobileDebounceRef.current);
@@ -273,7 +271,7 @@ const AddSingleLead = ({ data, tabType }: any) => {
         <CustomText style={styles.errorText}>{errors.clientEmail}</CustomText>
       )}
 
-      <DropdownRNE
+      {/* <DropdownRNE
         label="Lead Type"
         arrOfObj={[
           { name: "Lead", _id: "lead" },
@@ -290,7 +288,7 @@ const AddSingleLead = ({ data, tabType }: any) => {
       />
       {errors.type && touched.type && (
         <CustomText style={styles.errorText}>{errors.type}</CustomText>
-      )}
+      )} */}
       <CustomText
         fontSize={16}
         fontWeight="500"

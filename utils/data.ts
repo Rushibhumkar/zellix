@@ -47,6 +47,7 @@ export const roleEnum = {
   sup_admin: "sup_admin",
   sub_admin: "sub_admin",
   assistant_manager: "assistant_manager",
+  seo: "seo",
 };
 
 export const statusEnum = {
@@ -142,18 +143,20 @@ export const status = [
 export const statusObj = {
   new: "New",
   assign: "Assigned",
-  contacted: "Contacted",
+  followUp_required: "Follow Up Required",
+  claimed: "Claimed",
+  not_able_to_connect: "Not Able to Connect",
   no_response: "No Response",
+  not_interested_buy_later: "Not Interested May Buy Later",
+  not_interested: "Not Interested",
+  lost: "Lost",
+  contacted: "Contacted",
   active_cold: "Active Cold",
   active_hot: "Active Hot",
   meeting_scheduled: "Meeting Scheduled",
   wrong_details: "Spam/Wrong contact details",
   broker: "Broker",
-  not_interested_buy_later: "Not Interested May Buy Later",
-  not_able_to_connect: "Not Able to Connect",
-  followUp_required: "Follow Up Required",
   disqualified: "Disqualified",
-  not_interested: "Not Interested",
   deal_booked: "Deal Booked",
   deal_cancelled: "Deal Cancelled",
   nr_event: "NR Event",
@@ -428,20 +431,20 @@ export const inMeetingStatus = [
 
 export const inLeadStatus = [
   { _id: "assign", name: "Assigned" },
+  { _id: "followUp_required", name: "Follow Up Required" },
+  { _id: "not_able_to_connect", name: "Not Able to Connect" },
+  { _id: "not_interested", name: "Not Interested" },
+  { _id: "no_response", name: "No Response" },
+  { _id: "meeting_scheduled", name: "Meeting Scheduled" },
   // { _id: "contacted", name: "Contacted" },
   { _id: "claimed", name: "Claimed" },
+  { _id: "wrong_details", name: "Spam/Wrong contact details" },
+  { _id: "not_interested_buy_later", name: "Not Interested May Buy Later" },
   { _id: "lost", name: "Lost" },
-  { _id: "no_response", name: "No Response" },
   { _id: "active_cold", name: "Active Cold" },
   { _id: "active_hot", name: "Active Hot" },
-  { _id: "meeting_scheduled", name: "Meeting Scheduled" },
-  { _id: "wrong_details", name: "Spam/Wrong contact details" },
   { _id: "broker", name: "Broker" },
-  { _id: "not_interested_buy_later", name: "Not Interested May Buy Later" },
-  { _id: "not_able_to_connect", name: "Not Able to Connect" },
-  { _id: "followUp_required", name: "Follow Up Required" },
   { _id: "disqualified", name: "Disqualified" },
-  { _id: "not_interested", name: "Not Interested" },
   { _id: "deal_booked", name: "Deal Booked" },
   { _id: "deal_cancelled", name: "Deal Cancelled" },
   { _id: "nr_event", name: "NR Event" },
@@ -489,3 +492,12 @@ export const ExpressionOfInterestList = [
   { value: "brokerReferral", name: "Sum of Broker" },
   { value: "netCommission", name: "Sum of Net Revenue" },
 ];
+
+export const formatRoleName = (key: string = ""): string => {
+  if (!key) return "";
+
+  return key
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};

@@ -16,7 +16,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import MenuModal from "./Dashboard/MenuModal";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../redux/userSlice";
@@ -51,6 +51,8 @@ interface HeaderProps {
   onPressAdd?: () => void;
   isWithAnimation?: boolean;
   totalCount?: number;
+  onCloseSearch: () => void;
+  moduleName?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -61,8 +63,10 @@ const Header: React.FC<HeaderProps> = ({
   onPressSearch,
   onPressFilter,
   onPressAdd,
+  onCloseSearch,
   isWithAnimation = false,
   totalCount = 0,
+  moduleName,
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
@@ -111,7 +115,12 @@ const Header: React.FC<HeaderProps> = ({
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: insets?.bottom !== 0 ? -20 : insets.top - 8,
+              marginBottom:
+                moduleName === "lead"
+                  ? -30
+                  : insets?.bottom !== 0
+                    ? -20
+                    : insets.top - 8,
               paddingHorizontal: 20,
             }}
           >
@@ -138,28 +147,20 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               <AnimatedView
-                entering={
-                  isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
-                }
-                exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              // entering={
+              //   isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
+              // }
+              // exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
               >
                 <CustomText style={styles.titleText}>{title}</CustomText>
                 {totalCount > 0 && (
                   <CustomText
                     style={{
-                      color: "#fff",
-                      fontSize: 16,
-                      // backgroundColor: "#98989878",
-                      borderRadius: 8,
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                      borderColor: "#ffffff29",
-                      borderWidth: 2,
+                      color: "rgb(234, 234, 234)",
+                      fontSize: 13,
                     }}
                   >
-                    {totalCount}
+                    Total : {totalCount}
                   </CustomText>
                 )}
               </AnimatedView>
@@ -170,14 +171,14 @@ const Header: React.FC<HeaderProps> = ({
                 <>
                   {onPressSearch && (
                     <AnimatedPressable
-                      entering={
-                        isWithAnimation
-                          ? ZoomIn.duration(300).delay(150)
-                          : undefined
-                      }
-                      exiting={
-                        isWithAnimation ? ZoomOut.duration(200) : undefined
-                      }
+                      // entering={
+                      //   isWithAnimation
+                      //     ? ZoomIn.duration(300).delay(150)
+                      //     : undefined
+                      // }
+                      // exiting={
+                      //   isWithAnimation ? ZoomOut.duration(200) : undefined
+                      // }
                       onPress={onPressSearch}
                       style={styles.iconBtn}
                     >
@@ -187,31 +188,55 @@ const Header: React.FC<HeaderProps> = ({
 
                   {onPressFilter && (
                     <AnimatedPressable
-                      entering={
-                        isWithAnimation
-                          ? ZoomIn.duration(300).delay(200)
-                          : undefined
-                      }
-                      exiting={
-                        isWithAnimation ? ZoomOut.duration(200) : undefined
-                      }
+                      // entering={
+                      //   isWithAnimation
+                      //     ? ZoomIn.duration(300).delay(200)
+                      //     : undefined
+                      // }
+                      // exiting={
+                      //   isWithAnimation ? ZoomOut.duration(200) : undefined
+                      // }
                       onPress={onPressFilter}
                       style={styles.iconBtn}
                     >
+                      {!!onCloseSearch && (
+                        <AnimatedTouchableOpacity
+                          style={{
+                            position: "absolute",
+                            top: -4,
+                            right: -4,
+                            borderRadius: 50,
+                            backgroundColor: "#ffffff71",
+                            zIndex: 12,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            borderWidth: 1,
+                            borderColor: "#d8d8d8",
+                          }}
+                          onPress={!!onCloseSearch ? onCloseSearch : undefined}
+                        >
+                          <AntDesign
+                            name="close"
+                            size={10}
+                            color={color.white}
+                            style={{ padding: 2 }}
+                          />
+                        </AnimatedTouchableOpacity>
+                      )}
                       <Feather name="filter" size={20} color="#fff" />
                     </AnimatedPressable>
                   )}
 
                   {onPressAdd && (
                     <AnimatedPressable
-                      entering={
-                        isWithAnimation
-                          ? BounceIn.duration(400).delay(250)
-                          : undefined
-                      }
-                      exiting={
-                        isWithAnimation ? BounceOut.duration(300) : undefined
-                      }
+                      // entering={
+                      //   isWithAnimation
+                      //     ? BounceIn.duration(400).delay(250)
+                      //     : undefined
+                      // }
+                      // exiting={
+                      //   isWithAnimation ? BounceOut.duration(300) : undefined
+                      // }
                       onPress={onPressAdd}
                       style={styles.iconBtn}
                     >

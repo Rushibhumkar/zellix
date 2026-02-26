@@ -47,6 +47,7 @@ import {
   leadTypeInAS,
   mobileCode,
   mobileCodeWithIdKey,
+  roleEnum,
   tokenInBooking,
 } from "../../utils/data";
 import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
@@ -170,7 +171,7 @@ const AdvanceSearch = () => {
     user?.role === "sr_manager" ||
     user?.role === "manager" ||
     user?.role === "assistant_manager";
-  const isAgent = user?.role === "agent";
+  const isAgent = user?.role === "agent" || user?.role === roleEnum.seo;
   // console.log('user', isAdmin, 'ROLE', user?.role)
   let dd = new Date();
   const [tempDate, setTempDate] = useState({

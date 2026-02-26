@@ -35,6 +35,7 @@ import {
   useLatestMeetings,
 } from "../../services/rootApi/leadApi";
 import {
+  formatRoleName,
   inLeadStatus,
   leadTypeObj,
   roleEnum,
@@ -152,7 +153,7 @@ const LeadsDetails = () => {
   const isAdminOrAssigne =
     user?.role === "sup_admin" ||
     user?.role === "sub_admin" ||
-    details?.assign?._id === user?._id;
+    detail?.assign?._id === user?._id;
 
   const [noteUpdate, setNoteUpdate] = useState();
 
@@ -328,7 +329,6 @@ const LeadsDetails = () => {
       setShowNotiPopup(false);
     }
   };
-  // myConsole("detaillll", detail);
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
@@ -684,7 +684,7 @@ const LeadsDetails = () => {
 
               <RowItem
                 title="Role"
-                value={userTypes[detail?.assign?.role]}
+                value={formatRoleName(detail?.assign?.role)}
                 containerStyle={{ marginBottom: 30 }}
               />
               {isAdminOrAssigne && (

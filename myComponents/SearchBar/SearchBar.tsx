@@ -5,6 +5,9 @@ import {
   View,
   ViewStyle,
   Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { AntDesign, EvilIcons } from "@expo/vector-icons";
@@ -18,6 +21,7 @@ import Animated, {
   FadeIn,
 } from "react-native-reanimated";
 import { color } from "../../const/color";
+import { inLeadStatus } from "../../utils/data";
 
 interface TSearchBar {
   onClickCancel: () => void;
@@ -26,6 +30,7 @@ interface TSearchBar {
   value: string;
   isWithAnimation?: boolean;
   autoFocus?: boolean;
+  moduleName?: any;
 }
 
 const SearchBar = ({
@@ -35,10 +40,12 @@ const SearchBar = ({
   value,
   isWithAnimation = true,
   autoFocus = false,
+  moduleName,
 }: TSearchBar) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   // --------------------
   // 🚀 Animation values
@@ -65,7 +72,7 @@ const SearchBar = ({
 
       scale.value = withSequence(
         withTiming(0.9, { duration: 150 }),
-        withSpring(1, { damping: 8 })
+        withSpring(1, { damping: 8 }),
       );
     }
   }, []);
@@ -85,41 +92,96 @@ const SearchBar = ({
       end={{ x: 1, y: 1 }}
       style={styles.gradientBox}
     >
-      <Animated.View style={[animatedSearchBox]}>
-        <View
-          style={[
-            styles.container,
-            {
-              borderColor: isFocused ? color.primaryColor : "#ccc",
-            },
-            containerStyle,
-          ]}
-        >
-          <EvilIcons name="search" size={20} color={color.strokeColor} />
+      {/* <Animated.View style={[animatedSearchBox]}> */}
+      <View
+        style={[
+          styles.container,
+          {
+            borderColor: isFocused ? color.primaryColor : "#ccc",
+          },
+          containerStyle,
+        ]}
+      >
+        <EvilIcons name="search" size={20} color={color.strokeColor} />
 
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            placeholder="Search..."
-            placeholderTextColor={color.mainTxtColor}
-            onChangeText={onChangeText}
-            value={value}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            selectionColor={color.primaryColor}
-            autoFocus={autoFocus}
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          placeholder="Search..."
+          placeholderTextColor={color.mainTxtColor}
+          onChangeText={onChangeText}
+          value={value}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          selectionColor={color.primaryColor}
+          autoFocus={autoFocus}
+        />
+
+        {!!value && (
+          <AntDesign
+            name="close"
+            size={18}
+            color={color.mainTxtColor}
+            onPress={onClickCancel}
           />
+        )}
+      </View>
+      {/* </Animated.View> */}
 
-          {!!value && (
-            <AntDesign
-              name="close"
-              size={18}
-              color={color.mainTxtColor}
-              onPress={onClickCancel}
-            />
-          )}
-        </View>
-      </Animated.View>
+      {moduleName === "lead" && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{
+            marginTop: 12,
+            marginHorizontal: 20,
+          }}
+        >
+          <TouchableOpacity
+            style={[
+              styles.filterChip,
+              selectedStatus === "all" && styles.filterChipActive,
+            ]}
+            onPress={() => {
+              setSelectedStatus("all");
+              onChangeText(""); // reset search / filter
+            }}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                selectedStatus === "all" && styles.filterTextActive,
+              ]}
+            >
+              All
+            </Text>
+          </TouchableOpacity>
+
+          {inLeadStatus.map((item: any) => (
+            <TouchableOpacity
+              key={item._id}
+              style={[
+                styles.filterChip,
+                selectedStatus === item._id && styles.filterChipActive,
+              ]}
+              onPress={() => {
+                setSelectedStatus(item._id);
+                onChangeText(item._id); // 🔥 status filter key
+              }}
+            >
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.filterText,
+                  selectedStatus === item._id && styles.filterTextActive,
+                ]}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </LinearGradient>
   );
 };
@@ -128,7 +190,7 @@ export default SearchBar;
 
 const styles = StyleSheet.create({
   gradientBox: {
-    paddingBottom: 21,
+    paddingBottom: 14,
     paddingTop: 8,
     marginTop: -6,
     borderBottomLeftRadius: 26,
@@ -148,5 +210,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     color: color.mainTxtColor,
     fontFamily: Platform.OS === "android" ? "sans-serif" : undefined,
+  },
+  filterChip: {
+    minWidth: 40,
+    maxWidth: 120,
+    height: 30,
+    borderRadius: 20,
+    backgroundColor: "#ffffffef",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+    paddingHorizontal: 8,
+  },
+  filterChipActive: {
+    backgroundColor: color.primaryColor,
+  },
+  filterText: {
+    fontSize: 12,
+    color: color.mainTxtColor,
+    textAlign: "center",
+  },
+  filterTextActive: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Linking,
   Platform,
   RefreshControl,
   StyleSheet,
@@ -44,6 +45,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { useRoute } from "@react-navigation/native";
 import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import { Feather } from "@expo/vector-icons";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -243,6 +245,21 @@ const AllLeads = ({ tabType }: any) => {
       }
     }
   }, [isFocused, tabType]);
+
+  const handleCallPress = async (mobile: any) => {
+    if (!mobile) return;
+    const phoneUrl = `tel:${mobile}`;
+    const supported = await Linking.canOpenURL(phoneUrl);
+    if (supported) {
+      await Linking.openURL(phoneUrl);
+    } else {
+      popUpConfToast.errorMessage("Calling not supported on this device");
+    }
+  };
+
+  // const isAgent = true;
+  const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
+
   return (
     <>
       <Header
@@ -256,16 +273,23 @@ const AllLeads = ({ tabType }: any) => {
         totalCount={totalCount}
         isWithAnimation
         showBackIcon={false}
-        showActions={showHeaderActions}
+        showActions={true}
+        moduleName={"lead"}
+        // showActions={showHeaderActions}
         onPressSearch={() => {
-          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          // flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
           setTimeout(() => {
             setFocusSearch((prev) => !prev); // toggles every time
           }, 100);
         }}
+        onCloseSearch={
+          leadQueryKey !== null ? () => dispatch(setLeadQueryKey(null)) : false
+        }
         onPressFilter={() =>
           navigation.navigate("AdvanceSearch", {
+            type: "lead",
             sourceTab: tabType,
+            isAgent: isAgent,
           })
         }
         onPressAdd={() => {
@@ -287,15 +311,16 @@ const AllLeads = ({ tabType }: any) => {
                     ? "Leads"
                     : ""
               }
-              onPressToNavigate={() => {
-                if (canAddLead) {
-                  navigation.navigate("AddLeads", { tabType });
-                } else {
-                  popUpConfToast.errorMessage(
-                    "You are not authorized to add new leads. Please contact your administrator.",
-                  );
-                }
-              }}
+              // onPressToNavigate={() => {
+              //   if (canAddLead) {
+              //     navigation.navigate("AddLeads", { tabType });
+              //   } else {
+              //     popUpConfToast.errorMessage(
+              //       "You are not authorized to add new leads. Please contact your administrator.",
+              //     );
+              //   }
+              // }}
+              showAddBtn={false}
               onPressToDelete={
                 (canDeleteLead && user?.role === roleEnum.sub_admin) ||
                 user?.role === roleEnum.sup_admin
@@ -307,17 +332,17 @@ const AllLeads = ({ tabType }: any) => {
                   ? false
                   : () => toggleModalAssignLead()
               }
-              onPressToFilter={() =>
-                navigation.navigate("AdvanceSearch", {
-                  type: "lead",
-                  sourceTab: tabType,
-                })
-              }
-              onCloseSearch={
-                leadQueryKey !== null
-                  ? () => dispatch(setLeadQueryKey(null))
-                  : false
-              }
+              // onPressToFilter={() =>
+              //   navigation.navigate("AdvanceSearch", {
+              //     type: "lead",
+              //     sourceTab: tabType,
+              //   })
+              // }
+              // onCloseSearch={
+              //   leadQueryKey !== null
+              //     ? () => dispatch(setLeadQueryKey(null))
+              //     : false
+              // }
               // onSelectLeadType={
               //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
               // }
@@ -346,6 +371,8 @@ const AllLeads = ({ tabType }: any) => {
               <LeadRowItem
                 index={index}
                 item={item}
+                isAgent={isAgent}
+                user={user}
                 selected={selected.indexOf(item?._id) !== -1}
                 bgColor={bgByStatus[item?.status]}
                 onPress={() =>
@@ -361,6 +388,7 @@ const AllLeads = ({ tabType }: any) => {
                     ? undefined
                     : () => handleSelect(item?._id)
                 }
+                onCallPress={() => handleCallPress(item?.clientMobile)}
               />
             )}
             keyExtractor={(item) => item?._id}
@@ -378,14 +406,16 @@ const AllLeads = ({ tabType }: any) => {
                   }}
                   autoFocus={focusSearch}
                   isWithAnimation
+                  moduleName={"lead"}
                 />
+
                 <LeadListHeading
                   noText={"No"}
                   nameText={"Client Name"}
                   belowNameText={"Mobile no."}
-                  typeText={"Assigned"}
+                  typeText={isAgent ? "Status" : "Assigned"}
                   belowTypeText={"Assigned At"}
-                  statusText={"Status"}
+                  statusText={isAgent ? "" : "Status"}
                 />
               </View>
             }
@@ -462,7 +492,17 @@ const AllLeads = ({ tabType }: any) => {
 };
 
 const LeadRowItem = React.memo(
-  ({ item, index, onPress, onLongPress, selected, bgColor }: any) => {
+  ({
+    item,
+    index,
+    onPress,
+    onLongPress,
+    selected,
+    bgColor,
+    onCallPress,
+    isAgent,
+    user,
+  }: any) => {
     return (
       <SlideFadeIn>
         <TouchableOpacity
@@ -470,7 +510,7 @@ const LeadRowItem = React.memo(
           style={[
             styles.mainlistcontainer,
             {
-              marginTop: index === 0 ? 25 : 12,
+              marginTop: index === 0 ? 20 : 10,
               backgroundColor: selected
                 ? color.primary200
                 : bgColor
@@ -482,7 +522,7 @@ const LeadRowItem = React.memo(
           onLongPress={onLongPress}
         >
           <View style={{ flexDirection: "row" }}>
-            <View style={{ width: "8%", paddingEnd: 2 }}>
+            <View style={{ width: isAgent ? "10%" : "6%", paddingEnd: 2 }}>
               {index === "S.No" ? (
                 <CustomText
                   style={{
@@ -497,8 +537,9 @@ const LeadRowItem = React.memo(
                 <CustomText
                   style={{
                     color: color.mainTxtColor,
-                    fontWeight: "500",
+                    // fontWeight: "500",
                     textTransform: "capitalize",
+                    fontSize: 12,
                   }}
                 >
                   {index < 9 && `0`}
@@ -506,13 +547,19 @@ const LeadRowItem = React.memo(
                 </CustomText>
               )}
             </View>
-            <View style={{ width: "37%", paddingEnd: 2 }}>
+            <View
+              style={{
+                width: isAgent ? "32%" : "29%",
+                paddingEnd: 2,
+                marginRight: isAgent ? 8 : 0,
+              }}
+            >
               <CustomText
                 numberOfLines={1}
                 style={{
                   color: color.mainTxtColor,
-                  fontWeight: "700",
-                  fontSize: 15,
+                  fontWeight: "500",
+                  fontSize: 14,
                   textTransform: "capitalize",
                 }}
               >
@@ -524,30 +571,51 @@ const LeadRowItem = React.memo(
                   color: color.strokeColor,
                   fontWeight: "400",
                   marginTop: 4,
-                  textTransform: "capitalize",
+                  // textTransform: "capitalize",
+                  fontSize: 13,
                 }}
               >
                 {item?.clientMobile}
               </CustomText>
             </View>
-            <View style={{ width: "34%", paddingEnd: 4, alignItems: "center" }}>
+
+            <View
+              style={{
+                width: isAgent ? "34%" : "30%",
+                // alignItems: "center",
+              }}
+            >
+              {isAgent ? (
+                <CustomText
+                  numberOfLines={1}
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "400",
+                    fontSize: 13,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {statusObj[item?.status]}
+                </CustomText>
+              ) : (
+                <CustomText
+                  numberOfLines={1}
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "400",
+                    fontSize: 13,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {item?.assign?.name}
+                </CustomText>
+              )}
               <CustomText
                 numberOfLines={1}
                 style={{
                   color: color.mainTxtColor,
                   fontWeight: "400",
-                  fontSize: 15,
-                  textTransform: "capitalize",
-                }}
-              >
-                {item?.assign?.name}
-              </CustomText>
-              <CustomText
-                numberOfLines={1}
-                style={{
-                  color: color.mainTxtColor,
-                  fontWeight: "400",
-                  fontSize: 12,
+                  fontSize: 11,
                   textTransform: "capitalize",
                   marginTop: 4,
                 }}
@@ -555,26 +623,43 @@ const LeadRowItem = React.memo(
                 {formatDate(item?.assignedAt, "dd/mm/yyyy hh:MM")}
               </CustomText>
             </View>
-            <View
-              style={{
-                width: "25%",
-                alignItems: "flex-start",
-                paddingEnd: 2,
-              }}
-            >
-              <CustomText
-                numberOfLines={2}
+
+            {!isAgent && (
+              <View
                 style={{
-                  color: color.mainTxtColor,
-                  fontWeight: "400",
-                  fontSize: 15,
-                  textTransform: "capitalize",
-                  //textTransform: "capitalize",
+                  width: isAgent ? "30%" : "24%",
+                  alignItems: "flex-start",
+                  paddingLeft: 8,
                 }}
               >
-                {statusObj[item?.status]}
-              </CustomText>
-            </View>
+                <CustomText
+                  numberOfLines={2}
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "400",
+                    fontSize: 13,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {statusObj[item?.status]}
+                </CustomText>
+              </View>
+            )}
+            {item?.clientMobile && (
+              <View
+                style={{
+                  width: isAgent ? "16%" : "10%",
+                  // alignItems: "flex-start",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  // padding: 8,
+                }}
+              >
+                <TouchableOpacity onPress={onCallPress} style={styles.iconBtn}>
+                  <Feather name="phone-call" size={20} color="#4985F2" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </SlideFadeIn>
@@ -597,11 +682,20 @@ const styles = StyleSheet.create({
   },
   mainlistcontainer: {
     borderWidth: 1,
-    padding: 13,
+    paddingVertical: 12,
+    paddingLeft: 8,
     borderRadius: 14,
     borderColor: color.mainTxtColorFade,
-    marginHorizontal: 20,
+    marginHorizontal: 8,
     ...shadowPrimaryColor,
+  },
+  iconBtn: {
+    borderRadius: 12,
+    backgroundColor: "#4984f239",
+    // backgroundColor: "red",
+    padding: 4,
+    borderColor: "#4984f239",
+    borderWidth: 2,
   },
 });
 

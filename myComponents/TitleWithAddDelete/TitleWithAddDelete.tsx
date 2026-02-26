@@ -143,8 +143,8 @@ const TitleWithAddDelete = ({
                         ? 160
                         : 170
                       : title === "Bookings"
-                      ? 130
-                      : 140
+                        ? 130
+                        : 140
                     : 180,
                 }}
               >
@@ -215,7 +215,7 @@ const TitleWithAddDelete = ({
                 flexDirection: "row",
                 gap: 10,
                 paddingTop: 4,
-                marginBottom: -6,
+                // marginBottom: -6,
               }}
               entering={
                 isWithAnimation

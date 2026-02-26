@@ -99,7 +99,7 @@ export const getLead = async ({
   search = null,
   pageParam = 1,
   type = "lead",
-  limit = 400,
+  limit = 10,
   status,
   individual,
   pagination = true,
