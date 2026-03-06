@@ -182,22 +182,6 @@ const AddSingleLead = ({ data, tabType }: any) => {
     }
   }, [!!data]);
 
-  useEffect(() => {
-    console.log("🟡 FINAL STATE", {
-      clientMobile: values.clientMobile,
-      whatsapp: values.whatsapp,
-      isWhatsappManuallyEdited,
-    });
-  }, [values.clientMobile, values.whatsapp, isWhatsappManuallyEdited]);
-
-  useEffect(() => {
-    if (selectAll) {
-      console.log("🟢 selection APPLIED", values?.whatsapp?.length);
-    } else {
-      console.log("🔵 selection CLEARED");
-    }
-  }, [selectAll]);
-
   return (
     <View>
       <CustomModelMessage
