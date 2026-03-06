@@ -28,6 +28,7 @@ const LeadUserInfo = ({
 }: any) => {
   const userInfo = useGetUserInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
+  myConsole("userInfoooo", userInfo);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -80,7 +81,7 @@ const LeadUserInfo = ({
             title="Assigned At"
             value={
               moment(userInfo.data?.[0]?.createdAt).format(
-                "DD/MM/YYYY hh:ss a"
+                "DD/MM/YYYY hh:ss a",
               ) || "N/A"
             }
             containerStyle={{ marginBottom: 20 }}

@@ -14,6 +14,7 @@ import {
   View,
   TextInput,
   StyleSheet,
+  TouchableWithoutFeedback,
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,6 +32,7 @@ import MainTitle from "../../myComponents/MainTitle/MainTitle";
 import RowItem from "../../myComponents/RowItem/RowItem";
 import { selectUser, setCallDetect } from "../../redux/userSlice";
 import {
+  deleteLead,
   leadStatusUpdate,
   useLatestMeetings,
 } from "../../services/rootApi/leadApi";
@@ -55,14 +57,27 @@ import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import CancelIcon from "../../assets/svg/CancelIcon";
 import { sendFollowUpNotification } from "../../services/rootApi/notificationApi";
-import { checkPermission, formatDate } from "../../utils/commonFunctions";
+import {
+  checkPermission,
+  formatDate,
+  getInitials,
+} from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
 import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
-import { shadowPrimaryColor } from "../../const/globalStyle";
+import {
+  headerIconWrapperStyle,
+  iconWrapperStyle,
+  shadowPrimaryColor,
+} from "../../const/globalStyle";
 import IconWrapper from "../../components/IconWrapper";
 import { useAppToast } from "../../components/AppToast";
 import { initiateCall } from "../../services/rootApi/callApi";
+import AssignmentRow from "./component/AssignmentRow";
+import ActionButton from "./component/ActionButton";
+import * as Clipboard from "expo-clipboard";
+import { popUpConfToast } from "../../utils/toastModalByFunction";
+import NotesSection from "./component/NotesSection";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -135,11 +150,15 @@ const LeadsDetails = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
   const [timePickerKey, setTimePickerKey] = useState(0);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
 
   //
   const [isLoading, setIsLoading] = useState(false);
   const [fields, setFields] = useState({});
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   useEffect(() => {
     setFields({
@@ -264,7 +283,29 @@ const LeadsDetails = () => {
     await Linking.openURL(`tel:+${detail?.clientMobile}`);
   };
 
-  const deleteNotes = async (notesId) => {
+  const handleDeleteLead = async () => {
+    try {
+      setDeleteLoading(true);
+
+      await deleteLead([detail?._id]);
+
+      toast.success("Lead deleted successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLead],
+      });
+
+      navigate(routeLead.allLead);
+    } catch (err: any) {
+      toast.error(
+        err?.message || err?.response?.data?.message || "Failed to delete lead",
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const deleteNotes = async (notesId: any) => {
     try {
       setIsLoadingDelete(notesId);
       await axiosInstance.delete(`api/notes/${detail?._id}/${notesId}`);
@@ -332,6 +373,47 @@ const LeadsDetails = () => {
       setShowNotiPopup(false);
     }
   };
+
+  const handleChangeStatusSubmit = async () => {
+    try {
+      if (!fields?.status) {
+        toast.error("Please select status.");
+        return;
+      }
+
+      setStatusLoading(true);
+
+      const payload: any = {
+        status: fields.status,
+        ...(fields.statusInfo && { statusInfo: fields.statusInfo }),
+        ...(fields.status === "followUp_required" && {
+          followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
+        }),
+      };
+
+      const res = await leadStatusUpdate({
+        id: detail?._id,
+        data: payload,
+      });
+
+      toast.success(res?.data?.message || "Status updated successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLead],
+      });
+
+      setShowChangeStatusPopup(false);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to update status");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
@@ -372,8 +454,23 @@ const LeadsDetails = () => {
     return d;
   };
 
+  const handleCopy = async (text: any) => {
+    console.log("clieked");
+    if (!text) return;
+    await Clipboard.setStringAsync(text);
+    toast?.success?.("Copied to clipboard");
+  };
+
   const isFUTSubmitDisabled = !tdForFUT?.date || !tdForFUT?.time;
 
+  // 🔥 Activity Summary Data
+  const lastActivityTime = detail?.updatedAt || detail?.createdAt;
+
+  const totalCalls = detail?.callLogs?.length || 0;
+  const totalNotes = detail?.notes?.length || 0;
+  const totalStatusChanges = detail?.statusHistory?.length || 0;
+
+  // myConsole("detailll", detail);
   return (
     <>
       {activeTab === 1 && (
@@ -394,10 +491,104 @@ const LeadsDetails = () => {
                 : "Lead Details"
             }
             onBack={() => navigate(routeLead.allLead)}
+            rightSide={
+              <>
+                {isLeadEdit && canEditLead && (
+                  <TouchableOpacity
+                    onPress={() => navigate(routeLead.AddLeads, { detail })}
+                    style={{ ...headerIconWrapperStyle }}
+                  >
+                    <Feather name="edit-2" size={18} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  onPress={() => setShowActionsMenu(!showActionsMenu)}
+                  style={{ ...headerIconWrapperStyle }}
+                >
+                  <Feather name="more-vertical" size={18} color="#fff" />
+                </TouchableOpacity>
+              </>
+            }
           />
-          {isSubSupSrMng && (
-            <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
+          <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
+
+          {/* 🔥 Three Dot Action Modal */}
+          {showActionsMenu && (
+            <TouchableWithoutFeedback onPress={() => setShowActionsMenu(false)}>
+              <View style={styles.actionsOverlay}>
+                <TouchableWithoutFeedback>
+                  <View style={styles.actionsModal}>
+                    <TouchableOpacity
+                      style={styles.actionItem}
+                      onPress={() => {
+                        setShowActionsMenu(false);
+                        setShowNotiPopup(true);
+                      }}
+                    >
+                      <CustomText style={styles.actionTextItem}>
+                        Send Follow Up
+                      </CustomText>
+                    </TouchableOpacity>
+                    {user?._id === detail?.assign?._id && (
+                      <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={handleConvertToMeeting}
+                      >
+                        <CustomText style={styles.actionTextItem}>
+                          Convert to Meeting
+                        </CustomText>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Change Status */}
+                    {isAdminOrAssigne && (
+                      <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => {
+                          setShowActionsMenu(false);
+                          setShowChangeStatusPopup(true);
+                        }}
+                      >
+                        <CustomText style={styles.actionTextItem}>
+                          Change Status
+                        </CustomText>
+                      </TouchableOpacity>
+                    )}
+                    {/* <TouchableOpacity
+                      style={styles.actionItem}
+                      onPress={() => {
+                        setShowActionsMenu(false);
+                      }}
+                    >
+                      <CustomText style={styles.actionTextItem}>
+                        Reassign Data
+                      </CustomText>
+                    </TouchableOpacity> */}
+
+                    <TouchableOpacity
+                      style={[styles.actionItem, { borderBottomWidth: 0 }]}
+                      onPress={() => {
+                        setShowActionsMenu(false);
+
+                        popUpConfToast.confirmModal({
+                          message: "Are you sure you want to delete this lead?",
+                          clickOnConfirm: handleDeleteLead,
+                        });
+                      }}
+                    >
+                      <CustomText
+                        style={[styles.actionTextItem, { color: "#FF3B30" }]}
+                      >
+                        Delete Data
+                      </CustomText>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
           )}
+
+          {/* <----------- Send follow up notification popup---------------> */}
           <ModalWithBlur
             visible={showNotiPopup}
             onClose={() => setShowNotiPopup(false)}
@@ -441,6 +632,75 @@ const LeadsDetails = () => {
               </TouchableOpacity>
             </View>
           </ModalWithBlur>
+
+          {/* <----------------Change Status popup-------------> */}
+          <ModalWithBlur
+            visible={showChangeStatusPopup}
+            onClose={() => setShowChangeStatusPopup(false)}
+          >
+            <View style={styles.modalContent}>
+              <CustomText style={styles.title}>Change Status</CustomText>
+
+              <TouchableOpacity
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: -16,
+                  marginTop: 4,
+                }}
+                onPress={() => setShowChangeStatusPopup(false)}
+              >
+                <AntDesign name="close" size={22} color={color.mainTxtColor} />
+              </TouchableOpacity>
+
+              <CustomText style={styles.label}>Status</CustomText>
+
+              <DropdownRNE
+                placeholder="Select Status"
+                arrOfObj={inLeadStatus}
+                keyValueGetOnSelect="_id"
+                keyValueShowInBox="name"
+                initialValue={fields?.status}
+                onChange={(v) => onChange("status", v)}
+                mode="auto"
+                dropdownStyle={{ height: 45 }}
+              />
+
+              {fields?.status === "followUp_required" && (
+                <View style={{ marginTop: 15 }}>
+                  <CustomText style={styles.label}>Follow Up Time</CustomText>
+
+                  <TouchableOpacity
+                    onPress={() => FUTModal.openModal()}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: color.borderColor,
+                      borderRadius: 12,
+                      padding: 12,
+                      marginTop: 6,
+                    }}
+                  >
+                    <CustomText>
+                      {formatDateTime(tdForFUT.date, tdForFUT.time)}
+                    </CustomText>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.button, { marginTop: 20 }]}
+                onPress={handleChangeStatusSubmit}
+                disabled={statusLoading}
+              >
+                {statusLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <CustomText style={styles.buttonText}>Submit</CustomText>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ModalWithBlur>
+
           <ScrollView
             style={{ padding: 20 }}
             refreshControl={
@@ -450,347 +710,215 @@ const LeadsDetails = () => {
               />
             }
           >
-            {isSubSupSrMng && (
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  backgroundColor: color.mainTxtColorFade,
-                  paddingHorizontal: 16,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  marginBottom: 8,
-                  borderWidth: 2,
-                  borderColor: color.borderColor,
-                }}
-                activeOpacity={0.6}
-                onPress={() => setShowNotiPopup(true)}
-              >
-                <CustomText style={{ color: color.mainTxtColor }}>
-                  Send Follow Up Notification
-                </CustomText>
-              </TouchableOpacity>
-            )}
             <View style={{ paddingBottom: 150 }}>
               {isLoadingQuery && (
                 <ActivityIndicator style={{ marginVertical: 10 }} />
               )}
+              {/* -------------------- CARD 1 -------------------- */}
+              <View style={styles.card}>
+                {/* Top Section */}
+                <View style={styles.topRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {getInitials(detail?.clientName || "")}
+                      {/* getinitailsfunco */}
+                    </Text>
+                  </View>
 
-              <MainTitle
-                title="Client Details"
-                containerStyle={{ marginBottom: 20 }}
-                icon={
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.name}>
+                      {detail?.clientName || "N/A"}
+                    </Text>
+
+                    <Text style={styles.subText}>
+                      {leadTypeObj[detail?.type]} • {detail?.source}
+                    </Text>
+
+                    <View style={styles.statusBadge}>
+                      <Text style={styles.statusText}>
+                        {statusObj[detail?.status]}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Action Buttons */}
+                <View style={styles.actionRow}>
+                  <ActionButton
+                    label="Call"
+                    icon="phone-call"
+                    onPress={() => navToCall()}
+                  />
+                  <ActionButton
+                    label="WhatsApp"
+                    icon="message-circle"
+                    onPress={() => Linking.openURL(detail?.whatsapp)}
+                  />
+                  <ActionButton
+                    label="Email"
+                    icon="mail"
+                    onPress={() => openMail(detail?.clientEmail)}
+                  />
+                  <ActionButton
+                    label="SMS"
+                    icon="message-square"
+                    onPress={() =>
+                      Linking.openURL(`sms:${detail?.clientMobile}`)
+                    }
+                  />
+                </View>
+
+                <View style={styles.divider} />
+
+                {/* Mobile */}
+                <View style={styles.infoRow}>
                   <View
                     style={{
                       flexDirection: "row",
-                      // backgroundColor: "red",
-                      gap: 8,
+                      alignItems: "center",
                     }}
                   >
-                    {user?._id === detail?.assign?._id && (
-                      <CustomBtn
-                        title="Convert to Meeting"
-                        //isLoading={isLoadingMeeting}
-                        textStyle={{ fontSize: 12, color: "#fff" }}
-                        onPress={handleConvertToMeeting}
-                        containerStyle={
-                          {
-                            // backgroundColor: "rgb(191, 191, 191)",
-                            // marginTop: 12,
-                          }
-                        }
-                      />
-                    )}
-                    {isLeadEdit && canEditLead && (
-                      <TouchableOpacity
-                        onPress={() => navigate(routeLead.AddLeads, { detail })}
-                        activeOpacity={0.6}
-                        style={{
-                          padding: 8,
-                          backgroundColor: color.mainTxtColor,
-                          borderRadius: 12,
-                          ...shadowPrimaryColor,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          width: 42,
-                        }}
-                      >
-                        <Feather name="edit-2" size={20} color="#fff" />
-                      </TouchableOpacity>
-                    )}
+                    <Feather name="phone" size={18} color="#7A869A" />
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.label}>MOBILE</Text>
+                      <Text style={styles.value}>{detail?.clientMobile}</Text>
+                    </View>
                   </View>
-                }
-              />
-              <RowItem
-                title="Source"
-                value={detail?.name}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Client Name"
-                value={detail?.clientName}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Mobile Number"
-                containerStyle={{ marginBottom: 10 }}
-                component={
-                  detail?.clientMobile ? (
-                    <TouchableOpacity
-                      // onPress={() => handleCall(detail?._id)}
-                      onPress={() => navToCall()}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <CustomText style={{ color: color.mainTxtColor }}>
-                        {detail?.clientMobile}
-                      </CustomText>
-                      <IconWrapper>
-                        <Feather name="phone-call" size={14} color={"#fff"} />
-                      </IconWrapper>
-                    </TouchableOpacity>
-                  ) : (
-                    <CustomText style={{ color: color.mainTxtColor }}>
-                      {"N/A"}
-                    </CustomText>
-                  )
-                }
-              />
-              <RowItem
-                title="Email Address"
-                value={detail?.clientEmail}
-                containerStyle={{ marginBottom: 10 }}
-                component={
-                  detail?.clientEmail ? (
-                    <TouchableOpacity
-                      onPress={() =>
-                        isMailAvail ? openMail(detail?.clientEmail) : null
-                      }
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <CustomText
-                        numberOfLines={1}
-                        style={{ color: color.mainTxtColor, width: "80%" }}
-                      >
-                        {detail?.clientEmail}
-                      </CustomText>
-                      <IconWrapper>
-                        <Fontisto name="email" size={14} color={"#fff"} />
-                      </IconWrapper>
-                    </TouchableOpacity>
-                  ) : (
-                    <CustomText style={{ color: color.mainTxtColor }}>
-                      {"N/A"}
-                    </CustomText>
-                  )
-                }
-              />
-              <RowItem
-                title="WhatsApp Link"
-                value=""
-                containerStyle={{ marginBottom: 10 }}
-                icon={detail?.whatsapp ? "whatsapp" : "n/a"}
-                onPressIcon={() => {
-                  if (!detail?.whatsapp) return;
-                  Linking.openURL(detail?.whatsapp);
-                }}
-              />
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#9b9b9b18",
+                      paddingHorizontal: 6,
+                      paddingVertical: 4,
+                      borderRadius: 6,
+                    }}
+                    onPress={() => handleCopy(detail?.clientMobile)}
+                  >
+                    <Feather name="copy" size={16} color={"#9b9b9b"} />
+                  </TouchableOpacity>
+                </View>
 
-              <RowItem
-                title="Type"
-                value={leadTypeObj[detail?.type]}
-                containerStyle={{ marginBottom: 10 }}
-              />
-
-              <RowItem
-                title="Status"
-                containerStyle={{ marginBottom: 10 }}
-                component={
-                  isAdminOrAssigne ? (
-                    <DropdownRNE
-                      placeholder=" "
-                      arrOfObj={inLeadStatus}
-                      keyValueGetOnSelect="_id"
-                      keyValueShowInBox="name"
-                      initialValue={fields?.status}
-                      onChange={(v) => onChange("status", v)}
-                      mode="auto"
-                      dropdownStyle={{ height: 36 }}
-                    />
-                  ) : (
-                    <CustomText>{statusObj[detail?.status]}</CustomText>
-                  )
-                }
-              />
-              {fields?.status === "followUp_required" && (
-                <RowItem
-                  title="Follow Up Time"
-                  component={
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                      onPress={() => {
-                        setTdForFUT((prev) => ({
-                          ...prev,
-                          time: roundToNext5Min(prev.time || new Date()),
-                        }));
-                        setTimePickerKey((k) => k + 1); // 🔥 force remount
-                        FUTModal.openModal();
-                      }}
-                    >
-                      <View>
-                        <CustomText style={{ color: color.mainTxtColor }}>
-                          {detail?.status !== "followUp_required"
-                            ? "Click for Date and Time"
-                            : formatDateTime(tdForFUT.date, tdForFUT.time)}
-                        </CustomText>
-                      </View>
-                      <IconWrapper>
-                        <Feather name="calendar" size={14} color={"#fff"} />
-                      </IconWrapper>
-                    </TouchableOpacity>
-                  }
-                />
-              )}
-
-              <RowItem
-                title="Comments"
-                value={detail?.comment || detail?.comments || ""}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Assigned To"
-                value={detail?.assign?.name}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Assigned At"
-                value={formatDate(
-                  detail?.assignedAt ||
-                    detail?.assignedUsers?.[detail.assignedUsers.length - 1]
-                      ?.assignedAt,
-                  "dd/mm/yyyy hh:MM",
-                )}
-                containerStyle={{ marginBottom: 10 }}
-              />
-
-              <RowItem
-                title="Role"
-                value={formatRoleName(detail?.assign?.role)}
-                containerStyle={{ marginBottom: 30 }}
-              />
-              {isAdminOrAssigne && (
-                <CustomBtn
-                  title="Submit"
-                  containerStyle={{
-                    marginBottom: 20,
-                    width: 100,
-                    alignSelf: "flex-end",
-                  }}
-                  onPress={handleStatusUpdate}
-                  isLoading={isLoading}
-                  textStyle={{ fontSize: 14 }}
-                />
-              )}
-
-              {!!detail?.additionalQuestions && (
-                <View
-                  style={{
-                    marginBottom: 8,
-                  }}
-                >
+                {/* Email */}
+                <View style={styles.infoRow}>
                   <View
                     style={{
-                      borderBottomWidth: 1,
-                      borderBottomColor: color.saffronMango,
-                      paddingRight: 20,
-                      paddingBottom: 5,
-                      alignSelf: "flex-start",
-                      marginBottom: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
                     }}
                   >
-                    <CustomText
-                      style={{
-                        fontSize: 18,
-                        fontWeight: "500",
-                        color: color.mainTxtColor,
-                        marginBottom: 4,
-                      }}
-                    >
-                      Additional Questions
-                    </CustomText>
+                    <Feather name="mail" size={18} color="#7A869A" />
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.label}>EMAIL</Text>
+                      <Text style={styles.value}>{detail?.clientEmail}</Text>
+                    </View>
                   </View>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#9b9b9b18",
+                      paddingHorizontal: 6,
+                      paddingVertical: 4,
+                      borderRadius: 6,
+                    }}
+                    onPress={() => handleCopy(detail?.clientEmail)}
+                  >
+                    <Feather name="copy" size={16} color={"#9b9b9b"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* -------------------- CARD 2 -------------------- */}
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Assignment Info</Text>
+                <View style={styles.divider} />
+
+                <AssignmentRow
+                  icon="user"
+                  label="Assigned To"
+                  value={detail?.assign?.name}
+                />
+                <AssignmentRow
+                  icon="user"
+                  label="Assigned By"
+                  value={
+                    detail?.assignedUsers?.[detail.assignedUsers.length - 1]
+                      ?.assignByName || "-"
+                  }
+                />
+                <AssignmentRow
+                  icon="calendar"
+                  label="Assigned On"
+                  value={formatDate(detail?.assignedAt, "dd/mm/yyyy hh:MM")}
+                />
+                <AssignmentRow
+                  icon="briefcase"
+                  label="Role"
+                  value={formatRoleName(detail?.assign?.role)}
+                />
+              </View>
+
+              {!!detail?.additionalQuestions && (
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>Additional Questions</Text>
+                  <View style={styles.divider} />
                   {Object.entries(
                     extractStringObj(detail?.additionalQuestions),
                   ).map(([key, value], index) => {
                     return (
-                      <RowItem
+                      <AssignmentRow
                         key={index}
-                        title={key}
-                        value={value}
-                        titleTextStyle={{ fontSize: 14 }}
-                        valueTextStyle={{ fontSize: 14 }}
-                        containerStyle={{
-                          marginBottom: 10,
-                        }}
+                        label={key}
+                        value={value || "N/A"}
+                        icon={null}
                       />
                     );
                   })}
                 </View>
               )}
-              {/* notes */}
-              <MainTitle
-                title="Notes"
-                containerStyle={{ marginBottom: 12 }}
-                icon={
-                  <TouchableOpacity
-                    onPress={() => {
-                      setNoteUpdate({});
-                      modalNote.openModal();
-                    }}
-                    activeOpacity={0.6}
-                    style={{
-                      padding: 8,
-                      backgroundColor: color.mainTxtColor,
-                      borderRadius: 12,
-                      ...shadowPrimaryColor,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      width: 42,
-                    }}
-                  >
-                    <Feather name="edit-2" size={20} color="#fff" />
-                  </TouchableOpacity>
-                }
-              />
-              <NotesCard
-                noteArr={detail?.notes}
-                onEdit={(v) => {
-                  setNoteUpdate(v);
-                  modalNote.openModal();
-                }}
-                onDelete={(i) => {
-                  deleteNotes(i);
-                }}
-                isLoadingDelete={isLoadingDelete}
-              />
 
-              <MainTitle
-                title="Call logs"
-                containerStyle={{ marginBottom: 20 }}
-              />
+              {/* -------------------- CARD 3 : Activity Summary -------------------- */}
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Activity Summary</Text>
 
+                <View style={styles.divider} />
+
+                {/* Last Activity */}
+                <AssignmentRow
+                  icon="clock"
+                  label="Last Activity"
+                  value={
+                    lastActivityTime
+                      ? moment(lastActivityTime).fromNow()
+                      : "N/A"
+                  }
+                />
+
+                {/* Total Calls */}
+                <AssignmentRow
+                  icon="phone"
+                  label="Total Calls"
+                  value={totalCalls}
+                />
+
+                {/* Status Changes */}
+                <AssignmentRow
+                  icon="refresh-cw"
+                  label="Status Updates"
+                  value={totalStatusChanges}
+                />
+
+                {/* Notes */}
+                <AssignmentRow
+                  icon="file-text"
+                  label="Notes"
+                  value={totalNotes}
+                />
+              </View>
+
+              {detail?.callLogs?.length > 0 && (
+                <MainTitle
+                  title="Call logs"
+                  containerStyle={{ marginBottom: 20 }}
+                />
+              )}
               {detail?.callLogs?.length > 0 &&
                 detail?.callLogs?.map((el, i) => {
                   const duration = moment.duration(el?.duration, "seconds");
@@ -805,36 +933,21 @@ const LeadsDetails = () => {
                     />
                   );
                 })}
-              {/* {isAdminOrAssigne && (
-                <CustomBtn
-                  title="Submit"
-                  containerStyle={{ margin: 20 }}
-                  onPress={handleStatusUpdate}
-                  isLoading={isLoading}
-                />
-              )} */}
             </View>
           </ScrollView>
-          {isAdminOrAssigne && (
-            <AddNote
-              modal={modalNote}
-              leadID={detail?._id}
-              refetch={refetchLeadDetail}
-              notesId={noteUpdate?.id}
-              remark={noteUpdate?.note}
-            />
-          )}
         </Container>
       )}
-      {activeTab === 2 && (
+
+      {/* {activeTab === 2 && (
         <LeadUserInfo
           selectLeadType={selectLeadType}
           leadId={detail?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
-      )}
-      {activeTab === 3 && (
+      )} */}
+
+      {activeTab === 2 && (
         <LeadLogsInfo
           selectLeadType={selectLeadType}
           leadId={detail?._id}
@@ -842,7 +955,7 @@ const LeadsDetails = () => {
           setActiveTab={setActiveTab}
         />
       )}
-      {activeTab === 4 && (
+      {activeTab === 3 && (
         <MeetingInfo
           selectLeadType={selectLeadType}
           leadId={params?.item?._id}
@@ -850,7 +963,59 @@ const LeadsDetails = () => {
           setActiveTab={setActiveTab}
         />
       )}
+      {activeTab === 4 && (
+        <Container style={{ flex: 1, position: "relative" }}>
+          <Header
+            title="Lead Details"
+            onBack={() => navigate(routeLead.allLead)}
+          />
+          <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
 
+          <ScrollView
+            style={{ padding: 16, flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching}
+                onRefresh={refetchLeadDetail}
+              />
+            }
+          >
+            {/* notes */}
+            <NotesCard
+              noteArr={detail?.notes}
+              onEdit={(v) => {
+                setNoteUpdate(v);
+                modalNote.openModal();
+              }}
+              onDelete={(i) => {
+                deleteNotes(i);
+              }}
+              isLoadingDelete={isLoadingDelete}
+            />
+          </ScrollView>
+          <TouchableOpacity
+            onPress={() => {
+              setNoteUpdate({});
+              modalNote.openModal();
+            }}
+            style={{
+              position: "absolute",
+              bottom: 140,
+              right: 20,
+              height: 42,
+              width: 42,
+              borderRadius: 21,
+              backgroundColor: color.mainTxtColor,
+              justifyContent: "center",
+              alignItems: "center",
+              ...shadowPrimaryColor,
+            }}
+          >
+            <Feather name="plus" size={20} color="#fff" />
+          </TouchableOpacity>
+        </Container>
+      )}
       <CustomModal
         visible={FUTModal.visible}
         onClose={FUTModal.closeModal}
@@ -912,6 +1077,16 @@ const LeadsDetails = () => {
           />
         </View>
       </CustomModal>
+
+      {isAdminOrAssigne && (
+        <AddNote
+          modal={modalNote}
+          leadID={detail?._id}
+          refetch={refetchLeadDetail}
+          notesId={noteUpdate?.id}
+          remark={noteUpdate?.note}
+        />
+      )}
     </>
   );
 };
@@ -931,11 +1106,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: color.mainTxtColor,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
     color: color.mainTxtColor,
   },
   input: {
@@ -958,5 +1128,180 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  container: {
+    padding: 20,
+  },
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  avatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#E8EEF7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+
+  avatarText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2E67BE",
+  },
+
+  name: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2E67BE",
+  },
+
+  subText: {
+    fontSize: 14,
+    color: "#6B778C",
+    marginVertical: 4,
+  },
+
+  statusBadge: {
+    backgroundColor: "#E6EEF9",
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginTop: 4,
+  },
+
+  statusText: {
+    color: "#2E67BE",
+    fontSize: 12,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 16,
+  },
+
+  actionBox: {
+    alignItems: "center",
+    width: "23%",
+  },
+
+  actionIcon: {
+    width: 55,
+    height: 55,
+    borderRadius: 16,
+    backgroundColor: "#F0F4FA",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+
+  actionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#2E67BE",
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#E6EAF0",
+    marginVertical: 16,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    justifyContent: "space-between",
+  },
+
+  label: {
+    fontSize: 12,
+    color: "#8C97A8",
+    letterSpacing: 1,
+  },
+
+  value: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2F3A4A",
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E67BE",
+  },
+
+  assignmentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 12,
+  },
+
+  assignmentLabel: {
+    flex: 1,
+    marginLeft: 12,
+    color: "#6B778C",
+    fontSize: 15,
+  },
+
+  assignmentValue: {
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#2F3A4A",
+  },
+
+  actionsOverlay: {
+    position: "absolute",
+    top: 90, // adjust if needed
+    right: 20,
+    left: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
+
+  actionsModal: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 200,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+
+  actionItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+
+  actionTextItem: {
+    fontSize: 15,
+    color: color.mainTxtColor,
   },
 });

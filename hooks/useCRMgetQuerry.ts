@@ -247,7 +247,8 @@ export const useGetMeeting = ({
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const totalCount = res?.data?.pages?.[0]?.pagination?.totalItem ?? null;
+  return { ...res, data, totalCount };
 };
 
 export const useGetMeetingById = (id) => {
@@ -359,7 +360,8 @@ export const useGetBooking = ({
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const totalCount = res?.data?.pages?.[0]?.pagination?.totalItem ?? null;
+  return { ...res, data, totalCount };
 };
 // getBookingById
 export const useGetBookingById = (id) => {

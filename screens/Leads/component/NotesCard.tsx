@@ -1,15 +1,23 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
-import CustomBtn from "../../../myComponents/CustomBtn/CustomBtn";
 import EditIcon from "../../../assets/svgHRM/EditIcon";
-import DeleteIcon from "../../../assets/svgHRM/DeleteIcon";
-import { myConsole } from "../../../hooks/useConsole";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/userSlice";
 import { roleEnum } from "../../../utils/data";
 import { color } from "../../../const/color";
+import { getInitials } from "../../../utils/commonFunctions";
+import { Feather } from "@expo/vector-icons";
+import {
+  iconWrapperStyle,
+  shadowPrimaryColor,
+} from "../../../const/globalStyle";
 
 interface TNotesCard {
   noteArr: any;
@@ -17,6 +25,7 @@ interface TNotesCard {
   onDelete: (id: string) => void;
   isLoadingDelete: string;
 }
+
 const NotesCard = ({
   noteArr = [],
   onEdit,
@@ -24,69 +33,62 @@ const NotesCard = ({
   isLoadingDelete,
 }: TNotesCard) => {
   const { user } = useSelector(selectUser);
+
   const isSubSup =
     user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin;
-  // const noteByCreated = isSubSup ? noteArr || [] : noteArr.filter((el: any) => el?.createdBy === user?._id) || []
-  return (
-    <View style={{ marginBottom: 10 }}>
-      {noteArr?.map((item, i) => {
-        i === 0;
 
+  return (
+    <View style={{ marginBottom: 20 }}>
+      {noteArr?.map((item: any, i: number) => {
         return (
-          <View
-            key={i}
-            style={{
-              borderWidth: 1.4,
-              borderColor: color.borderColor,
-              padding: 10,
-              borderRadius: 14,
-              marginBottom: 8,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              {isSubSup || item?.createdBy === user?._id ? (
-                <CustomText fontWeight="500" color={color.mainTxtColor}>
-                  {item?.createdByName || "N/A"}
-                </CustomText>
-              ) : (
-                <CustomText> </CustomText>
-              )}
-              <CustomText fontWeight="500" color={color.mainTxtColor}>
+          <View key={i} style={styles.card}>
+            {/* Top Row */}
+            <View style={styles.topRow}>
+              <View style={styles.leftSection}>
+                {/* Avatar */}
+                <View style={styles.avatar}>
+                  <CustomText style={styles.avatarText}>
+                    {getInitials(item?.createdByName || "")}
+                  </CustomText>
+                </View>
+
+                {/* Name + Note */}
+                <View style={{ flex: 1, paddingHorizontal: 8 }}>
+                  {(isSubSup || item?.createdBy === user?._id) && (
+                    <CustomText style={styles.nameText}>
+                      {item?.createdByName || "N/A"}
+                    </CustomText>
+                  )}
+
+                  <CustomText style={styles.noteText}>
+                    {item?.note || "N/A"}
+                  </CustomText>
+                </View>
+              </View>
+
+              {/* Date */}
+              <CustomText style={styles.dateText}>
                 {item?.createdAt
-                  ? moment(item?.createdAt).format("DD/MM/YYYY A")
+                  ? moment(item?.createdAt).format("MMM DD, YYYY")
                   : "N/A"}
               </CustomText>
             </View>
-            <CustomText fontWeight="300" color={color.mainTxtColor}>
-              {item?.note || "N/A"}
-            </CustomText>
+
             {(isSubSup || item?.createdBy === user?._id) && (
-              <View
+              <TouchableOpacity
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-end",
-                  marginTop: 5,
-                  gap: 15,
+                  alignSelf: "flex-end",
+                  ...iconWrapperStyle,
                 }}
+                onPress={() =>
+                  onEdit({
+                    note: item?.note || "",
+                    id: item?._id || "",
+                  })
+                }
               >
-                <EditIcon
-                  onPress={() => {
-                    onEdit({
-                      note: item?.note || "",
-                      id: item?._id || "",
-                    });
-                  }}
-                />
-                {/* {isLoadingDelete === item?._id ? <ActivityIndicator /> : <DeleteIcon
-              onPress={() => { onDelete(item?._id) }}
-            />} */}
-              </View>
+                <Feather name="edit-2" size={18} color={color.mainTxtColor} />
+              </TouchableOpacity>
             )}
           </View>
         );
@@ -97,4 +99,63 @@ const NotesCard = ({
 
 export default NotesCard;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    ...shadowPrimaryColor,
+  },
+
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+
+  leftSection: {
+    flexDirection: "row",
+    flex: 1,
+    gap: 12,
+  },
+
+  avatar: {
+    height: 42,
+    width: 42,
+    borderRadius: 21,
+    backgroundColor: "#E0E7FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatarText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2563EB",
+  },
+
+  nameText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2563EB",
+    marginBottom: 4,
+  },
+
+  dateText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+
+  noteText: {
+    color: "#4B5563",
+    lineHeight: 22,
+    marginTop: 2,
+  },
+
+  editWrapper: {
+    marginTop: 10,
+    alignItems: "flex-end",
+  },
+});

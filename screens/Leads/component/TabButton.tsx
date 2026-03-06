@@ -29,10 +29,11 @@ const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
   }, [activeTab]);
 
   const tabs = [
-    { id: 1, label: "Info" },
-    { id: 2, label: "User Info" },
-    { id: 3, label: "Logs Info" },
-    { id: 4, label: "Meeting Info" },
+    { id: 1, label: "Overview" },
+    { id: 2, label: "Logs" },
+    { id: 3, label: "Meetings" },
+    { id: 4, label: "Notes" },
+    // { id: 3, label: "Timeline" },
   ];
 
   return (

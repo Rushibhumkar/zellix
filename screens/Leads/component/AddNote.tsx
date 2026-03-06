@@ -1,5 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import ModalWithBlur from "../../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import useModal from "../../../hooks/useModal";
 import CustomBtn from "../../../myComponents/CustomBtn/CustomBtn";
@@ -49,6 +56,17 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
       formik.setFieldValue("note", remark);
     }
   }, [remark]);
+
+  const inputRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (modal?.visible) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300); // wait for modal animation
+    }
+  }, [modal?.visible]);
+
   return (
     <ModalWithBlur visible={modal?.visible} onClose={modal?.closeModal}>
       <MainTitle
@@ -57,13 +75,12 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
       />
 
       <CustomInput
+        ref={inputRef}
+        multiline
         placeholder=" "
         value={formik.values.note}
         onChangeText={(v) => formik.setFieldValue("note", v)}
         containerStyle={{ marginBottom: 20 }}
-        props={{
-          multiline: true,
-        }}
         inputStyle={{ height: 100, textAlignVertical: "top" }}
       />
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -72,6 +89,7 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
           onPress={() => {
             formik.resetForm();
             modal.closeModal();
+            Keyboard.dismiss();
           }}
           containerStyle={{
             width: 100,

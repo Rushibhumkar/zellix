@@ -40,7 +40,7 @@ type DateFormat =
 
 export function formatDate(
   dateString: string,
-  format: DateFormat = "dd/mm/yyyy"
+  format: DateFormat = "dd/mm/yyyy",
 ): string {
   if (!dateString) return "—";
 
@@ -68,3 +68,51 @@ export function formatDate(
 
   return result;
 }
+
+export const getTimeAgo = (dateString: any) => {
+  if (!dateString) return "-";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 0) return "-";
+
+  const minute = 60;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const week = 7 * day;
+  const month = 30 * day;
+
+  if (diffInSeconds < 10) return "Just now";
+
+  if (diffInSeconds < minute) return `${diffInSeconds} sec ago`;
+
+  if (diffInSeconds < hour)
+    return `${Math.floor(diffInSeconds / minute)} min ago`;
+
+  if (diffInSeconds < day)
+    return `${Math.floor(diffInSeconds / hour)} hour ago`;
+
+  if (diffInSeconds < week) return `${Math.floor(diffInSeconds / day)} day ago`;
+
+  if (diffInSeconds < month)
+    return `${Math.floor(diffInSeconds / week)} week ago`;
+
+  // 🔥 After 1 month → show full date
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+
+  const hh = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+};
+
+export const getInitials = (name = "") => {
+  const words = name.split(" ");
+  return words.length > 1 ? words[0][0] + words[1][0] : words[0]?.[0] || "";
+};

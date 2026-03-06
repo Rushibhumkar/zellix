@@ -46,7 +46,7 @@ const DashbordHeader = () => {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
       setMenuVisible(false);
     } catch (error) {
@@ -78,7 +78,7 @@ const DashbordHeader = () => {
               marginBottom:
                 insets?.bottom !== 0
                   ? Platform.OS === "ios"
-                    ? -24
+                    ? -28
                     : -28
                   : insets.top - 20,
             },
@@ -86,35 +86,41 @@ const DashbordHeader = () => {
         >
           {/* Left Side — User Info */}
           <SlideFadeIn style={styles.leftContainer}>
-            {/* USER NAME */}
-            {isLoading ? (
-              <SkeletonView
-                wrapperStyle={{ width: 120, height: 18, borderRadius: 6 }}
-              />
-            ) : (
-              <CustomText style={styles.userName}>
-                {`${user?.name || ""} ${user?.lastName || ""}`.trim()}
-              </CustomText>
-            )}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                overflow: "hidden",
+              }}
+            >
+              {isLoading ? (
+                <SkeletonView
+                  wrapperStyle={{ width: 120, height: 18, borderRadius: 6 }}
+                />
+              ) : (
+                <CustomText style={styles.userName}>
+                  {`${user?.name || ""} ${user?.lastName || ""}`.trim()}
+                </CustomText>
+              )}
 
-            {/* USER ROLE */}
-            {isLoading ? (
-              <SkeletonView
-                wrapperStyle={{
-                  width: 90,
-                  height: 14,
-                  borderRadius: 5,
-                  marginTop: 4,
-                }}
-              />
-            ) : user?.role === "sup_admin" ? (
-              <CustomText style={styles.userRole}>Super Admin</CustomText>
-            ) : user?.role === "sub_admin" ? (
-              <CustomText style={styles.userRole}>Sub Admin</CustomText>
-            ) : user?.role === "admin" ? (
-              <CustomText style={styles.userRole}>Admin</CustomText>
-            ) : null}
-
+              {isLoading ? (
+                <SkeletonView
+                  wrapperStyle={{
+                    width: 90,
+                    height: 14,
+                    borderRadius: 5,
+                    marginTop: 4,
+                  }}
+                />
+              ) : user?.role === "sup_admin" ? (
+                <CustomText style={styles.userRole}>Super Admin</CustomText>
+              ) : user?.role === "sub_admin" ? (
+                <CustomText style={styles.userRole}>Sub Admin</CustomText>
+              ) : user?.role === "admin" ? (
+                <CustomText style={styles.userRole}>Admin</CustomText>
+              ) : null}
+            </View>
             {/* USER EMAIL */}
             {isLoading ? (
               <SkeletonView
@@ -135,18 +141,21 @@ const DashbordHeader = () => {
           {/* Right Side — Icons */}
           <SlideFadeIn from={-10}>
             <View style={styles.iconWrapper}>
+              {/* <Pressable onPress={() => null} style={styles.iconBtn}>
+                <Feather name="search" size={18} color="#fff" />
+              </Pressable> */}
               <Pressable
                 onPress={() => navigate("Notification")}
                 style={styles.iconBtn}
               >
                 <View style={styles.iconBadge} />
-                <Feather name="bell" size={22} color="#fff" />
+                <Feather name="bell" size={18} color="#fff" />
               </Pressable>
               <Pressable
                 onPress={() => setMenuVisible(true)}
                 style={styles.iconBtn}
               >
-                <Feather name="menu" size={22} color="#fff" />
+                <Feather name="menu" size={18} color="#fff" />
               </Pressable>
             </View>
           </SlideFadeIn>
@@ -164,7 +173,6 @@ const DashbordHeader = () => {
   );
 };
 
-// ✅ Styles
 const styles = StyleSheet.create({
   gradientBackground: {
     width: "100%",
@@ -177,37 +185,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 8 : 12,
-    // paddingBottom: 8,
+    paddingHorizontal: 14,
+    paddingTop: Platform.OS === "ios" ? 2 : 8,
   },
   leftContainer: {
     flex: 1,
   },
   userName: {
     color: "#FFFFFF",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
   },
   userRole: {
     color: "rgba(235, 243, 255, 0.9)",
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 2,
+    backgroundColor: "#ffffff3c",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   userEmail: {
     color: "#E0E8FF",
-    fontSize: 13,
+    fontSize: 12,
     marginTop: 4,
   },
   iconWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 8,
   },
   iconBtn: {
     position: "relative",
     padding: 8,
-    borderRadius: 50,
+    borderRadius: 12,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderColor: "#ffffff29",
     borderWidth: 2,

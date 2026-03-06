@@ -77,7 +77,7 @@ const LeadPool = () => {
 
   const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -104,12 +104,17 @@ const LeadPool = () => {
 
   return (
     <>
-      <Header title={"Lead Pool"} />
+      <Header
+        title={"Lead Pool"}
+        onPressAdd={() => navigate("AddLeads")}
+        showActions={true}
+      />
       <Container>
         <TitleWithAddDelete
           arrLength={selected?.length}
           title="Lead"
-          onPressToNavigate={() => navigate("AddLeads")}
+          showAddBtn={false}
+          // onPressToNavigate={() => navigate("AddLeads")}
           onPressToDelete={() =>
             popupModal2.wantDelete({ onConfirm: handleDeleteLeadPool })
           }
@@ -211,8 +216,8 @@ const LeadPoolRowItem = ({
           backgroundColor: selected
             ? "rgba(252, 244, 227, 1)"
             : bgColor
-            ? bgColor
-            : "white",
+              ? bgColor
+              : "white",
         },
       ]}
       onPress={onPress}

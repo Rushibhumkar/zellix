@@ -59,7 +59,7 @@ const ProjectList = () => {
 
   const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -90,12 +90,17 @@ const ProjectList = () => {
   };
   return (
     <>
-      <Header title={"Project List"} />
+      <Header
+        title={"Project List"}
+        showActions={true}
+        onPressAdd={() => navigate(routeProject.ProjectForm)}
+      />
       <Container>
         <TitleWithAddDelete
           arrLength={selected?.length}
           title="Project"
-          onPressToNavigate={() => navigate(routeProject.ProjectForm)}
+          // onPressToNavigate={() => navigate(routeProject.ProjectForm)}
+          showAddBtn={false}
           onPressToDelete={() =>
             popupModal2.wantDelete({ onConfirm: handleDeleteProject })
           }

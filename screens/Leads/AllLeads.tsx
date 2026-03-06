@@ -32,20 +32,28 @@ import { color } from "../../const/color";
 import LeadListHeading from "../../components/Leads/LeadHeading/LeadListHeading";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
-import { leadTypeObj, roleEnum, statusObj } from "../../utils/data";
+import {
+  leadTypeObj,
+  roleEnum,
+  statusColorObj,
+  statusObj,
+} from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
-import { checkPermission, formatDate } from "../../utils/commonFunctions";
+import {
+  checkPermission,
+  formatDate,
+  getTimeAgo,
+} from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { useRoute } from "@react-navigation/native";
 import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -54,9 +62,8 @@ let bgByStatus = {
 
 // Debounce function
 
-const AllLeads = ({ tabType }: any) => {
+const AllLeads = () => {
   const queryClient = useQueryClient();
-  const route = useRoute();
   const [refreshing, setRefreshing] = useState(false);
   // let lead = []
   // let loading = false;
@@ -106,10 +113,6 @@ const AllLeads = ({ tabType }: any) => {
     type: leadQueryKey?.type ?? selectLeadType,
     ...leadQueryKey,
   });
-
-  // useEffect(() => {
-  //   console.log("🔴 totalCount received in screen:", totalCount);
-  // }, [totalCount]);
 
   const handleSelect = (id) => {
     let temp = [...selected];
@@ -234,18 +237,6 @@ const AllLeads = ({ tabType }: any) => {
     user?.role,
   );
 
-  useEffect(() => {
-    if (isFocused) {
-      if (tabType === "calling_data") {
-        handleLeadTypeSelect("calling_data", false);
-      } else if (tabType === "lead") {
-        handleLeadTypeSelect("lead", false);
-      } else {
-        // console.log("⚠️ Unknown tabType prop:", tabType);
-      }
-    }
-  }, [isFocused, tabType]);
-
   const handleCallPress = async (mobile: any) => {
     if (!mobile) return;
     const phoneUrl = `tel:${mobile}`;
@@ -257,19 +248,33 @@ const AllLeads = ({ tabType }: any) => {
     }
   };
 
+  const onEmailPress = (email: any) => {
+    if (!email) return;
+
+    const url = `mailto:${email}`;
+
+    Linking.openURL(url).catch((err) =>
+      console.log("Error opening email client", err),
+    );
+  };
   // const isAgent = true;
   const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
+
+  const handleTab = (tab: any) => {
+    setSelectLeadType(tab);
+  };
 
   return (
     <>
       <Header
-        title={
-          tabType === "calling_data"
-            ? "Calling Data"
-            : tabType === "lead"
-              ? "Leads"
-              : ""
-        }
+        // title={
+        //   tabType === "calling_data"
+        //     ? "Calling Data"
+        //     : tabType === "lead"
+        //       ? "Leads"
+        //       : ""
+        // }
+        title={"Data Center"}
         totalCount={totalCount}
         isWithAnimation
         showBackIcon={false}
@@ -288,12 +293,13 @@ const AllLeads = ({ tabType }: any) => {
         onPressFilter={() =>
           navigation.navigate("AdvanceSearch", {
             type: "lead",
-            sourceTab: tabType,
+            sourceTab: selectLeadType,
             isAgent: isAgent,
           })
         }
         onPressAdd={() => {
-          if (canAddLead) navigation.navigate("AddLeads", { tabType });
+          if (canAddLead)
+            navigation.navigate("AddLeads", { tabType: selectLeadType });
           else popUpConfToast.errorMessage("Not authorized to add leads.");
         }}
       />
@@ -305,21 +311,8 @@ const AllLeads = ({ tabType }: any) => {
               arrLength={selected?.length}
               isWithAnimation
               title={
-                tabType === "calling_data"
-                  ? "Calling Data"
-                  : tabType === "lead"
-                    ? "Leads"
-                    : ""
+                selectLeadType === "calling_data" ? "Calling Data" : "Leads"
               }
-              // onPressToNavigate={() => {
-              //   if (canAddLead) {
-              //     navigation.navigate("AddLeads", { tabType });
-              //   } else {
-              //     popUpConfToast.errorMessage(
-              //       "You are not authorized to add new leads. Please contact your administrator.",
-              //     );
-              //   }
-              // }}
               showAddBtn={false}
               onPressToDelete={
                 (canDeleteLead && user?.role === roleEnum.sub_admin) ||
@@ -332,24 +325,10 @@ const AllLeads = ({ tabType }: any) => {
                   ? false
                   : () => toggleModalAssignLead()
               }
-              // onPressToFilter={() =>
-              //   navigation.navigate("AdvanceSearch", {
-              //     type: "lead",
-              //     sourceTab: tabType,
-              //   })
-              // }
-              // onCloseSearch={
-              //   leadQueryKey !== null
-              //     ? () => dispatch(setLeadQueryKey(null))
-              //     : false
-              // }
-              // onSelectLeadType={
-              //   leadQueryKey === null ? () => toggleLeadTypeModal() : false
-              // }
             />
           )}
 
-          {tabType === "lead" && isPoolRestricted === false && (
+          {selectLeadType === "lead" && isPoolRestricted === false && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}
@@ -389,6 +368,11 @@ const AllLeads = ({ tabType }: any) => {
                     : () => handleSelect(item?._id)
                 }
                 onCallPress={() => handleCallPress(item?.clientMobile)}
+                onWhatsappIconPress={() => {
+                  if (!item?.whatsapp) return;
+                  Linking.openURL(item?.whatsapp);
+                }}
+                onEmailPress={() => onEmailPress(item?.clientEmail)}
               />
             )}
             keyExtractor={(item) => item?._id}
@@ -409,14 +393,50 @@ const AllLeads = ({ tabType }: any) => {
                   moduleName={"lead"}
                 />
 
-                <LeadListHeading
+                <View style={styles.container}>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      selectLeadType === "calling_data" && styles.activeTab,
+                    ]}
+                    onPress={() => handleTab("calling_data")}
+                  >
+                    <CustomText
+                      style={[
+                        styles.tabText,
+                        selectLeadType === "calling_data" && styles.activeText,
+                      ]}
+                    >
+                      Calling Data
+                    </CustomText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      selectLeadType === "lead" && styles.activeTab,
+                    ]}
+                    onPress={() => handleTab("lead")}
+                  >
+                    <CustomText
+                      style={[
+                        styles.tabText,
+                        selectLeadType === "lead" && styles.activeText,
+                      ]}
+                    >
+                      Leads
+                    </CustomText>
+                  </TouchableOpacity>
+                </View>
+
+                {/* <LeadListHeading
                   noText={"No"}
                   nameText={"Client Name"}
                   belowNameText={"Mobile no."}
                   typeText={isAgent ? "Status" : "Assigned"}
                   belowTypeText={"Assigned At"}
                   statusText={isAgent ? "" : "Status"}
-                />
+                /> */}
               </View>
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
@@ -500,9 +520,12 @@ const LeadRowItem = React.memo(
     selected,
     bgColor,
     onCallPress,
+    onWhatsappIconPress,
+    onEmailPress,
     isAgent,
     user,
   }: any) => {
+    const statusKey = item?.status ?? "";
     return (
       <SlideFadeIn>
         <TouchableOpacity
@@ -542,16 +565,15 @@ const LeadRowItem = React.memo(
                     fontSize: 12,
                   }}
                 >
-                  {index < 9 && `0`}
                   {index + 1}
                 </CustomText>
               )}
             </View>
             <View
               style={{
-                width: isAgent ? "32%" : "29%",
+                width: isAgent ? "34%" : "32%",
                 paddingEnd: 2,
-                marginRight: isAgent ? 8 : 0,
+                marginRight: isAgent ? 8 : 2,
               }}
             >
               <CustomText
@@ -565,18 +587,32 @@ const LeadRowItem = React.memo(
               >
                 {item?.clientName}
               </CustomText>
-              <CustomText
-                numberOfLines={1}
-                style={{
-                  color: color.strokeColor,
-                  fontWeight: "400",
-                  marginTop: 4,
-                  // textTransform: "capitalize",
-                  fontSize: 13,
-                }}
-              >
-                {item?.clientMobile}
-              </CustomText>
+              {isAgent ? (
+                <CustomText
+                  numberOfLines={1}
+                  style={{
+                    color: color.strokeColor,
+                    fontWeight: "400",
+                    // textTransform: "capitalize",
+                    fontSize: 13,
+                    marginTop: 2,
+                  }}
+                >
+                  {item?.clientMobile}
+                </CustomText>
+              ) : (
+                <CustomText
+                  numberOfLines={1}
+                  style={{
+                    color: color.mainTxtColor,
+                    fontWeight: "300",
+                    textTransform: "capitalize",
+                    marginTop: 2,
+                  }}
+                >
+                  {item?.assign?.name}
+                </CustomText>
+              )}
             </View>
 
             <View
@@ -585,31 +621,22 @@ const LeadRowItem = React.memo(
                 // alignItems: "center",
               }}
             >
-              {isAgent ? (
-                <CustomText
-                  numberOfLines={1}
-                  style={{
-                    color: color.mainTxtColor,
-                    fontWeight: "400",
-                    fontSize: 13,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {statusObj[item?.status]}
-                </CustomText>
-              ) : (
-                <CustomText
-                  numberOfLines={1}
-                  style={{
-                    color: color.mainTxtColor,
-                    fontWeight: "400",
-                    fontSize: 13,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {item?.assign?.name}
-                </CustomText>
-              )}
+              <CustomText
+                numberOfLines={1}
+                style={{
+                  color: color.mainTxtColor,
+                  fontWeight: "400",
+                  fontSize: 13,
+                  textTransform: "capitalize",
+                  backgroundColor: statusColorObj?.[statusKey] ?? "#eee",
+                  paddingHorizontal: 6,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  alignSelf: "flex-start",
+                }}
+              >
+                {statusObj[item?.status]}
+              </CustomText>
               <CustomText
                 numberOfLines={1}
                 style={{
@@ -620,43 +647,34 @@ const LeadRowItem = React.memo(
                   marginTop: 4,
                 }}
               >
-                {formatDate(item?.assignedAt, "dd/mm/yyyy hh:MM")}
+                {getTimeAgo(item?.assignedAt)}
               </CustomText>
             </View>
-
-            {!isAgent && (
-              <View
-                style={{
-                  width: isAgent ? "30%" : "24%",
-                  alignItems: "flex-start",
-                  paddingLeft: 8,
-                }}
-              >
-                <CustomText
-                  numberOfLines={2}
-                  style={{
-                    color: color.mainTxtColor,
-                    fontWeight: "400",
-                    fontSize: 13,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {statusObj[item?.status]}
-                </CustomText>
-              </View>
-            )}
             {item?.clientMobile && (
               <View
                 style={{
-                  width: isAgent ? "16%" : "10%",
-                  // alignItems: "flex-start",
-                  justifyContent: "center",
+                  flex: 1,
+                  flexDirection: "row",
                   alignItems: "center",
-                  // padding: 8,
+                  justifyContent: "flex-end",
+                  gap: 4,
+                  paddingRight: 6,
                 }}
               >
                 <TouchableOpacity onPress={onCallPress} style={styles.iconBtn}>
-                  <Feather name="phone-call" size={20} color="#4985F2" />
+                  <Feather name="phone-call" size={17} color="#4985F2" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={onWhatsappIconPress}
+                  style={[styles.iconBtn, { backgroundColor: "#49f26529" }]}
+                >
+                  <FontAwesome name="whatsapp" size={18} color="#49f265" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={onEmailPress}
+                  style={[styles.iconBtn, { backgroundColor: "#ff6b6b14" }]}
+                >
+                  <Feather name="mail" size={17} color="#FF6B6B" />
                 </TouchableOpacity>
               </View>
             )}
@@ -682,20 +700,48 @@ const styles = StyleSheet.create({
   },
   mainlistcontainer: {
     borderWidth: 1,
+    borderColor: "#E3E8EF",
     paddingVertical: 12,
     paddingLeft: 8,
-    borderRadius: 14,
-    borderColor: color.mainTxtColorFade,
+    borderRadius: 16,
     marginHorizontal: 8,
     ...shadowPrimaryColor,
   },
   iconBtn: {
     borderRadius: 12,
-    backgroundColor: "#4984f239",
+    backgroundColor: "#4984f21e",
     // backgroundColor: "red",
-    padding: 4,
-    borderColor: "#4984f239",
-    borderWidth: 2,
+    padding: 8,
+  },
+  container: {
+    flexDirection: "row",
+    backgroundColor: "#3E6EC6",
+    borderRadius: 16,
+    padding: 6,
+    marginHorizontal: 20,
+    marginTop: 10,
+  },
+
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+
+  activeTab: {
+    backgroundColor: "#FFFFFF",
+    elevation: 3,
+  },
+
+  tabText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#D6E3FF",
+  },
+
+  activeText: {
+    color: "#2D5FB8",
   },
 });
 

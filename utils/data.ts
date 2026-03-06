@@ -162,6 +162,37 @@ export const statusObj = {
   nr_event: "NR Event",
 };
 
+export const statusColorObj = {
+  // 🔵 Fresh / Neutral
+  new: "#E3F2FD",
+  assign: "#E8F1FD",
+  contacted: "#E1F5FE",
+
+  // 🟡 Follow / Warm
+  followUp_required: "#FFF8E1",
+  meeting_scheduled: "#FFF3CD",
+  active_hot: "#FFE0B2",
+
+  // 🟢 Positive
+  claimed: "#E8F5E9",
+  deal_booked: "#C8E6C9",
+  active_cold: "#E0F2F1",
+
+  // 🔴 Negative
+  not_interested: "#FFEBEE",
+  not_interested_buy_later: "#FDECEA",
+  lost: "#FFCDD2",
+  deal_cancelled: "#F8D7DA",
+  disqualified: "#ECEFF1",
+
+  // ⚪ Grey / Inactive / No Response
+  no_response: "#F5F5F5",
+  not_able_to_connect: "#F3F4F6",
+  wrong_details: "#F1F1F1",
+  broker: "#F3E5F5",
+  nr_event: "#F1F8E9",
+};
+
 export const developerOptions = [
   { _id: "AKSHARA_DEVELOPERS", name: "AKSHARA DEVELOPERS" },
   { _id: "AL_ANSARI", name: "AL ANSARI" },

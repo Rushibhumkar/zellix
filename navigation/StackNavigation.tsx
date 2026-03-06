@@ -148,6 +148,37 @@ const BottomTabs = () => {
             ),
         }}
       />
+
+      {/* <Tab.Screen
+        name="allLead"
+        children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
+        options={{
+          tabBarLabel: "",
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <CallingFocus style={styles.iconPosition} />
+            ) : (
+              <CallingInfocus style={styles.iconPosition} />
+            ),
+        }}
+      /> */}
+
+      <Tab.Screen
+        name="allLead2"
+        component={LeadsNavigator}
+        options={{
+          tabBarLabel: "",
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <LeadFocus style={styles.iconPosition} />
+            ) : (
+              <LeadIcons style={styles.iconPosition} />
+            ),
+        }}
+      />
+
       <Tab.Screen
         name="MeetingsNavigator"
         component={MeetingsNavigator}
@@ -161,35 +192,6 @@ const BottomTabs = () => {
               <MeetingFocus style={styles.iconPosition} />
             ) : (
               <MeetingIcon style={styles.iconPosition} />
-            ),
-        }}
-      />
-      <Tab.Screen
-        name="allLead"
-        children={() => <LeadsNavigator tabType="calling_data" />} // ✅ Pass prop
-        options={{
-          tabBarLabel: "",
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <CallingFocus style={styles.iconPosition} />
-            ) : (
-              <CallingInfocus style={styles.iconPosition} />
-            ),
-        }}
-      />
-
-      <Tab.Screen
-        name="allLead2"
-        children={() => <LeadsNavigator tabType="lead" />} // ✅ Pass prop
-        options={{
-          tabBarLabel: "",
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <LeadFocus style={styles.iconPosition} />
-            ) : (
-              <LeadIcons style={styles.iconPosition} />
             ),
         }}
       />
@@ -272,12 +274,12 @@ const MeetingsNavigator = () => {
   );
 };
 
-const LeadsNavigator = ({ tabType }) => {
+const LeadsNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="allLead"
-        children={() => <AllLeads tabType={tabType} />}
+        component={AllLeads}
         options={{ headerShown: false }}
       />
       <Stack.Screen

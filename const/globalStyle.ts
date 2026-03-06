@@ -108,6 +108,14 @@ export const iconWrapperStyle = {
   borderRadius: 12,
 };
 
+export const headerIconWrapperStyle = {
+  padding: 8,
+  borderRadius: 12,
+  backgroundColor: "rgba(255,255,255,0.1)",
+  borderColor: "#ffffff29",
+  borderWidth: 2,
+};
+
 export const headerRowItemsStyle = {
   paddingHorizontal: 16,
   paddingVertical: 12,

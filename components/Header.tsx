@@ -16,7 +16,12 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import MenuModal from "./Dashboard/MenuModal";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../redux/userSlice";
@@ -53,6 +58,15 @@ interface HeaderProps {
   totalCount?: number;
   onCloseSearch: () => void;
   moduleName?: string;
+  rightSide?: React.ReactNode;
+  showNotiIcon?: boolean;
+  onSelectLeadType: () => void;
+  buttons?: {
+    title?: string;
+    onPress: () => void;
+    style?: any;
+    icon?: React.ReactNode;
+  }[];
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -67,6 +81,10 @@ const Header: React.FC<HeaderProps> = ({
   isWithAnimation = false,
   totalCount = 0,
   moduleName,
+  rightSide,
+  showNotiIcon,
+  onSelectLeadType,
+  buttons,
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
@@ -99,6 +117,11 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const showHeadrActionButtons =
+    moduleName === "lead" ||
+    moduleName === "meeting" ||
+    moduleName === "rsvp" ||
+    moduleName === "booking";
   return (
     <View style={{ backgroundColor: "#2452FA" }}>
       {/* ✅ Gradient fully covers StatusBar area */}
@@ -115,12 +138,11 @@ const Header: React.FC<HeaderProps> = ({
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom:
-                moduleName === "lead"
-                  ? -30
-                  : insets?.bottom !== 0
-                    ? -20
-                    : insets.top - 8,
+              marginBottom: showHeadrActionButtons
+                ? -30
+                : insets?.bottom !== 0
+                  ? -20
+                  : insets.top - 8,
               paddingHorizontal: 20,
             }}
           >
@@ -169,6 +191,26 @@ const Header: React.FC<HeaderProps> = ({
             <View style={styles.iconWrapper}>
               {showActions && (
                 <>
+                  {!!onSelectLeadType && (
+                    <AnimatedPressable
+                      // entering={
+                      //   isWithAnimation
+                      //     ? FadeInDown.duration(300).delay(100)
+                      //     : undefined
+                      // }
+                      // exiting={
+                      //   isWithAnimation ? FadeOutUp.duration(200) : undefined
+                      // }
+                      onPress={onSelectLeadType}
+                      style={styles.iconBtn}
+                    >
+                      <MaterialIcons
+                        name="change-circle"
+                        size={20}
+                        color={color.white}
+                      />
+                    </AnimatedPressable>
+                  )}
                   {onPressSearch && (
                     <AnimatedPressable
                       // entering={
@@ -238,15 +280,78 @@ const Header: React.FC<HeaderProps> = ({
                       //   isWithAnimation ? BounceOut.duration(300) : undefined
                       // }
                       onPress={onPressAdd}
-                      style={styles.iconBtn}
+                      style={[styles.iconBtn, { backgroundColor: "#fff" }]}
                     >
-                      <Feather name="plus" size={20} color="#fff" />
+                      <Feather
+                        name="plus"
+                        size={20}
+                        color={color.mainTxtColor}
+                      />
                     </AnimatedPressable>
+                  )}
+
+                  {!!buttons?.length && (
+                    <AnimatedView
+                      style={{
+                        flexDirection: "row",
+                        gap: 10,
+                        paddingTop: 4,
+                        // marginBottom: -6,
+                      }}
+                      entering={
+                        isWithAnimation
+                          ? FadeInDown.duration(300).delay(200)
+                          : undefined
+                      }
+                      exiting={
+                        isWithAnimation ? FadeOutUp.duration(200) : undefined
+                      }
+                    >
+                      {buttons.map((b, i) => (
+                        <AnimatedTouchableOpacity
+                          key={i}
+                          style={[
+                            {
+                              backgroundColor: "#ffffff3d",
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              alignItems: "center",
+                            },
+                            b.style,
+                          ]}
+                          onPress={b.onPress}
+                          entering={
+                            isWithAnimation
+                              ? FadeInDown.duration(300).delay(250 + i * 50)
+                              : undefined
+                          }
+                          exiting={
+                            isWithAnimation
+                              ? FadeOutUp.duration(200)
+                              : undefined
+                          }
+                        >
+                          {!!b.icon && <View>{b.icon}</View>}
+                          {!!b.title && (
+                            <CustomText
+                              style={{
+                                color: "#fff",
+                                marginLeft: b.icon ? 6 : 0,
+                              }}
+                            >
+                              {b.title}
+                            </CustomText>
+                          )}
+                        </AnimatedTouchableOpacity>
+                      ))}
+                    </AnimatedView>
                   )}
                 </>
               )}
 
-              {title !== "Notification" && (
+              {title !== "Notification" && showNotiIcon && (
                 <AnimatedPressable
                   entering={
                     isWithAnimation
@@ -262,7 +367,7 @@ const Header: React.FC<HeaderProps> = ({
                 </AnimatedPressable>
               )}
 
-              <AnimatedPressable
+              {/* <AnimatedPressable
                 entering={
                   isWithAnimation ? ZoomIn.duration(300).delay(350) : undefined
                 }
@@ -271,7 +376,9 @@ const Header: React.FC<HeaderProps> = ({
                 style={styles.iconBtn}
               >
                 <Feather name="menu" size={20} color="#fff" />
-              </AnimatedPressable>
+              </AnimatedPressable> */}
+
+              {!!rightSide && rightSide}
             </View>
           </View>
 
@@ -317,7 +424,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     position: "relative",
     padding: 8,
-    borderRadius: 50,
+    borderRadius: 12,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderColor: "#ffffff29",
     borderWidth: 2,

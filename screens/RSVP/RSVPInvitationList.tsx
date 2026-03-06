@@ -75,7 +75,7 @@ const RSVPInvitationList = () => {
   // SEARCH DEBOUNCE
   const debounceSearch = React.useCallback(
     debounce((text) => setDebouncedSearch(text), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v: any) => {
@@ -158,31 +158,31 @@ const RSVPInvitationList = () => {
     permission,
     "Invitation",
     "viewList",
-    user?.role
+    user?.role,
   );
   const canViewInvitationDetails = checkPermission(
     permission,
     "Invitation",
     "viewDetails",
-    user?.role
+    user?.role,
   );
   const canSendInvitation = checkPermission(
     permission,
     "Invitation",
     "add",
-    user?.role
+    user?.role,
   );
   const canDeleteInvitation = checkPermission(
     permission,
     "Invitation",
     "delete",
-    user?.role
+    user?.role,
   );
   const canViewManagerBtn = checkPermission(
     permission,
     "Event",
     "sidebar",
-    user?.role
+    user?.role,
   );
 
   // myConsole("canDeleteInvitation", canDeleteInvitation);
@@ -193,8 +193,30 @@ const RSVPInvitationList = () => {
         title="RSVP Invitations"
         isWithAnimation
         showBackIcon={false}
-        showActions={showHeaderActions}
-        onPressSearch={() => setFocusSearch(true)}
+        showActions={true}
+        // onPressSearch={() => setFocusSearch(true)}
+        moduleName="rsvp"
+        buttons={[
+          ...(canViewManagerBtn
+            ? [
+                {
+                  title: "Manager",
+                  onPress: () => navigation.navigate(routeRSVP.RSVPManagerList),
+                },
+              ]
+            : []),
+
+          ...(canSendInvitation
+            ? [
+                {
+                  // title: "Send Invitation",
+                  icon: <Feather name="send" size={16} color={"#fff"} />,
+                  onPress: () => navigation.navigate(routeRSVP.SendInvitation),
+                  style: { backgroundColor: "#fff3" },
+                },
+              ]
+            : []),
+        ]}
       />
 
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
@@ -206,28 +228,28 @@ const RSVPInvitationList = () => {
             arrLength={selected?.length}
             title="Event(s)"
             showAddBtn={false}
-            buttons={[
-              ...(canViewManagerBtn
-                ? [
-                    {
-                      title: "Manager",
-                      onPress: () =>
-                        navigation.navigate(routeRSVP.RSVPManagerList),
-                    },
-                  ]
-                : []),
+            // buttons={[
+            //   ...(canViewManagerBtn
+            //     ? [
+            //         {
+            //           title: "Manager",
+            //           onPress: () =>
+            //             navigation.navigate(routeRSVP.RSVPManagerList),
+            //         },
+            //       ]
+            //     : []),
 
-              ...(canSendInvitation
-                ? [
-                    {
-                      title: "Send Invitation",
-                      onPress: () =>
-                        navigation.navigate(routeRSVP.SendInvitation),
-                      style: { backgroundColor: "#fff3" },
-                    },
-                  ]
-                : []),
-            ]}
+            //   ...(canSendInvitation
+            //     ? [
+            //         {
+            //           title: "Send Invitation",
+            //           onPress: () =>
+            //             navigation.navigate(routeRSVP.SendInvitation),
+            //           style: { backgroundColor: "#fff3" },
+            //         },
+            //       ]
+            //     : []),
+            // ]}
             // onPressToNavigate={() => navigation.navigate("AddInvitation")}
             onPressToDelete={
               canDeleteInvitation
@@ -253,10 +275,10 @@ const RSVPInvitationList = () => {
                   selected.length > 0
                     ? handleSelect(item?._id)
                     : canViewInvitationDetails
-                    ? navigation.navigate("RSVPInvitationDetail", {
-                        id: item?._id,
-                      })
-                    : null
+                      ? navigation.navigate("RSVPInvitationDetail", {
+                          id: item?._id,
+                        })
+                      : null
                 }
                 onLongPress={() => handleSelect(item?._id)}
               />
@@ -395,7 +417,7 @@ const styles = StyleSheet.create({
     borderColor: color.strokeColor,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal: 20,
+    marginHorizontal: 12,
   },
   title: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
   subTitle: { fontSize: 13, color: color.mainTxtColor },

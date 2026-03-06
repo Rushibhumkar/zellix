@@ -60,12 +60,7 @@ const AllBookings = () => {
   const queryClient = useQueryClient();
   const { navigate } = useNavigation();
   const { user, bookingQueryKey } = useSelector(selectUser);
-  // const { bookings, advanceBooking, } = useSelector(selectUser);
-  // let copyBooking = advanceBooking !== null ? [...advanceBooking] : [...bookings]
-  // const isFocused = useIsFocused();
   const dispatch = useDispatch();
-  //
-  // const [filteredData, setFilteredData] = useState(copyBooking)
   const [searchValue, setSearchValue] = useState("");
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
@@ -87,6 +82,7 @@ const AllBookings = () => {
   const {
     data: bookingData,
     isLoading: loading,
+    totalCount,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -178,7 +174,7 @@ const AllBookings = () => {
   // }, [isFocused, advanceBooking, bookings])
   const debounceSearch = React.useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -210,36 +206,44 @@ const AllBookings = () => {
     permission,
     "Bookings",
     "add",
-    user?.role
+    user?.role,
   );
   const canViewBookingDetail = checkPermission(
     permission,
     "Bookings",
     "viewDetails",
-    user?.role
+    user?.role,
   );
   const canDeleteBooking = checkPermission(
     permission,
     "Bookings",
     "delete",
-    user?.role
+    user?.role,
   );
 
   // myConsole("canAddBookinggg", canAddBooking);
   // myConsole("permissionnnn", permission);
+  // myConsole("bookingDataaaa", bookingData[0]);
   return (
     <View style={{ flex: 1 }}>
       <Header
         title={"Bookings"}
+        totalCount={totalCount}
         isWithAnimation
-        showActions={showHeaderActions}
+        showActions={true}
+        moduleName="booking"
         onPressSearch={() => {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
           setTimeout(() => {
             setFocusSearch((prev) => !prev); // toggles every time
           }, 100);
         }}
-        onPressFilter={() => navigate("AdvanceSearch", { type: "booking" })}
+        onPressToFilter={() => navigate("AdvanceSearch", { type: "booking" })}
+        onCloseSearch={
+          bookingQueryKey !== null
+            ? () => dispatch(setBookingQueryKey(null))
+            : undefined
+        }
         onPressAdd={
           canAddBooking
             ? () => navigate("DeveloperInformation")
@@ -250,6 +254,9 @@ const AllBookings = () => {
                   error: true,
                 })
         }
+        onSelectLeadType={() => {
+          modalBusinessStatus.openModal();
+        }}
       />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {/* {isLoading && <ActivityIndicator />} */}
@@ -260,33 +267,33 @@ const AllBookings = () => {
             isWithAnimation
             arrLength={selectedBookings?.length}
             title="Bookings"
-            showAddBtn={canAddBooking}
-            onPressToNavigate={
-              canAddBooking
-                ? () => navigate("DeveloperInformation")
-                : () =>
-                    setSnackBar({
-                      visible: true,
-                      text: "You are not authorized to add booking details.",
-                      error: true,
-                    })
-            }
+            showAddBtn={false}
+            // onPressToNavigate={
+            //   canAddBooking
+            //     ? () => navigate("DeveloperInformation")
+            //     : () =>
+            //         setSnackBar({
+            //           visible: true,
+            //           text: "You are not authorized to add booking details.",
+            //           error: true,
+            //         })
+            // }
             onPressToDelete={
               canDeleteBooking && user?.role === roleEnum?.sup_admin
                 ? toggleModal
                 : undefined
             }
-            onPressToFilter={() =>
-              navigate("AdvanceSearch", { type: "booking" })
-            }
-            onCloseSearch={
-              bookingQueryKey !== null
-                ? () => dispatch(setBookingQueryKey(null))
-                : undefined
-            }
-            onSelectLeadType={() => {
-              modalBusinessStatus.openModal();
-            }}
+            // onPressToFilter={() =>
+            //   navigate("AdvanceSearch", { type: "booking" })
+            // }
+            // onCloseSearch={
+            //   bookingQueryKey !== null
+            //     ? () => dispatch(setBookingQueryKey(null))
+            //     : undefined
+            // }
+            // onSelectLeadType={() => {
+            //   modalBusinessStatus.openModal();
+            // }}
           />
         )}
 
@@ -326,13 +333,13 @@ const AllBookings = () => {
               <SearchBar
                 value={searchValue}
                 onClickCancel={() => {
-                  handleSearchChange(""), setFocusSearch(false);
+                  (handleSearchChange(""), setFocusSearch(false));
                 }}
                 onChangeText={(v) => handleSearchChange(v)}
                 isWithAnimation
                 autoFocus={focusSearch}
               />
-              <BookingListHeading />
+              {/* <BookingListHeading /> */}
             </>
           }
           ListHeaderComponentStyle={{ paddingTop: 5 }}
@@ -437,100 +444,55 @@ const BookingRowItem = ({
           styles.mainlistcontainer,
           {
             marginTop: index === 0 ? 25 : 12,
-            marginHorizontal: 20,
+            marginHorizontal: 12,
             backgroundColor: selected
               ? color.primaryFade
               : bgColor
-              ? bgColor
-              : "#FCFAFA",
+                ? bgColor
+                : "#FCFAFA",
           },
         ]}
         activeOpacity={0.5}
         onPress={onPress}
         onLongPress={onLongPress}
       >
-        {/* <View> */}
-        {/* <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-        <CustomText
-          fontSize={12}
-          fontWeight="600"
-          color={color.green}
-        >{item?.status}</CustomText>
-      </View> */}
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ width: "10%", paddingEnd: 3 }}>
-            {index === "S.No" ? (
-              <CustomText
-                fontSize={14}
-                fontWeight="500"
-                color={color.mainTxtColor}
-              >
-                No.
-              </CustomText>
-            ) : (
-              <CustomText
-                fontSize={14}
-                fontWeight="500"
-                color={color.mainTxtColor}
-              >
-                {" "}
-                {index < 9 && "0"}
-                {index + 1}
-              </CustomText>
-            )}
-          </View>
-          <View style={{ width: "33%", paddingEnd: 3 }}>
-            <View>
-              <CustomText
-                fontSize={16}
-                fontWeight="500"
-                marginBottom={5}
-                numberOfLines={2}
-                color={color.mainTxtColor}
-              >
-                {item?.projectName}
-              </CustomText>
-              {/* <CustomText
-              fontSize={12}
-              fontWeight="300"
-            >{item?.bookingAmount}
-            </CustomText> */}
-            </View>
-          </View>
-          <View style={{ width: "32%", paddingEnd: 3 }}>
-            {/* <CustomText
-            color={color.green}
-            fontWeight="500"
-          >  {item?.token ? 'Paid' : 'Unpaid'}
-          </CustomText> */}
-            <CustomText
-              // fontSize={12}
-              fontWeight="600"
-              color={statusColor[item?.status]}
-              style={{ textTransform: "capitalize", color: color.mainTxtColor }}
-            >
-              {item?.status}
+        <View style={styles.cardTopRow}>
+          <View style={{ flex: 1 }}>
+            <CustomText style={styles.projectName}>
+              {item?.projectName}
+            </CustomText>
+
+            <CustomText style={styles.clientName}>
+              {item?.lead?.clientName}
             </CustomText>
           </View>
-          <View style={{ width: "25%" }}>
-            <View style={{ alignItems: "flex-end" }}>
-              <CustomText
-                marginBottom={5}
-                numberOfLines={1}
-                color={color.mainTxtColor}
-              >
-                {" "}
-                {item?.propertyDetails}
-              </CustomText>
-              <CustomText
-                fontSize={10}
-                fontWeight="300"
-                color={color.mainTxtColor}
-              >
-                {" "}
-                {moment(item?.date).format("DD/MM/YYYY")}
+          <View>
+            <View>
+              <CustomText style={styles.dateText}>
+                {moment(item?.date).format("DD MMM YYYY")}
               </CustomText>
             </View>
+            <View style={styles.statusBadge}>
+              <CustomText style={styles.statusText}>{item?.status}</CustomText>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dividerLine} />
+
+        <View style={styles.cardBottomRow}>
+          <View>
+            <CustomText style={styles.labelText}>UNIT</CustomText>
+
+            <CustomText style={styles.valueText}>{item?.unit}</CustomText>
+          </View>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <CustomText style={styles.labelText}>TOTAL</CustomText>
+
+            <CustomText style={styles.valueText}>
+              {item?.total?.toLocaleString()}
+            </CustomText>
           </View>
         </View>
       </TouchableOpacity>
@@ -552,6 +514,66 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderColor: "#739fe141",
     ...shadowPrimaryColor,
+  },
+
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  projectName: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#2D67C6",
+  },
+
+  clientName: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 2,
+  },
+
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: "#FFF3CD",
+    marginTop: 4,
+  },
+
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "capitalize",
+  },
+
+  dividerLine: {
+    height: 1,
+    backgroundColor: "#ECECEC",
+    marginVertical: 8,
+  },
+
+  cardBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  labelText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+  },
+
+  valueText: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginTop: 2,
+    color: color.mainTxtColor,
+  },
+
+  dateText: {
+    fontSize: 12,
+    color: "#6B7280",
   },
 });
 

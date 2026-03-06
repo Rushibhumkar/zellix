@@ -7,7 +7,7 @@ import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 
 const RSVPEventsHeading = () => {
   return (
-    <Container style={{ paddingHorizontal: 20 }}>
+    <Container style={{ paddingHorizontal: 12 }}>
       <SlideFadeIn>
         <LinearGradient
           colors={["#2452FAFF", "#6CA8FF"]}

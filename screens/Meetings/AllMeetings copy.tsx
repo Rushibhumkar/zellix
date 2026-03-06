@@ -41,7 +41,6 @@ import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
-import { Feather } from "@expo/vector-icons";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -297,7 +296,7 @@ const AllMeetings = () => {
                   autoFocus={focusSearch}
                 />
 
-                {/* <MeetingListHeading /> */}
+                <MeetingListHeading />
               </>
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
@@ -352,85 +351,100 @@ const MeetingRowItem = ({
   onLongPress,
   selected,
   index,
+  bgColor = "#fff",
 }: any) => {
-  const latestMeeting = item?.meetings?.[item?.meetings?.length - 1];
-
-  const meetingTime = latestMeeting?.scheduleDate || item?.scheduleDate;
-
-  const formattedTime = meetingTime
-    ? moment(meetingTime).format("hh:mm A")
-    : "N/A";
-
-  const formattedDate = meetingTime ? moment(meetingTime).format("DD MMM") : "";
-
-  const status = latestMeeting?.status || "";
-
-  const statusColor =
-    status === "conducted"
-      ? { bg: "#D4F3E3", text: "#0A8F4B" }
-      : { bg: "#DCE8FA", text: "#2D67C6" };
-
+  myConsole("itemmmmm", item);
   return (
     <SlideFadeIn>
       <TouchableOpacity
         style={[
-          styles.cardContainer,
-          selected && { backgroundColor: "rgba(252,244,227,1)" },
+          styles.mainlistcontainer,
+          {
+            // backgroundColor: selected ? "rgba(252, 244, 227, 1)" : "#FCFAFA",
+            marginTop: index === 0 ? 25 : 12,
+            backgroundColor: selected ? "rgba(252, 244, 227, 1)" : bgColor,
+          },
         ]}
-        activeOpacity={0.7}
+        activeOpacity={0.5}
         onPress={onPress}
         onLongPress={onLongPress}
       >
-        {/* 🔹 LEFT TIME SECTION */}
-        <View style={styles.timeContainer}>
-          {/* Serial Number Top Right */}
-          <CustomText style={styles.serialNumber}>{index + 1}</CustomText>
-
-          <CustomText style={styles.timeText}>{formattedTime}</CustomText>
-
-          <CustomText style={styles.dateText}>{formattedDate}</CustomText>
-        </View>
-
-        {/* 🔹 RIGHT CONTENT SECTION */}
-        <View style={styles.contentContainer}>
-          {/* Top Row */}
-          <View style={styles.topRow}>
-            <CustomText style={styles.clientName}>
-              {item?.lead?.clientName || "N/A"}
-            </CustomText>
-
-            <View
-              style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}
-            >
-              <CustomText
-                style={[styles.statusText, { color: statusColor.text }]}
-              >
-                {status === "conducted" ? "Conducted" : "Scheduled"}
-              </CustomText>
-            </View>
-          </View>
-
-          {/* Product */}
-          <CustomText style={styles.productText}>
-            {item?.productPitch || "-"}
+        <View style={{ width: "36%" }}>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+          >
+            {item?.lead?.clientName}
           </CustomText>
-
-          {/* Location + Type */}
-          <View style={styles.bottomRow}>
-            <View style={styles.infoPill}>
-              <Feather name="map-pin" size={12} color="#7A869A" />
-              <CustomText style={styles.pillText}>
-                {item?.clientCity || item?.clientCountry || "-"}
-              </CustomText>
-            </View>
-
-            <View style={styles.infoPill}>
-              <Feather name="video" size={12} color="#7A869A" />
-              <CustomText style={styles.pillText}>
-                {latestMeeting?.isMobile ? "Video Call" : "In-Person"}
-              </CustomText>
-            </View>
-          </View>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "300",
+              fontSize: 14,
+            }}
+          >
+            {item?.productPitch}
+          </CustomText>
+        </View>
+        <View style={{ width: "32%", alignItems: "center" }}>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 14,
+              textTransform: "capitalize",
+            }}
+          >
+            {item?.meetings[item?.meetings?.length - 1]?.status}
+          </CustomText>
+          <CustomText
+            style={{
+              color: color.strokeColor,
+              fontWeight: "300",
+              fontSize: 14,
+            }}
+          >
+            <CustomText style={{ color: color.mainTxtColor }}>
+              {`${item?.createdBy?.name} (${item?.createdBy?.role
+                ?.replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())})`}
+            </CustomText>
+          </CustomText>
+        </View>
+        <View style={{ width: "32%", alignItems: "flex-end" }}>
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontWeight: "600",
+              fontSize: 12,
+            }}
+          >
+            Scheduled
+          </CustomText>
+          {item?.scheduleDate === "Schedule Date" ? (
+            <CustomText
+              style={{
+                color: color.strokeColor,
+                fontWeight: "300",
+                fontSize: 12,
+              }}
+            >
+              Schedule Date
+            </CustomText>
+          ) : (
+            <CustomText
+              style={{
+                color: color.mainTxtColor,
+                fontWeight: "400",
+                fontSize: 12,
+              }}
+            >
+              {moment(item?.scheduleDate).format("DD/MM/YYYY")}
+            </CustomText>
+          )}
         </View>
       </TouchableOpacity>
     </SlideFadeIn>
@@ -456,103 +470,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginHorizontal: 20,
     ...shadowPrimaryColor,
-  },
-
-  cardContainer: {
-    flexDirection: "row",
-    backgroundColor: "#F7F9FC",
-    borderRadius: 18,
-    padding: 10,
-    marginHorizontal: 10,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#E3E8EF",
-    ...shadowPrimaryColor,
-  },
-
-  timeContainer: {
-    width: 80,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-
-  serialNumber: {
-    position: "absolute",
-    top: 0,
-    left: 4,
-    fontSize: 12,
-    fontWeight: "400",
-    color: "#707070",
-  },
-
-  timeText: {
-    fontWeight: "700",
-    color: "#1E293B",
-  },
-
-  dateText: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: "#7A869A",
-    marginTop: 2,
-  },
-
-  contentContainer: {
-    flex: 1,
-    paddingLeft: 10,
-  },
-
-  topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  clientName: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#2D67C6",
-    flex: 1,
-  },
-
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  productText: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: "#475569",
-    marginTop: 6,
-  },
-
-  bottomRow: {
-    flexDirection: "row",
-    marginTop: 10,
-    gap: 8,
-  },
-
-  infoPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EEF2F7",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-
-  pillText: {
-    fontSize: 11,
-    marginLeft: 4,
-    color: "#64748B",
   },
 });
 

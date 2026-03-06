@@ -30,6 +30,7 @@ import { checkPermission } from "../../utils/commonFunctions";
 import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import { Feather } from "@expo/vector-icons";
 
 const RSVPManagerList = () => {
   const navigation = useNavigation();
@@ -160,8 +161,27 @@ const RSVPManagerList = () => {
         title="RSVP Manager"
         isWithAnimation
         showBackIcon={false}
-        showActions={showHeaderActions}
-        onPressSearch={() => setFocusSearch(true)}
+        showActions={true}
+        moduleName="rsvp"
+        // onPressSearch={() => setFocusSearch(true)}
+        buttons={[
+          {
+            title: "Invitations",
+            onPress: () => navigation.navigate(routeRSVP.RSVPInvitationList),
+          },
+          ...(canAddEvent
+            ? [
+                {
+                  // title: "Add Event",
+                  icon: (
+                    <Feather name="plus" color={color.mainTxtColor} size={18} />
+                  ),
+                  onPress: () => navigation.navigate(routeRSVP.AddEvent),
+                  style: { backgroundColor: "#fff" },
+                },
+              ]
+            : []),
+        ]}
       />
 
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
@@ -173,23 +193,23 @@ const RSVPManagerList = () => {
             arrLength={selected?.length}
             title="Event(s)"
             showAddBtn={false}
-            buttons={[
-              {
-                title: "Invitations",
-                onPress: () =>
-                  navigation.navigate(routeRSVP.RSVPInvitationList),
-                style: { backgroundColor: "rgba(255, 255, 255, 0.47)" },
-              },
-              ...(canAddEvent
-                ? [
-                    {
-                      title: "Add Event",
-                      onPress: () => navigation.navigate(routeRSVP.AddEvent),
-                      style: { backgroundColor: "rgba(255, 255, 255, 0.47)" },
-                    },
-                  ]
-                : []),
-            ]}
+            // buttons={[
+            //   {
+            //     title: "Invitations",
+            //     onPress: () =>
+            //       navigation.navigate(routeRSVP.RSVPInvitationList),
+            //     style: { backgroundColor: "rgba(255, 255, 255, 0.47)" },
+            //   },
+            //   ...(canAddEvent
+            //     ? [
+            //         {
+            //           title: "Add Event",
+            //           onPress: () => navigation.navigate(routeRSVP.AddEvent),
+            //           style: { backgroundColor: "rgba(255, 255, 255, 0.47)" },
+            //         },
+            //       ]
+            //     : []),
+            // ]}
             onPressToDelete={
               canDeleteEvent
                 ? toggleModal
@@ -365,7 +385,7 @@ const styles = StyleSheet.create({
     borderColor: color.strokeColor,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal: 20,
+    marginHorizontal: 12,
   },
   title: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
   subTitle: { fontSize: 13, color: color.mainTxtColor },

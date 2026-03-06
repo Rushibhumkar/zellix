@@ -127,28 +127,24 @@ const AdvanceSearch = () => {
   const { navigate } = useNavigation();
   const dispatch = useDispatch();
   const isFocus = useIsFocused();
-  // const {  setAdvanceBooking,  setAdvanceLead, setAdvanceMeeting } = useSelector(selectUser);
   const { user, developer, leadQueryKey, bookingQueryKey, meetingQueryKey } =
     useSelector(selectUser);
-  // useEffect(() => {
-  //     console.log('leadQueryKey', leadQueryKey)
-  //     console.log('bookingQueryKey', bookingQueryKey)
-  //     console.log('meetingQueryKey', meetingQueryKey)
-  // }, [leadQueryKey, meetingQueryKey, bookingQueryKey])
   const developerSort = [...developer]?.sort((a, b) =>
     a?.name === b?.name ? 0 : a?.name < b?.name ? -1 : 1,
   );
   const { params } = useRoute();
-  const sourceTab = params?.sourceTab || "lead";
+  const sourceTab = params?.sourceTab || params?.type || "lead";
 
   const [category, setCategory] = useState<
     "booking" | "meeting" | "lead" | "callingData"
   >(
     sourceTab === "calling_data"
       ? "callingData"
-      : sourceTab === "lead"
-        ? "lead"
-        : "lead",
+      : sourceTab === "meeting"
+        ? "meeting"
+        : sourceTab === "booking"
+          ? "booking"
+          : "lead",
   );
 
   const [isLoading, setIsLoading] = useState(false);
