@@ -462,6 +462,7 @@ export const inMeetingStatus = [
 
 export const inLeadStatus = [
   { _id: "assign", name: "Assigned" },
+  { _id: "re_assigned", name: "Re-assigned" },
   { _id: "followUp_required", name: "Follow Up Required" },
   { _id: "not_able_to_connect", name: "Not Able to Connect" },
   { _id: "not_interested", name: "Not Interested" },

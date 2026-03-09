@@ -33,6 +33,7 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useAppToast } from "../../components/AppToast";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 const RSVPInvitationList = () => {
   const toast = useAppToast();
@@ -58,6 +59,7 @@ const RSVPInvitationList = () => {
   // Refresh
   const [refreshing, setRefreshing] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   // Infinite Query
   const {
@@ -185,6 +187,13 @@ const RSVPInvitationList = () => {
     user?.role,
   );
 
+  useEffect(() => {
+    if (!showSearch) {
+      setSearchValue("");
+      setDebouncedSearch("");
+    }
+  }, [showSearch]);
+
   // myConsole("canDeleteInvitation", canDeleteInvitation);
 
   return (
@@ -194,18 +203,14 @@ const RSVPInvitationList = () => {
         isWithAnimation
         showBackIcon={false}
         showActions={true}
-        // onPressSearch={() => setFocusSearch(true)}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        showSearch={showSearch}
         moduleName="rsvp"
         buttons={[
-          ...(canViewManagerBtn
-            ? [
-                {
-                  title: "Manager",
-                  onPress: () => navigation.navigate(routeRSVP.RSVPManagerList),
-                },
-              ]
-            : []),
-
           ...(canSendInvitation
             ? [
                 {
@@ -213,6 +218,14 @@ const RSVPInvitationList = () => {
                   icon: <Feather name="send" size={16} color={"#fff"} />,
                   onPress: () => navigation.navigate(routeRSVP.SendInvitation),
                   style: { backgroundColor: "#fff3" },
+                },
+              ]
+            : []),
+          ...(canViewManagerBtn
+            ? [
+                {
+                  title: "Manager",
+                  onPress: () => navigation.navigate(routeRSVP.RSVPManagerList),
                 },
               ]
             : []),
@@ -285,16 +298,23 @@ const RSVPInvitationList = () => {
             )}
             ListHeaderComponent={
               <>
-                <SearchBar
-                  value={searchValue}
-                  onChangeText={handleSearchChange}
-                  autoFocus={focusSearch}
-                  onClickCancel={() => {
-                    setSearchValue("");
-                    setDebouncedSearch("");
-                    setFocusSearch(false);
-                  }}
-                />
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  exiting={FadeOutUp.duration(150)}
+                  style={{ display: showSearch ? "flex" : "none" }}
+                >
+                  <SearchBar
+                    value={searchValue}
+                    onChangeText={handleSearchChange}
+                    autoFocus={focusSearch}
+                    onClickCancel={() => {
+                      setSearchValue("");
+                      setDebouncedSearch("");
+                      setFocusSearch(false);
+                      setShowSearch(false);
+                    }}
+                  />
+                </Animated.View>
                 <RSVPListHeading />
               </>
             }

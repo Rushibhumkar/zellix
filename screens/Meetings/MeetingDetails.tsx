@@ -496,8 +496,7 @@ const MeetingDetails = () => {
               <View style={styles.meetingInfoRow}>
                 <CustomText style={styles.meetingLabel}>Created By</CustomText>
                 <CustomText style={styles.meetingValue}>
-                  {detail?.createdBy?.name} (
-                  {userTypes[detail?.createdBy?.role]})
+                  {detail?.createdBy?.name} ({detail?.createdBy?.role})
                 </CustomText>
               </View>
 

@@ -64,7 +64,12 @@ import {
 } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
-import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  Fontisto,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import {
   headerIconWrapperStyle,
   iconWrapperStyle,
@@ -283,28 +288,6 @@ const LeadsDetails = () => {
     await Linking.openURL(`tel:+${detail?.clientMobile}`);
   };
 
-  const handleDeleteLead = async () => {
-    try {
-      setDeleteLoading(true);
-
-      await deleteLead([detail?._id]);
-
-      toast.success("Lead deleted successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLead],
-      });
-
-      navigate(routeLead.allLead);
-    } catch (err: any) {
-      toast.error(
-        err?.message || err?.response?.data?.message || "Failed to delete lead",
-      );
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
   const deleteNotes = async (notesId: any) => {
     try {
       setIsLoadingDelete(notesId);
@@ -455,7 +438,6 @@ const LeadsDetails = () => {
   };
 
   const handleCopy = async (text: any) => {
-    console.log("clieked");
     if (!text) return;
     await Clipboard.setStringAsync(text);
     toast?.success?.("Copied to clipboard");
@@ -470,7 +452,45 @@ const LeadsDetails = () => {
   const totalNotes = detail?.notes?.length || 0;
   const totalStatusChanges = detail?.statusHistory?.length || 0;
 
-  // myConsole("detailll", detail);
+  const filteredLeadStatus =
+    user?.role === roleEnum.agent || user?.role === roleEnum.seo
+      ? inLeadStatus.filter(
+          (s) => s._id !== "assign" && s._id !== "re_assigned",
+        )
+      : inLeadStatus;
+
+  const handleChangeStatusToClaim = async (id: any) => {
+    try {
+      const payload = {
+        status: "claimed",
+      };
+
+      const res = await leadStatusUpdate({
+        id,
+        data: payload,
+      });
+
+      toast.success(res?.data?.message || "Status updated successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLeadDetailById, id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLead],
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const missingCount = [
+    detail?.clientMobile,
+    detail?.whatsapp,
+    detail?.clientEmail,
+  ].filter((v) => !v).length;
+
+  const showClaimBtn = missingCount >= 2;
+
   return (
     <>
       {activeTab === 1 && (
@@ -564,24 +584,6 @@ const LeadsDetails = () => {
                         Reassign Data
                       </CustomText>
                     </TouchableOpacity> */}
-
-                    <TouchableOpacity
-                      style={[styles.actionItem, { borderBottomWidth: 0 }]}
-                      onPress={() => {
-                        setShowActionsMenu(false);
-
-                        popUpConfToast.confirmModal({
-                          message: "Are you sure you want to delete this lead?",
-                          clickOnConfirm: handleDeleteLead,
-                        });
-                      }}
-                    >
-                      <CustomText
-                        style={[styles.actionTextItem, { color: "#FF3B30" }]}
-                      >
-                        Delete Data
-                      </CustomText>
-                    </TouchableOpacity>
                   </View>
                 </TouchableWithoutFeedback>
               </View>
@@ -653,11 +655,9 @@ const LeadsDetails = () => {
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
               </TouchableOpacity>
 
-              <CustomText style={styles.label}>Status</CustomText>
-
               <DropdownRNE
                 placeholder="Select Status"
-                arrOfObj={inLeadStatus}
+                arrOfObj={filteredLeadStatus}
                 keyValueGetOnSelect="_id"
                 keyValueShowInBox="name"
                 initialValue={fields?.status}
@@ -725,7 +725,7 @@ const LeadsDetails = () => {
                     </Text>
                   </View>
 
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, maxWidth: "60%" }}>
                     <Text style={styles.name}>
                       {detail?.clientName || "N/A"}
                     </Text>
@@ -740,89 +740,142 @@ const LeadsDetails = () => {
                       </Text>
                     </View>
                   </View>
+                  <TouchableOpacity
+                    style={{
+                      ...headerIconWrapperStyle,
+                      backgroundColor: `${color.mainTxtColor}10`,
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                    }}
+                    onPress={() => setShowChangeStatusPopup(true)}
+                  >
+                    <MaterialIcons
+                      name="change-circle"
+                      size={24}
+                      color={color.mainTxtColor}
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Action Buttons */}
                 <View style={styles.actionRow}>
-                  <ActionButton
-                    label="Call"
-                    icon="phone-call"
-                    onPress={() => navToCall()}
-                  />
-                  <ActionButton
-                    label="WhatsApp"
-                    icon="message-circle"
-                    onPress={() => Linking.openURL(detail?.whatsapp)}
-                  />
-                  <ActionButton
-                    label="Email"
-                    icon="mail"
-                    onPress={() => openMail(detail?.clientEmail)}
-                  />
-                  <ActionButton
-                    label="SMS"
-                    icon="message-square"
-                    onPress={() =>
-                      Linking.openURL(`sms:${detail?.clientMobile}`)
-                    }
-                  />
+                  {showClaimBtn ? (
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        height: 55,
+                        borderRadius: 16,
+                        backgroundColor: "#F0F4FA",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                      onPress={() => handleChangeStatusToClaim(detail?._id)}
+                    >
+                      <CustomText
+                        style={{ fontWeight: "600", color: "#2E67BE" }}
+                      >
+                        Claim
+                      </CustomText>
+                    </TouchableOpacity>
+                  ) : (
+                    <>
+                      {detail?.clientMobile && (
+                        <ActionButton
+                          label="Call"
+                          icon="phone-call"
+                          onPress={() => navToCall()}
+                        />
+                      )}
+
+                      {detail?.whatsapp && (
+                        <ActionButton
+                          label="WhatsApp"
+                          icon="message-circle"
+                          onPress={() => Linking.openURL(detail?.whatsapp)}
+                        />
+                      )}
+
+                      {detail?.clientEmail && (
+                        <ActionButton
+                          label="Email"
+                          icon="mail"
+                          onPress={() => openMail(detail?.clientEmail)}
+                        />
+                      )}
+
+                      {detail?.clientMobile && (
+                        <ActionButton
+                          label="SMS"
+                          icon="message-square"
+                          onPress={() =>
+                            Linking.openURL(`sms:${detail?.clientMobile}`)
+                          }
+                        />
+                      )}
+                    </>
+                  )}
                 </View>
 
-                <View style={styles.divider} />
+                {detail?.clientMobile && <View style={styles.divider} />}
 
                 {/* Mobile */}
-                <View style={styles.infoRow}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Feather name="phone" size={18} color="#7A869A" />
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.label}>MOBILE</Text>
-                      <Text style={styles.value}>{detail?.clientMobile}</Text>
+                {detail?.clientMobile && (
+                  <View style={styles.infoRow}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Feather name="phone" size={18} color="#7A869A" />
+                      <View style={{ marginLeft: 12 }}>
+                        <Text style={styles.label}>MOBILE</Text>
+                        <Text style={styles.value}>{detail?.clientMobile}</Text>
+                      </View>
                     </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#9b9b9b18",
+                        paddingHorizontal: 6,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                      }}
+                      onPress={() => handleCopy(detail?.clientMobile)}
+                    >
+                      <Feather name="copy" size={16} color={"#9b9b9b"} />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#9b9b9b18",
-                      paddingHorizontal: 6,
-                      paddingVertical: 4,
-                      borderRadius: 6,
-                    }}
-                    onPress={() => handleCopy(detail?.clientMobile)}
-                  >
-                    <Feather name="copy" size={16} color={"#9b9b9b"} />
-                  </TouchableOpacity>
-                </View>
+                )}
 
                 {/* Email */}
-                <View style={styles.infoRow}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Feather name="mail" size={18} color="#7A869A" />
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.label}>EMAIL</Text>
-                      <Text style={styles.value}>{detail?.clientEmail}</Text>
+                {detail?.clientEmail && (
+                  <View style={styles.infoRow}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Feather name="mail" size={18} color="#7A869A" />
+                      <View style={{ marginLeft: 12 }}>
+                        <Text style={styles.label}>EMAIL</Text>
+                        <Text style={styles.value}>{detail?.clientEmail}</Text>
+                      </View>
                     </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#9b9b9b18",
+                        paddingHorizontal: 6,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                      }}
+                      onPress={() => handleCopy(detail?.clientEmail)}
+                    >
+                      <Feather name="copy" size={16} color={"#9b9b9b"} />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#9b9b9b18",
-                      paddingHorizontal: 6,
-                      paddingVertical: 4,
-                      borderRadius: 6,
-                    }}
-                    onPress={() => handleCopy(detail?.clientEmail)}
-                  >
-                    <Feather name="copy" size={16} color={"#9b9b9b"} />
-                  </TouchableOpacity>
-                </View>
+                )}
               </View>
 
               {/* -------------------- CARD 2 -------------------- */}
@@ -948,22 +1001,6 @@ const LeadsDetails = () => {
       )} */}
 
       {activeTab === 2 && (
-        <LeadLogsInfo
-          selectLeadType={selectLeadType}
-          leadId={detail?._id}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      )}
-      {activeTab === 3 && (
-        <MeetingInfo
-          selectLeadType={selectLeadType}
-          leadId={params?.item?._id}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      )}
-      {activeTab === 4 && (
         <Container style={{ flex: 1, position: "relative" }}>
           <Header
             title="Lead Details"
@@ -1016,6 +1053,24 @@ const LeadsDetails = () => {
           </TouchableOpacity>
         </Container>
       )}
+
+      {activeTab === 3 && (
+        <LeadLogsInfo
+          selectLeadType={selectLeadType}
+          leadId={detail?._id}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      )}
+      {activeTab === 4 && (
+        <MeetingInfo
+          selectLeadType={selectLeadType}
+          leadId={params?.item?._id}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      )}
+
       <CustomModal
         visible={FUTModal.visible}
         onClose={FUTModal.closeModal}

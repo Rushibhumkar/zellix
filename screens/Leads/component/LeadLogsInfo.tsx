@@ -19,6 +19,8 @@ import { sizes } from "../../../const";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
 import { shadowPrimaryColor } from "../../../const/globalStyle";
+import { myConsole } from "../../../hooks/useConsole";
+import LoadingCompo from "../../../myComponentsHRM/LoadingCompo/LoadingCompo";
 
 const LeadLogsInfo = ({
   leadId = "",
@@ -29,12 +31,12 @@ const LeadLogsInfo = ({
   const logsInfo = useGetLogsInfoInLeadDetail(leadId);
   const [refreshing, setRefreshing] = useState(false);
 
+  const logsData = logsInfo?.data ?? [];
   const onRefresh = () => {
     setRefreshing(true);
     logsInfo.refetch();
     setRefreshing(false);
   };
-
   return (
     <Container>
       <Header
@@ -47,8 +49,7 @@ const LeadLogsInfo = ({
 
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {logsInfo?.isLoading && <ActivityIndicator />}
-
+      {logsInfo?.isLoading && <LoadingCompo />}
       <ScrollView
         style={styles.container}
         refreshControl={
@@ -56,13 +57,13 @@ const LeadLogsInfo = ({
         }
       >
         <View style={{ paddingBottom: 150 }}>
-          {!logsInfo?.isLoading && logsInfo?.data?.length === 0 && (
+          {!logsInfo?.isLoading && (logsInfo?.data ?? []).length === 0 && (
             <View style={styles.noDataContainer}>
               <NoDataFound width={140} height={140} />
             </View>
           )}
 
-          {logsInfo.data?.map((x, i, arr) => {
+          {logsData.map((x, i, arr) => {
             const date = moment(x?.assignedAt).format("DD MMM YYYY • hh:mm A");
 
             const statusTo = inLeadStatus.find((y) => y._id === x?.to)?.name;
@@ -154,7 +155,6 @@ const styles = StyleSheet.create({
 
   noDataContainer: {
     flex: 1,
-    height: sizes.height / 2,
     justifyContent: "center",
     alignItems: "center",
   },

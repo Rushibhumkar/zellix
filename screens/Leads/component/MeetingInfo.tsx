@@ -20,6 +20,7 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import { sizes } from "../../../const";
 import { color } from "../../../const/color";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
+import { myConsole } from "../../../hooks/useConsole";
 
 const MeetingInfo = ({
   leadId = "",
@@ -27,12 +28,12 @@ const MeetingInfo = ({
   activeTab,
   selectLeadType,
 }: any) => {
-  const logsInfo = useLatestMeetings(leadId);
+  const meetingsInfo = useLatestMeetings(leadId);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = () => {
     setRefreshing(true);
-    logsInfo.refetch();
+    meetingsInfo.refetch();
     setRefreshing(false);
   };
 
@@ -46,7 +47,6 @@ const MeetingInfo = ({
         }
       />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
-      {logsInfo?.isLoading && <ActivityIndicator color={color.mainTxtColor} />}
       <ScrollView
         style={{ padding: 20 }}
         refreshControl={
@@ -59,8 +59,19 @@ const MeetingInfo = ({
             containerStyle={{ marginBottom: 20 }}
           />
 
-          {logsInfo.data && logsInfo.data.length > 0 ? (
-            logsInfo.data.map((x, i, arr) => {
+          {meetingsInfo?.isLoading ? (
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: sizes.height / 2,
+              }}
+            >
+              <ActivityIndicator size="large" color={color.mainTxtColor} />
+            </View>
+          ) : !meetingsInfo?.isLoading &&
+            (meetingsInfo?.data ?? []).length > 0 ? (
+            meetingsInfo.data.map((x, i, arr) => {
               const meeting = x?.latestMeeting || {};
               const date = meeting?.scheduleDate
                 ? moment(meeting.scheduleDate).format("DD/MM/YYYY , hh:mm A")

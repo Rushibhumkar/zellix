@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from "react-native";
 import { color } from "../const/color";
 import CustomText from "../myComponents/CustomText/CustomText";
@@ -61,6 +62,7 @@ interface HeaderProps {
   rightSide?: React.ReactNode;
   showNotiIcon?: boolean;
   onSelectLeadType: () => void;
+  showSearch?: boolean;
   buttons?: {
     title?: string;
     onPress: () => void;
@@ -85,6 +87,7 @@ const Header: React.FC<HeaderProps> = ({
   showNotiIcon,
   onSelectLeadType,
   buttons,
+  showSearch,
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
@@ -122,6 +125,7 @@ const Header: React.FC<HeaderProps> = ({
     moduleName === "meeting" ||
     moduleName === "rsvp" ||
     moduleName === "booking";
+
   return (
     <View style={{ backgroundColor: "#2452FA" }}>
       {/* ✅ Gradient fully covers StatusBar area */}
@@ -222,9 +226,16 @@ const Header: React.FC<HeaderProps> = ({
                       //   isWithAnimation ? ZoomOut.duration(200) : undefined
                       // }
                       onPress={onPressSearch}
-                      style={styles.iconBtn}
+                      style={[
+                        styles.iconBtn,
+                        showSearch && { backgroundColor: "#fff" },
+                      ]}
                     >
-                      <Feather name="search" size={20} color="#fff" />
+                      <Feather
+                        name="search"
+                        size={20}
+                        color={showSearch ? color.mainTxtColor : "#fff"}
+                      />
                     </AnimatedPressable>
                   )}
 
@@ -295,7 +306,6 @@ const Header: React.FC<HeaderProps> = ({
                       style={{
                         flexDirection: "row",
                         gap: 10,
-                        paddingTop: 4,
                         // marginBottom: -6,
                       }}
                       entering={
@@ -314,7 +324,7 @@ const Header: React.FC<HeaderProps> = ({
                             {
                               backgroundColor: "#ffffff3d",
                               paddingHorizontal: 12,
-                              paddingVertical: 8,
+                              paddingVertical: 12,
                               borderRadius: 10,
                               flexDirection: "row",
                               alignItems: "center",

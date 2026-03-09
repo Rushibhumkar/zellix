@@ -31,6 +31,7 @@ import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather } from "@expo/vector-icons";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 const RSVPManagerList = () => {
   const navigation = useNavigation();
@@ -43,6 +44,7 @@ const RSVPManagerList = () => {
 
   const [searchValue, setSearchValue] = useState("");
   const [focusSearch, setFocusSearch] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [showHeaderActions, setShowHeaderActions] = useState(false);
   const flatListRef = React.useRef<FlatList>(null);
   const [snackBar, setSnackBar] = useState({
@@ -155,6 +157,13 @@ const RSVPManagerList = () => {
     }
   };
 
+  useEffect(() => {
+    if (!showSearch) {
+      setSearchValue("");
+      setDebouncedSearch("");
+    }
+  }, [showSearch]);
+
   return (
     <Container>
       <Header
@@ -163,7 +172,12 @@ const RSVPManagerList = () => {
         showBackIcon={false}
         showActions={true}
         moduleName="rsvp"
-        // onPressSearch={() => setFocusSearch(true)}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        showSearch={showSearch}
         buttons={[
           {
             title: "Invitations",
@@ -249,16 +263,23 @@ const RSVPManagerList = () => {
             )}
             ListHeaderComponent={
               <>
-                <SearchBar
-                  value={searchValue}
-                  onChangeText={handleSearchChange}
-                  autoFocus={focusSearch}
-                  onClickCancel={() => {
-                    setSearchValue("");
-                    setDebouncedSearch("");
-                    setFocusSearch(false);
-                  }}
-                />
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  exiting={FadeOutUp.duration(150)}
+                  style={{ display: showSearch ? "flex" : "none" }}
+                >
+                  <SearchBar
+                    value={searchValue}
+                    onChangeText={handleSearchChange}
+                    autoFocus={focusSearch}
+                    onClickCancel={() => {
+                      setSearchValue("");
+                      setDebouncedSearch("");
+                      setFocusSearch(false);
+                      setShowSearch(false);
+                    }}
+                  />
+                </Animated.View>
                 <RSVPEventsHeading />
               </>
             }

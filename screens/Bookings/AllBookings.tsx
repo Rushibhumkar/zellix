@@ -47,6 +47,7 @@ import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 let bookingStatus = [
   { value: "", label: "All" },
@@ -70,6 +71,7 @@ const AllBookings = () => {
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [snackBar, setSnackBar] = useState({
     visible: false,
     text: "",
@@ -221,9 +223,17 @@ const AllBookings = () => {
     user?.role,
   );
 
+  useEffect(() => {
+    if (!showSearch) {
+      setSearchValue("");
+      setDebouncedSearch("");
+    }
+  }, [showSearch]);
+
   // myConsole("canAddBookinggg", canAddBooking);
   // myConsole("permissionnnn", permission);
   // myConsole("bookingDataaaa", bookingData[0]);
+
   return (
     <View style={{ flex: 1 }}>
       <Header
@@ -234,10 +244,10 @@ const AllBookings = () => {
         moduleName="booking"
         onPressSearch={() => {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-          setTimeout(() => {
-            setFocusSearch((prev) => !prev); // toggles every time
-          }, 100);
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
         }}
+        showSearch={showSearch}
         onPressToFilter={() => navigate("AdvanceSearch", { type: "booking" })}
         onCloseSearch={
           bookingQueryKey !== null
@@ -330,15 +340,23 @@ const AllBookings = () => {
           contentContainerStyle={{ paddingBottom: 100 }}
           ListHeaderComponent={
             <>
-              <SearchBar
-                value={searchValue}
-                onClickCancel={() => {
-                  (handleSearchChange(""), setFocusSearch(false));
-                }}
-                onChangeText={(v) => handleSearchChange(v)}
-                isWithAnimation
-                autoFocus={focusSearch}
-              />
+              <Animated.View
+                entering={FadeInDown.duration(180)}
+                exiting={FadeOutUp.duration(150)}
+                style={{ display: showSearch ? "flex" : "none" }}
+              >
+                <SearchBar
+                  value={searchValue}
+                  onClickCancel={() => {
+                    handleSearchChange("");
+                    setFocusSearch(false);
+                    setShowSearch(false);
+                  }}
+                  onChangeText={(v) => handleSearchChange(v)}
+                  isWithAnimation
+                  autoFocus={focusSearch}
+                />
+              </Animated.View>
               {/* <BookingListHeading /> */}
             </>
           }

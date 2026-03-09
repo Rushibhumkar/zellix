@@ -20,7 +20,7 @@ import {
 } from "../../redux/userSlice";
 import Container from "../../myComponents/Container/Container";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
-import { deleteLead } from "../../services/rootApi/leadApi";
+import { deleteLead, leadStatusUpdate } from "../../services/rootApi/leadApi";
 import * as reduxAction from "../../redux/action";
 import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
@@ -54,6 +54,8 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather, FontAwesome } from "@expo/vector-icons";
+import { useAppToast } from "../../components/AppToast";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -64,6 +66,9 @@ let bgByStatus = {
 
 const AllLeads = () => {
   const queryClient = useQueryClient();
+  const toast = useAppToast();
+  const [showSearch, setShowSearch] = useState(false);
+  const [statusChangeLoad, setStatusChangeLoad] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   // let lead = []
   // let loading = false;
@@ -260,10 +265,51 @@ const AllLeads = () => {
   // const isAgent = true;
   const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
 
+  const isSubSupSrMng =
+    user?.role === roleEnum?.sub_admin ||
+    user?.role === roleEnum?.sup_admin ||
+    user?.role === roleEnum?.sr_manager;
+
   const handleTab = (tab: any) => {
     setSelectLeadType(tab);
   };
 
+  const handleChangeStatusSubmit = async (id: any) => {
+    try {
+      setStatusChangeLoad(true);
+
+      const payload = {
+        status: "claimed",
+      };
+
+      const res = await leadStatusUpdate({
+        id,
+        data: payload,
+      });
+
+      toast.success(res?.data?.message || "Status updated successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLeadDetailById, id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeyCRM.getLead],
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update status");
+    } finally {
+      setStatusChangeLoad(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!showSearch) {
+      setSearchValue("");
+      setDebouncedSearch("");
+    }
+  }, [showSearch]);
+
+  // myConsole("leadDataaaa", leadData);
   return (
     <>
       <Header
@@ -280,12 +326,12 @@ const AllLeads = () => {
         showBackIcon={false}
         showActions={true}
         moduleName={"lead"}
+        showSearch={showSearch}
         // showActions={showHeaderActions}
         onPressSearch={() => {
-          // flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-          setTimeout(() => {
-            setFocusSearch((prev) => !prev); // toggles every time
-          }, 100);
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
         }}
         onCloseSearch={
           leadQueryKey !== null ? () => dispatch(setLeadQueryKey(null)) : false
@@ -363,9 +409,7 @@ const AllLeads = () => {
                     : handleSelect(item?._id)
                 }
                 onLongPress={
-                  user?.role === roleEnum.agent
-                    ? undefined
-                    : () => handleSelect(item?._id)
+                  isSubSupSrMng ? () => handleSelect(item?._id) : undefined
                 }
                 onCallPress={() => handleCallPress(item?.clientMobile)}
                 onWhatsappIconPress={() => {
@@ -373,6 +417,8 @@ const AllLeads = () => {
                   Linking.openURL(item?.whatsapp);
                 }}
                 onEmailPress={() => onEmailPress(item?.clientEmail)}
+                handleChangeStatus={handleChangeStatusSubmit}
+                statusChangeLoad={statusChangeLoad}
               />
             )}
             keyExtractor={(item) => item?._id}
@@ -382,16 +428,24 @@ const AllLeads = () => {
             }}
             ListHeaderComponent={
               <View>
-                <SearchBar
-                  onChangeText={(v) => handleSearchChange(v)}
-                  value={searchValue}
-                  onClickCancel={() => {
-                    (handleSearchChange(""), setFocusSearch(false));
-                  }}
-                  autoFocus={focusSearch}
-                  isWithAnimation
-                  moduleName={"lead"}
-                />
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  exiting={FadeOutUp.duration(150)}
+                  style={{ display: showSearch ? "flex" : "none" }}
+                >
+                  <SearchBar
+                    onChangeText={(v) => handleSearchChange(v)}
+                    value={searchValue}
+                    onClickCancel={() => {
+                      handleSearchChange("");
+                      setShowSearch(false);
+                      setFocusSearch(false);
+                    }}
+                    autoFocus={focusSearch}
+                    isWithAnimation
+                    moduleName={"lead"}
+                  />
+                </Animated.View>
 
                 <View style={styles.container}>
                   <TouchableOpacity
@@ -524,8 +578,17 @@ const LeadRowItem = React.memo(
     onEmailPress,
     isAgent,
     user,
+    handleChangeStatus,
+    statusChangeLoad,
   }: any) => {
     const statusKey = item?.status ?? "";
+    const missingCount = [
+      item?.clientMobile,
+      item?.whatsapp,
+      item?.clientEmail,
+    ].filter((v) => !v).length;
+
+    const showClaimBtn = missingCount >= 2;
     return (
       <SlideFadeIn>
         <TouchableOpacity
@@ -545,7 +608,7 @@ const LeadRowItem = React.memo(
           onLongPress={onLongPress}
         >
           <View style={{ flexDirection: "row" }}>
-            <View style={{ width: isAgent ? "10%" : "6%", paddingEnd: 2 }}>
+            <View style={{ width: "6%", paddingEnd: 2 }}>
               {index === "S.No" ? (
                 <CustomText
                   style={{
@@ -571,9 +634,9 @@ const LeadRowItem = React.memo(
             </View>
             <View
               style={{
-                width: isAgent ? "34%" : "32%",
+                width: isAgent ? "34%" : "30%",
                 paddingEnd: 2,
-                marginRight: isAgent ? 8 : 2,
+                marginRight: isAgent ? 6 : 2,
               }}
             >
               <CustomText
@@ -617,7 +680,7 @@ const LeadRowItem = React.memo(
 
             <View
               style={{
-                width: isAgent ? "34%" : "30%",
+                width: isAgent ? "32%" : "30%",
                 // alignItems: "center",
               }}
             >
@@ -650,32 +713,58 @@ const LeadRowItem = React.memo(
                 {getTimeAgo(item?.assignedAt)}
               </CustomText>
             </View>
-            {item?.clientMobile && (
-              <View
+
+            {showClaimBtn ? (
+              <TouchableOpacity
                 style={{
-                  flex: 1,
-                  flexDirection: "row",
+                  borderRadius: 12,
+                  backgroundColor: color.mainTxtColor,
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  maxHeight: 26,
+                  justifyContent: "center",
                   alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: 4,
-                  paddingRight: 6,
                 }}
+                onPress={() => handleChangeStatus(item?._id)}
               >
-                <TouchableOpacity onPress={onCallPress} style={styles.iconBtn}>
-                  <Feather name="phone-call" size={17} color="#4985F2" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={onWhatsappIconPress}
-                  style={[styles.iconBtn, { backgroundColor: "#49f26529" }]}
-                >
-                  <FontAwesome name="whatsapp" size={18} color="#49f265" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={onEmailPress}
-                  style={[styles.iconBtn, { backgroundColor: "#ff6b6b14" }]}
-                >
-                  <Feather name="mail" size={17} color="#FF6B6B" />
-                </TouchableOpacity>
+                {statusChangeLoad ? (
+                  <ActivityIndicator size="small" color="#4985F2" />
+                ) : (
+                  <CustomText style={{ fontSize: 12, color: "#fff" }}>
+                    Claimed
+                  </CustomText>
+                )}
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={{ gap: 4, flexDirection: "row", alignItems: "center" }}
+              >
+                {item?.clientMobile && (
+                  <TouchableOpacity
+                    onPress={onCallPress}
+                    style={styles.iconBtn}
+                  >
+                    <Feather name="phone-call" size={17} color="#4985F2" />
+                  </TouchableOpacity>
+                )}
+
+                {item?.whatsapp && (
+                  <TouchableOpacity
+                    onPress={onWhatsappIconPress}
+                    style={[styles.iconBtn, { backgroundColor: "#49f26529" }]}
+                  >
+                    <FontAwesome name="whatsapp" size={18} color="#49f265" />
+                  </TouchableOpacity>
+                )}
+
+                {!isAgent && item?.clientEmail && (
+                  <TouchableOpacity
+                    onPress={onEmailPress}
+                    style={[styles.iconBtn, { backgroundColor: "#ff6b6b14" }]}
+                  >
+                    <Feather name="mail" size={17} color="#FF6B6B" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>
@@ -718,7 +807,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3E6EC6",
     borderRadius: 16,
     padding: 6,
-    marginHorizontal: 20,
+    marginHorizontal: 12,
     marginTop: 10,
   },
 

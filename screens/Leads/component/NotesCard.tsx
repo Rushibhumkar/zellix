@@ -1,13 +1,7 @@
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
-import EditIcon from "../../../assets/svgHRM/EditIcon";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/userSlice";
 import { roleEnum } from "../../../utils/data";
@@ -18,6 +12,8 @@ import {
   iconWrapperStyle,
   shadowPrimaryColor,
 } from "../../../const/globalStyle";
+import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
+import { sizes } from "../../../const";
 
 interface TNotesCard {
   noteArr: any;
@@ -39,60 +35,66 @@ const NotesCard = ({
 
   return (
     <View style={{ marginBottom: 20 }}>
-      {noteArr?.map((item: any, i: number) => {
-        return (
-          <View key={i} style={styles.card}>
-            {/* Top Row */}
-            <View style={styles.topRow}>
-              <View style={styles.leftSection}>
-                {/* Avatar */}
-                <View style={styles.avatar}>
-                  <CustomText style={styles.avatarText}>
-                    {getInitials(item?.createdByName || "")}
-                  </CustomText>
-                </View>
-
-                {/* Name + Note */}
-                <View style={{ flex: 1, paddingHorizontal: 8 }}>
-                  {(isSubSup || item?.createdBy === user?._id) && (
-                    <CustomText style={styles.nameText}>
-                      {item?.createdByName || "N/A"}
+      {(noteArr ?? []).length === 0 ? (
+        <View style={styles.noDataContainer}>
+          <NoDataFound width={140} height={140} />
+        </View>
+      ) : (
+        noteArr.map((item: any, i: number) => {
+          return (
+            <View key={i} style={styles.card}>
+              {/* Top Row */}
+              <View style={styles.topRow}>
+                <View style={styles.leftSection}>
+                  {/* Avatar */}
+                  <View style={styles.avatar}>
+                    <CustomText style={styles.avatarText}>
+                      {getInitials(item?.createdByName || "")}
                     </CustomText>
-                  )}
+                  </View>
 
-                  <CustomText style={styles.noteText}>
-                    {item?.note || "N/A"}
-                  </CustomText>
+                  {/* Name + Note */}
+                  <View style={{ flex: 1, paddingHorizontal: 8 }}>
+                    {(isSubSup || item?.createdBy === user?._id) && (
+                      <CustomText style={styles.nameText}>
+                        {item?.createdByName || "N/A"}
+                      </CustomText>
+                    )}
+
+                    <CustomText style={styles.noteText}>
+                      {item?.note || "N/A"}
+                    </CustomText>
+                  </View>
                 </View>
+
+                {/* Date */}
+                <CustomText style={styles.dateText}>
+                  {item?.createdAt
+                    ? moment(item?.createdAt).format("MMM DD, YYYY")
+                    : "N/A"}
+                </CustomText>
               </View>
 
-              {/* Date */}
-              <CustomText style={styles.dateText}>
-                {item?.createdAt
-                  ? moment(item?.createdAt).format("MMM DD, YYYY")
-                  : "N/A"}
-              </CustomText>
+              {(isSubSup || item?.createdBy === user?._id) && (
+                <TouchableOpacity
+                  style={{
+                    alignSelf: "flex-end",
+                    ...iconWrapperStyle,
+                  }}
+                  onPress={() =>
+                    onEdit({
+                      note: item?.note || "",
+                      id: item?._id || "",
+                    })
+                  }
+                >
+                  <Feather name="edit-2" size={18} color={color.mainTxtColor} />
+                </TouchableOpacity>
+              )}
             </View>
-
-            {(isSubSup || item?.createdBy === user?._id) && (
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  ...iconWrapperStyle,
-                }}
-                onPress={() =>
-                  onEdit({
-                    note: item?.note || "",
-                    id: item?._id || "",
-                  })
-                }
-              >
-                <Feather name="edit-2" size={18} color={color.mainTxtColor} />
-              </TouchableOpacity>
-            )}
-          </View>
-        );
-      })}
+          );
+        })
+      )}
     </View>
   );
 };
@@ -106,6 +108,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     ...shadowPrimaryColor,
+  },
+
+  noDataContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: sizes.height / 2,
   },
 
   topRow: {

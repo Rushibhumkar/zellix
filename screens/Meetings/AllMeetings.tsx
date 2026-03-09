@@ -3,6 +3,7 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -42,6 +43,7 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather } from "@expo/vector-icons";
+import { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -68,6 +70,7 @@ const AllMeetings = () => {
     text: "",
     error: false,
   });
+  const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
@@ -214,11 +217,11 @@ const AllMeetings = () => {
         showActions={true}
         moduleName={"meeting"}
         onPressSearch={() => {
-          // flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-          setTimeout(() => {
-            setFocusSearch((prev) => !prev); // toggles every time
-          }, 100);
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
         }}
+        showSearch={showSearch}
         onPressFilter={() => navigate("AdvanceSearch", { type: "meeting" })}
         onPressAdd={() => navigate("AddMeeting")}
         onCloseSearch={
@@ -284,18 +287,24 @@ const AllMeetings = () => {
             }}
             ListHeaderComponent={
               <>
-                <SearchBar
-                  onClickCancel={() => {
-                    // setSearchValue('')
-                    // setFilteredMeeting([...copyMeeting])
-                    handleSearchChange("");
-                    setFocusSearch(false);
-                  }}
-                  value={searchValue}
-                  isWithAnimation
-                  onChangeText={(v) => handleSearchChange(v)}
-                  autoFocus={focusSearch}
-                />
+                {showSearch && (
+                  <Animated.View
+                    entering={FadeInDown.duration(180)}
+                    exiting={FadeOutUp.duration(150)}
+                  >
+                    <SearchBar
+                      onClickCancel={() => {
+                        handleSearchChange("");
+                        setFocusSearch(false);
+                        setShowSearch(false);
+                      }}
+                      value={searchValue}
+                      isWithAnimation
+                      onChangeText={(v) => handleSearchChange(v)}
+                      autoFocus={focusSearch}
+                    />
+                  </Animated.View>
+                )}
 
                 {/* <MeetingListHeading /> */}
               </>
