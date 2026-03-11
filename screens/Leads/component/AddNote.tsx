@@ -17,6 +17,7 @@ import { addLeadNote } from "../../../services/rootApi/leadApi";
 import { color } from "../../../const/color";
 import { axiosInstance } from "../../../services/authApi/axiosInstance";
 import { myConsole } from "../../../hooks/useConsole";
+import { useAppToast } from "../../../components/AppToast";
 
 // /notes/:leadId/:notesId //update notes
 // /notes/:leadId/:notesId  //delete notes
@@ -30,31 +31,52 @@ interface TAddNote {
 }
 
 const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
+  const toast = useAppToast();
   const formik = useFormik({
-    initialValues: { note: remark || "" },
+    initialValues: { note: "" },
     onSubmit: async (v) => {
+      const loader = toast.loading(
+        notesId ? "Updating note..." : "Adding note...",
+      );
+
       try {
-        if (!notesId) {
-          await addLeadNote({
+        let res;
+
+        if (notesId) {
+          res = await axiosInstance.put(`api/lead/notes/${leadID}/${notesId}`, {
+            note: v.note,
+          });
+
+          myConsole("update_note_response", res);
+          modal.closeModal();
+        } else {
+          res = await addLeadNote({
             id: leadID,
             note: v.note,
           });
-        } else {
-          await axiosInstance.put(`api/notes/${leadID}/${notesId}`, {
-            note: v.note,
-          });
+
+          myConsole("add_note_response", res);
         }
+
+        loader.success(
+          notesId ? "Note updated successfully" : "Note added successfully",
+        );
+
         refetch();
         formik.resetForm();
         modal.closeModal();
-      } catch (err) {}
+      } catch (err) {
+        myConsole("note_error", err);
+
+        loader.error(
+          err?.response?.data?.message || err?.message || "Failed to save note",
+        );
+      }
     },
   });
 
   useEffect(() => {
-    if (remark) {
-      formik.setFieldValue("note", remark);
-    }
+    formik.setFieldValue("note", remark || "");
   }, [remark]);
 
   const inputRef = useRef<any>(null);
@@ -99,12 +121,12 @@ const AddNote = ({ modal, refetch, leadID, notesId, remark }: TAddNote) => {
           gradientContStyle={{ paddingVertical: 8 }}
         />
         <CustomBtn
-          title="Add Note"
+          title={notesId ? "Update Note" : "Add Note"}
           onPress={formik.handleSubmit}
           isLoading={formik.isSubmitting}
           containerStyle={{ width: 150, padding: 0 }}
           textStyle={{ fontSize: 15, padding: 5 }}
-          disabled={!leadID && !formik.values.note}
+          disabled={!formik.values.note?.trim()}
           gradientContStyle={{ paddingVertical: 8 }}
         />
       </View>

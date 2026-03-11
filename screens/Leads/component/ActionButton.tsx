@@ -5,7 +5,25 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 const ActionButton = ({ label, icon, onPress }: any) => (
   <TouchableOpacity style={styles.actionBox} onPress={onPress}>
     <View style={styles.actionIcon}>
-      <Feather name={icon} size={20} color="#2E67BE" />
+      {/* <View
+      style={[
+        styles.actionIcon,
+        {
+          backgroundColor:
+            label === "Call"
+              ? "#2e68be"
+              : label === "WhatsApp"
+                ? "#25D366"
+                : label === "Email"
+                  ? "#4985F2"
+                  : label === "SMS"
+                    ? "#AD46FF"
+                    : "#F0F4FA",
+        },
+      ]}
+    > */}
+      {/* <Feather name={icon} size={20} color={"#fff"} /> */}
+      <Feather name={icon} size={20} color={"#2E67BE"} />
     </View>
     <CustomText style={styles.actionText}>{label}</CustomText>
   </TouchableOpacity>

@@ -1,4 +1,8 @@
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import {
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -79,6 +83,8 @@ const AllLeads = () => {
   const [copyLead, setCopyLead] = useState([]);
 
   const navigation = useNavigation();
+  const route = useRoute();
+  const params = route?.params;
 
   const isFocused = useIsFocused();
 
@@ -118,7 +124,6 @@ const AllLeads = () => {
     type: leadQueryKey?.type ?? selectLeadType,
     ...leadQueryKey,
   });
-
   const handleSelect = (id) => {
     let temp = [...selected];
     let index = temp.indexOf(id);
@@ -309,7 +314,12 @@ const AllLeads = () => {
     }
   }, [showSearch]);
 
-  // myConsole("leadDataaaa", leadData);
+  useEffect(() => {
+    if (route?.params?.tabType) {
+      setSelectLeadType(route.params.tabType);
+    }
+  }, [route?.params?.tabType]);
+
   return (
     <>
       <Header
@@ -714,16 +724,23 @@ const LeadRowItem = React.memo(
               </CustomText>
             </View>
 
-            {showClaimBtn ? (
+            {statusKey === "assign" || statusKey === "re_assigned" ? (
               <TouchableOpacity
                 style={{
-                  borderRadius: 12,
+                  borderRadius: 8,
                   backgroundColor: color.mainTxtColor,
-                  paddingHorizontal: 12,
-                  paddingVertical: 4,
-                  maxHeight: 26,
+                  // backgroundColor: "red",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  maxHeight: 32,
                   justifyContent: "center",
                   alignItems: "center",
+                  marginTop: 2,
+                  borderWidth: 0.9,
+                  borderColor: color.borderColor,
+                  position: "absolute",
+                  right: 12,
+                  ...shadowPrimaryColor,
                 }}
                 onPress={() => handleChangeStatus(item?._id)}
               >
@@ -731,13 +748,20 @@ const LeadRowItem = React.memo(
                   <ActivityIndicator size="small" color="#4985F2" />
                 ) : (
                   <CustomText style={{ fontSize: 12, color: "#fff" }}>
-                    Claimed
+                    Claim
                   </CustomText>
                 )}
               </TouchableOpacity>
             ) : (
               <View
-                style={{ gap: 4, flexDirection: "row", alignItems: "center" }}
+                style={{
+                  gap: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  flex: 1,
+                  justifyContent: "flex-end",
+                  marginRight: 8,
+                }}
               >
                 {item?.clientMobile && (
                   <TouchableOpacity

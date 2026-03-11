@@ -161,7 +161,6 @@ const LeadsDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [fields, setFields] = useState({});
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -179,7 +178,7 @@ const LeadsDetails = () => {
     user?.role === "sub_admin" ||
     detail?.assign?._id === user?._id;
 
-  const [noteUpdate, setNoteUpdate] = useState();
+  const [noteUpdate, setNoteUpdate] = useState<any>(null);
 
   const [tdForFUT, setTdForFUT] = useState({
     date: new Date(),
@@ -291,10 +290,16 @@ const LeadsDetails = () => {
   const deleteNotes = async (notesId: any) => {
     try {
       setIsLoadingDelete(notesId);
-      await axiosInstance.delete(`api/notes/${detail?._id}/${notesId}`);
+
+      const res = await axiosInstance.delete(
+        `api/notes/${detail?._id}/${notesId}`,
+      );
+
+      toast.success(res?.data?.message || "Note deleted successfully");
+
       refetchLeadDetail();
-    } catch {
-      setIsLoadingDelete("");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete note");
     } finally {
       setIsLoadingDelete("");
     }
@@ -482,14 +487,6 @@ const LeadsDetails = () => {
       toast.error(err?.response?.data?.message || "Failed to update status");
     }
   };
-
-  const missingCount = [
-    detail?.clientMobile,
-    detail?.whatsapp,
-    detail?.clientEmail,
-  ].filter((v) => !v).length;
-
-  const showClaimBtn = missingCount >= 2;
 
   return (
     <>
@@ -725,7 +722,7 @@ const LeadsDetails = () => {
                     </Text>
                   </View>
 
-                  <View style={{ flex: 1, maxWidth: "60%" }}>
+                  <View style={{ flex: 1, maxWidth: "70%" }}>
                     <Text style={styles.name}>
                       {detail?.clientName || "N/A"}
                     </Text>
@@ -734,13 +731,21 @@ const LeadsDetails = () => {
                       {leadTypeObj[detail?.type]} • {detail?.source}
                     </Text>
 
-                    <View style={styles.statusBadge}>
-                      <Text style={styles.statusText}>
+                    <TouchableOpacity
+                      style={styles.statusBadge}
+                      onPress={() => setShowChangeStatusPopup(true)}
+                    >
+                      <Text style={styles.statusText} numberOfLines={1}>
                         {statusObj[detail?.status]}
                       </Text>
-                    </View>
+                      <MaterialIcons
+                        name="change-circle"
+                        size={20}
+                        color={color.mainTxtColor}
+                      />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={{
                       ...headerIconWrapperStyle,
                       backgroundColor: `${color.mainTxtColor}10`,
@@ -755,65 +760,43 @@ const LeadsDetails = () => {
                       size={24}
                       color={color.mainTxtColor}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
 
                 {/* Action Buttons */}
                 <View style={styles.actionRow}>
-                  {showClaimBtn ? (
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        height: 55,
-                        borderRadius: 16,
-                        backgroundColor: "#F0F4FA",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      onPress={() => handleChangeStatusToClaim(detail?._id)}
-                    >
-                      <CustomText
-                        style={{ fontWeight: "600", color: "#2E67BE" }}
-                      >
-                        Claim
-                      </CustomText>
-                    </TouchableOpacity>
-                  ) : (
-                    <>
-                      {detail?.clientMobile && (
-                        <ActionButton
-                          label="Call"
-                          icon="phone-call"
-                          onPress={() => navToCall()}
-                        />
-                      )}
+                  {detail?.clientMobile && (
+                    <ActionButton
+                      label="Call"
+                      icon="phone-call"
+                      onPress={() => navToCall()}
+                    />
+                  )}
 
-                      {detail?.whatsapp && (
-                        <ActionButton
-                          label="WhatsApp"
-                          icon="message-circle"
-                          onPress={() => Linking.openURL(detail?.whatsapp)}
-                        />
-                      )}
+                  {detail?.whatsapp && (
+                    <ActionButton
+                      label="WhatsApp"
+                      icon="message-circle"
+                      onPress={() => Linking.openURL(detail?.whatsapp)}
+                    />
+                  )}
 
-                      {detail?.clientEmail && (
-                        <ActionButton
-                          label="Email"
-                          icon="mail"
-                          onPress={() => openMail(detail?.clientEmail)}
-                        />
-                      )}
+                  {detail?.clientEmail && (
+                    <ActionButton
+                      label="Email"
+                      icon="mail"
+                      onPress={() => openMail(detail?.clientEmail)}
+                    />
+                  )}
 
-                      {detail?.clientMobile && (
-                        <ActionButton
-                          label="SMS"
-                          icon="message-square"
-                          onPress={() =>
-                            Linking.openURL(`sms:${detail?.clientMobile}`)
-                          }
-                        />
-                      )}
-                    </>
+                  {detail?.clientMobile && (
+                    <ActionButton
+                      label="SMS"
+                      icon="message-square"
+                      onPress={() =>
+                        Linking.openURL(`sms:${detail?.clientMobile}`)
+                      }
+                    />
                   )}
                 </View>
 
@@ -916,12 +899,24 @@ const LeadsDetails = () => {
                     extractStringObj(detail?.additionalQuestions),
                   ).map(([key, value], index) => {
                     return (
-                      <AssignmentRow
-                        key={index}
-                        label={key}
-                        value={value || "N/A"}
-                        icon={null}
-                      />
+                      <View key={index} style={styles.qaContainer}>
+                        <View style={styles.qRow}>
+                          <Text style={styles.qLabel}>Q.</Text>
+                          <Text style={styles.qText}>{key}</Text>
+                        </View>
+
+                        <View style={styles.aRow}>
+                          <Text style={styles.aLabel}>A.</Text>
+                          <Text style={styles.aText}>
+                            {value
+                              ? value
+                                  .replace(/_/g, " ")
+                                  .replace(/\s+/g, " ")
+                                  .trim()
+                              : "N/A"}
+                          </Text>
+                        </View>
+                      </View>
                     );
                   })}
                 </View>
@@ -1033,7 +1028,7 @@ const LeadsDetails = () => {
           </ScrollView>
           <TouchableOpacity
             onPress={() => {
-              setNoteUpdate({});
+              setNoteUpdate(null);
               modalNote.openModal();
             }}
             style={{
@@ -1138,7 +1133,7 @@ const LeadsDetails = () => {
           modal={modalNote}
           leadID={detail?._id}
           refetch={refetchLeadDetail}
-          notesId={noteUpdate?.id}
+          notesId={noteUpdate?.notesId}
           remark={noteUpdate?.note}
         />
       )}
@@ -1239,19 +1234,27 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 12,
     marginTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: color.mainTxtColor,
+    marginRight: 8,
   },
 
   statusText: {
     color: "#2E67BE",
-    fontSize: 12,
+    fontWeight: "600",
+    fontSize: 13,
   },
 
   actionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 16,
+    marginBottom: 12,
+    marginTop: 6,
   },
 
   actionBox: {
@@ -1358,5 +1361,42 @@ const styles = StyleSheet.create({
   actionTextItem: {
     fontSize: 15,
     color: color.mainTxtColor,
+  },
+  qaContainer: {
+    marginBottom: 16,
+  },
+
+  qRow: {
+    flexDirection: "row",
+    marginBottom: 4,
+  },
+
+  qLabel: {
+    fontWeight: "700",
+    color: "#2E67BE",
+    marginRight: 6,
+  },
+
+  qText: {
+    flex: 1,
+    fontSize: 15,
+    color: "#2F3A4A",
+    fontWeight: "600",
+  },
+
+  aRow: {
+    flexDirection: "row",
+  },
+
+  aLabel: {
+    fontWeight: "700",
+    color: "#16A34A",
+    marginRight: 6,
+  },
+
+  aText: {
+    flex: 1,
+    fontSize: 15,
+    color: "#4B5563",
   },
 });

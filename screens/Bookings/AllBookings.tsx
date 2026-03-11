@@ -248,7 +248,7 @@ const AllBookings = () => {
           setFocusSearch(true);
         }}
         showSearch={showSearch}
-        onPressToFilter={() => navigate("AdvanceSearch", { type: "booking" })}
+        onPressFilter={() => navigate("AdvanceSearch", { type: "booking" })}
         onCloseSearch={
           bookingQueryKey !== null
             ? () => dispatch(setBookingQueryKey(null))

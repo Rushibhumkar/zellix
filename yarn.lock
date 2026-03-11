@@ -1604,6 +1604,11 @@
     redux-thunk "^3.1.0"
     reselect "^5.1.0"
 
+"@sbaiahmed1/react-native-biometrics@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@sbaiahmed1/react-native-biometrics/-/react-native-biometrics-0.13.0.tgz#49792d40db5ae6508f1413526f8749384116bda2"
+  integrity sha512-pApLuo6D3+W4yNCfc2KNb60ILCvcYy1hT90fmGdDVRuxOGrAQ+HLxBm9/uQWYs0Q+Sk2RcFVwPS8MTGlgqEaLg==
+
 "@sinclair/typebox@^0.27.8":
   version "0.27.8"
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.27.8.tgz#6667fac16c436b5434a387a34dedb013198f6e6e"

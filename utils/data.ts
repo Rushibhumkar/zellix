@@ -143,6 +143,7 @@ export const status = [
 export const statusObj = {
   new: "New",
   assign: "Assigned",
+  re_assigned: "Re Assigned",
   followUp_required: "Follow Up Required",
   claimed: "Claimed",
   not_able_to_connect: "Not Able to Connect",

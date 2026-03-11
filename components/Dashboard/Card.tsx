@@ -129,13 +129,23 @@ const Card = ({ item, loading }: any) => {
         <SingleCard
           count={item?.leads ?? 0}
           title="Leads"
-          onPress={() => navigate("allLead2")}
+          onPress={() =>
+            navigate("allLead2", {
+              screen: "allLead",
+              params: { tabType: "lead" },
+            })
+          }
           isLoading={loading}
         />
         <SingleCard
           count={item?.callingData ?? 0}
           title="Calling Data"
-          onPress={() => navigate("allLead")}
+          onPress={() =>
+            navigate("allLead2", {
+              screen: "allLead",
+              params: { tabType: "calling_data" },
+            })
+          }
           isLoading={loading}
         />
         <SingleCard

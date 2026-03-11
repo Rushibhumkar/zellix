@@ -7,17 +7,18 @@ import { selectUser } from "../../../redux/userSlice";
 import { roleEnum } from "../../../utils/data";
 import { color } from "../../../const/color";
 import { getInitials } from "../../../utils/commonFunctions";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import {
   iconWrapperStyle,
   shadowPrimaryColor,
 } from "../../../const/globalStyle";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
 import { sizes } from "../../../const";
+import { myConsole } from "../../../hooks/useConsole";
 
 interface TNotesCard {
   noteArr: any;
-  onEdit: (a: { id: string; note: string }) => void;
+  onEdit: (a: { notesId: string; note: string }) => void;
   onDelete: (id: string) => void;
   isLoadingDelete: string;
 }
@@ -32,7 +33,6 @@ const NotesCard = ({
 
   const isSubSup =
     user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin;
-
   return (
     <View style={{ marginBottom: 20 }}>
       {(noteArr ?? []).length === 0 ? (
@@ -55,11 +55,9 @@ const NotesCard = ({
 
                   {/* Name + Note */}
                   <View style={{ flex: 1, paddingHorizontal: 8 }}>
-                    {(isSubSup || item?.createdBy === user?._id) && (
-                      <CustomText style={styles.nameText}>
-                        {item?.createdByName || "N/A"}
-                      </CustomText>
-                    )}
+                    <CustomText style={styles.nameText}>
+                      {item?.createdByName || "N/A"}
+                    </CustomText>
 
                     <CustomText style={styles.noteText}>
                       {item?.note || "N/A"}
@@ -76,20 +74,47 @@ const NotesCard = ({
               </View>
 
               {(isSubSup || item?.createdBy === user?._id) && (
-                <TouchableOpacity
+                <View
                   style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
                     alignSelf: "flex-end",
-                    ...iconWrapperStyle,
                   }}
-                  onPress={() =>
-                    onEdit({
-                      note: item?.note || "",
-                      id: item?._id || "",
-                    })
-                  }
                 >
-                  <Feather name="edit-2" size={18} color={color.mainTxtColor} />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      ...iconWrapperStyle,
+                    }}
+                    onPress={() => {
+                      console.log("Delete button pressed", item?._id);
+                      onDelete(item?._id);
+                    }}
+                  >
+                    <MaterialIcons
+                      name="delete-outline"
+                      size={18}
+                      color={color.mainTxtColor}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      ...iconWrapperStyle,
+                    }}
+                    onPress={() =>
+                      onEdit({
+                        note: item?.note || "",
+                        notesId: item?._id || "",
+                      })
+                    }
+                  >
+                    <Feather
+                      name="edit-2"
+                      size={18}
+                      color={color.mainTxtColor}
+                    />
+                  </TouchableOpacity>
+                </View>
               )}
             </View>
           );
