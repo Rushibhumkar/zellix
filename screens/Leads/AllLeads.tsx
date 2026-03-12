@@ -320,6 +320,7 @@ const AllLeads = () => {
     }
   }, [route?.params?.tabType]);
 
+  // myConsole("alllesad", leadData);
   return (
     <>
       <Header

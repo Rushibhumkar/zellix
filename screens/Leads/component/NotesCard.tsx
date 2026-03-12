@@ -21,6 +21,7 @@ interface TNotesCard {
   onEdit: (a: { notesId: string; note: string }) => void;
   onDelete: (id: string) => void;
   isLoadingDelete: string;
+  selectLeadType?: string;
 }
 
 const NotesCard = ({
@@ -28,11 +29,19 @@ const NotesCard = ({
   onEdit,
   onDelete,
   isLoadingDelete,
+  selectLeadType,
 }: TNotesCard) => {
   const { user } = useSelector(selectUser);
 
   const isSubSup =
     user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin;
+  const isSubSupManagerTeamLead =
+    user?.role === roleEnum?.sub_admin ||
+    user?.role === roleEnum?.sup_admin ||
+    user?.role === roleEnum?.sr_manager ||
+    user?.role === roleEnum?.team_lead;
+
+  myConsole("selectLeadTypess", selectLeadType);
   return (
     <View style={{ marginBottom: 20 }}>
       {(noteArr ?? []).length === 0 ? (
@@ -47,17 +56,23 @@ const NotesCard = ({
               <View style={styles.topRow}>
                 <View style={styles.leftSection}>
                   {/* Avatar */}
-                  <View style={styles.avatar}>
-                    <CustomText style={styles.avatarText}>
-                      {getInitials(item?.createdByName || "")}
-                    </CustomText>
-                  </View>
+                  {(isSubSupManagerTeamLead ||
+                    item?.createdBy === user?._id) && (
+                    <View style={styles.avatar}>
+                      <CustomText style={styles.avatarText}>
+                        {getInitials(item?.createdByName || "")}
+                      </CustomText>
+                    </View>
+                  )}
 
                   {/* Name + Note */}
                   <View style={{ flex: 1, paddingHorizontal: 8 }}>
-                    <CustomText style={styles.nameText}>
-                      {item?.createdByName || "N/A"}
-                    </CustomText>
+                    {(isSubSupManagerTeamLead ||
+                      item?.createdBy === user?._id) && (
+                      <CustomText style={styles.nameText}>
+                        {item?.createdByName || "N/A"}
+                      </CustomText>
+                    )}
 
                     <CustomText style={styles.noteText}>
                       {item?.note || "N/A"}
@@ -88,7 +103,7 @@ const NotesCard = ({
                     }}
                     onPress={() => {
                       console.log("Delete button pressed", item?._id);
-                      onDelete(item?._id);
+                      onDelete(item?.notesId || item?._id);
                     }}
                   >
                     <MaterialIcons

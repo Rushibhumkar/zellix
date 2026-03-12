@@ -61,6 +61,7 @@ import {
   checkPermission,
   formatDate,
   getInitials,
+  truncateString,
 } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
@@ -160,7 +161,7 @@ const LeadsDetails = () => {
   //
   const [isLoading, setIsLoading] = useState(false);
   const [fields, setFields] = useState({});
-  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
   const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -292,13 +293,14 @@ const LeadsDetails = () => {
       setIsLoadingDelete(notesId);
 
       const res = await axiosInstance.delete(
-        `api/notes/${detail?._id}/${notesId}`,
+        `api/lead/notes/${detail?._id}/${notesId}`,
       );
 
       toast.success(res?.data?.message || "Note deleted successfully");
 
       refetchLeadDetail();
     } catch (err: any) {
+      myConsole("errrrr", err);
       toast.error(err?.response?.data?.message || "Failed to delete note");
     } finally {
       setIsLoadingDelete("");
@@ -457,12 +459,9 @@ const LeadsDetails = () => {
   const totalNotes = detail?.notes?.length || 0;
   const totalStatusChanges = detail?.statusHistory?.length || 0;
 
-  const filteredLeadStatus =
-    user?.role === roleEnum.agent || user?.role === roleEnum.seo
-      ? inLeadStatus.filter(
-          (s) => s._id !== "assign" && s._id !== "re_assigned",
-        )
-      : inLeadStatus;
+  const filteredLeadStatus = inLeadStatus.filter(
+    (s) => s._id !== "assign" && s._id !== "re_assigned",
+  );
 
   const handleChangeStatusToClaim = async (id: any) => {
     try {
@@ -487,7 +486,6 @@ const LeadsDetails = () => {
       toast.error(err?.response?.data?.message || "Failed to update status");
     }
   };
-
   return (
     <>
       {activeTab === 1 && (
@@ -535,17 +533,20 @@ const LeadsDetails = () => {
               <View style={styles.actionsOverlay}>
                 <TouchableWithoutFeedback>
                   <View style={styles.actionsModal}>
-                    <TouchableOpacity
-                      style={styles.actionItem}
-                      onPress={() => {
-                        setShowActionsMenu(false);
-                        setShowNotiPopup(true);
-                      }}
-                    >
-                      <CustomText style={styles.actionTextItem}>
-                        Send Follow Up
-                      </CustomText>
-                    </TouchableOpacity>
+                    {user?._id !== detail?.assign?._id &&
+                      user?.role !== roleEnum.agent && (
+                        <TouchableOpacity
+                          style={styles.actionItem}
+                          onPress={() => {
+                            setShowActionsMenu(false);
+                            setShowNotiPopup(true);
+                          }}
+                        >
+                          <CustomText style={styles.actionTextItem}>
+                            Send Follow Up
+                          </CustomText>
+                        </TouchableOpacity>
+                      )}
                     {user?._id === detail?.assign?._id && (
                       <TouchableOpacity
                         style={styles.actionItem}
@@ -727,10 +728,25 @@ const LeadsDetails = () => {
                       {detail?.clientName || "N/A"}
                     </Text>
 
-                    <Text style={styles.subText}>
-                      {leadTypeObj[detail?.type]} • {detail?.source}
-                    </Text>
-
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {!!detail?.source && (
+                        <Text style={styles.subText}>
+                          {detail?.source} {`•`}
+                        </Text>
+                      )}
+                      {!!detail?.name && (
+                        <Text style={[styles.subText, { fontSize: 13 }]}>
+                          {truncateString(detail?.name, 34)}
+                        </Text>
+                      )}
+                    </View>
                     <TouchableOpacity
                       style={styles.statusBadge}
                       onPress={() => setShowChangeStatusPopup(true)}
@@ -998,7 +1014,11 @@ const LeadsDetails = () => {
       {activeTab === 2 && (
         <Container style={{ flex: 1, position: "relative" }}>
           <Header
-            title="Lead Details"
+            title={
+              selectLeadType === "calling_data"
+                ? "Calling Data Info"
+                : "Lead Details"
+            }
             onBack={() => navigate(routeLead.allLead)}
           />
           <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -1021,6 +1041,7 @@ const LeadsDetails = () => {
                 modalNote.openModal();
               }}
               onDelete={(i) => {
+                myConsole("iddd", i);
                 deleteNotes(i);
               }}
               isLoadingDelete={isLoadingDelete}
@@ -1187,7 +1208,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -1202,9 +1223,9 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     backgroundColor: "#E8EEF7",
     justifyContent: "center",
     alignItems: "center",
@@ -1212,7 +1233,7 @@ const styles = StyleSheet.create({
   },
 
   avatarText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#2E67BE",
   },
@@ -1226,7 +1247,6 @@ const styles = StyleSheet.create({
   subText: {
     fontSize: 14,
     color: "#6B778C",
-    marginVertical: 4,
   },
 
   statusBadge: {
