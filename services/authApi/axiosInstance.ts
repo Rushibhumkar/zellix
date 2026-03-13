@@ -61,7 +61,7 @@ axiosInstance.interceptors.response.use(
       await removeItemValue("userDetail");
 
       store.dispatch(onLogOutEmpty());
-
+      //
       // if (navigationRef.isReady()) {
       //   navigationRef.dispatch(
       //     CommonActions.reset({
