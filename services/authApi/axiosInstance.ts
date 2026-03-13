@@ -63,8 +63,6 @@ axiosInstance.interceptors.response.use(
 
       store.dispatch(onLogOutEmpty());
 
-      // 🔥 Reset navigation stack
-
       // if (navigationRef.isReady()) {
       //   navigationRef.dispatch(
       //     CommonActions.reset({
