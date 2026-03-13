@@ -41,7 +41,6 @@ axiosInstance.interceptors.request.use(
     throw error;
   },
 );
-// Add a response interceptor
 // axiosInstance.interceptors.response.use(
 //     res => {
 //       return res;
