@@ -34,6 +34,7 @@ import { checkPermission } from "../../utils/commonFunctions";
 import { useAppToast } from "../../components/AppToast";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const RSVPInvitationList = () => {
   const toast = useAppToast();
@@ -315,7 +316,7 @@ const RSVPInvitationList = () => {
                     }}
                   />
                 </Animated.View>
-                <RSVPListHeading />
+                {/* <RSVPListHeading /> */}
               </>
             }
             ListEmptyComponent={
@@ -391,6 +392,21 @@ const InvitationRowItem = ({
   onLongPress,
   index,
 }: any) => {
+  const getStatusColor = (status: any) => {
+    switch (status) {
+      case "Attended":
+        return "#4caf4f4a";
+      case "Pending":
+        return "#ffc10749";
+      case "Declined":
+        return "#f4433646";
+      case "Accepted":
+        return "#2196F348";
+      default:
+        return "#9e9e9e4b";
+    }
+  };
+
   return (
     <SlideFadeIn>
       <TouchableOpacity
@@ -405,24 +421,46 @@ const InvitationRowItem = ({
           },
         ]}
       >
-        <View style={{ width: "40%", gap: 4 }}>
-          <CustomText style={styles.title}>{item?.clientName}</CustomText>
-          <CustomText style={styles.subTitle}>{item?.clientMobile}</CustomText>
+        <View style={styles.leftContainer}>
+          <View style={styles.avatar}>
+            <CustomText style={styles.avatarText}>
+              {item?.clientName?.charAt(0) || "?"}
+            </CustomText>
+          </View>
+          <View style={styles.clientInfo}>
+            <View style={styles.nameRow}>
+              <CustomText style={styles.title} numberOfLines={1}>
+                {item?.clientName}
+              </CustomText>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: getStatusColor(item?.responseStatus) },
+                ]}
+              >
+                <CustomText style={styles.statusText}>
+                  {item?.responseStatus}
+                </CustomText>
+              </View>
+            </View>
+            <CustomText style={styles.subTitle}>
+              {item?.clientMobile}
+            </CustomText>
+          </View>
         </View>
 
-        <View style={{ width: "30%", alignItems: "center", gap: 4 }}>
-          <CustomText style={styles.status}>{item?.responseStatus}</CustomText>
-          <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
-        </View>
-
-        <View style={{ width: "30%", alignItems: "flex-end", gap: 4 }}>
-          <CustomText style={styles.dateLabel}>
-            {moment(item?.dateTime).format("DD/MM/YYYY")}
-          </CustomText>
-
-          <CustomText style={styles.date}>
-            {moment(item?.dateTime).format("hh:mm A")}
-          </CustomText>
+        <View style={styles.rightContainer}>
+          <View style={styles.attendStatusContainer}>
+            <CustomText style={styles.attendStatus}>
+              {item?.attendStatus}
+            </CustomText>
+          </View>
+          <View style={styles.dateTimeContainer}>
+            <Feather name="calendar" size={12} color={color.mainTxtColor} />
+            <CustomText style={styles.dateTimeText}>
+              {moment(item?.dateTime).format("DD MMM YYYY • hh:mm A")}
+            </CustomText>
+          </View>
         </View>
       </TouchableOpacity>
     </SlideFadeIn>
@@ -430,20 +468,93 @@ const InvitationRowItem = ({
 };
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    padding: 12,
-    borderRadius: 14,
-    borderColor: color.strokeColor,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginHorizontal: 12,
-  },
-  title: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
-  subTitle: { fontSize: 13, color: color.mainTxtColor },
   status: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
   dateLabel: { fontSize: 12, color: color.mainTxtColor },
   date: { fontSize: 12, color: color.mainTxtColor, fontWeight: "500" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E3E8EF",
+    padding: 12,
+    borderRadius: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: 12,
+    alignItems: "center",
+    ...shadowPrimaryColor,
+  },
+  leftContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: color.primaryColor,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  avatarText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  clientInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    width: "120%",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: color.mainTxtColor,
+    maxWidth: "60%",
+  },
+  subTitle: {
+    fontSize: 13,
+    color: color.mainTxtColor,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#000000",
+  },
+  rightContainer: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 4,
+  },
+  attendStatusContainer: {
+    // optional: you can style if needed
+  },
+  attendStatus: {
+    fontSize: 12,
+    color: color.mainTxtColor,
+    fontWeight: "500",
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateTimeText: {
+    fontSize: 12,
+    color: color.mainTxtColor,
+    marginLeft: 4,
+    fontWeight: "500",
+  },
 });
 
 export default RSVPInvitationList;

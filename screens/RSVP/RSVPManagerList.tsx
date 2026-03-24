@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const RSVPManagerList = () => {
   const navigation = useNavigation();
@@ -280,7 +281,7 @@ const RSVPManagerList = () => {
                     }}
                   />
                 </Animated.View>
-                <RSVPEventsHeading />
+                {/* <RSVPEventsHeading /> */}
               </>
             }
             ListEmptyComponent={
@@ -354,65 +355,97 @@ const EventsRowItem = ({
   index,
 }: any) => {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={onLongPress}
-      activeOpacity={0.6}
-      style={[
-        styles.card,
-        {
-          marginTop: index === 0 ? 25 : 14,
-          backgroundColor: selected ? "rgba(227, 238, 252, 1)" : "#F8F9FC",
-          paddingBottom: 0,
-        },
-      ]}
-    >
-      <View style={{ width: "26%", gap: 4 }}>
-        <SlideFadeIn>
-          <CustomText style={styles.title}>{item?.title}</CustomText>
-        </SlideFadeIn>
-      </View>
+    <SlideFadeIn>
+      <TouchableOpacity
+        onPress={onPress}
+        onLongPress={onLongPress}
+        activeOpacity={0.6}
+        style={[
+          styles.card,
+          {
+            marginTop: index === 0 ? 25 : 14,
+            backgroundColor: selected ? "rgba(227, 238, 252, 1)" : "#F8F9FC",
+          },
+        ]}
+      >
+        <View style={styles.leftContainer}>
+          <View style={styles.avatar}>
+            <Feather name="calendar" size={20} color="#fff" />
+          </View>
+          <View style={styles.eventInfo}>
+            <CustomText style={styles.title}>{item?.title}</CustomText>
+            <CustomText style={styles.eventType}>{item?.eventType}</CustomText>
+          </View>
+        </View>
 
-      <View style={{ width: "32%", alignItems: "center", gap: 4 }}>
-        <SlideFadeIn>
-          <CustomText style={styles.status}>{item?.eventType}</CustomText>
-        </SlideFadeIn>
-        <SlideFadeIn>
-          <CustomText style={styles.dateLabel}>{item?.attendStatus}</CustomText>
-        </SlideFadeIn>
-      </View>
-
-      <View style={{ width: "42%", alignItems: "flex-end", gap: 4 }}>
-        <SlideFadeIn>
-          <CustomText style={styles.date}>
-            {moment(item?.startDateTime).format("DD/MM/YYYY • hh:mm A")}
-          </CustomText>
-        </SlideFadeIn>
-        <SlideFadeIn>
-          <CustomText style={styles.date}>
-            {moment(item?.endDateTime).format("DD/MM/YYYY • hh:mm A")}
-          </CustomText>
-        </SlideFadeIn>
-      </View>
-    </TouchableOpacity>
+        <View style={styles.rightContainer}>
+          <View style={styles.dateTimeContainer}>
+            <Feather name="clock" size={12} color={color.mainTxtColor} />
+            <CustomText style={styles.dateTimeText}>
+              {moment(item?.startDateTime).format("DD MMM YYYY • hh:mm A")}
+            </CustomText>
+          </View>
+          <View style={styles.dateTimeContainer}>
+            <Feather name="clock" size={12} color={color.mainTxtColor} />
+            <CustomText style={styles.dateTimeText}>
+              {moment(item?.endDateTime).format("DD MMM YYYY • hh:mm A")}
+            </CustomText>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    padding: 12,
-    borderRadius: 14,
-    borderColor: color.strokeColor,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginHorizontal: 12,
-  },
-  title: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
   subTitle: { fontSize: 13, color: color.mainTxtColor },
   status: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
   dateLabel: { fontSize: 12, color: color.mainTxtColor },
   date: { fontSize: 12, color: color.mainTxtColor, fontWeight: "500" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E3E8EF",
+    padding: 12,
+    borderRadius: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: 12,
+    ...shadowPrimaryColor,
+  },
+  leftContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: color.primaryColor,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  eventInfo: {
+    flex: 1,
+  },
+  title: { fontSize: 14, fontWeight: "600", color: color.mainTxtColor },
+  eventType: { fontSize: 13, color: color.mainTxtColor, marginTop: 2 },
+  rightContainer: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 4,
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateTimeText: {
+    fontSize: 12,
+    color: color.mainTxtColor,
+    marginLeft: 4,
+    fontWeight: "500",
+  },
 });
 
 export default RSVPManagerList;

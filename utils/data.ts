@@ -140,60 +140,6 @@ export const status = [
   },
 ];
 
-export const statusObj = {
-  new: "New",
-  assign: "Assigned",
-  re_assigned: "Re Assigned",
-  followUp_required: "Follow Up Required",
-  claimed: "Claimed",
-  not_able_to_connect: "Not Able to Connect",
-  no_response: "No Response",
-  not_interested_buy_later: "Not Interested May Buy Later",
-  not_interested: "Not Interested",
-  lost: "Lost",
-  contacted: "Contacted",
-  active_cold: "Active Cold",
-  active_hot: "Active Hot",
-  meeting_scheduled: "Meeting Scheduled",
-  wrong_details: "Spam/Wrong contact details",
-  broker: "Broker",
-  disqualified: "Disqualified",
-  deal_booked: "Deal Booked",
-  deal_cancelled: "Deal Cancelled",
-  nr_event: "NR Event",
-};
-
-export const statusColorObj = {
-  // 🔵 Fresh / Neutral
-  new: "#E3F2FD",
-  assign: "#E8F1FD",
-  contacted: "#E1F5FE",
-
-  // 🟡 Follow / Warm
-  followUp_required: "#FFF8E1",
-  meeting_scheduled: "#FFF3CD",
-  active_hot: "#FFE0B2",
-
-  // 🟢 Positive
-  claimed: "#E8F5E9",
-  deal_booked: "#C8E6C9",
-  active_cold: "#E0F2F1",
-
-  // 🔴 Negative
-  not_interested: "#FFEBEE",
-  not_interested_buy_later: "#FDECEA",
-  lost: "#FFCDD2",
-  deal_cancelled: "#F8D7DA",
-  disqualified: "#ECEFF1",
-
-  // ⚪ Grey / Inactive / No Response
-  no_response: "#F5F5F5",
-  not_able_to_connect: "#F3F4F6",
-  wrong_details: "#F1F1F1",
-  broker: "#F3E5F5",
-  nr_event: "#F1F8E9",
-};
-
 export const developerOptions = [
   { _id: "AKSHARA_DEVELOPERS", name: "AKSHARA DEVELOPERS" },
   { _id: "AL_ANSARI", name: "AL ANSARI" },
@@ -461,10 +407,68 @@ export const inMeetingStatus = [
   },
 ];
 
+export const statusObj = {
+  new: "New",
+  assign: "Assigned",
+  re_assigned: "Re Assigned",
+  meeting_done: "Meeting Done",
+  call_back: "Call Back",
+  followUp_required: "Follow Up Required",
+  claimed: "Claimed",
+  not_able_to_connect: "Not Able to Connect",
+  no_response: "No Response",
+  not_interested_buy_later: "Not Interested May Buy Later",
+  not_interested: "Not Interested",
+  lost: "Lost",
+  contacted: "Contacted",
+  active_cold: "Active Cold",
+  active_hot: "Active Hot",
+  meeting_scheduled: "Meeting Scheduled",
+  wrong_details: "Spam/Wrong contact details",
+  broker: "Broker",
+  disqualified: "Disqualified",
+  deal_booked: "Deal Booked",
+  deal_cancelled: "Deal Cancelled",
+  nr_event: "NR Event",
+};
+
+export const statusColorObj = {
+  // 🔵 Fresh / Neutral
+  new: "#E3F2FD",
+  assign: "#E8F1FD",
+  contacted: "#E1F5FE",
+
+  // 🟡 Follow / Warm
+  followUp_required: "#FFF8E1",
+  meeting_scheduled: "#FFF3CD",
+  active_hot: "#FFE0B2",
+
+  // 🟢 Positive
+  claimed: "#E8F5E9",
+  deal_booked: "#C8E6C9",
+  active_cold: "#E0F2F1",
+
+  // 🔴 Negative
+  not_interested: "#FFEBEE",
+  not_interested_buy_later: "#FDECEA",
+  lost: "#FFCDD2",
+  deal_cancelled: "#F8D7DA",
+  disqualified: "#ECEFF1",
+
+  // ⚪ Grey / Inactive / No Response
+  no_response: "#F5F5F5",
+  not_able_to_connect: "#F3F4F6",
+  wrong_details: "#F1F1F1",
+  broker: "#F3E5F5",
+  nr_event: "#F1F8E9",
+};
+
 export const inLeadStatus = [
   { _id: "assign", name: "Assigned" },
   { _id: "re_assigned", name: "Re-assigned" },
   { _id: "followUp_required", name: "Follow Up Required" },
+  { _id: "meeting_done", name: "Meeting Done" },
+  { _id: "call_back", name: "Call Back" },
   { _id: "not_able_to_connect", name: "Not Able to Connect" },
   { _id: "not_interested", name: "Not Interested" },
   { _id: "no_response", name: "No Response" },
@@ -481,6 +485,31 @@ export const inLeadStatus = [
   { _id: "deal_booked", name: "Deal Booked" },
   { _id: "deal_cancelled", name: "Deal Cancelled" },
   { _id: "nr_event", name: "NR Event" },
+];
+
+export const NOTE_REQUIRED_STATUSES = [
+  "lost",
+  "not_interested",
+  "not_interested_buy_later",
+  "disqualified",
+  "wrong_details",
+  "broker",
+  "no_response",
+  "not_able_to_connect",
+  "meeting_done",
+  "deal_booked",
+  "deal_cancelled",
+];
+
+export const FOLLOWUP_REQUIRED_STATUSES = [
+  "call_back",
+  "no_response",
+  "not_able_to_connect",
+  "active_cold",
+  "active_hot",
+  "meeting_scheduled",
+  "followUp_required",
+  "not_interested_buy_later",
 ];
 
 export const leadTypeInAS = [

@@ -37,9 +37,11 @@ import {
   useLatestMeetings,
 } from "../../services/rootApi/leadApi";
 import {
+  FOLLOWUP_REQUIRED_STATUSES,
   formatRoleName,
   inLeadStatus,
   leadTypeObj,
+  NOTE_REQUIRED_STATUSES,
   roleEnum,
   statusObj,
   userTypes,
@@ -84,6 +86,8 @@ import ActionButton from "./component/ActionButton";
 import * as Clipboard from "expo-clipboard";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import NotesSection from "./component/NotesSection";
+import { useFormik } from "formik";
+import { changeStatusSchema } from "../../utils/validation";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -182,8 +186,8 @@ const LeadsDetails = () => {
   const [noteUpdate, setNoteUpdate] = useState<any>(null);
 
   const [tdForFUT, setTdForFUT] = useState({
-    date: new Date(),
-    time: new Date(),
+    date: null,
+    time: null,
   });
 
   const FUTModal = useModal();
@@ -307,14 +311,15 @@ const LeadsDetails = () => {
     }
   };
 
-  useEffect(() => {
-    if (!!detail?.statusChangedAt) {
-      setTdForFUT({
-        date: detail?.followUpTime || new Date(),
-        time: detail?.followUpTime || new Date(),
-      });
-    }
-  }, [detail?.statusChangedAt]);
+  // useEffect(() => {
+  //   if (!!detail?.statusChangedAt) {
+  //     setTdForFUT({
+  //       date: detail?.followUpTime || null,
+  //       time: detail?.followUpTime || null,
+  //     });
+  //   }
+  // }, [detail?.statusChangedAt]);
+
   const [notiMsg, setNotiMsg] = useState("");
   const [showNotiPopup, setShowNotiPopup] = useState(false);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
@@ -371,20 +376,47 @@ const LeadsDetails = () => {
         return;
       }
 
+      if (
+        NOTE_REQUIRED_STATUSES.includes(fields.status) &&
+        !formik.values.note?.trim()
+      ) {
+        toast.error("Note is required for this status.");
+        return;
+      }
+
+      // ✅ FOLLOWUP REQUIRED VALIDATION
+      if (
+        fields?.status &&
+        FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
+        (!tdForFUT?.date || !tdForFUT?.time)
+      ) {
+        toast.error("Follow up time is required for this status.");
+        return;
+      }
+
       setStatusLoading(true);
 
-      const payload: any = {
+      const payload = {
         status: fields.status,
         ...(fields.statusInfo && { statusInfo: fields.statusInfo }),
-        ...(fields.status === "followUp_required" && {
-          followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
-        }),
+        ...(formik.values.note && { note: formik.values.note }),
+        ...(tdForFUT?.date &&
+          tdForFUT?.time && {
+            followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
+          }),
       };
 
       const res = await leadStatusUpdate({
         id: detail?._id,
         data: payload,
       });
+
+      setTdForFUT({ date: null, time: null });
+      formik.resetForm();
+      setFields((prev) => ({
+        ...prev,
+        statusInfo: "",
+      }));
 
       toast.success(res?.data?.message || "Status updated successfully");
 
@@ -396,13 +428,52 @@ const LeadsDetails = () => {
         queryKey: [queryKeyCRM.getLead],
       });
 
+      FUTModal.closeModal();
+      setShowActionsMenu(false);
       setShowChangeStatusPopup(false);
+      setStatusLoading(false);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to update status");
-    } finally {
+      FUTModal.closeModal();
+      setShowActionsMenu(false);
+      setShowChangeStatusPopup(false);
       setStatusLoading(false);
+      setTdForFUT({ date: null, time: null });
+      formik.resetForm();
+      setFields((prev) => ({
+        ...prev,
+        statusInfo: "",
+      }));
+    } finally {
+      FUTModal.closeModal();
+      setShowActionsMenu(false);
+      setShowChangeStatusPopup(false);
+      setStatusLoading(false);
+      setTdForFUT({ date: null, time: null });
+      formik.resetForm();
+      setFields((prev) => ({
+        ...prev,
+        statusInfo: "",
+      }));
     }
   };
+
+  const formik = useFormik({
+    initialValues: {
+      status: fields?.status || "",
+      note: "",
+    },
+    enableReinitialize: true,
+    validationSchema: changeStatusSchema,
+    onSubmit: (values) => {
+      setFields((prev) => ({
+        ...prev,
+        status: values.status,
+        comments: values.note,
+      }));
+      handleChangeStatusSubmit();
+    },
+  });
 
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
@@ -463,6 +534,8 @@ const LeadsDetails = () => {
     (s) => s._id !== "assign" && s._id !== "re_assigned",
   );
 
+  const unActionableStatuses = ["claimed", "assign", "re_assigned", "new"];
+
   const handleChangeStatusToClaim = async (id: any) => {
     try {
       const payload = {
@@ -486,6 +559,28 @@ const LeadsDetails = () => {
       toast.error(err?.response?.data?.message || "Failed to update status");
     }
   };
+
+  const isSubmitDisabled =
+    (fields?.status &&
+      NOTE_REQUIRED_STATUSES.includes(fields.status) &&
+      !formik.values.note?.trim()) ||
+    (fields?.status &&
+      FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
+      (!tdForFUT?.date || !tdForFUT?.time));
+
+  useEffect(() => {
+    if (showChangeStatusPopup) {
+      setShowActionsMenu(false);
+    }
+  }, [showChangeStatusPopup]);
+
+  useEffect(() => {
+    if (!showChangeStatusPopup) {
+      FUTModal.closeModal(); // ✅ ensure closed
+    }
+  }, [showChangeStatusPopup]);
+  // myConsole("tdForFUTtt", tdForFUT);
+
   return (
     <>
       {activeTab === 1 && (
@@ -528,7 +623,7 @@ const LeadsDetails = () => {
           <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* 🔥 Three Dot Action Modal */}
-          {showActionsMenu && (
+          {showActionsMenu && !showChangeStatusPopup && !FUTModal.visible && (
             <TouchableWithoutFeedback onPress={() => setShowActionsMenu(false)}>
               <View style={styles.actionsOverlay}>
                 <TouchableWithoutFeedback>
@@ -564,6 +659,7 @@ const LeadsDetails = () => {
                         style={styles.actionItem}
                         onPress={() => {
                           setShowActionsMenu(false);
+                          setTdForFUT({ date: null, time: null }); // reset
                           setShowChangeStatusPopup(true);
                         }}
                       >
@@ -636,7 +732,10 @@ const LeadsDetails = () => {
           {/* <----------------Change Status popup-------------> */}
           <ModalWithBlur
             visible={showChangeStatusPopup}
-            onClose={() => setShowChangeStatusPopup(false)}
+            onClose={() => {
+              setShowChangeStatusPopup(false);
+              FUTModal.closeModal();
+            }}
           >
             <View style={styles.modalContent}>
               <CustomText style={styles.title}>Change Status</CustomText>
@@ -662,38 +761,157 @@ const LeadsDetails = () => {
                 onChange={(v) => onChange("status", v)}
                 mode="auto"
                 dropdownStyle={{ height: 45 }}
+                disabledItems={["claimed", "assign", "re_assigned"]}
               />
-
-              {fields?.status === "followUp_required" && (
-                <View style={{ marginTop: 15 }}>
-                  <CustomText style={styles.label}>Follow Up Time</CustomText>
-
-                  <TouchableOpacity
-                    onPress={() => FUTModal.openModal()}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: color.borderColor,
-                      borderRadius: 12,
-                      padding: 12,
-                      marginTop: 6,
-                    }}
-                  >
-                    <CustomText>
-                      {formatDateTime(tdForFUT.date, tdForFUT.time)}
+              {!!fields?.status && fields?.status !== "claimed" && (
+                <>
+                  <View style={{ marginTop: 15 }}>
+                    <CustomText style={styles.label}>
+                      Follow Up Time{" "}
+                      {fields?.status &&
+                        FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) && (
+                          <CustomText style={{ color: "red" }}> *</CustomText>
+                        )}
                     </CustomText>
-                  </TouchableOpacity>
-                </View>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        FUTModal.openModal();
+                      }}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: color.borderColor,
+                        borderRadius: 12,
+                        padding: 12,
+                        marginTop: 6,
+                      }}
+                    >
+                      <CustomText style={{ color: color.mainTxtColor }}>
+                        {tdForFUT?.date && tdForFUT?.time
+                          ? formatDateTime(tdForFUT.date, tdForFUT.time)
+                          : "Select Date & Time"}
+                      </CustomText>
+                    </TouchableOpacity>
+                  </View>
+                  <CustomInput
+                    label={
+                      <>
+                        Notes
+                        {fields?.status &&
+                          NOTE_REQUIRED_STATUSES.includes(fields.status) && (
+                            <CustomText style={{ color: "red" }}> *</CustomText>
+                          )}
+                      </>
+                    }
+                    value={formik.values.note}
+                    onChangeText={formik.handleChange("note")}
+                    errors={formik.touched.note && formik.errors.note}
+                    onBlur={formik.handleBlur("note")}
+                    placeholder="Add note"
+                    multiline
+                    numberOfLines={3}
+                    marginBottom={10}
+                    // inputContainerStyle={{
+                    //   height: 160,
+                    //   alignItems: "flex-start",
+                    // }}
+                    containerStyle={{ marginTop: 8 }}
+                    inputStyle={{ height: 140 }}
+                  />
+                  <CustomModal
+                    visible={FUTModal.visible}
+                    onClose={FUTModal.closeModal}
+                    hasBackdrop
+                  >
+                    <View
+                      style={{
+                        backgroundColor: "white",
+                        width: 300,
+                        padding: 20,
+                        borderRadius: 10,
+                      }}
+                    >
+                      <MainTitle title="Select Date and Time" />
+                      <View style={{ height: 15 }} />
+                      <DatePickerExpo
+                        title="Date"
+                        minimumDate={new Date()}
+                        boxContainerStyle={{ marginBottom: 15 }}
+                        onSelect={(v) => {
+                          setTdForFUT((prev) => ({
+                            ...prev,
+                            date: v || null,
+                          }));
+                        }}
+                        initialValue={tdForFUT.date}
+                      />
+                      <DatePickerExpo
+                        key={timePickerKey}
+                        title="Time"
+                        mode="time"
+                        minuteInterval={5} // 👈 ADD THIS (00,05,10...)
+                        minimumDate={
+                          moment(tdForFUT.date).isSame(new Date(), "day")
+                            ? new Date() // 👈 SAME DAY → past time block
+                            : undefined
+                        }
+                        boxContainerStyle={{ marginBottom: 20 }}
+                        onSelect={(v) => {
+                          setTdForFUT((prev) => ({
+                            ...prev,
+                            time: v ? roundToNext5Min(new Date(v)) : null,
+                          }));
+                        }}
+                        initialValue={tdForFUT.time}
+                      />
+
+                      <CustomBtn
+                        title="Submit"
+                        containerStyle={{
+                          marginBottom: 20,
+                          width: 100,
+                          alignSelf: "center",
+                        }}
+                        onPress={() => {
+                          FUTModal.closeModal(); // ✅ only close modal, no API call
+                        }}
+                        isLoading={isLoading}
+                        textStyle={{ fontSize: 14 }}
+                        disabled={isFUTSubmitDisabled}
+                      />
+                    </View>
+                  </CustomModal>
+                </>
               )}
 
               <TouchableOpacity
-                style={[styles.button, { marginTop: 20 }]}
+                style={[
+                  styles.button,
+                  {
+                    marginTop: 20,
+                    backgroundColor: isSubmitDisabled
+                      ? color.primaryFade
+                      : color.mainTxtColor,
+                  },
+                ]}
                 onPress={handleChangeStatusSubmit}
-                disabled={statusLoading}
+                disabled={statusLoading || isSubmitDisabled}
               >
                 {statusLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <CustomText style={styles.buttonText}>Submit</CustomText>
+                  <CustomText
+                    style={[
+                      styles.buttonText,
+                      {
+                        color: isSubmitDisabled
+                          ? color.mainTxtColorFade
+                          : color.white,
+                      },
+                    ]}
+                  >
+                    Submit
+                  </CustomText>
                 )}
               </TouchableOpacity>
             </View>
@@ -750,15 +968,34 @@ const LeadsDetails = () => {
                     <TouchableOpacity
                       style={styles.statusBadge}
                       onPress={() => setShowChangeStatusPopup(true)}
+                      disabled={["assign", "new", "re_assigned"].includes(
+                        detail?.status,
+                      )}
                     >
-                      <Text style={styles.statusText} numberOfLines={1}>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          {
+                            color: ["assign", "new", "re_assigned"].includes(
+                              detail?.status,
+                            )
+                              ? color.mainTxtColorFade
+                              : "#2E67BE",
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
                         {statusObj[detail?.status]}
                       </Text>
-                      <MaterialIcons
-                        name="change-circle"
-                        size={20}
-                        color={color.mainTxtColor}
-                      />
+                      {!["assign", "new", "re_assigned"].includes(
+                        detail?.status,
+                      ) && (
+                        <MaterialIcons
+                          name="change-circle"
+                          size={20}
+                          color={color.mainTxtColor}
+                        />
+                      )}
                     </TouchableOpacity>
                   </View>
                   {/* <TouchableOpacity
@@ -778,103 +1015,142 @@ const LeadsDetails = () => {
                     />
                   </TouchableOpacity> */}
                 </View>
-
+                {(detail?.status === "assign" ||
+                  detail?.status === "re_assigned" ||
+                  detail?.status === "new") && (
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: color.mainTxtColor,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingVertical: 12,
+                      borderRadius: 12,
+                      marginTop: 8,
+                    }}
+                    onPress={() => handleChangeStatusToClaim(detail?._id)}
+                  >
+                    <CustomText
+                      style={{
+                        color: "#fff",
+                        fontSize: 16,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Claim Lead
+                    </CustomText>
+                  </TouchableOpacity>
+                )}
                 {/* Action Buttons */}
-                <View style={styles.actionRow}>
-                  {detail?.clientMobile && (
-                    <ActionButton
-                      label="Call"
-                      icon="phone-call"
-                      onPress={() => navToCall()}
-                    />
-                  )}
+                {!["assign", "new", "re_assigned"].includes(detail?.status) && (
+                  <View style={styles.actionRow}>
+                    {detail?.clientMobile && (
+                      <ActionButton
+                        label="Call"
+                        icon="phone-call"
+                        onPress={() => navToCall()}
+                      />
+                    )}
 
-                  {detail?.whatsapp && (
-                    <ActionButton
-                      label="WhatsApp"
-                      icon="message-circle"
-                      onPress={() => Linking.openURL(detail?.whatsapp)}
-                    />
-                  )}
+                    {detail?.whatsapp && (
+                      <ActionButton
+                        label="WhatsApp"
+                        icon="message-circle"
+                        onPress={() => Linking.openURL(detail?.whatsapp)}
+                      />
+                    )}
 
-                  {detail?.clientEmail && (
-                    <ActionButton
-                      label="Email"
-                      icon="mail"
-                      onPress={() => openMail(detail?.clientEmail)}
-                    />
-                  )}
+                    {detail?.clientEmail && (
+                      <ActionButton
+                        label="Email"
+                        icon="mail"
+                        onPress={() => openMail(detail?.clientEmail)}
+                      />
+                    )}
 
-                  {detail?.clientMobile && (
-                    <ActionButton
-                      label="SMS"
-                      icon="message-square"
-                      onPress={() =>
-                        Linking.openURL(`sms:${detail?.clientMobile}`)
-                      }
-                    />
-                  )}
-                </View>
+                    {detail?.clientMobile && (
+                      <ActionButton
+                        label="SMS"
+                        icon="message-square"
+                        onPress={() =>
+                          Linking.openURL(`sms:${detail?.clientMobile}`)
+                        }
+                      />
+                    )}
+                  </View>
+                )}
 
-                {detail?.clientMobile && <View style={styles.divider} />}
+                {detail?.clientMobile &&
+                  !["assign", "new", "re_assigned"].includes(
+                    detail?.status,
+                  ) && <View style={styles.divider} />}
 
                 {/* Mobile */}
-                {detail?.clientMobile && (
-                  <View style={styles.infoRow}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Feather name="phone" size={18} color="#7A869A" />
-                      <View style={{ marginLeft: 12 }}>
-                        <Text style={styles.label}>MOBILE</Text>
-                        <Text style={styles.value}>{detail?.clientMobile}</Text>
+                {detail?.clientMobile &&
+                  !["assign", "new", "re_assigned"].includes(
+                    detail?.status,
+                  ) && (
+                    <View style={styles.infoRow}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Feather name="phone" size={18} color="#7A869A" />
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={styles.label}>MOBILE</Text>
+                          <Text style={styles.value}>
+                            {detail?.clientMobile}
+                          </Text>
+                        </View>
                       </View>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#9b9b9b18",
+                          paddingHorizontal: 6,
+                          paddingVertical: 4,
+                          borderRadius: 6,
+                        }}
+                        onPress={() => handleCopy(detail?.clientMobile)}
+                      >
+                        <Feather name="copy" size={16} color={"#9b9b9b"} />
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "#9b9b9b18",
-                        paddingHorizontal: 6,
-                        paddingVertical: 4,
-                        borderRadius: 6,
-                      }}
-                      onPress={() => handleCopy(detail?.clientMobile)}
-                    >
-                      <Feather name="copy" size={16} color={"#9b9b9b"} />
-                    </TouchableOpacity>
-                  </View>
-                )}
+                  )}
 
                 {/* Email */}
-                {detail?.clientEmail && (
-                  <View style={styles.infoRow}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Feather name="mail" size={18} color="#7A869A" />
-                      <View style={{ marginLeft: 12 }}>
-                        <Text style={styles.label}>EMAIL</Text>
-                        <Text style={styles.value}>{detail?.clientEmail}</Text>
+                {detail?.clientEmail &&
+                  !["assign", "new", "re_assigned"].includes(
+                    detail?.status,
+                  ) && (
+                    <View style={styles.infoRow}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Feather name="mail" size={18} color="#7A869A" />
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={styles.label}>EMAIL</Text>
+                          <Text style={styles.value}>
+                            {detail?.clientEmail}
+                          </Text>
+                        </View>
                       </View>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#9b9b9b18",
+                          paddingHorizontal: 6,
+                          paddingVertical: 4,
+                          borderRadius: 6,
+                        }}
+                        onPress={() => handleCopy(detail?.clientEmail)}
+                      >
+                        <Feather name="copy" size={16} color={"#9b9b9b"} />
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "#9b9b9b18",
-                        paddingHorizontal: 6,
-                        paddingVertical: 4,
-                        borderRadius: 6,
-                      }}
-                      onPress={() => handleCopy(detail?.clientEmail)}
-                    >
-                      <Feather name="copy" size={16} color={"#9b9b9b"} />
-                    </TouchableOpacity>
-                  </View>
-                )}
+                  )}
               </View>
 
               {/* -------------------- CARD 2 -------------------- */}
@@ -1087,68 +1363,6 @@ const LeadsDetails = () => {
         />
       )}
 
-      <CustomModal
-        visible={FUTModal.visible}
-        onClose={FUTModal.closeModal}
-        hasBackdrop
-      >
-        <View
-          style={{
-            backgroundColor: "white",
-            width: 300,
-            padding: 20,
-            borderRadius: 10,
-          }}
-        >
-          <MainTitle title="Select Date and Time" />
-          <View style={{ height: 15 }} />
-          <DatePickerExpo
-            title="Date"
-            minimumDate={new Date()}
-            boxContainerStyle={{ marginBottom: 15 }}
-            onSelect={(v) => {
-              setTdForFUT((prev) => ({
-                ...prev,
-                date: v || null,
-              }));
-            }}
-            initialValue={tdForFUT.date}
-          />
-          <DatePickerExpo
-            key={timePickerKey}
-            title="Time"
-            mode="time"
-            minuteInterval={5} // 👈 ADD THIS (00,05,10...)
-            minimumDate={
-              moment(tdForFUT.date).isSame(new Date(), "day")
-                ? new Date() // 👈 SAME DAY → past time block
-                : undefined
-            }
-            boxContainerStyle={{ marginBottom: 20 }}
-            onSelect={(v) => {
-              setTdForFUT((prev) => ({
-                ...prev,
-                time: v ? roundToNext5Min(new Date(v)) : null,
-              }));
-            }}
-            initialValue={tdForFUT.time}
-          />
-
-          <CustomBtn
-            title="Submit"
-            containerStyle={{
-              marginBottom: 20,
-              width: 100,
-              alignSelf: "center",
-            }}
-            onPress={handleStatusUpdate}
-            isLoading={isLoading}
-            textStyle={{ fontSize: 14 }}
-            disabled={isFUTSubmitDisabled}
-          />
-        </View>
-      </CustomModal>
-
       {isAdminOrAssigne && (
         <AddNote
           modal={modalNote}
@@ -1312,9 +1526,9 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 12,
-    color: "#8C97A8",
-    letterSpacing: 1,
+    fontSize: 14,
+    color: color.mainTxtColor,
+    fontWeight: "600",
   },
 
   value: {

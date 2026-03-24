@@ -230,3 +230,11 @@ export const remarkValidate = (
 
   return schema;
 };
+
+export const changeStatusSchema = Yup.object().shape({
+  status: Yup.string().required("Status is required"),
+  note: Yup.string()
+    .trim()
+    .required("Note is required")
+    .min(3, "Minimum 3 characters"),
+});

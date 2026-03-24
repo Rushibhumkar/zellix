@@ -4,14 +4,14 @@ import {
   ActivityIndicator,
   View,
   TouchableOpacity,
+  RefreshControl,
+  Linking,
 } from "react-native";
 import React from "react";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
-import RowItem from "../../myComponents/RowItem/RowItem";
 import { color } from "../../const/color";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { myConsole } from "../../hooks/useConsole";
 import moment from "moment";
 import { useRSVPEventDetails } from "./rsvpApi";
 import EditIcon from "../../assets/svg/EditIcon";
@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useNavigation } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
 
 const RSVPEventDetail = ({ route }: any) => {
   const { id } = route.params || {};
@@ -27,8 +28,8 @@ const RSVPEventDetail = ({ route }: any) => {
   const navigation = useNavigation();
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
-  const { data, isLoading, isError, error } = useRSVPEventDetails(id);
-  // myConsole("datasss", data);
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useRSVPEventDetails(id);
 
   if (isLoading) {
     return (
@@ -53,8 +54,6 @@ const RSVPEventDetail = ({ route }: any) => {
           error?.message ||
           "Failed to load event details";
 
-    myConsole("errMsgggg", errMsg);
-
     return (
       <>
         <Header title="Event Details" />
@@ -71,7 +70,6 @@ const RSVPEventDetail = ({ route }: any) => {
     );
   }
 
-  // If data not found
   if (!data) {
     return (
       <>
@@ -91,79 +89,94 @@ const RSVPEventDetail = ({ route }: any) => {
 
   const canEditEvent = checkPermission(permission, "Event", "edit", user?.role);
 
+  const openMaps = () => {
+    if (detail?.location) {
+      const address = encodeURIComponent(detail.location);
+      Linking.openURL(`https://maps.google.com/?q=${address}`);
+    }
+  };
+
+  // Helper to render a row
+  const renderRow = (
+    label: string,
+    value: string | number | null | undefined,
+  ) => {
+    const displayValue = value ?? "—";
+    return (
+      <View style={styles.infoRow}>
+        <View>
+          <CustomText style={styles.label}>{label}</CustomText>
+          <CustomText style={styles.value}>{displayValue}</CustomText>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <>
-      <Header title={"Event Details"} />
+      <Header
+        title="Event Details"
+        rightSide={
+          canEditEvent && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate("AddEvent", { detail })}
+              style={styles.headerIcon}
+            >
+              <Feather name="edit-2" size={18} color="#fff" />
+            </TouchableOpacity>
+          )
+        }
+      />
       <Container>
         <ScrollView
           style={{ padding: 20 }}
           contentContainerStyle={{ paddingBottom: 120 }}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
         >
-          <View style={{ paddingBottom: 70 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                // backgroundColor: "red",
-                marginBottom: 12,
-              }}
-            >
-              <CustomText
-                style={{
-                  fontSize: 18,
-                  fontWeight: "500",
-                  color: color.mainTxtColor,
-                  borderBottomWidth: 1,
-                  borderBottomColor: color.saffronMango,
-                  paddingBottom: 5,
-                }}
-              >
-                Overview
-              </CustomText>
-              {canEditEvent && (
-                <TouchableOpacity style={{ padding: 5 }} activeOpacity={0.6}>
-                  <EditIcon
-                    style={{ height: 12, width: 12 }}
-                    onPress={() => navigation.navigate("AddEvent", { detail })}
-                  />
+          {/* Event Information Card */}
+          <View style={styles.card}>
+            <CustomText style={styles.sectionTitle}>
+              Event Information
+            </CustomText>
+            <View style={styles.divider} />
+
+            {renderRow("Name", detail.title)}
+            {renderRow("Event Type", detail.eventType)}
+            {renderRow("Description", detail.description)}
+          </View>
+
+          {/* Date & Location Card */}
+          <View style={styles.card}>
+            <CustomText style={styles.sectionTitle}>Date & Location</CustomText>
+            <View style={styles.divider} />
+
+            {renderRow(
+              "Start Date",
+              detail.startDateTime
+                ? moment(detail.startDateTime).format("DD/MM/YYYY • hh:mm A")
+                : null,
+            )}
+            {renderRow(
+              "End Date",
+              detail.endDateTime
+                ? moment(detail.endDateTime).format("DD/MM/YYYY • hh:mm A")
+                : null,
+            )}
+            <View style={styles.infoRow}>
+              <View style={{ flex: 1 }}>
+                <CustomText style={styles.label}>Location</CustomText>
+                <CustomText style={styles.value}>
+                  {detail.location || "—"}
+                </CustomText>
+              </View>
+              {detail.location && (
+                <TouchableOpacity onPress={openMaps} style={styles.iconButton}>
+                  <Feather name="map-pin" size={20} color="#2E67BE" />
                 </TouchableOpacity>
               )}
             </View>
-
-            <RowItem
-              title="Name"
-              value={detail.title}
-              containerStyle={{ marginBottom: 10 }}
-            />
-            <RowItem
-              title="Event Type"
-              value={detail.eventType}
-              containerStyle={{ marginBottom: 10 }}
-            />
-            <RowItem
-              title="Description"
-              value={detail.description}
-              containerStyle={{ marginBottom: 10 }}
-            />
-
-            <RowItem
-              title="Start Date"
-              value={`${moment(detail.startDat).format(
-                "DD/MM/YYYY • hh:mm A"
-              )}`}
-              containerStyle={{ marginBottom: 10 }}
-            />
-            <RowItem
-              title="End Date"
-              value={`${moment(detail.endDate).format("DD/MM/YYYY • hh:mm A")}`}
-              containerStyle={{ marginBottom: 10 }}
-            />
-            <RowItem
-              title="Location"
-              value={detail.location}
-              containerStyle={{ marginBottom: 10 }}
-            />
           </View>
         </ScrollView>
       </Container>
@@ -173,4 +186,53 @@ const RSVPEventDetail = ({ route }: any) => {
 
 export default RSVPEventDetail;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  headerIcon: {
+    backgroundColor: "#ffffff30",
+    padding: 8,
+    borderRadius: 8,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E67BE",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E6EAF0",
+    marginVertical: 16,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 12,
+    color: "#8C97A8",
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  value: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2F3A4A",
+  },
+  iconButton: {
+    backgroundColor: "#F0F4FA",
+    padding: 10,
+    borderRadius: 30,
+    marginLeft: 8,
+  },
+});

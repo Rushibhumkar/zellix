@@ -87,6 +87,7 @@ interface TDropdownRNE {
   onSelect: (a: any) => void;
   isCountryPicker?: boolean;
   disabled?: boolean;
+  disabledItems?: string[];
 }
 
 const DropdownRNE = ({
@@ -117,6 +118,7 @@ const DropdownRNE = ({
   dropdownStyle,
   isCountryPicker,
   disabled = false,
+  disabledItems = [],
   onSelect,
 }: TDropdownRNE) => {
   //
@@ -154,12 +156,17 @@ const DropdownRNE = ({
   const [searchText, setSearchText] = useState("");
 
   const renderItem = (item) => {
+    const isDisabled = disabledItems.includes(item?.[keyValueGetOnSelect]);
     return (
       <View style={styles.item}>
-        <CustomText style={styles.textItem}>
+        <CustomText
+          style={[
+            styles.textItem,
+            { color: isDisabled ? "#aaa" : color.mainTxtColor },
+          ]}
+        >
           {item?.[keyValueShowInBox]}
         </CustomText>
-        {/* {item.value === value && <UpDownIcon />} */}
       </View>
     );
   };
@@ -205,6 +212,11 @@ const DropdownRNE = ({
           searchPlaceholder="Search..."
           value={value}
           onChange={(item) => {
+            const isDisabled = disabledItems.includes(
+              item?.[keyValueGetOnSelect],
+            );
+            if (isDisabled) return; // 🚫 block
+
             setValue(item?.[keyValueGetOnSelect]);
             onChange && onChange(item?.[keyValueGetOnSelect]);
             onSelect && onSelect(item);
