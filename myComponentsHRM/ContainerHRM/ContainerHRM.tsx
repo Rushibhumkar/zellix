@@ -1,9 +1,11 @@
 import {
+  Image,
   Platform,
   Pressable,
   StyleProp,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
@@ -29,7 +31,13 @@ import { removeItemValue } from "../../hooks/useAsyncStorage";
 import { onLogOutEmpty } from "../../redux/action";
 import { logOut } from "../../services/authApi/auth";
 import { Feather } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedView = Animated.createAnimatedComponent(View);
 interface TContainerHRM {
   children: ReactNode;
   childStyle?: StyleProp<ViewStyle>;
@@ -66,9 +74,11 @@ const ContainerHRM = ({
   const [logoutLoad, setLogoutLoad] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
+      await queryClient.clear();
       await logOut(user?._id);
       await removeItemValue("token");
       await removeItemValue("userDetail");
@@ -78,7 +88,7 @@ const ContainerHRM = ({
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
       setLogoutLoad(true);
     } catch (error) {
@@ -136,13 +146,13 @@ const ContainerHRM = ({
             style={styles.iconBtn}
           >
             <View style={styles.iconBadge} />
-            <Feather name="bell" size={22} color="#fff" />
+            <Feather name="bell" size={18} color="#fff" />
           </Pressable>
           <Pressable
             onPress={() => setMenuVisible(true)}
             style={styles.iconBtn}
           >
-            <Feather name="menu" size={22} color="#fff" />
+            <Feather name="menu" size={18} color="#fff" />
           </Pressable>
         </View>
       </LinearGradient>
@@ -174,9 +184,20 @@ const ContainerHRM = ({
             paddingBlock: 12,
           }}
         >
-          <Pressable onPress={goBack}>
+          {/* <Pressable onPress={goBack}>
             <BackIcon />
-          </Pressable>
+          </Pressable> */}
+
+          <AnimatedTouchableOpacity
+            style={styles.backButton}
+            onPress={() => (isBAck?.isGoBack ? isBAck?.isGoBack() : goBack())}
+          >
+            <Image
+              tintColor={color.white}
+              source={require("../../assets/Backicon.png")}
+              style={{ width: 16, height: 16 }}
+            />
+          </AnimatedTouchableOpacity>
 
           <CustomText
             fontSize={18}
@@ -266,10 +287,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
   },
+  // iconBtn: {
+  //   position: "relative",
+  //   padding: 8,
+  //   borderRadius: 50,
+  //   backgroundColor: "rgba(255,255,255,0.1)",
+  //   borderColor: "#ffffff29",
+  //   borderWidth: 2,
+  // },
+
   iconBtn: {
     position: "relative",
     padding: 8,
-    borderRadius: 50,
+    borderRadius: 12,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderColor: "#ffffff29",
     borderWidth: 2,
@@ -282,5 +312,12 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: "#FF3B30",
+  },
+  backButton: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 12,
+    padding: 8,
+    borderColor: "#ffffff29",
+    borderWidth: 2,
   },
 });

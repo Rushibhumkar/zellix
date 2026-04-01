@@ -1,166 +1,233 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Formik } from "formik";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
-import { ChangePasswordSchema } from "../../utils/validation";
 import { changePassword } from "../../services/rootApi/userApi";
 import { removeItemValue } from "../../hooks/useAsyncStorage";
-import Header from "../../components/Header";
+
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import CustomText from "../../myComponents/CustomText/CustomText";
 
+import { Ionicons } from "@expo/vector-icons";
+import Container from "../../myComponents/Container/Container";
+import Header from "../../components/Header";
+import { LinearGradient } from "expo-linear-gradient";
+
 const ChangePassword = () => {
   const { user } = useSelector(selectUser);
-  const [isLoading, setIsLoading] = useState(false);
   const { navigate } = useNavigation();
-  const initialValues = {
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  };
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [snackBar, setSnackBar] = useState({
     visible: false,
     text: "",
     error: false,
   });
 
+  // ✅ Validation check
+  const isDisabled =
+    !oldPassword ||
+    !newPassword ||
+    !confirmPassword ||
+    newPassword !== confirmPassword;
+
+  const handleSubmit = async () => {
+    if (isDisabled) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const payload = {
+        oldPassword,
+        newPassword,
+        confirmPassword,
+      };
+
+      const data = await changePassword(user?._id, payload);
+
+      if (data) {
+        await removeItemValue("token");
+        navigate("Login");
+      }
+    } catch (error: any) {
+      setSnackBar({
+        visible: true,
+        text: error?.response?.data || "Something went wrong",
+        error: true,
+      });
+    }
+
+    setIsLoading(false);
+  };
+
   return (
-    <View>
+    <Container style={styles.main}>
       <Header title={"Change Password"} />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
-      <ScrollView>
+      <LinearGradient
+        colors={["#2755ff", "#73aafc"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          height: 30,
+          borderBottomLeftRadius: 30,
+          borderBottomRightRadius: 30,
+        }}
+      ></LinearGradient>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? 30 : 30}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.container}
         >
+          <View style={styles.topCard}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="lock-closed" size={40} color="#3B6FD8" />
+            </View>
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={ChangePasswordSchema}
-            onSubmit={async (values) => {
-              try {
-                setIsLoading(true);
-                const data = await changePassword(user?._id, values);
-                if (data) {
-                  await removeItemValue("token");
-                  navigate("Login");
-                }
-              } catch (error) {
-                setSnackBar({
-                  visible: true,
-                  text: error?.response?.data,
-                  error: true,
-                });
-              }
-              setIsLoading(false);
-            }}
-          >
-            {({ handleChange, handleSubmit, values, errors, touched, handleBlur }) => (
-              <View>
-                <View>
+            <CustomText style={styles.title}>Update Password</CustomText>
 
-                  <CustomInput
-                    label="OldPassword"
-                    value={values.oldPassword}
-                    onChangeText={handleChange("oldPassword")}
-                    placeholder="Enter the old Password "
-                    onBlur={handleBlur('oldPassword')}
-                  />
-                  {errors.oldPassword && touched?.oldPassword && (
-                    <CustomText style={styles.errorText}>{errors.oldPassword}</CustomText>
-                  )}
-                </View>
-                <View style={{ marginTop: 17 }}>
+            <CustomText style={styles.subtitle}>
+              Create a strong password with at least 8 characters, including a
+              number and a symbol.
+            </CustomText>
+          </View>
 
-                  <CustomInput
-                    label="NewPassword"
-                    value={values.newPassword}
-                    onChangeText={handleChange("newPassword")}
-                    placeholder="Enter new password "
-                    onBlur={handleBlur('newPassword')}
-                  />
-                  {errors.newPassword && touched?.newPassword && (
-                    <CustomText style={styles.errorText}>{errors.newPassword}</CustomText>
-                  )}
-                </View>
-                <View style={{ marginTop: 17 }}>
+          <View style={styles.formCard}>
+            <CustomText style={styles.label}>CURRENT PASSWORD</CustomText>
+            <CustomInput
+              value={oldPassword}
+              onChangeText={(text: string) => {
+                console.log("Old Password:", text);
+                setOldPassword(text);
+              }}
+              secureTextEntry
+              containerStyle={styles.input}
+            />
 
-                  <CustomInput
-                    label="ConfirmPassword"
-                    value={values.confirmPassword}
-                    onChangeText={handleChange("confirmPassword")}
-                    placeholder="Confirm your password "
-                  />
-                  {errors.confirmPassword && touched?.confirmPassword && (
-                    <CustomText style={styles.errorText}>
-                      {errors.confirmPassword}
-                    </CustomText>
-                  )}
-                </View>
-                <CustomBtn
-                  title="Submit"
-                  isLoading={isLoading}
-                  onPress={handleSubmit}
-                  containerStyle={{ marginTop: 50 }}
-                />
-              </View>
+            <CustomText style={styles.label}>NEW PASSWORD</CustomText>
+            <CustomInput
+              value={newPassword}
+              onChangeText={(text: string) => {
+                setNewPassword(text);
+              }}
+              secureTextEntry
+              containerStyle={styles.input}
+            />
+
+            <CustomText style={styles.label}>CONFIRM NEW PASSWORD</CustomText>
+            <CustomInput
+              value={confirmPassword}
+              onChangeText={(text: string) => {
+                setConfirmPassword(text);
+              }}
+              secureTextEntry
+              containerStyle={styles.input}
+            />
+
+            {confirmPassword && newPassword !== confirmPassword && (
+              <CustomText style={styles.errorText}>
+                Passwords do not match
+              </CustomText>
             )}
-          </Formik>
+          </View>
+
+          <CustomBtn
+            title="Update Credentials"
+            isLoading={isLoading}
+            onPress={handleSubmit}
+            disabled={isDisabled}
+            containerStyle={styles.button}
+          />
         </KeyboardAvoidingView>
       </ScrollView>
-    </View>
+    </Container>
   );
 };
 
+export default ChangePassword;
+
 const styles = StyleSheet.create({
-  container: {
-    padding: 25,
-    marginTop: 20,
+  main: {
     flex: 1,
+    backgroundColor: "#F4F6FA",
   },
-  inpulable: {
-    color: "#000000",
-    fontSize: 16,
-    fontWeight: "500",
+  container: {
+    padding: 20,
   },
-  // input: {
-  //   height: 45,
-  //   marginTop: 10,
-  //   borderColor: "#000000",
-  //   borderWidth: 0.5,
-  //   borderRadius: 15,
-  //   padding: 10,
-  //   width: "100%",
-  // },
-  // submitbtn: {
-  //   marginTop: 50,
-  //   backgroundColor: "#2D67C6",
-  //   padding: 12,
-  //   width: "95%",
-  //   borderRadius: 10,
-  //   alignSelf: "center",
-  // },
-  // btntext: {
-  //   color: "#fff",
-  //   fontWeight: "600",
-  //   textAlign: "center",
-  //   fontSize: 20,
-  // },
+
+  topCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 25,
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  iconContainer: {
+    backgroundColor: "#E6ECF8",
+    padding: 20,
+    borderRadius: 50,
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#3B6FD8",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
+  formCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#6B7280",
+    marginTop: 15,
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  input: {
+    borderRadius: 15,
+    backgroundColor: "#F2F4F7",
+  },
+
+  button: {
+    marginTop: 25,
+    borderRadius: 30,
+  },
+
   errorText: {
     color: "red",
-    marginTop: 0,
+    fontSize: 12,
+    marginTop: 6,
   },
 });
-export default ChangePassword;

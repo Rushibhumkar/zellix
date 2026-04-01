@@ -507,9 +507,9 @@ export const FOLLOWUP_REQUIRED_STATUSES = [
   "not_able_to_connect",
   "active_cold",
   "active_hot",
-  "meeting_scheduled",
   "followUp_required",
-  "not_interested_buy_later",
+  // "meeting_scheduled",
+  // "not_interested_buy_later",
 ];
 
 export const leadTypeInAS = [

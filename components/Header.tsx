@@ -41,6 +41,7 @@ import Animated, {
   ZoomIn,
   ZoomOut,
 } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedTouchableOpacity =
@@ -91,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { goBack, navigate } = useNavigation();
   const insets = useSafeAreaInsets();
-
+  const queryClient = useQueryClient();
   const { user } = useSelector(selectUser);
   const [menuVisible, setMenuVisible] = React.useState(false);
   const dispatch = useDispatch();
@@ -102,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({
     setIsLoading(true);
     try {
       let a = await logOut(user?._id);
+      await queryClient.clear();
       await removeItemValue("token");
       await removeItemValue("userDetail");
       await dispatch(onLogOutEmpty());

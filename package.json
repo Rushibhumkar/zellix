@@ -31,6 +31,7 @@
     "expo-image-picker": "~17.0.8",
     "expo-linear-gradient": "~15.0.7",
     "expo-linking": "~8.0.8",
+    "expo-local-authentication": "~17.0.8",
     "expo-location": "~19.0.7",
     "expo-mail-composer": "~15.0.7",
     "expo-modules-autolinking": "^3.0.15",

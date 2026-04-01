@@ -27,8 +27,9 @@ import { baseURL, setBaseUrl } from "../../services/authApi/axiosInstance";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color } from "../../const/color";
-import { Feather } from "@expo/vector-icons";
+import { Entypo, Feather } from "@expo/vector-icons";
 import { iconWrapperStyle } from "../../const/globalStyle";
+import * as LocalAuthentication from "expo-local-authentication";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -58,6 +59,53 @@ const LoginScreen = () => {
     error: false,
   });
 
+  const handleBiometricLogin = async () => {
+    try {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+
+      const types =
+        await LocalAuthentication.supportedAuthenticationTypesAsync();
+      console.log("Supported types:", types);
+
+      if (!compatible) {
+        Alert.alert("Biometric not supported");
+        return;
+      }
+
+      const enrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (!enrolled) {
+        Alert.alert("No biometrics enrolled");
+        return;
+      }
+
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Login with Face ID",
+        fallbackLabel: "",
+        disableDeviceFallback: true,
+      });
+
+      console.log("AUTH RESULT:", result);
+
+      if (result.success) {
+        const savedEmail = await getData("bio_email");
+        const savedPassword = await getData("bio_password");
+
+        if (savedEmail && savedPassword) {
+          handleFormSubmit({
+            email: savedEmail,
+            password: savedPassword,
+          });
+        } else {
+          Alert.alert("Please login once manually");
+        }
+      } else {
+        Alert.alert("Face ID failed", "Please enter password manually");
+      }
+    } catch (e) {
+      console.log("Biometric error:", e);
+    }
+  };
   const handleFormSubmit = async (values: any) => {
     const deviceId = await getData("deviceId");
     setIsLoading(true);
@@ -72,6 +120,10 @@ const LoginScreen = () => {
         let isAdmin = res?.role === roleEnum.sup_admin;
         await storeData("token", res?.token);
         await storeDataJson("userDetail", { ...res, isAdmin });
+
+        await storeData("bio_email", values?.email);
+        await storeData("bio_password", values?.password);
+
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -142,12 +194,41 @@ const LoginScreen = () => {
                           </CustomText>
                         </Pressable>
                       </View>
+                      <View>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: "#E6ECF560",
+                            paddingVertical: 10,
+                            paddingHorizontal: 18,
+                            borderRadius: 18,
+                            marginTop: 20,
+                            gap: 12,
+                            borderColor: color.borderColor,
+                            borderWidth: 1,
+                          }}
+                          onPress={handleBiometricLogin}
+                        >
+                          <View style={styles.iconWrapper}>
+                            <Entypo name="fingerprint" size={26} color="#fff" />
+                          </View>
+
+                          <Text style={styles.text}>
+                            Sign in with Face ID / Touch ID
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                       <View style={styles.inputcontainer}>
                         <CustomInput
                           label=""
                           value={values.email}
                           onChangeText={handleChange("email")}
                           placeholder="Email Address "
+                          props={{
+                            autoCapitalize: "none",
+                            autoCorrect: false,
+                          }}
                           isShadow
                           onBlur={handleBlur("email")}
                           leftIcon={
@@ -192,7 +273,11 @@ const LoginScreen = () => {
                       </View>
 
                       <TouchableOpacity
-                        onPress={() => navigation.navigate("ForgetPassword")}
+                        onPress={() =>
+                          navigation.navigate("ForgetPassword", {
+                            email: values.email,
+                          })
+                        }
                       >
                         <CustomText
                           style={{
@@ -217,36 +302,6 @@ const LoginScreen = () => {
               </Formik>
             </KeyboardAvoidingView>
           </ScrollView>
-          {/* <Pressable
-            onLongPress={() => Alert.alert('Base URL(Plz click on Cancel)', `${baseURL}`, [
-              {
-                text: 'Cancel',
-                onPress: () => console.log('Ask me later pressed'),
-              },
-              {
-                text: 'Live Url',
-                onPress: () => setBaseUrl('https://api.crmaxproperty.com'),
-                style: 'cancel',
-              },
-              {
-                text: 'Test Url', onPress: () =>
-                  // setBaseUrl('https://axproperty-backend.onrender.com') 
-                  setBaseUrl(`https://axproperty-api-new.onrender.com`)
-              },
-
-            ])}
-
-            style={{
-              // backgroundColor: 'red',
-              width: 50,
-              height: 50,
-              position: 'absolute',
-              // top: 20,
-              // right: 20,
-              // borderRadius: 25,
-            }}
-          >
-          </Pressable> */}
         </ImageBackground>
       </SafeAreaView>
     </>
@@ -265,7 +320,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     position: "relative",
-    marginTop: 100,
+    marginTop: 40,
     marginVertical: 120,
     padding: 25,
   },
@@ -296,11 +351,15 @@ const styles = StyleSheet.create({
     marginTop: -30,
   },
   iconWrapper: {
-    backgroundColor: "#F9FBFD",
+    backgroundColor: color.mainTxtColor,
     borderWidth: 1,
     borderColor: "#739fe13a",
     padding: 6,
     borderRadius: 12,
+  },
+  text: {
+    fontSize: 16,
+    color: color.mainTxtColor,
   },
 });
 export default LoginScreen;

@@ -131,6 +131,7 @@ const LeadsDetails = () => {
   const toast = useAppToast();
   const { navigate } = useNavigation();
   const { user, lead } = useSelector(selectUser);
+
   const isSubSupSrMng =
     user?.role === roleEnum?.sub_admin ||
     user?.role === roleEnum?.sup_admin ||
@@ -178,8 +179,11 @@ const LeadsDetails = () => {
   }, [detail]);
 
   const [isMailAvail, setIsMailAvail] = useState(false);
+
   const isAdminOrAssigne =
     user?.role === "sup_admin" ||
+    user?.role === "sr_manager" ||
+    user?.role === "team_lead" ||
     user?.role === "sub_admin" ||
     detail?.assign?._id === user?._id;
 
@@ -376,22 +380,23 @@ const LeadsDetails = () => {
         return;
       }
 
-      if (
-        NOTE_REQUIRED_STATUSES.includes(fields.status) &&
-        !formik.values.note?.trim()
-      ) {
-        toast.error("Note is required for this status.");
-        return;
-      }
+      if (selectLeadType !== "calling_data") {
+        if (
+          NOTE_REQUIRED_STATUSES.includes(fields.status) &&
+          !formik.values.note?.trim()
+        ) {
+          toast.error("Note is required for this status.");
+          return;
+        }
 
-      // ✅ FOLLOWUP REQUIRED VALIDATION
-      if (
-        fields?.status &&
-        FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
-        (!tdForFUT?.date || !tdForFUT?.time)
-      ) {
-        toast.error("Follow up time is required for this status.");
-        return;
+        if (
+          fields?.status &&
+          FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
+          (!tdForFUT?.date || !tdForFUT?.time)
+        ) {
+          toast.error("Follow up time is required for this status.");
+          return;
+        }
       }
 
       setStatusLoading(true);
@@ -433,6 +438,7 @@ const LeadsDetails = () => {
       setShowChangeStatusPopup(false);
       setStatusLoading(false);
     } catch (err: any) {
+      myConsole("err", err);
       toast.error(err?.response?.data?.message || "Failed to update status");
       FUTModal.closeModal();
       setShowActionsMenu(false);
@@ -561,12 +567,13 @@ const LeadsDetails = () => {
   };
 
   const isSubmitDisabled =
-    (fields?.status &&
+    selectLeadType !== "calling_data" &&
+    ((fields?.status &&
       NOTE_REQUIRED_STATUSES.includes(fields.status) &&
       !formik.values.note?.trim()) ||
-    (fields?.status &&
-      FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
-      (!tdForFUT?.date || !tdForFUT?.time));
+      (fields?.status &&
+        FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
+        (!tdForFUT?.date || !tdForFUT?.time)));
 
   useEffect(() => {
     if (showChangeStatusPopup) {
@@ -580,7 +587,7 @@ const LeadsDetails = () => {
     }
   }, [showChangeStatusPopup]);
   // myConsole("tdForFUTtt", tdForFUT);
-
+  // myConsole("detail?.whatsapp", detail?.whatsapp);
   return (
     <>
       {activeTab === 1 && (

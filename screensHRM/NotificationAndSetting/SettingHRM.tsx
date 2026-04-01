@@ -23,6 +23,7 @@ import { EvilIcons } from "@expo/vector-icons";
 import { roleEnum } from "../../utils/data";
 import { routeProject } from "../../utils/routes";
 import ProjectIcon from "../../assets/svg/ProjectIcon";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SettingHRM = () => {
   const { navigate, dispatch: dispatchNav } = useNavigation();
@@ -34,12 +35,13 @@ const SettingHRM = () => {
   const isAgent = user?.role === roleEnum.agent;
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  //
+  const queryClient = useQueryClient();
   const handleLogout = async () => {
     setIsLoading(true);
     try {
       let a = await logOut(user?._id);
       // console.log('aLogOut', a)
+      await queryClient.clear();
       await removeItemValue("token");
       await removeItemValue("userDetail");
       await dispatch(onLogOutEmpty());
@@ -47,7 +49,7 @@ const SettingHRM = () => {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
     } catch (error) {
       console.error("Error logging out:", error);

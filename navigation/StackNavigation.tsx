@@ -94,6 +94,7 @@ import RSVPEventDetail from "../screens/RSVP/RSVPEventDetail";
 import RsvpFocus from "../assets/svg/RsvpFocus";
 import RsvpInfocus from "../assets/svg/RsvpInfocus";
 import { navigationRef } from "./navigationRef";
+import ProfileScreen from "../screens/Profile/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -622,6 +623,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="AdvanceSearch"
           component={AdvanceSearch}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProfileScreen"
+          component={ProfileScreen}
           options={{ headerShown: false }}
         />
         {/* hr mng */}

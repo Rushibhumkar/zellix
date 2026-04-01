@@ -1,3 +1,5 @@
+import { useAppToast } from "../components/AppToast";
+
 export const checkPermission = (perm, module, task, userRole) => {
   return userRole === "sup_admin" || perm[module]?.[task]?.value === true;
 };
@@ -115,4 +117,16 @@ export const getTimeAgo = (dateString: any) => {
 export const getInitials = (name = "") => {
   const words = name.split(" ");
   return words.length > 1 ? words[0][0] + words[1][0] : words[0]?.[0] || "";
+};
+
+export const getInitialsUsingTwoNames = (name = "", lastName = "") => {
+  const fullName = `${name} ${lastName}`.trim();
+  if (!fullName) return "";
+
+  const words = fullName.split(/\s+/);
+
+  const first = words[0][0].toUpperCase();
+  const last = words.length > 1 ? words[words.length - 1][0].toUpperCase() : "";
+
+  return first + last;
 };

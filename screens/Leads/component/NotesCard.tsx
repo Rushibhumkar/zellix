@@ -41,7 +41,6 @@ const NotesCard = ({
     user?.role === roleEnum?.sr_manager ||
     user?.role === roleEnum?.team_lead;
 
-  myConsole("selectLeadTypess", selectLeadType);
   return (
     <View style={{ marginBottom: 20 }}>
       {(noteArr ?? []).length === 0 ? (

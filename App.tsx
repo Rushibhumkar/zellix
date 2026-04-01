@@ -89,6 +89,28 @@ export default function App() {
         }
       });
 
+    // 👇 ADD THIS BLOCK
+    (async () => {
+      const response = await Notifications.getLastNotificationResponseAsync();
+
+      if (response) {
+        const notData = response?.notification?.request?.content?.data;
+
+        console.log("🔥 INITIAL CLICK:", notData);
+
+        if (notData?.module === "leads" && notData?.id) {
+          setTimeout(() => {
+            navigate("allLead2", {
+              screen: "LeadsDetails",
+              params: {
+                item: { _id: notData.id },
+              },
+            });
+          }, 500); // important delay
+        }
+      }
+    })();
+
     return () => {
       console.log("Cleaning notification listeners");
       notificationListener.current?.remove();

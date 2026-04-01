@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  Linking,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
@@ -28,6 +35,9 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import { useAppToast } from "../../components/AppToast";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+import RenderRow from "../../myComponents/RenderRow";
+import * as Clipboard from "expo-clipboard";
 
 const whichStatus = {
   Cancel: "leaveCancelById",
@@ -56,7 +66,8 @@ const LeaveDetail = () => {
     open: false,
     which: "Approve", //Reject
   });
-  console.log("remarks", remarks);
+  // console.log("remarks", remarks);
+  myConsole("leaveDetailById", leaveDetailById);
   useEffect(() => {
     let aa = dummyLeaveDetail?.map((el, i) => {
       if (data?.hasOwnProperty(el?.key)) {
@@ -73,7 +84,7 @@ const LeaveDetail = () => {
     setLeaveDetailById(aa);
   }, [data, isRefetching]);
   const handleApproveReject = async (
-    key: "leaveRejectById" | "leaveApproveById"
+    key: "leaveRejectById" | "leaveApproveById",
   ) => {
     try {
       toggleModal(" ");
@@ -93,7 +104,6 @@ const LeaveDetail = () => {
         toast.success(resAcceptRejectLeave?.message ?? "--");
     } catch (error) {}
   };
-
   const onRefresh = () => {
     try {
       setRefreshing(true);
@@ -129,13 +139,14 @@ const LeaveDetail = () => {
       {!isAgentTl && (
         <>
           {[statusKeyHRM.approved, statusKeyHRM.cancel]?.indexOf(
-            data?.status
+            data?.status,
           ) === -1 && (
             <View
               style={{
                 flexDirection: "row",
                 paddingBottom: 10,
                 paddingTop: 20,
+                alignSelf: "flex-end",
               }}
             >
               <CustomBtn
@@ -183,23 +194,51 @@ const LeaveDetail = () => {
           )}
         </>
       )}
+
       <FlatList
         data={leaveDetailById}
         renderItem={({ item, index }) => {
-          return item?.heading ? (
-            <TitleInDetail title={item?.title} />
-          ) : (
-            <RowItemDetail
-              title={item?.title}
-              value={item?.value}
-              isDate={item?.isDate}
-              containerStyle={{ marginBottom: item?.mb }}
-              component={
-                item?.key === "attachments" && (
-                  <ImageViewModal imagesUri={item?.value} />
-                )
-              }
-            />
+          console.log("index", index);
+          const respondentData = {
+            name: leaveDetailById?.find((i) => i?.key === "name")?.value,
+            role: leaveDetailById?.find((i) => i?.key === "role")?.value,
+            mobile: leaveDetailById?.find((i) => i?.key === "mobile")?.value,
+            email: leaveDetailById?.find((i) => i?.key === "email")?.value,
+          };
+          if (
+            item?.heading &&
+            item?.title?.toLowerCase().includes("respondent")
+          ) {
+            return (
+              <RespondentDetails item={respondentData} isFirst toast={toast} />
+            );
+          }
+
+          if (["name", "role", "mobile", "email"].includes(item?.key)) {
+            return null;
+          }
+
+          if (item?.heading) {
+            return (
+              <TitleInDetail title={item?.title} boxStyle={{ marginTop: 12 }} />
+            );
+          }
+
+          return (
+            <View style={{ marginBottom: item?.mb }}>
+              {item?.key === "attachments" ? (
+                <ImageViewModal imagesUri={item?.value} />
+              ) : (
+                <RenderRow
+                  label={item?.title}
+                  value={
+                    item?.isDate
+                      ? new Date(item?.value).toLocaleDateString()
+                      : item?.value
+                  }
+                />
+              )}
+            </View>
           );
         }}
         keyExtractor={(item, index) => index.toString()}
@@ -212,6 +251,7 @@ const LeaveDetail = () => {
                   item={item}
                   isFirst={index === 0}
                   isLast={index === data?.respondentDetails?.length - 1}
+                  toast={toast}
                 />
               );
             }}
@@ -242,33 +282,134 @@ const LeaveDetail = () => {
 
 export default LeaveDetail;
 
-const RespondentDetails = ({ item, isFirst, isLast }) => {
+const RespondentDetails = ({ item, isFirst, toast }: any) => {
+  const getInitials = (name: string) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const handleCopy = async (text: string, label: string) => {
+    if (!text) return;
+    await Clipboard.setStringAsync(text);
+    toast.success(`${label} copied to clipboard`);
+  };
   return (
-    <View
-      style={{
-        borderWidth: 1.8,
-        borderColor: color.borderColor,
-        padding: 12,
-        borderRadius: 12,
-        marginTop: 12,
-      }}
-    >
-      {isFirst && <TitleInDetail title={"Respondent Details"} />}
-      <RowItemDetail
-        title={"Name"}
-        value={item?.name ?? "-"}
-        containerStyle={{ marginBottom: 10 }}
-      />
-      <RowItemDetail
-        title={"Role"}
-        value={item?.role ?? "-"}
-        containerStyle={{ marginBottom: 10 }}
-      />
-      <RowItemDetail
-        title={"Remarks"}
-        value={item?.remarks ?? "-"}
-        containerStyle={{ marginBottom: 15 }}
-      />
+    <View style={styles.card}>
+      {isFirst && (
+        <CustomText style={styles.sectionTitle}>Respondent Details</CustomText>
+      )}
+
+      {/* TOP ROW */}
+      <View style={styles.topRow}>
+        <View style={styles.avatar}>
+          <CustomText style={styles.avatarText}>
+            {getInitials(item?.name || "")}
+          </CustomText>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <CustomText style={styles.name}>{item?.name ?? "N/A"}</CustomText>
+
+          <CustomText style={styles.subText}>{item?.role ?? "-"}</CustomText>
+        </View>
+      </View>
+
+      {/* CONTACT ROW */}
+      <View style={styles.contactRow}>
+        {/* PHONE */}
+        <TouchableOpacity
+          style={styles.iconBox}
+          onPress={() => Linking.openURL(`tel:${item?.mobile}`)}
+          onLongPress={() => handleCopy(item?.mobile, "Mobile number")}
+        >
+          <Feather name="phone" size={18} color="#2E67BE" />
+        </TouchableOpacity>
+
+        {/* EMAIL */}
+        <TouchableOpacity
+          style={styles.iconBox}
+          onPress={() => Linking.openURL(`mailto:${item?.email}`)}
+          onLongPress={() => handleCopy(item?.email, "Email")}
+        >
+          <Feather name="mail" size={18} color="#2E67BE" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "#E6EAF0",
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2E67BE",
+    marginBottom: 10,
+  },
+
+  avatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: "#E8EEF7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+
+  avatarText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#2E67BE",
+  },
+
+  name: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2F3A4A",
+    marginBottom: 4,
+  },
+
+  subRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+
+  subText: {
+    fontSize: 13,
+    color: "#8C97A8",
+    marginRight: 4,
+  },
+  contactRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+
+  iconBox: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#F5F8FD",
+    borderRadius: 10,
+    marginHorizontal: 4,
+  },
+});

@@ -25,20 +25,26 @@ import { onLogOutEmpty } from "../../redux/action";
 import SkeletonView from "../../myComponents/SkeletonView/SkeletonView";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { myConsole } from "../../hooks/useConsole";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  getInitials,
+  getInitialsUsingTwoNames,
+} from "../../utils/commonFunctions";
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
   const { navigate } = useNavigation();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
-
   const handleLogout = async () => {
     setIsLoading(true);
     try {
       let a = await logOut(user?._id);
+      await queryClient.clear();
       await removeItemValue("token");
       await removeItemValue("userDetail");
       await dispatch(onLogOutEmpty());
@@ -144,6 +150,14 @@ const DashbordHeader = () => {
               {/* <Pressable onPress={() => null} style={styles.iconBtn}>
                 <Feather name="search" size={18} color="#fff" />
               </Pressable> */}
+              <TouchableOpacity
+                onPress={() => navigate("ProfileScreen")} // change if needed
+                style={styles.avatarBtn}
+              >
+                <CustomText style={styles.avatarText}>
+                  {getInitialsUsingTwoNames(user?.name, user?.lastName)}
+                </CustomText>
+              </TouchableOpacity>
               <Pressable
                 onPress={() => navigate("Notification")}
                 style={styles.iconBtn}
@@ -151,6 +165,7 @@ const DashbordHeader = () => {
                 <View style={styles.iconBadge} />
                 <Feather name="bell" size={18} color="#fff" />
               </Pressable>
+
               <Pressable
                 onPress={() => setMenuVisible(true)}
                 style={styles.iconBtn}
@@ -231,6 +246,24 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: "#FF3B30",
+  },
+
+  avatarBtn: {
+    height: 36,
+    width: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: "#ffffff40",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    marginRight: -2,
+  },
+
+  avatarText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });
 

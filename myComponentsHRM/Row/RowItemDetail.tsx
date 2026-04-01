@@ -38,8 +38,8 @@ const RowItemDetail = ({
     typeof title === "string"
       ? title
       : typeof title === "object" && "props" in title
-      ? title.props?.children ?? "N/A"
-      : "N/A";
+        ? (title.props?.children ?? "N/A")
+        : "N/A";
   let customValue = "-";
   if (safeTitle === "Interview Date & Time") {
     customValue =

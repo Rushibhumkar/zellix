@@ -7,7 +7,7 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Formik } from "formik";
 import { ForgetSchema } from "../../utils/validation";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
@@ -23,7 +23,9 @@ import { Feather } from "@expo/vector-icons";
 const ForgetPassword = () => {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
-  const initialValues = { email: "" };
+  const route = useRoute();
+  const emailFromLogin = route?.params?.email || "";
+  const initialValues = { email: emailFromLogin };
   const [snackBar, setSnackBar] = useState({
     visible: false,
     text: "",
@@ -150,11 +152,9 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   divider: {
-    borderBottomColor: "#2D67C6",
     width: "70%",
     margin: "auto",
     alignSelf: "center",
-    borderBottomWidth: 1,
     marginVertical: 10,
   },
   forgetinput: {
