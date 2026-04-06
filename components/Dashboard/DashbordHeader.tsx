@@ -150,14 +150,16 @@ const DashbordHeader = () => {
               {/* <Pressable onPress={() => null} style={styles.iconBtn}>
                 <Feather name="search" size={18} color="#fff" />
               </Pressable> */}
-              <TouchableOpacity
-                onPress={() => navigate("ProfileScreen")} // change if needed
-                style={styles.avatarBtn}
-              >
-                <CustomText style={styles.avatarText}>
-                  {getInitialsUsingTwoNames(user?.name, user?.lastName)}
-                </CustomText>
-              </TouchableOpacity>
+              {user?.name && (
+                <TouchableOpacity
+                  onPress={() => navigate("ProfileScreen")}
+                  style={styles.avatarBtn}
+                >
+                  <CustomText style={styles.avatarText}>
+                    {getInitialsUsingTwoNames(user?.name, user?.lastName)}
+                  </CustomText>
+                </TouchableOpacity>
+              )}
               <Pressable
                 onPress={() => navigate("Notification")}
                 style={styles.iconBtn}

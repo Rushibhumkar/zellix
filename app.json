@@ -19,16 +19,16 @@
       "bundleIdentifier": "com.skg.zellix",
       "bundleNumber": "1.8.5",
       "supportsTablet": true,
-      "buildNumber": "130",
+      "buildNumber": "131",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features.",
-         "NSFaceIDUsageDescription": "Use Face ID to login"
+        "NSFaceIDUsageDescription": "Use Face ID to login"
       }
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 130,
+      "versionCode": 131,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
