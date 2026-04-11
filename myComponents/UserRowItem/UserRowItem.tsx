@@ -35,8 +35,8 @@ const UserRowItem = ({
             backgroundColor: isSelected
               ? color.selectedBg
               : bgColor
-              ? bgColor
-              : color.listCardBg,
+                ? bgColor
+                : color.listCardBg,
           },
         ]}
         onPress={!!onPress ? onPress : undefined}
@@ -59,7 +59,7 @@ const UserRowItem = ({
                 {
                   textTransform: "capitalize",
                   color: color.mainTxtColor,
-                  marginBottom: 4,
+                  marginBottom: 2,
                 },
               ]}
             >
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.4,
     borderRadius: 14,
     paddingHorizontal: 10,
-    marginHorizontal: 16,
-    paddingVertical: 15,
+    marginHorizontal: 12,
+    paddingVertical: 12,
     borderColor: color.borderColor,
     backgroundColor: color.white,
     alignItems: "center",
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   box1: {
     width: "10%",
     paddingRight: 3,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "400",
     color: color.mainTxtColor,
   },

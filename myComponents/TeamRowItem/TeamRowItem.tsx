@@ -40,8 +40,8 @@ const TeamRowItem = ({
             backgroundColor: isSelected
               ? color.selectedBg
               : bgColor
-              ? bgColor
-              : color.listCardBg,
+                ? bgColor
+                : color.listCardBg,
           },
         ]}
         activeOpacity={1}
@@ -78,18 +78,18 @@ const styles = StyleSheet.create({
     borderWidth: 1.4,
     borderRadius: 14,
     paddingHorizontal: 10,
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderColor: color.borderColor,
     backgroundColor: color.white,
     flexDirection: "row",
     alignItems: "center",
     ...shadowPrimaryColor,
-    marginHorizontal: 20,
+    marginHorizontal: 12,
   },
   box1: {
     width: "10%",
     paddingRight: 3,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "400",
     color: color.mainTxtColor,
   },

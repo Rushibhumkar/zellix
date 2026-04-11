@@ -40,24 +40,20 @@ import {
   FOLLOWUP_REQUIRED_STATUSES,
   formatRoleName,
   inLeadStatus,
-  leadTypeObj,
   NOTE_REQUIRED_STATUSES,
   roleEnum,
   statusObj,
-  userTypes,
 } from "../../utils/data";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
 import AddNote from "./component/AddNote";
 import NotesCard from "./component/NotesCard";
-import LeadUserInfo from "./component/LeadUserInfo";
 import LeadLogsInfo from "./component/LeadLogsInfo";
 import TabButton from "./component/TabButton";
 import MeetingInfo from "./component/MeetingInfo";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
-import CancelIcon from "../../assets/svg/CancelIcon";
 import { sendFollowUpNotification } from "../../services/rootApi/notificationApi";
 import {
   checkPermission,
@@ -67,25 +63,16 @@ import {
 } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
-import {
-  AntDesign,
-  Feather,
-  Fontisto,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import {
   headerIconWrapperStyle,
-  iconWrapperStyle,
   shadowPrimaryColor,
 } from "../../const/globalStyle";
-import IconWrapper from "../../components/IconWrapper";
 import { useAppToast } from "../../components/AppToast";
 import { initiateCall } from "../../services/rootApi/callApi";
 import AssignmentRow from "./component/AssignmentRow";
 import ActionButton from "./component/ActionButton";
 import * as Clipboard from "expo-clipboard";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import NotesSection from "./component/NotesSection";
 import { useFormik } from "formik";
 import { changeStatusSchema } from "../../utils/validation";
 
@@ -433,6 +420,8 @@ const LeadsDetails = () => {
         queryKey: [queryKeyCRM.getLead],
       });
 
+      await queryClient.refetchQueries({ queryKey: ["all-reminders"] });
+
       FUTModal.closeModal();
       setShowActionsMenu(false);
       setShowChangeStatusPopup(false);
@@ -607,7 +596,13 @@ const LeadsDetails = () => {
                 ? "Calling Data Info"
                 : "Lead Details"
             }
-            onBack={() => navigate(routeLead.allLead)}
+            onBack={() => {
+              if (params?.from === "reminders") {
+                navigate("Reminders"); // 👈 go back to reminders
+              } else {
+                navigate(routeLead.allLead);
+              }
+            }}
             rightSide={
               <>
                 {isLeadEdit && canEditLead && (

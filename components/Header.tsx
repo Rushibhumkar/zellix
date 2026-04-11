@@ -58,11 +58,11 @@ interface HeaderProps {
   onPressAdd?: () => void;
   isWithAnimation?: boolean;
   totalCount?: number;
-  onCloseSearch: () => void;
+  onCloseSearch?: () => void;
   moduleName?: string;
   rightSide?: React.ReactNode;
   showNotiIcon?: boolean;
-  onSelectLeadType: () => void;
+  onSelectLeadType?: () => void;
   showSearch?: boolean;
   buttons?: {
     title?: string;
@@ -252,7 +252,10 @@ const Header: React.FC<HeaderProps> = ({
                       //   isWithAnimation ? ZoomOut.duration(200) : undefined
                       // }
                       onPress={onPressFilter}
-                      style={styles.iconBtn}
+                      style={[
+                        styles.iconBtn,
+                        !!onCloseSearch && { backgroundColor: "#fff" },
+                      ]}
                     >
                       {!!onCloseSearch && (
                         <AnimatedTouchableOpacity
@@ -273,12 +276,16 @@ const Header: React.FC<HeaderProps> = ({
                           <AntDesign
                             name="close"
                             size={10}
-                            color={color.white}
+                            color={color.mainTxtColor}
                             style={{ padding: 2 }}
                           />
                         </AnimatedTouchableOpacity>
                       )}
-                      <Feather name="filter" size={20} color="#fff" />
+                      <Feather
+                        name="filter"
+                        size={20}
+                        color={!!onCloseSearch ? color.mainTxtColor : "#fff"}
+                      />
                     </AnimatedPressable>
                   )}
 

@@ -106,7 +106,11 @@ const DashbordHeader = () => {
                 />
               ) : (
                 <CustomText style={styles.userName}>
-                  {`${user?.name || ""} ${user?.lastName || ""}`.trim()}
+                  {(() => {
+                    const fullName =
+                      `${user?.name || ""} ${user?.lastName || ""}`.trim();
+                    return fullName.length <= 14 ? fullName : user?.name || "";
+                  })()}
                 </CustomText>
               )}
 
@@ -160,6 +164,14 @@ const DashbordHeader = () => {
                   </CustomText>
                 </TouchableOpacity>
               )}
+
+              <Pressable
+                onPress={() => navigate("Reminders")}
+                style={styles.iconBtn}
+              >
+                <Feather name="clock" size={18} color="#fff" />
+              </Pressable>
+
               <Pressable
                 onPress={() => navigate("Notification")}
                 style={styles.iconBtn}

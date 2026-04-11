@@ -6,8 +6,8 @@ import { CommonActions } from "@react-navigation/native";
 import { navigationRef } from "../../navigation/navigationRef";
 import { myConsole } from "../../hooks/useConsole";
 
-// let testURL = "https://zellix-backend.onrender.com";
-let testURL = "https://zellix-backend-1.onrender.com";
+let testURL = "http://192.168.1.106:5001";
+// let testURL = "https://zellix-backend-1.onrender.com";
 
 const isLive = true;
 

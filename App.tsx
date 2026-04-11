@@ -18,6 +18,7 @@ import { myConsole } from "./hooks/useConsole";
 import * as Updates from "expo-updates";
 import { Alert, Linking } from "react-native";
 import GlobalPopupManager from "./myComponents/GlobalPopup/GlobalPopupManager";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 if (!BackHandler.removeEventListener) {
   BackHandler.removeEventListener = (type, handler) => true;
@@ -150,23 +151,25 @@ export default function App() {
 
   return (
     <>
-      <PopupRootProvider>
-        <QueryClientProvider client={queryClient}>
-          <Provider store={store}>
-            <ToastProvider
-              placement="top"
-              offset={16}
-              duration={2500}
-              swipeEnabled
-            >
-              <StackNavigation />
-              <GlobalPopupManager />
-              <UpdateChecker />
-              <ModalPortal />
-            </ToastProvider>
-          </Provider>
-        </QueryClientProvider>
-      </PopupRootProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PopupRootProvider>
+          <QueryClientProvider client={queryClient}>
+            <Provider store={store}>
+              <ToastProvider
+                placement="top"
+                offset={16}
+                duration={2500}
+                swipeEnabled
+              >
+                <StackNavigation />
+                <GlobalPopupManager />
+                <UpdateChecker />
+                <ModalPortal />
+              </ToastProvider>
+            </Provider>
+          </QueryClientProvider>
+        </PopupRootProvider>
+      </GestureHandlerRootView>
     </>
   );
 }

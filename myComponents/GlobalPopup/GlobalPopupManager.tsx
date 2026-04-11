@@ -5,6 +5,8 @@ import {
   useGetUserReminders,
   useMarkReminderAsRead,
 } from "../../services/remainderPopup/remainderPopupApi";
+import { myConsole } from "../../hooks/useConsole";
+import { navigationRef } from "../../navigation/navigationRef";
 
 const GlobalPopupManager = () => {
   const { data, isFetching } = useGetUserReminders();
@@ -13,13 +15,12 @@ const GlobalPopupManager = () => {
   const [queue, setQueue] = useState<any[]>([]);
   const [current, setCurrent] = useState<any | null>(null);
 
-  /* 🔒 Disable back button when popup is visible */
   useEffect(() => {
     if (!current) return;
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
-      () => true
+      () => true,
     );
 
     return () => backHandler.remove();
@@ -40,6 +41,19 @@ const GlobalPopupManager = () => {
     }
   }, [data]);
 
+  const handleOpenLead = () => {
+    if (!current?.leadId) return;
+
+    if (navigationRef.isReady()) {
+      navigationRef.navigate("allLead2", {
+        screen: "LeadsDetails",
+        params: {
+          item: { _id: current.leadId },
+        },
+      });
+    }
+  };
+
   /* 📌 Read button handler */
   const handleRead = async () => {
     if (!current?._id || isPending) return;
@@ -57,7 +71,7 @@ const GlobalPopupManager = () => {
       console.log("Mark read failed", e);
     }
   };
-
+  // myConsole("currenttt", current);
   if (!current) return null;
 
   return (
@@ -67,6 +81,7 @@ const GlobalPopupManager = () => {
       message={current.message}
       loading={isPending || isFetching}
       onRead={handleRead}
+      onOpen={handleOpenLead}
     />
   );
 };

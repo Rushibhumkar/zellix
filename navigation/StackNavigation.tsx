@@ -95,6 +95,7 @@ import RsvpFocus from "../assets/svg/RsvpFocus";
 import RsvpInfocus from "../assets/svg/RsvpInfocus";
 import { navigationRef } from "./navigationRef";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
+import Reminders from "../screens/Auth/Reminders";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -608,6 +609,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="Notification"
           component={Notification}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Reminders"
+          component={Reminders}
           options={{ headerShown: false }}
         />
         <Stack.Screen

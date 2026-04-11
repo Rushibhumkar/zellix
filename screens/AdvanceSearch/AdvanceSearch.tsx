@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -127,6 +128,7 @@ const AdvanceSearch = () => {
   const { navigate } = useNavigation();
   const dispatch = useDispatch();
   const isFocus = useIsFocused();
+  const [resetKey, setResetKey] = useState(0);
   const { user, developer, leadQueryKey, bookingQueryKey, meetingQueryKey } =
     useSelector(selectUser);
   const developerSort = [...developer]?.sort((a, b) =>
@@ -187,17 +189,26 @@ const AdvanceSearch = () => {
     setValues,
   } = useFormik({
     initialValues: {
-      // startDate: dd.setDate(dd.getDate() - 5),
-      initialValues: {
-        startDate: null,
-        endDate: null,
-      },
-      // ...(onlyLead && { type: 'lead' })
+      startDate: null,
+      endDate: null,
+      assignedAt: null,
+      status: [],
     },
     onSubmit: async (value) => {
       setIsLoading(true);
       try {
-        const sendData = { ...values };
+        const sendData = {
+          ...values,
+          startDate: values.startDate
+            ? new Date(values.startDate).toISOString()
+            : null,
+          endDate: values.endDate
+            ? new Date(values.endDate).toISOString()
+            : null,
+          assignedAt: values.assignedAt
+            ? new Date(values.assignedAt).toISOString()
+            : null,
+        };
 
         if (category === "booking") {
           dispatch(setBookingQueryKey(sendData));
@@ -224,6 +235,7 @@ const AdvanceSearch = () => {
       }
     },
   });
+
   const onDateSelect = (key, value) => {
     setTempDate((prev) => ({
       ...prev,
@@ -231,7 +243,6 @@ const AdvanceSearch = () => {
     }));
     setFieldValue(key, value || null);
   };
-
   useEffect(() => {
     if (category === "booking") {
       setValues(bookingQueryKey ?? {});
@@ -284,24 +295,37 @@ const AdvanceSearch = () => {
               />
             )}
             <DatePickerExpo
+              key={`startDate-${resetKey}`}
               title="Start Date"
               boxContainerStyle={{ marginBottom: 15 }}
               onSelect={(v) => onDateSelect("startDate", v)}
               initialValue={values?.startDate}
             />
             <DatePickerExpo
+              key={`endDate-${resetKey}`}
               title="End Date"
               boxContainerStyle={{ marginBottom: 15 }}
               onSelect={(v) => onDateSelect("endDate", v)}
               initialValue={values?.endDate}
             />
+            <DatePickerExpo
+              key={`assignedAt-${resetKey}`}
+              title="Assigned At"
+              boxContainerStyle={{ marginBottom: 15 }}
+              onSelect={(v) => onDateSelect("assignedAt", v)}
+              initialValue={values?.assignedAt}
+            />
             <DropdownRNE
+              key={`status-${resetKey}`}
               label="Status"
               placeholder="Status"
               // arrOfObj={inMeetingStatus}
+              isMultiSelect
               arrOfObj={advanceStatus[category] || inLeadStatus}
               containerStyle={{ marginBottom: 15 }}
-              onChange={(v) => setFieldValue("status", v)}
+              onChange={(v) =>
+                setFieldValue("status", Array.isArray(v) ? v : [v])
+              }
               isAdvanceSearch
               initialValue={values?.status}
             />
@@ -320,6 +344,7 @@ const AdvanceSearch = () => {
             {onlyBooking && (
               <>
                 <DropdownRNE
+                  key={`dropdown-${resetKey}`}
                   label="Type"
                   containerStyle={{ marginBottom: 15 }}
                   arrOfObj={leadTypeInAS}
@@ -366,6 +391,7 @@ const AdvanceSearch = () => {
                 >
                   {onlyBooking && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{ width: 150, marginEnd: 10 }}
                       dropdownStyle={{
@@ -381,6 +407,7 @@ const AdvanceSearch = () => {
                   )}
                   {!onlyBooking && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{
                         width: 80,
@@ -411,6 +438,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Developer"
                 arrOfObj={developerSort?.length > 0 ? developerSort : []}
                 // dropdownPosition='top'
@@ -449,6 +477,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Booking Status"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={inputStatusOptions}
@@ -462,6 +491,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Business Status"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={[
@@ -479,6 +509,7 @@ const AdvanceSearch = () => {
 
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Payment Status"
                 containerStyle={{ marginBottom: 15 }}
                 isMultiSelect={true}
@@ -492,6 +523,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Mode of Payment"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={ModeOfPayment}
@@ -505,6 +537,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
+                key={`dropdown-${resetKey}`}
                 label="Token"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={tokenInBooking}
@@ -520,6 +553,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdmin && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       label="Sr Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="sr_manager"
@@ -536,6 +570,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdminSrManager && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       label="Team Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="manager"
@@ -551,6 +586,7 @@ const AdvanceSearch = () => {
 
                   {isAdminSrManagerManager && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       label="Assistant Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="assistant_manager"
@@ -567,6 +603,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdminSrMngMngAssistantMng && (
                     <DropdownRNE
+                      key={`dropdown-${resetKey}`}
                       label="Team Lead"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="team_lead"
@@ -581,6 +618,7 @@ const AdvanceSearch = () => {
                 </>
                 {!isAgent && (
                   <DropdownRNE
+                    key={`dropdown-${resetKey}`}
                     label="Agents"
                     containerStyle={{ marginBottom: 15 }}
                     keyName="agent"
@@ -602,6 +640,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdmin && (
                         <DropdownRNE
+                          key={`dropdown-${resetKey}`}
                           label="Sr Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="sr_manager"
@@ -618,6 +657,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdminSrManager && (
                         <DropdownRNE
+                          key={`dropdown-${resetKey}`}
                           label="Team Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="manager"
@@ -632,6 +672,7 @@ const AdvanceSearch = () => {
                       )}
                       {isAdminSrManagerManager && (
                         <DropdownRNE
+                          key={`dropdown-${resetKey}`}
                           label="Assistant Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="assistant_manager"
@@ -648,6 +689,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdminSrMngMngAssistantMng && (
                         <DropdownRNE
+                          key={`dropdown-${resetKey}`}
                           label="Team Lead"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="team_lead"
@@ -662,6 +704,7 @@ const AdvanceSearch = () => {
                     </>
                     {!isAgent && (
                       <DropdownRNE
+                        key={`dropdown-${resetKey}`}
                         label="Agents"
                         containerStyle={{ marginBottom: 15 }}
                         keyName="agent"
@@ -696,7 +739,7 @@ const AdvanceSearch = () => {
             /> */}
           </View>
         </ScrollView>
-        <CustomBtn
+        {/* <CustomBtn
           title="Apply"
           onPress={handleSubmit}
           isLoading={isLoading}
@@ -706,7 +749,60 @@ const AdvanceSearch = () => {
             alignSelf: "center",
             width: 200,
           }}
-        />
+        /> */}
+        <View
+          style={{
+            position: "absolute",
+            top: Platform.OS === "ios" ? HEIGHT * 0.75 : HEIGHT * 0.8,
+            alignSelf: "center",
+            flexDirection: "row",
+            gap: 10,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              resetForm({
+                values: {
+                  startDate: null,
+                  endDate: null,
+                  assignedAt: null,
+                  status: [],
+                },
+              });
+
+              setTempDate({ startDate: null, endDate: null });
+
+              dispatch(setBookingQueryKey(null));
+              dispatch(setLeadQueryKey(null));
+              dispatch(setMeetingQueryKey(null));
+
+              setCategory(category);
+              setResetKey((prev) => prev + 1);
+            }}
+            style={{
+              width: 120,
+              borderWidth: 1,
+              borderColor: color.mainTxtColor,
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 10,
+              height: 45,
+            }}
+          >
+            <CustomText style={{ color: color.mainTxtColor }}>
+              Clear All
+            </CustomText>
+          </TouchableOpacity>
+
+          <CustomBtn
+            title="Apply"
+            onPress={handleSubmit}
+            isLoading={isLoading}
+            containerStyle={{
+              width: 120,
+            }}
+          />
+        </View>
       </Container>
     </>
   );

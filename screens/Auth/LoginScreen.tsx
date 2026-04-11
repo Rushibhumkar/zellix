@@ -23,7 +23,6 @@ import { roleEnum } from "../../utils/data";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { myConsole } from "../../hooks/useConsole";
-import { baseURL, setBaseUrl } from "../../services/authApi/axiosInstance";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color } from "../../const/color";
