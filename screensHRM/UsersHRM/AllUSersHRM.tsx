@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 180,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     paddingTop: 10,
   },
   rowContainer: {

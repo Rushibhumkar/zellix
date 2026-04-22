@@ -462,23 +462,6 @@ const AllLeads = () => {
                   <TouchableOpacity
                     style={[
                       styles.tab,
-                      selectLeadType === "calling_data" && styles.activeTab,
-                    ]}
-                    onPress={() => handleTab("calling_data")}
-                  >
-                    <CustomText
-                      style={[
-                        styles.tabText,
-                        selectLeadType === "calling_data" && styles.activeText,
-                      ]}
-                    >
-                      Calling Data
-                    </CustomText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.tab,
                       selectLeadType === "lead" && styles.activeTab,
                     ]}
                     onPress={() => handleTab("lead")}
@@ -490,6 +473,22 @@ const AllLeads = () => {
                       ]}
                     >
                       Leads
+                    </CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      selectLeadType === "calling_data" && styles.activeTab,
+                    ]}
+                    onPress={() => handleTab("calling_data")}
+                  >
+                    <CustomText
+                      style={[
+                        styles.tabText,
+                        selectLeadType === "calling_data" && styles.activeText,
+                      ]}
+                    >
+                      Calling Data
                     </CustomText>
                   </TouchableOpacity>
                 </View>

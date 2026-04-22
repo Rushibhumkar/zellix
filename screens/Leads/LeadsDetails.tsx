@@ -597,11 +597,7 @@ const LeadsDetails = () => {
                 : "Lead Details"
             }
             onBack={() => {
-              if (params?.from === "reminders") {
-                navigate("Reminders"); // 👈 go back to reminders
-              } else {
-                navigate(routeLead.allLead);
-              }
+              navigate(routeLead.allLead);
             }}
             rightSide={
               <>

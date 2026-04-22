@@ -7,6 +7,8 @@ import {
 } from "../../services/remainderPopup/remainderPopupApi";
 import { myConsole } from "../../hooks/useConsole";
 import { navigationRef } from "../../navigation/navigationRef";
+import { markReminderAsCompleted } from "../../services/rootApi/remaindersApi";
+import { socket } from "../../screens/Dashboard/Dashboard";
 
 const GlobalPopupManager = () => {
   const { data, isFetching } = useGetUserReminders();
@@ -14,6 +16,7 @@ const GlobalPopupManager = () => {
 
   const [queue, setQueue] = useState<any[]>([]);
   const [current, setCurrent] = useState<any | null>(null);
+  // myConsole("current", current);
 
   useEffect(() => {
     if (!current) return;
@@ -41,16 +44,74 @@ const GlobalPopupManager = () => {
     }
   }, [data]);
 
-  const handleOpenLead = () => {
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReminderDue = (data: any) => {
+      // ✅ add new reminder to queue
+      console.log("🔥 reminder:due socket data =>", data);
+      if (!data?.isRead) {
+        setQueue((prev) => {
+          const updated = [...prev, data];
+          if (!current) setCurrent(updated[0]);
+          return updated;
+        });
+      }
+    };
+
+    const handleReminderCompleted = (data: any) => {
+      console.log("✅ reminder:completed socket data =>", data);
+      // ✅ remove completed reminder
+      setQueue((prev) => {
+        const filtered = prev.filter((item) => item._id !== data?._id);
+        setCurrent(filtered.length > 0 ? filtered[0] : null);
+        return filtered;
+      });
+    };
+
+    socket.on("reminder:due", handleReminderDue);
+    socket.on("reminder:completed", handleReminderCompleted);
+
+    return () => {
+      socket.off("reminder:due", handleReminderDue);
+      socket.off("reminder:completed", handleReminderCompleted);
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("🟢 Socket Connected:", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("🔴 Socket Disconnected");
+    });
+  }, []);
+
+  const handleOpenLead = async () => {
     if (!current?.leadId) return;
 
-    if (navigationRef.isReady()) {
-      navigationRef.navigate("allLead2", {
-        screen: "LeadsDetails",
-        params: {
-          item: { _id: current.leadId },
-        },
+    try {
+      // ✅ mark as completed before navigation
+      await markReminderAsCompleted(current._id);
+
+      if (navigationRef.isReady()) {
+        navigationRef.navigate("allLead2", {
+          screen: "LeadsDetails",
+          params: {
+            item: { _id: current.leadId },
+          },
+        });
+      }
+
+      // ✅ remove from queue after success
+      setQueue((prev) => {
+        const remaining = prev.slice(1);
+        setCurrent(remaining.length > 0 ? remaining[0] : null);
+        return remaining;
       });
+    } catch (e) {
+      console.log("Mark completed failed", e);
     }
   };
 

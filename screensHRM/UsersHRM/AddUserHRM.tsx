@@ -101,7 +101,7 @@ const AddUserHRM = () => {
     <ContainerHRM
       isBAck={{
         title: update ? "Update User" : "Add User",
-        isGoBack: () => console.log("first"),
+        isGoBack: goBack,
       }}
     >
       <ScrollViewWithKeyboardAvoid>

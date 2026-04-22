@@ -1,4 +1,5 @@
 // src/components/Dashboard/DashbordHeader.tsx
+import { useGetNotificationInCRM } from "../../hooks/useGetQuerryHRM";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
@@ -33,6 +34,7 @@ import {
 
 const DashbordHeader = () => {
   const { user } = useSelector(selectUser);
+
   const { navigate } = useNavigation();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
@@ -62,6 +64,8 @@ const DashbordHeader = () => {
       setIsLoading(false);
     }
   };
+
+  const { data: notifiData } = useGetNotificationInCRM({ id: user?._id });
 
   return (
     <LinearGradient
@@ -109,7 +113,7 @@ const DashbordHeader = () => {
                   {(() => {
                     const fullName =
                       `${user?.name || ""} ${user?.lastName || ""}`.trim();
-                    return fullName.length <= 14 ? fullName : user?.name || "";
+                    return fullName.length <= 8 ? fullName : user?.name || "";
                   })()}
                 </CustomText>
               )}
@@ -176,7 +180,9 @@ const DashbordHeader = () => {
                 onPress={() => navigate("Notification")}
                 style={styles.iconBtn}
               >
-                <View style={styles.iconBadge} />
+                {notifiData?.some((item) => !item?.seen) && (
+                  <View style={styles.iconBadge} />
+                )}
                 <Feather name="bell" size={18} color="#fff" />
               </Pressable>
 

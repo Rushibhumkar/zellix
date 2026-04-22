@@ -3,7 +3,7 @@
     "name": "zellix",
     "scheme": "zellix",
     "slug": "zellix",
-    "version": "1.8.5",
+    "version": "1.8.7",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -17,9 +17,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.8.5",
+      "bundleNumber": "1.8.7",
       "supportsTablet": true,
-      "buildNumber": "131",
+      "buildNumber": "132",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features.",
@@ -28,7 +28,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 131,
+      "versionCode": 133,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -81,7 +81,7 @@
       "expo-updates"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "1.8.5",
+    "runtimeVersion": "1.8.7",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
@@ -92,7 +92,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "1.8.5"
+      "appVersion": "1.8.7"
     },
     "android.buildType": "app-bundle"
   }

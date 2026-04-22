@@ -6,7 +6,7 @@ import { CommonActions } from "@react-navigation/native";
 import { navigationRef } from "../../navigation/navigationRef";
 import { myConsole } from "../../hooks/useConsole";
 
-let testURL = "http://192.168.1.106:5001";
+let testURL = "http://192.168.0.121:5001";
 // let testURL = "https://zellix-backend-1.onrender.com";
 
 const isLive = true;
@@ -27,7 +27,7 @@ axiosInstance.interceptors.request.use(
   async (request: any) => {
     const token = await getData("token");
 
-    // myConsole("tokennn", token);r
+    // myConsole("tokennn", token);
 
     if (request.headers) {
       if (token !== "null") {
@@ -61,7 +61,7 @@ axiosInstance.interceptors.response.use(
       await removeItemValue("userDetail");
 
       store.dispatch(onLogOutEmpty());
-      //
+
       // if (navigationRef.isReady()) {
       //   navigationRef.dispatch(
       //     CommonActions.reset({
@@ -70,6 +70,7 @@ axiosInstance.interceptors.response.use(
       //     })
       //   );
       // }
+
       setTimeout(() => {
         navigationRef.dispatch(
           CommonActions.reset({

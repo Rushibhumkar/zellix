@@ -120,10 +120,10 @@ export default function App() {
   }, []);
 
   LogBox.ignoreAllLogs(true);
-  console.log("insedeappp.tsxfile");
-  console.log("OTA enabled:", Updates.isEnabled);
-  console.log("OTA channel:", Updates.channel);
-  console.log("OTA runtime:", Updates.runtimeVersion);
+  // console.log("insedeappp.tsxfile");
+  // console.log("OTA enabled:", Updates.isEnabled);
+  // console.log("OTA channel:", Updates.channel);
+  // console.log("OTA runtime:", Updates.runtimeVersion);
   console.log("🔥 OTA VERSION 2");
 
   useEffect(() => {

@@ -145,14 +145,14 @@ const AllAttendance = () => {
                         permission,
                         "HRMS",
                         "viewAttendanceDetails",
-                        user?.role
+                        user?.role,
                       );
 
                       if (canViewDetails) {
                         navigate(routeAttendance.AttendanceDetail, { item });
                       } else {
                         popUpConfToast.errorMessage(
-                          "You are not authorized to view attendance details."
+                          "You are not authorized to view attendance details.",
                         );
                       }
                     }}
@@ -165,14 +165,14 @@ const AllAttendance = () => {
                         permission,
                         "HRMS",
                         "viewAttendanceDetails",
-                        user?.role
+                        user?.role,
                       );
 
                       if (canViewDetails) {
                         navigate(routeAttendance.AttendanceDetail, { item });
                       } else {
                         popUpConfToast.errorMessage(
-                          "You are not authorized to view attendance details."
+                          "You are not authorized to view attendance details.",
                         );
                       }
                     }}
@@ -229,14 +229,14 @@ const AllAttendance = () => {
                   permission,
                   "HRMS",
                   "viewAttendanceDetails",
-                  user?.role
+                  user?.role,
                 );
 
                 if (canViewDetails) {
                   navigate(routeAttendance.UserAttendanceList, { item });
                 } else {
                   popUpConfToast.errorMessage(
-                    "You are not authorized to view attendance details."
+                    "You are not authorized to view attendance details.",
                   );
                 }
               }}
@@ -249,21 +249,21 @@ const AllAttendance = () => {
                   permission,
                   "HRMS",
                   "viewAttendanceDetails",
-                  user?.role
+                  user?.role,
                 );
 
                 if (canViewDetails) {
                   navigate(routeAttendance.AttendanceDetail, { item });
                 } else {
                   popUpConfToast.errorMessage(
-                    "You are not authorized to view attendance details."
+                    "You are not authorized to view attendance details.",
                   );
                 }
               }}
             />
           );
         }}
-        contentContainerStyle={{ paddingBottom: 80, padding: 20, gap: 10 }}
+        contentContainerStyle={{ paddingBottom: 160, padding: 20, gap: 10 }}
         onEndReached={onEndReach}
         onEndReachedThreshold={0.5}
         ListFooterComponent={

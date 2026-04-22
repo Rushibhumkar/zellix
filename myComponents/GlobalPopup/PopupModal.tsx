@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { color } from "../../const/color";
 
 interface Props {
   visible: boolean;
@@ -40,17 +41,6 @@ const PopupModal = ({
 
           <Text style={styles.message}>{message}</Text>
           <View style={styles.btnRow}>
-            {/* Reschedule Button */}
-            {/* <TouchableOpacity
-              style={[styles.button, styles.outlineBtn]}
-              activeOpacity={0.8}
-              onPress={() => null}
-            >
-              <Text style={[styles.buttonText, { color: "#2563EB" }]}>
-                Reschedule
-              </Text>
-            </TouchableOpacity> */}
-
             {/* Read Button */}
             <TouchableOpacity
               style={styles.button}
@@ -71,7 +61,12 @@ const PopupModal = ({
               activeOpacity={0.8}
               onPress={onOpen}
             >
-              <Feather name="external-link" size={20} color="#2563EB" />
+              {/* <Feather name="external-link" size={20} color="#2563EB" /> */}
+              {loading ? (
+                <ActivityIndicator color={color.mainTxtColor} />
+              ) : (
+                <Text style={{ color: color.mainTxtColor }}>OPEN</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -123,8 +118,7 @@ const styles = StyleSheet.create({
   btnRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
+    gap: 10, // keep gap for spacing
     marginTop: 8,
   },
 
@@ -135,8 +129,8 @@ const styles = StyleSheet.create({
   },
 
   iconBtn: {
-    height: 40,
-    width: 40,
+    flex: 1, // ✅ add this
+    height: 40, // ✅ same height as button
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#2563EB",

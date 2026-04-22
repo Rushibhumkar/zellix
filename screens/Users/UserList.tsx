@@ -1,6 +1,6 @@
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
-import { FlatList, Platform, View } from "react-native";
+import { Animated, FlatList, Platform, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
@@ -17,6 +17,7 @@ import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import UserListHeading from "../../components/User/UserListHeading";
 import SkeletonLoadingUser from "../../components/User/SkeletonLoadingUser";
 import { myConsole } from "../../hooks/useConsole";
+import { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 const roleType = {
   sr_manager: "Sr manager",
@@ -38,7 +39,13 @@ const UserList = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState();
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
+  const [showHeaderActions, setShowHeaderActions] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
+  const [focusSearch, setFocusSearch] = useState(false);
 
   const [snackBar, setSnackBar] = useState({
     visible: false,
@@ -111,7 +118,21 @@ const UserList = () => {
 
   return (
     <Container>
-      <Header title={"Users"} />
+      <Header
+        title={"Users"}
+        showActions={true}
+        onPressAdd={() => navigate("addUsers")}
+        showSearch={showSearch}
+        moduleName={"userCRM"}
+        isWithAnimation
+        totalCount={allUsers.length ?? ""}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        onPressFilter={() => navigate("AdvanceSearch", { type: "userCRM" })}
+      />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <View>
@@ -119,7 +140,8 @@ const UserList = () => {
             <TitleWithAddDelete
               arrLength={!!selectedUser?._id ? 1 : 0}
               title="User"
-              onPressToNavigate={() => navigate("addUsers")}
+              // onPressToNavigate={() => navigate("addUsers")}
+              showAddBtn={false}
               onPressToEdit={() => {
                 navigate("addUsers", { data: { ...selectedUser } });
                 setSelectedUser({});
@@ -158,18 +180,27 @@ const UserList = () => {
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             ListHeaderComponent={
               <>
-                <SearchBar
-                  onClickCancel={() => {
-                    setSearchValue("");
-                    setFilteredUser([...allUsers]);
-                  }}
-                  value={searchValue}
-                  onChangeText={(v) => handleFilterTextOnChange(v)}
-                  containerStyle={{
-                    marginBottom: 15,
-                  }}
-                />
-                <UserListHeading />
+                {showSearch && (
+                  <Animated.View
+                    entering={FadeInDown.duration(180)}
+                    exiting={FadeOutUp.duration(150)}
+                  >
+                    <SearchBar
+                      onClickCancel={() => {
+                        setSearchValue("");
+                        setFilteredUser([...allUsers]);
+                      }}
+                      isWithAnimation
+                      autoFocus={focusSearch}
+                      value={searchValue}
+                      onChangeText={(v) => handleFilterTextOnChange(v)}
+                      containerStyle={{
+                        marginBottom: 15,
+                      }}
+                    />
+                  </Animated.View>
+                )}
+                {/* <UserListHeading /> */}
               </>
             }
             ListHeaderComponentStyle={{ marginBottom: 10, marginTop: -6 }}

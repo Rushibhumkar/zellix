@@ -1,6 +1,6 @@
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { FlatList, Platform, View, Text } from "react-native";
+import { FlatList, Platform, View, Text, Animated } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { selectUser } from "../../redux/userSlice";
@@ -22,15 +22,24 @@ import { routeTeam } from "../../utils/routes";
 import { sizes } from "../../const";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { LinearGradient } from "expo-linear-gradient";
+import { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
 const TeamList = () => {
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const { team, user, loading } = useSelector(selectUser);
   const dispatch = useDispatch();
+  const { navigate } = useNavigation();
   const [filteredTeam, setFilteredTeam] = useState([]);
-  const [searchValue, setSearchValue] = useState("");
   //
+
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  const [showHeaderActions, setShowHeaderActions] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
+  const [focusSearch, setFocusSearch] = useState(false);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +116,21 @@ const TeamList = () => {
 
   return (
     <Container>
-      <Header title={"Teams"} />
+      <Header
+        title={"Teams"}
+        showActions
+        onPressAdd={() => navigation.navigate("addTeam")}
+        showSearch={showSearch}
+        moduleName={"teamCRM"}
+        isWithAnimation
+        totalCount={team?.length}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        onPressFilter={() => navigate("AdvanceSearch", { type: "userCRM" })}
+      />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
       {true ? (
         <View>
@@ -117,7 +140,8 @@ const TeamList = () => {
               <TitleWithAddDelete
                 arrLength={!!selectedTeam?._id ? 1 : 0}
                 title="Team"
-                onPressToNavigate={() => navigation.navigate("addTeam")}
+                showAddBtn={false}
+                // onPressToNavigate={() => navigation.navigate("addTeam")}
                 onPressToEdit={() => {
                   navigation.navigate("addTeam", { data: selectedTeam });
                   setSelectedTeam({});
@@ -149,23 +173,32 @@ const TeamList = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               paddingBottom: Platform.OS === "ios" ? 270 : 250,
-              paddingTop: 10,
+              paddingTop: 20,
             }}
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             ListHeaderComponent={
               <>
-                <SearchBar
-                  onClickCancel={() => {
-                    setSearchValue("");
-                    setFilteredTeam([...team]);
-                  }}
-                  value={searchValue}
-                  onChangeText={(v) => handleFilterTextOnChange(v)}
-                  containerStyle={{
-                    marginTop: 15,
-                  }}
-                />
-                <TeamListHeading />
+                {showSearch && (
+                  <Animated.View
+                    entering={FadeInDown.duration(180)}
+                    exiting={FadeOutUp.duration(150)}
+                  >
+                    <SearchBar
+                      onClickCancel={() => {
+                        setSearchValue("");
+                        setFilteredTeam([...team]);
+                      }}
+                      isWithAnimation
+                      autoFocus={focusSearch}
+                      value={searchValue}
+                      onChangeText={(v) => handleFilterTextOnChange(v)}
+                      containerStyle={{
+                        marginTop: 15,
+                      }}
+                    />
+                  </Animated.View>
+                )}
+                {/* <TeamListHeading /> */}
               </>
             }
             ListHeaderComponentStyle={{ marginBottom: 10, marginTop: -20 }}

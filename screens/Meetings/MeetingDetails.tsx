@@ -4,63 +4,39 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import * as Linking from "expo-linking";
-import { useFormik } from "formik";
 import moment from "moment";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import * as MailComposer from "expo-mail-composer";
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Header from "../../components/Header";
 import { Formik } from "formik";
-import {
-  AntDesign,
-  Feather,
-  MaterialCommunityIcons,
-  Ionicons,
-} from "@expo/vector-icons";
-import RowItem from "../../myComponents/RowItem/RowItem";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import Container from "../../myComponents/Container/Container";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllMeetingFunc } from "../../redux/action";
 import { selectUser, setCallDetect } from "../../redux/userSlice";
-import MainTitle from "../../myComponents/MainTitle/MainTitle";
-import EditIcon from "../../assets/svg/EditIcon";
 import { routeBooking, routeMeeting } from "../../utils/routes";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
-import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import { myConsole } from "../../hooks/useConsole";
-import {
-  deleteMeeting,
-  meetingRescheduled,
-} from "../../services/rootApi/meetingApi";
 // import ConfirmationCodeInput from "react-native-confirmation-code-input";
 import { meetingOtpGenerate } from "../../services/rootApi/meetingApi";
 import { meetingConduct } from "../../services/rootApi/meetingApi";
 import { meetingOtpVerify } from "../../services/rootApi/meetingApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import MapView, {
-  Marker,
-  AnimatedRegion,
-  PROVIDER_DEFAULT,
-  PROVIDER_GOOGLE,
-} from "react-native-maps";
 import { HEIGHT, WIDTH } from "../../const/deviceInfo";
 import CustomMapView from "../../myComponents/CustomMapView/CustomMapView";
-import CustomGooglePlacesSearch from "../../myComponents/CustomGooglePlacesSearch/CustomGooglePlacesSearch";
-import { userTypes, meetingStatus, roleEnum } from "../../utils/data";
+import { meetingStatus, roleEnum } from "../../utils/data";
 import * as Location from "expo-location";
 import { color } from "../../const/color";
 import { navigateToMapApp } from "../../utils/navigateToMapApp";

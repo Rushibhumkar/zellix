@@ -99,10 +99,15 @@ const AddEvent = ({ route }: any) => {
       <Header title={eventData ? "Update Event" : "Add Event"} />
       <Container>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
+          keyboardVerticalOffset={80}
         >
-          <ScrollView contentContainerStyle={styles.container}>
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}
@@ -147,7 +152,7 @@ const AddEvent = ({ route }: any) => {
                     onSelect={(d: any) =>
                       setFieldValue(
                         "startDate",
-                        d instanceof Date ? d : new Date(d)
+                        d instanceof Date ? d : new Date(d),
                       )
                     }
                     initialValue={values.startDate}
@@ -166,7 +171,7 @@ const AddEvent = ({ route }: any) => {
                     onSelect={(d: any) =>
                       setFieldValue(
                         "endDate",
-                        d instanceof Date ? d : new Date(d)
+                        d instanceof Date ? d : new Date(d),
                       )
                     }
                     initialValue={values.endDate}
