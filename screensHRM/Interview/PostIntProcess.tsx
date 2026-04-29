@@ -90,7 +90,7 @@ const PostIntProcess = () => {
           queryKey: ["getAllCandidates"],
         });
         popUpConfToast.successMessage(
-          "Post-interview process submitted successfully!"
+          "Post-interview process submitted successfully!",
         );
         formik.resetForm();
         goBack();
@@ -106,7 +106,7 @@ const PostIntProcess = () => {
   return (
     <ContainerHRM ph={20} isBAck={{ title: "Post Interview Process" }}>
       <ScrollViewWithKeyboardAvoid>
-        <View style={{ paddingBottom: 80 }}>
+        <View style={{ paddingBottom: 140 }}>
           <CustomText style={styles.title}>
             Confirmation of Offer Acceptance
           </CustomText>

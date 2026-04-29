@@ -1,10 +1,8 @@
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
   Switch,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -12,14 +10,7 @@ import React, { useEffect, useState } from "react";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { myConsole } from "../../hooks/useConsole";
-import RowItem from "../../myComponents/RowItem/RowItem";
-import TitleInDetail from "../../myComponentsHRM/TitleHRM/TitleInDetail";
-import RowItemDetail from "../../myComponentsHRM/Row/RowItemDetail";
-import {
-  useNavigation,
-  useRoute,
-  CommonActions,
-} from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { dummyUserDetail } from "../../utils/dummyData";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { color } from "../../const/color";
@@ -28,30 +19,25 @@ import { routeUser } from "../../utils/routesHRM";
 import { useUserDetailHRM } from "../../hooks/useGetQuerryHRM";
 import {
   deleteDeviceId,
-  leadPool,
   leadPoolRestriction,
   userApproved,
 } from "../../services/hrmApi/userHrmApi";
+import * as Linking from "expo-linking";
+import { Feather } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { statusHRM } from "../../utils/hrmKeysMatchToBE";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import PleaseWait from "../../myComponentsHRM/PleaseWait/PleaseWait";
-import LoadingModal from "../../myComponentsHRM/LoadingCompo/LoadingModal";
-import { queryKeyHRM } from "../../utils/queryKeys";
 import ImageViewModal from "../../myComponentsHRM/ImageViewModal/ImageViewModal";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
-import LeaveAppRemark from "../LeaveHRM/components/LeaveAppRemark";
-import { leaveApproveReject } from "../../services/hrmApi/leaveHrmApi";
 import LeadPoolRestriction from "./components/LeadpoolRestriction";
 import DeleteIcon from "../../assets/svg/DeleteIcon";
 import { popupModal2 } from "../../utils/toastFunction";
 import { useAppToast } from "../../components/AppToast";
+import moment from "moment";
 
 const UserDetailHRM = () => {
-  const navigation = useNavigation(); // ✅ Define navigation at the top
+  const navigation = useNavigation();
   const { goBack, navigate } = navigation;
   const { params } = useRoute();
   const paramsData = params?.item;
@@ -61,8 +47,7 @@ const UserDetailHRM = () => {
   const [isPoolRestrict, setIsPoolRestrict] = useState(
     params?.item?.isPoolRestrict,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Add loading state
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubSup =
     user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
   const { data, isLoading, refetch } = useUserDetailHRM({
@@ -72,6 +57,16 @@ const UserDetailHRM = () => {
   const [useDetail, setUseDetail] = useState(dummyUserDetail);
   const [isLoadingApprove, setIsLoadingApprove] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleCall = (phone: string) => {
+    if (!phone) return;
+    Linking.openURL(`tel:${phone}`);
+  };
+
+  const handleEmail = (email: string) => {
+    if (!email) return;
+    Linking.openURL(`mailto:${email}`);
+  };
 
   useEffect(() => {
     let aa = dummyUserDetail?.map((el, i) => {
@@ -139,26 +134,6 @@ const UserDetailHRM = () => {
     toggleModal("Approve"); // Open modal instead of setting state directly
   };
 
-  // const sendValue = async (value: boolean) => {
-  //   try {
-  //     const sendData = { userId: params?.item?._id, isPoolRestrict: value };
-
-  //     const response = await leadPoolRestriction(sendData);
-  //     if (response?.success) {
-  //       toast.success("Updated successfully");
-  //       navigate(routeUser.AllUSersHRM) ;
-  //       refetch() ;
-  //     } else {
-  //       throw new Error(response?.message || "Failed to update");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending switch value:", error);
-  //     toast.error(
-  //       "Failed to update restriction. Please try again."
-  //     );
-  //   }
-  // };
-
   const toast = useAppToast();
 
   const sendValue = async (value: boolean) => {
@@ -225,78 +200,78 @@ const UserDetailHRM = () => {
     });
   };
 
+  const handleOpenAttachment = (url: string) => {
+    if (!url) return;
+    Linking.openURL(url);
+  };
+
   return (
     <ContainerHRM
       isBAck={{
         title: "User Details",
         isGoBack: () => goBack(),
-        isEdit: () => navigate(routeUser.AddUserHRM, { item: paramsData }),
+        isEdit: () =>
+          navigate(routeUser.AddUserHRM, {
+            item: paramsData,
+          }),
       }}
       isLoading={isLoading}
     >
-      <View>
-        <View style={styles.leadPoolText}>
-          <CustomText
-            style={{
-              marginHorizontal: 20,
-              fontWeight: "600",
-              fontSize: 16,
-              color: color.mainTxtColor,
-            }}
-          >
-            Lead Pool Restriction
-          </CustomText>
-          <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={isPoolRestrict ? color.mainTxtColor : "#f4f3f4"}
-            ios_backgroundColor={color.mainTxtColorFade}
-            onValueChange={toggleSwitch}
-            value={isPoolRestrict}
-          />
+      <View style={styles.container}>
+        {/* TOP ACTION CARD */}
+        <View style={styles.topCard}>
+          <View style={styles.switchRow}>
+            <View>
+              <CustomText style={styles.switchTitle}>
+                Lead Pool Restriction
+              </CustomText>
+
+              <CustomText style={styles.switchSubTitle}>
+                Restrict user from lead pool access
+              </CustomText>
+            </View>
+
+            <Switch
+              trackColor={{
+                false: "#CBD5E1",
+                true: "#BFDBFE",
+              }}
+              thumbColor={isPoolRestrict ? "#2563EB" : "#FFFFFF"}
+              ios_backgroundColor="#CBD5E1"
+              onValueChange={toggleSwitch}
+              value={isPoolRestrict}
+            />
+          </View>
+
+          {isSubSup && params?.item?.status !== "approved" && (
+            <View style={styles.actionRow}>
+              <CustomBtn
+                title="Accept"
+                containerStyle={styles.acceptBtn}
+                textStyle={styles.acceptBtnText}
+                onPress={userApprovedByAdmin}
+                isLoading={isLoadingApprove}
+              />
+
+              <OutlineBtn
+                title="Send to Update"
+                onPress={() =>
+                  navigate(routeUser.SendToUpdate, {
+                    item: params?.item,
+                  })
+                }
+                containerStyle={styles.updateBtn}
+                textStyle={styles.updateBtnText}
+              />
+            </View>
+          )}
         </View>
 
-        {isSubSup && (
-          <>
-            {params?.item?.status !== "approved" && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  margin: 20,
-                }}
-              >
-                <CustomBtn
-                  title="Accept"
-                  containerStyle={{
-                    minWidth: "30%",
-                    marginEnd: 20,
-                  }}
-                  textStyle={{
-                    fontSize: 14,
-                  }}
-                  onPress={userApprovedByAdmin}
-                  isLoading={isLoadingApprove}
-                />
-                <OutlineBtn
-                  title="Send to Update"
-                  onPress={() =>
-                    navigate(routeUser.SendToUpdate, { item: params?.item })
-                  }
-                  textStyle={{
-                    fontSize: 14,
-                  }}
-                />
-              </View>
-            )}
-          </>
-        )}
+        {/* DETAIL LIST */}
         <FlatList
           data={useDetail}
           keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={{
-            paddingTop: 10,
-            paddingHorizontal: 20,
-            paddingBottom: 290,
-          }}
+          contentContainerStyle={styles.listContainer}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -320,66 +295,114 @@ const UserDetailHRM = () => {
             }
 
             if (item?.heading) {
-              return <TitleInDetail title={item?.title} />;
+              return (
+                <View style={styles.headingContainer}>
+                  <CustomText style={styles.headingText}>
+                    {item?.title}
+                  </CustomText>
+                </View>
+              );
             }
 
             return (
-              <RowItemDetail
-                title={
-                  <CustomText style={{ color: color.mainTxtColor }}>
-                    {item?.title}
-                  </CustomText>
-                }
-                value={
-                  isDevices ? (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                        gap: 8,
-                      }}
-                    >
-                      <CustomText
-                        style={{
-                          fontSize: 14,
-                          fontWeight: "300",
-                          maxWidth: 150,
-                          color: color.mainTxtColor,
-                        }}
-                        // numberOfLines={2}
-                        // ellipsizeMode="tail"
-                      >
-                        {Array.isArray(item?.value)
-                          ? item?.value.join(", ")
-                          : (item?.value ?? "-")}
-                      </CustomText>
+              <View
+                style={[
+                  styles.infoCard,
+                  {
+                    marginBottom: item?.mb || 12,
+                  },
+                ]}
+              >
+                <View style={[styles.leftSection, { flex: 1 }]}>
+                  <View style={styles.iconBox}>
+                    <CustomText style={styles.iconText}>
+                      {item?.title?.charAt(0)}
+                    </CustomText>
+                  </View>
 
-                      {isSubSup && <DeleteIcon onPress={handleDeleteDevices} />}
-                    </View>
-                  ) : (
-                    (item?.value ?? "-")
-                  )
-                }
-                containerStyle={{ marginBottom: item?.mb }}
-                component={
-                  isAtt.includes(item?.key) && (
-                    <ImageViewModal imagesUri={item?.value} />
-                  )
-                }
-                isDate={item?.isDate}
-              />
+                  <View style={{ flex: 1, overflow: "hidden" }}>
+                    <CustomText style={styles.label}>{item?.title}</CustomText>
+
+                    {isDevices ? (
+                      <View style={styles.actionRowItem}>
+                        <View style={{ flex: 1 }}>
+                          <CustomText style={styles.value} numberOfLines={3}>
+                            {Array.isArray(item?.value)
+                              ? item?.value.join(", ")
+                              : item?.value || "-"}
+                          </CustomText>
+                        </View>
+
+                        {isSubSup && (
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={handleDeleteDevices}
+                            style={styles.actionIcon}
+                          >
+                            <Feather name="trash-2" size={16} color="#DC2626" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    ) : (
+                      <View style={styles.valueRow}>
+                        <CustomText style={styles.value}>
+                          {item?.isDate
+                            ? moment(item?.value).isValid()
+                              ? moment(item?.value).format("DD MMM YYYY")
+                              : "N/A"
+                            : item?.value || "-"}
+                        </CustomText>
+
+                        {item?.key === "mobile" && !!item?.value && (
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => handleCall(item?.value)}
+                            style={styles.actionIcon}
+                          >
+                            <Feather
+                              name="phone-call"
+                              size={16}
+                              color="#2563EB"
+                            />
+                          </TouchableOpacity>
+                        )}
+
+                        {item?.key === "email" && !!item?.value && (
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => handleEmail(item?.value)}
+                            style={styles.actionIcon}
+                          >
+                            <Feather name="mail" size={16} color="#2563EB" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+
+                    {isAtt.includes(item?.key) && (
+                      <View
+                        style={{
+                          marginTop: 12,
+                        }}
+                      >
+                        <ImageViewModal imagesUri={item?.value} />
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </View>
             );
           }}
         />
 
+        {/* MODAL */}
         <ModalWithBlur visible={openModal?.open}>
           <LeadPoolRestriction
             heading="Lead Pool Restriction"
             subHeadingText="Do you want to restrict this user from the lead pool?"
             onPressSubmit={handleSubmitRestriction}
             onPressCancel={() => toggleModal(" ")}
-            isLoading={isSubmitting} // ✅ Pass loading state
+            isLoading={isSubmitting}
           />
         </ModalWithBlur>
       </View>
@@ -390,11 +413,159 @@ const UserDetailHRM = () => {
 export default UserDetailHRM;
 
 const styles = StyleSheet.create({
-  leadPoolText: {
+  container: {
+    flex: 1,
+  },
+
+  valueRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
     justifyContent: "space-between",
-    paddingRight: 16,
+    gap: 10,
+  },
+  actionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+
+  actionRowItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
+
+  attachmentRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  topCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  switchTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+
+  switchSubTitle: {
+    fontSize: 12,
+    color: "#64748B",
+    marginTop: 4,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 18,
+    gap: 12,
+  },
+
+  acceptBtn: {
+    flex: 1,
+    borderRadius: 12,
+    minHeight: 46,
+  },
+
+  acceptBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  updateBtn: {
+    flex: 1,
+    borderRadius: 12,
+    minHeight: 46,
+  },
+
+  updateBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 260,
+  },
+
+  headingContainer: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+
+  headingText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+
+  infoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  iconText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#2563EB",
+  },
+
+  label: {
+    fontSize: 12,
+    color: "#64748B",
+    marginBottom: 4,
+  },
+
+  value: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1E293B",
+    lineHeight: 20,
+  },
+
+  deviceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
   },
 });

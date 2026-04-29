@@ -86,7 +86,7 @@ export const HeaderReferralList = () => {
           borderRadius: 14,
           justifyContent: "space-between",
           flexDirection: "row",
-          marginHorizontal: 16,
+          marginHorizontal: 12,
           marginTop: 16,
         },
       ]}
@@ -118,11 +118,10 @@ export const HeaderReferralList = () => {
 
 const styles = StyleSheet.create({
   mainlistcontainer: {
-    borderWidth: 1.8,
     padding: 13,
     borderRadius: 14,
     borderColor: color.borderColor,
-    marginHorizontal: 20,
+    marginHorizontal: 12,
     ...shadowPrimaryColor,
   },
   headingContainer: {

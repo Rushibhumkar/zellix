@@ -222,12 +222,11 @@ const Remainders = () => {
                     <CustomText style={styles.title}>
                       {item?.leadId?.clientName || "N/A"}
                     </CustomText>
-
-                    {/* <View style={styles.statusBadge}>
+                    <View style={styles.statusBadge}>
                       <CustomText style={styles.statusText}>
                         {item?.status}
                       </CustomText>
-                    </View> */}
+                    </View>
                   </View>
 
                   <CustomText style={styles.message}>
@@ -288,11 +287,11 @@ const Remainders = () => {
                     {item?.leadId?.clientName || "N/A"}
                   </CustomText>
 
-                  {/* <View style={styles.statusBadge}>
+                  <View style={styles.statusBadge}>
                     <CustomText style={styles.statusText}>
                       {item?.status}
                     </CustomText>
-                  </View> */}
+                  </View>
                 </View>
 
                 <CustomText style={styles.message}>{item?.message}</CustomText>

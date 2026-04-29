@@ -12,46 +12,41 @@ import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import OutlineBtn from "../../myComponents/OutlineBtn/OutlineBtn";
 import { dummyLeaveDetail } from "../../utils/dummyData";
-import TitleInDetail from "../../myComponentsHRM/TitleHRM/TitleInDetail";
-import RowItemDetail from "../../myComponentsHRM/Row/RowItemDetail";
 import { useRoute } from "@react-navigation/native";
 import { useGetLeaveDetail } from "../../hooks/useGetQuerryHRM";
 import { myConsole } from "../../hooks/useConsole";
-import { roleHRM, statusHRM, statusKeyHRM } from "../../utils/hrmKeysMatchToBE";
+import { statusKeyHRM } from "../../utils/hrmKeysMatchToBE";
 import { color } from "../../const/color";
-import {
-  leaveApprove,
-  leaveApproveReject,
-  leaveReject,
-} from "../../services/hrmApi/leaveHrmApi";
+import { leaveApproveReject } from "../../services/hrmApi/leaveHrmApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import PleaseWait from "../../myComponentsHRM/PleaseWait/PleaseWait";
-import ImageViewModal from "../../myComponentsHRM/ImageViewModal/ImageViewModal";
-import { queryKeyHRM } from "../../utils/queryKeys";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import LeaveAppRemark from "./components/LeaveAppRemark";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import { useAppToast } from "../../components/AppToast";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
-import RenderRow from "../../myComponents/RenderRow";
+import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 
 const whichStatus = {
   Cancel: "leaveCancelById",
   Approve: "leaveApproveById",
   Reject: "leaveRejectById",
 };
+
 const LeaveDetail = () => {
   const toast = useAppToast();
   const { params } = useRoute();
   const { user } = useSelector(selectUser);
+
   const isAgentTl =
     user?.role === roleEnum.agent || user?.role === roleEnum.team_lead;
+
   const queryClient = useQueryClient();
+
   const [leaveDetailById, setLeaveDetailById] = useState(dummyLeaveDetail);
+
   const {
     data,
     isLoading: isLoadingDetail,
@@ -60,16 +55,18 @@ const LeaveDetail = () => {
   } = useGetLeaveDetail({
     id: params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id,
   });
+
   const [refreshing, setRefreshing] = useState(false);
+
   const [remarks, setRemarks] = useState("");
+
   const [openModal, setOpenModal] = useState({
     open: false,
-    which: "Approve", //Reject
+    which: "Approve",
   });
-  // console.log("remarks", remarks);
-  myConsole("leaveDetailById", leaveDetailById);
+
   useEffect(() => {
-    let aa = dummyLeaveDetail?.map((el, i) => {
+    let aa = dummyLeaveDetail?.map((el) => {
       if (data?.hasOwnProperty(el?.key)) {
         if (!!el?.subKey) {
           return {
@@ -77,134 +74,137 @@ const LeaveDetail = () => {
             value: data[el?.key]?.[el?.subKey],
           };
         } else {
-          return { ...el, value: data[el?.key] };
+          return {
+            ...el,
+            value: data[el?.key],
+          };
         }
       } else return el;
     });
+
     setLeaveDetailById(aa);
   }, [data, isRefetching]);
+
   const handleApproveReject = async (
     key: "leaveRejectById" | "leaveApproveById",
   ) => {
     try {
       toggleModal(" ");
-      // popUpConfToast.plzWait({
-      //   bodyComponent: () => <PleaseWait />,
-      // });
+
       let resAcceptRejectLeave = await leaveApproveReject({
         key: key,
         id: params?.item?._id,
         remarks: remarks,
       });
+
       refetch();
+
       queryClient?.invalidateQueries({
         queryKey: ["getAllLeave"],
       });
+
       !!resAcceptRejectLeave &&
         toast.success(resAcceptRejectLeave?.message ?? "--");
     } catch (error) {}
   };
+
   const onRefresh = () => {
     try {
       setRefreshing(true);
       refetch();
-    } catch (e) {
-      console.log("refreshInLeaveDetail", e);
     } finally {
       setRefreshing(false);
     }
   };
-  //
+
   const toggleModal = (value: "Approve" | "Reject" | " " | "Cancel") => {
-    console.log("value", value);
-    setOpenModal((prev) => {
-      return {
-        ...prev,
-        open: !prev.open,
-        which: value,
-      };
-    });
+    setOpenModal((prev) => ({
+      ...prev,
+      open: !prev.open,
+      which: value,
+    }));
+
     value === " " && setRemarks("");
   };
+
+  const InfoCard = ({ icon, label, value }: any) => (
+    <View style={styles.infoCard}>
+      <View style={styles.infoLeft}>
+        <View style={styles.iconCircle}>
+          <Feather name={icon} size={16} color="#2E67BE" />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <CustomText style={styles.infoLabel}>{label}</CustomText>
+
+          <CustomText style={styles.infoValue}>{value || "N/A"}</CustomText>
+        </View>
+      </View>
+    </View>
+  );
 
   return (
     <ContainerHRM
       isLoading={isLoadingDetail}
-      ph={20}
-      // pt={20}
+      // ph={12}
       isBAck={{
         title: "Leave Detail",
       }}
     >
+      {/* ACTION BUTTONS */}
       {!isAgentTl && (
-        <>
+        <View style={styles.actionContainer}>
           {[statusKeyHRM.approved, statusKeyHRM.cancel]?.indexOf(
             data?.status,
           ) === -1 && (
-            <View
-              style={{
-                flexDirection: "row",
-                paddingBottom: 10,
-                paddingTop: 20,
-                alignSelf: "flex-end",
-              }}
-            >
+            <>
               <CustomBtn
-                title="Accept"
-                containerStyle={{
-                  minWidth: "32%",
-                  marginEnd: 20,
-                }}
-                textStyle={{
-                  fontSize: 14,
-                }}
-                // onPress={() => handleApproveReject('leaveApproveById')}
+                title="Approve"
+                textStyle={styles.btnText}
                 onPress={() => toggleModal("Approve")}
-                // isLoading={isLoading.approve}
               />
+
               <OutlineBtn
                 title="Reject"
-                textStyle={{
-                  fontSize: 14,
-                }}
-                containerStyle={{
-                  minWidth: "32%",
-                }}
-                // onPress={() => handleApproveReject('leaveRejectById')}
-                // isLoading={isLoading.reject}
+                textStyle={styles.rejectText}
                 onPress={() => toggleModal("Reject")}
               />
-            </View>
+            </>
           )}
+
           {data?.status === statusKeyHRM.approved && (
             <OutlineBtn
-              title="Cancel"
-              textStyle={{
-                fontSize: 14,
-              }}
-              containerStyle={{
-                minWidth: "30%",
-                margin: 10,
-                marginBottom: 2,
-              }}
-              // onPress={() => handleApproveReject('leaveRejectById')}
-              // isLoading={isLoading.reject}
+              title="Cancel Leave"
+              textStyle={styles.rejectText}
               onPress={() => toggleModal("Cancel")}
             />
           )}
-        </>
+        </View>
       )}
 
       <FlatList
         data={leaveDetailById}
-        renderItem={({ item, index }) => {
-          console.log("index", index);
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={{
+          paddingBottom: 180,
+          paddingTop: 10,
+          paddingHorizontal: 12,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => {
           const respondentData = {
             name: leaveDetailById?.find((i) => i?.key === "name")?.value,
+
             role: leaveDetailById?.find((i) => i?.key === "role")?.value,
+
             mobile: leaveDetailById?.find((i) => i?.key === "mobile")?.value,
+
             email: leaveDetailById?.find((i) => i?.key === "email")?.value,
           };
+
           if (
             item?.heading &&
             item?.title?.toLowerCase().includes("respondent")
@@ -220,52 +220,49 @@ const LeaveDetail = () => {
 
           if (item?.heading) {
             return (
-              <TitleInDetail title={item?.title} boxStyle={{ marginTop: 12 }} />
+              <CustomText style={styles.sectionHeading}>
+                {item?.title}
+              </CustomText>
             );
           }
 
           return (
-            <View style={{ marginBottom: item?.mb }}>
-              {item?.key === "attachments" ? (
-                <ImageViewModal imagesUri={item?.value} />
-              ) : (
-                <RenderRow
-                  label={item?.title}
-                  value={
-                    item?.isDate
-                      ? new Date(item?.value).toLocaleDateString()
-                      : item?.value
-                  }
-                />
-              )}
-            </View>
+            <InfoCard
+              icon={
+                item?.key === "status"
+                  ? "check-circle"
+                  : item?.key === "leaveType"
+                    ? "calendar"
+                    : item?.key === "reason"
+                      ? "file-text"
+                      : item?.key === "fromDate"
+                        ? "clock"
+                        : "info"
+              }
+              label={item?.title}
+              value={
+                item?.isDate
+                  ? new Date(item?.value).toLocaleDateString()
+                  : item?.value
+              }
+            />
           );
         }}
-        keyExtractor={(item, index) => index.toString()}
         ListFooterComponent={
           <FlatList
+            scrollEnabled={false}
             data={data?.respondentDetails ?? []}
-            renderItem={({ item, index }) => {
-              return (
-                <RespondentDetails
-                  item={item}
-                  isFirst={index === 0}
-                  isLast={index === data?.respondentDetails?.length - 1}
-                  toast={toast}
-                />
-              );
-            }}
+            renderItem={({ item, index }) => (
+              <RespondentDetails
+                item={item}
+                isFirst={index === 0}
+                toast={toast}
+              />
+            )}
           />
         }
-        contentContainerStyle={{
-          paddingBottom: 180,
-          paddingTop: 10,
-        }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
       />
+
       <ModalWithBlur visible={openModal?.open}>
         <LeaveAppRemark
           heading={`${openModal?.which} Leave`}
@@ -285,6 +282,7 @@ export default LeaveDetail;
 const RespondentDetails = ({ item, isFirst, toast }: any) => {
   const getInitials = (name: string) => {
     if (!name) return "";
+
     return name
       .split(" ")
       .map((n) => n[0])
@@ -294,16 +292,20 @@ const RespondentDetails = ({ item, isFirst, toast }: any) => {
 
   const handleCopy = async (text: string, label: string) => {
     if (!text) return;
+
     await Clipboard.setStringAsync(text);
+
     toast.success(`${label} copied to clipboard`);
   };
+
   return (
-    <View style={styles.card}>
+    <View style={styles.respondentCard}>
       {isFirst && (
-        <CustomText style={styles.sectionTitle}>Respondent Details</CustomText>
+        <CustomText style={styles.sectionHeading}>
+          Respondent Details
+        </CustomText>
       )}
 
-      {/* TOP ROW */}
       <View style={styles.topRow}>
         <View style={styles.avatar}>
           <CustomText style={styles.avatarText}>
@@ -318,24 +320,25 @@ const RespondentDetails = ({ item, isFirst, toast }: any) => {
         </View>
       </View>
 
-      {/* CONTACT ROW */}
       <View style={styles.contactRow}>
-        {/* PHONE */}
         <TouchableOpacity
-          style={styles.iconBox}
+          style={styles.contactBox}
           onPress={() => Linking.openURL(`tel:${item?.mobile}`)}
-          onLongPress={() => handleCopy(item?.mobile, "Mobile number")}
+          onLongPress={() => handleCopy(item?.mobile, "Mobile Number")}
         >
           <Feather name="phone" size={18} color="#2E67BE" />
+
+          <CustomText style={styles.contactText}>Call</CustomText>
         </TouchableOpacity>
 
-        {/* EMAIL */}
         <TouchableOpacity
-          style={styles.iconBox}
+          style={styles.contactBox}
           onPress={() => Linking.openURL(`mailto:${item?.email}`)}
           onLongPress={() => handleCopy(item?.email, "Email")}
         >
           <Feather name="mail" size={18} color="#2E67BE" />
+
+          <CustomText style={styles.contactText}>Email</CustomText>
         </TouchableOpacity>
       </View>
     </View>
@@ -343,32 +346,98 @@ const RespondentDetails = ({ item, isFirst, toast }: any) => {
 };
 
 const styles = StyleSheet.create({
-  topRow: {
+  actionContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 12,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+  },
+
+  approveBtn: {
+    minWidth: "32%",
+    borderRadius: 12,
+  },
+
+  rejectBtn: {
+    minWidth: "32%",
+    borderRadius: 12,
+  },
+
+  cancelBtn: {
+    minWidth: "38%",
+    borderRadius: 12,
+  },
+
+  btnText: {
+    fontSize: 14,
+  },
+
+  rejectText: {
+    fontSize: 14,
+  },
+
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 18,
     marginBottom: 12,
   },
 
-  card: {
+  infoCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 14,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: "#E6EAF0",
+    marginBottom: 12,
+    ...shadowPrimaryColor,
   },
 
-  sectionTitle: {
-    fontSize: 18,
+  infoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  infoLabel: {
+    fontSize: 12,
+    color: "#64748B",
+  },
+
+  infoValue: {
+    fontSize: 15,
     fontWeight: "700",
-    color: "#2E67BE",
-    marginBottom: 10,
+    color: "#1E293B",
+    marginTop: 4,
+  },
+
+  respondentCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 16,
+    marginTop: 16,
+    ...shadowPrimaryColor,
+  },
+
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: "#E8EEF7",
     justifyContent: "center",
     alignItems: "center",
@@ -376,40 +445,42 @@ const styles = StyleSheet.create({
   },
 
   avatarText: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "700",
     color: "#2E67BE",
   },
 
   name: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#2F3A4A",
-    marginBottom: 4,
-  },
-
-  subRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    color: "#1E293B",
   },
 
   subText: {
     fontSize: 13,
-    color: "#8C97A8",
-    marginRight: 4,
-  },
-  contactRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
+    color: "#64748B",
+    marginTop: 3,
   },
 
-  iconBox: {
+  contactRow: {
+    flexDirection: "row",
+    marginTop: 16,
+    gap: 10,
+  },
+
+  contactBox: {
     flex: 1,
-    alignItems: "center",
-    paddingVertical: 10,
     backgroundColor: "#F5F8FD",
-    borderRadius: 10,
-    marginHorizontal: 4,
+    borderRadius: 14,
+    paddingVertical: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  contactText: {
+    marginTop: 5,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#2E67BE",
   },
 });

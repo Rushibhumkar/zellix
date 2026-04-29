@@ -136,11 +136,9 @@ const AttendanceDetail = () => {
       setRefreshing(false);
     }
   };
-
+  myConsole("dataaaaa", data);
   return (
     <ContainerHRM
-      // ph={20}
-      // pt={20}
       isBAck={{
         title: "Attendance Details",
         isEdit:
@@ -154,97 +152,191 @@ const AttendanceDetail = () => {
     >
       <FlatList
         data={attendanceDetailById ?? []}
+        keyExtractor={(_, index) => `${index}`}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item }) => {
           return item?.heading ? (
-            <TitleInDetail title={item?.title} />
+            <View style={styles.headingContainer}>
+              <CustomText style={styles.headingText}>{item?.title}</CustomText>
+            </View>
           ) : (
-            <RowItemDetail
-              title={item?.title}
-              value={item?.value}
-              isDate={item?.isDate}
-              isTime={item?.isTime}
-              containerStyle={{ marginBottom: item?.mb }}
-            />
+            <View
+              style={[
+                styles.infoCard,
+                {
+                  marginBottom: item?.mb || 12,
+                },
+              ]}
+            >
+              <View style={styles.leftSection}>
+                <View style={styles.iconBox}>
+                  <CustomText style={styles.iconText}>
+                    {item?.title?.charAt(0)}
+                  </CustomText>
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <CustomText style={styles.label}>{item?.title}</CustomText>
+
+                  <CustomText style={styles.value}>
+                    {item?.value || "N/A"}
+                  </CustomText>
+                </View>
+              </View>
+            </View>
           );
         }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20 }}
         ListFooterComponent={
           <>
             {!!data?.issue && (
-              <RowItemDetail
-                title={"Issue Status"}
-                value={data?.resolve ? "Resolved" : "Unresolved"}
-                containerStyle={{ marginBottom: 10 }}
-              />
+              <View style={styles.infoCard}>
+                <View style={styles.leftSection}>
+                  <View
+                    style={[
+                      styles.iconBox,
+                      {
+                        backgroundColor: data?.resolve ? "#DCFCE7" : "#FEE2E2",
+                      },
+                    ]}
+                  >
+                    <CustomText
+                      style={[
+                        styles.iconText,
+                        {
+                          color: data?.resolve ? "#15803D" : "#DC2626",
+                        },
+                      ]}
+                    >
+                      !
+                    </CustomText>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>Issue Status</CustomText>
+
+                    <CustomText
+                      style={[
+                        styles.value,
+                        {
+                          color: data?.resolve ? "#15803D" : "#DC2626",
+                        },
+                      ]}
+                    >
+                      {data?.resolve ? "Resolved" : "Unresolved"}
+                    </CustomText>
+                  </View>
+                </View>
+              </View>
             )}
+
             {(!!data?.punchInMeetingLocation ||
               !!data?.punchOutMeetingLocation) && (
-              <TitleInDetail
-                title={"Remote Punch Detail"}
-                boxStyle={{ marginVertical: 10 }}
-              />
+              <View style={styles.headingContainer}>
+                <CustomText style={styles.headingText}>
+                  Remote Punch Detail
+                </CustomText>
+              </View>
             )}
+
             {!!data?.punchInMeetingLocation && (
-              <RowItemDetail
-                title={"Punch In Meeting Location"}
-                component={
-                  <CustomText>{data?.punchInMeetingLocation}</CustomText>
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
+              <View style={styles.infoCard}>
+                <View style={styles.leftSection}>
+                  <View style={styles.iconBox}>
+                    <CustomText style={styles.iconText}>P</CustomText>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>
+                      Punch In Location
+                    </CustomText>
+
+                    <CustomText style={styles.value}>
+                      {data?.punchInMeetingLocation}
+                    </CustomText>
+                  </View>
+                </View>
+              </View>
             )}
+
             {!!data?.punchInMeetingTime && (
-              <RowItemDetail
-                title={"Punch In Meeting Time"}
-                value={moment(data?.punchInMeetingTime).format(
-                  "YYYY-MM-DD HH:mm A",
-                )}
-                containerStyle={{ marginBottom: 10 }}
-              />
+              <View style={styles.infoCard}>
+                <View style={styles.leftSection}>
+                  <View style={styles.iconBox}>
+                    <CustomText style={styles.iconText}>T</CustomText>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>Punch In Time</CustomText>
+
+                    <CustomText style={styles.value}>
+                      {moment(data?.punchInMeetingTime).format(
+                        "YYYY-MM-DD HH:mm A",
+                      )}
+                    </CustomText>
+                  </View>
+                </View>
+              </View>
             )}
+
             {!!data?.punchOutMeetingLocation && (
-              <RowItemDetail
-                title={"Punch Out Meeting Location"}
-                // value={data?.punchOutMeetingLocation}
-                component={
-                  <CustomText>{data?.punchOutMeetingLocation}</CustomText>
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
+              <View style={styles.infoCard}>
+                <View style={styles.leftSection}>
+                  <View style={styles.iconBox}>
+                    <CustomText style={styles.iconText}>P</CustomText>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>
+                      Punch Out Location
+                    </CustomText>
+
+                    <CustomText style={styles.value}>
+                      {data?.punchOutMeetingLocation}
+                    </CustomText>
+                  </View>
+                </View>
+              </View>
             )}
+
             {!!data?.punchOutMeetingTime && (
-              <RowItemDetail
-                title={" Punch Out Meeting Time"}
-                value={moment(data?.punchOutMeetingTime).format(
-                  "h:mm A , DD-MM-YYYY",
-                )}
-                containerStyle={{ marginBottom: 10 }}
-              />
+              <View style={styles.infoCard}>
+                <View style={styles.leftSection}>
+                  <View style={styles.iconBox}>
+                    <CustomText style={styles.iconText}>T</CustomText>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>Punch Out Time</CustomText>
+
+                    <CustomText style={styles.value}>
+                      {moment(data?.punchOutMeetingTime).format(
+                        "h:mm A , DD-MM-YYYY",
+                      )}
+                    </CustomText>
+                  </View>
+                </View>
+              </View>
             )}
+
             <OutlineBtn
               title="Raise Issue"
-              containerStyle={{
-                width: "35%",
-                // margin: 5,
-                marginVertical: 20,
-              }}
-              textStyle={{ fontSize: 16 }}
+              containerStyle={styles.issueBtn}
+              textStyle={styles.issueBtnText}
               onPress={() => {
                 setIssueRiseUpdate("raise");
                 toggleModal();
               }}
             />
-            <View style={{ height: 30 }} />
+
+            <View style={{ height: 40 }} />
           </>
         }
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
       />
-      <ModalWithBlur
-        visible={openModal}
-        // onClose={toggleModal}
-      >
+
+      <ModalWithBlur visible={openModal}>
         <LeaveAppRemark
           heading={
             issueRiseUpdate === "raise" ? "Raise Issue" : "Update Status"
@@ -266,4 +358,74 @@ const AttendanceDetail = () => {
 
 export default AttendanceDetail;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 160,
+  },
+
+  headingContainer: {
+    marginTop: 14,
+    marginBottom: 12,
+  },
+
+  headingText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+
+  infoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  iconText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#2D67C6",
+  },
+
+  label: {
+    fontSize: 12,
+    color: "#64748B",
+    marginBottom: 3,
+  },
+
+  value: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+
+  issueBtn: {
+    width: "45%",
+    marginTop: 14,
+    borderRadius: 12,
+    alignSelf: "flex-end",
+  },
+
+  issueBtnText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});

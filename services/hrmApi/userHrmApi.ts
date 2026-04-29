@@ -11,7 +11,6 @@ export const getAllUserHRM = ({ search = null, pageParam = 1 }) =>
       },
     })
     .then((res) => {
-      // myConsole('getAllUserHRM', res)
       return res?.data;
     });
 

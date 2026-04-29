@@ -33,6 +33,7 @@ import { roleEnum } from "../../utils/data";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { color } from "../../const/color";
 
 const AllLeave = () => {
   const { user } = useSelector(selectUser);
@@ -110,17 +111,21 @@ const AllLeave = () => {
                   })
                 }
               />
-              <HeaderRowLeave />
+              {/* <HeaderRowLeave /> */}
             </>
           }
-          contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
+          contentContainerStyle={{
+            paddingBottom: 120,
+            paddingHorizontal: 12,
+            paddingTop: 20,
+          }}
           data={data}
           renderItem={({ item }) => {
             const canViewDetails = checkPermission(
               permission,
               "Leaves",
               "viewLeaveDetails",
-              user?.role
+              user?.role,
             );
 
             return (
@@ -132,7 +137,7 @@ const AllLeave = () => {
                     navigate(routeLeave?.LeaveDetail, { item });
                   } else {
                     popUpConfToast.errorMessage(
-                      "You are not authorized to view leave details."
+                      "You are not authorized to view leave details.",
                     );
                   }
                 }}
@@ -143,7 +148,7 @@ const AllLeave = () => {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage && (
-              <ActivityIndicator size={"small"} color={"#002E6B"} />
+              <ActivityIndicator size={"small"} color={color.mainTxtColor} />
             )
           }
           ListEmptyComponent={

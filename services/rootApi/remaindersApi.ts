@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../authApi/axiosInstance";
 
 /* =========================
@@ -26,20 +26,30 @@ export const getAllReminders = async ({
 
 export const useGetAllReminders = ({
   filter,
-  page,
   limit,
 }: {
   filter: "upcoming" | "missed" | "completed";
-  page: number;
   limit: number;
 }) => {
-  return useQuery({
-    queryKey: ["all-reminders", filter, page, limit],
-    queryFn: () => getAllReminders({ filter, page, limit }),
-    keepPreviousData: true, // pagination smooth
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  return useInfiniteQuery({
+    queryKey: ["all-reminders", filter],
+    queryFn: ({ pageParam = 1 }: { pageParam: number }) =>
+      getAllReminders({
+        filter,
+        page: pageParam,
+        limit,
+      }),
+
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage?.pagination?.page || 1;
+
+      const totalPages = lastPage?.pagination?.totalPages || 1;
+
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
 };
 

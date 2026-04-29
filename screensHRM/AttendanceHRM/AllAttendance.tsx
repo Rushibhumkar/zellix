@@ -108,11 +108,11 @@ const AllAttendance = () => {
             <CircularBarChart type="attendanceChart" />
             {!isAgent && <CardHRM />}
             <FlatList
-              style={{ gap: 10 }}
+              style={{ gap: 2 }}
               ListHeaderComponent={
                 <>
-                  <TitleHRM title="Issues" marginBottom={20} marginTop={12} />
-                  {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
+                  <TitleHRM title="Issues" marginBottom={0} marginTop={12} />
+                  {/* {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />} */}
                 </>
               }
               ListEmptyComponent={
@@ -202,8 +202,8 @@ const AllAttendance = () => {
             />
             <TitleHRM
               title="Attendance"
-              marginBottom={20}
-              marginTop={12}
+              marginBottom={0}
+              marginTop={8}
               onPressFilter={() =>
                 popUpConfToast.plzWait({
                   bodyComponent: () => (
@@ -215,7 +215,7 @@ const AllAttendance = () => {
                 })
               }
             />
-            {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
+            {/* {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />} */}
           </>
         }
         // contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
@@ -263,12 +263,21 @@ const AllAttendance = () => {
             />
           );
         }}
-        contentContainerStyle={{ paddingBottom: 160, padding: 20, gap: 10 }}
+        contentContainerStyle={{
+          paddingBottom: 160,
+          paddingHorizontal: 12,
+          paddingTop: 20,
+          // gap: 10,
+        }}
         onEndReached={onEndReach}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           isFetchingNextPage && (
-            <ActivityIndicator size={"small"} color={"#002E6B"} />
+            <ActivityIndicator
+              size={"small"}
+              color={color.mainTxtColor}
+              style={{ marginTop: 12 }}
+            />
           )
         }
         ListEmptyComponent={

@@ -14,7 +14,6 @@ import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowOnLeave from "../../myComponentsHRM/Row/RowOnLeave";
 import RowEmployee from "../../myComponentsHRM/Row/RowEmployee";
-import { myConsole } from "../../hooks/useConsole";
 import { useNavigation } from "@react-navigation/native";
 import { routeUser } from "../../utils/routesHRM";
 import { color } from "../../const/color";
@@ -54,12 +53,10 @@ const AllUSersHRM = () => {
     isFetchingNextPage,
   } = useGetAllUserHRM({ search: searchSubmit?.search });
   const onEndReach = () => {
-    console.log("hasNextPage", hasNextPage);
     if (hasNextPage && !isLoading && allUsers?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
   };
-
   const handleSearchSubmit = (v) => {
     setSearchSubmit(v);
   };
@@ -76,6 +73,7 @@ const AllUSersHRM = () => {
       setRefreshing(false);
     }
   };
+
   return (
     <ContainerHRM headingTitle="Users">
       {isSubSup && (
@@ -122,7 +120,6 @@ const AllUSersHRM = () => {
                   })
                 }
               />
-              <HeaderRowEmployee />
             </>
           }
           contentContainerStyle={styles.listContent}

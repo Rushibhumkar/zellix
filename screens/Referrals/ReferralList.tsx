@@ -5,6 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import React, { useCallback, useState } from "react";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
@@ -31,6 +32,10 @@ const ReferralList = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [showSearch, setShowSearch] = useState(false);
+  const [focusSearch, setFocusSearch] = useState(false);
+  const flatListRef = React.useRef(null);
 
   const {
     data,
@@ -61,7 +66,7 @@ const ReferralList = () => {
 
   const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
   const handleSearchChange = (v) => {
@@ -91,7 +96,17 @@ const ReferralList = () => {
 
   return (
     <>
-      <Header title="Referral List" />
+      <Header
+        title="Referral List"
+        moduleName={"referral"}
+        showActions={true}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        showSearch={showSearch}
+      />
       <Container>
         <TitleWithAddDelete
           arrLength={selected?.length}
@@ -105,6 +120,7 @@ const ReferralList = () => {
 
         <FlatList
           // data={data}
+          ref={flatListRef}
           data={data?.pages?.flatMap((p) => p?.data || [])}
           renderItem={({ item, index }) => (
             <CardReferral
@@ -124,14 +140,26 @@ const ReferralList = () => {
           showsVerticalScrollIndicator={true}
           contentContainerStyle={{ paddingBottom: 100 }}
           ListHeaderComponent={
-            <View>
-              <SearchBar
-                onChangeText={handleSearchChange}
-                value={searchValue}
-                onClickCancel={() => handleSearchChange("")}
-              />
+            <>
+              {showSearch && (
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  exiting={FadeOutUp.duration(150)}
+                >
+                  <SearchBar
+                    onClickCancel={() => {
+                      handleSearchChange("");
+                      setFocusSearch(false);
+                      setShowSearch(false);
+                    }}
+                    value={searchValue}
+                    onChangeText={handleSearchChange}
+                    autoFocus={focusSearch}
+                  />
+                </Animated.View>
+              )}
               <HeaderReferralList />
-            </View>
+            </>
           }
           ListHeaderComponentStyle={{ paddingTop: 5 }}
           ListEmptyComponent={
