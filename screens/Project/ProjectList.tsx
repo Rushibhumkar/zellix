@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import React, { useCallback, useState } from "react";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
@@ -29,6 +30,11 @@ const ProjectList = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [showSearch, setShowSearch] = useState(false);
+  const [focusSearch, setFocusSearch] = useState(false);
+  const flatListRef = React.useRef(null);
+
   const {
     data,
     isLoading: loading,
@@ -92,8 +98,15 @@ const ProjectList = () => {
     <>
       <Header
         title={"Project List"}
+        moduleName="projects"
         showActions={true}
         onPressAdd={() => navigate(routeProject.ProjectForm)}
+        onPressSearch={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowSearch((prev) => !prev);
+          setFocusSearch(true);
+        }}
+        showSearch={showSearch}
       />
       <Container>
         <TitleWithAddDelete
@@ -108,6 +121,7 @@ const ProjectList = () => {
 
         <FlatList
           data={data}
+          ref={flatListRef}
           renderItem={({ item, index }) => {
             return (
               <CardProject
@@ -132,18 +146,26 @@ const ProjectList = () => {
             paddingBottom: 120,
           }}
           ListHeaderComponent={
-            <View>
-              <SearchBar
-                onChangeText={(v) => handleSearchChange(v)}
-                value={searchValue}
-                onClickCancel={() => {
-                  handleSearchChange("");
-                  // setSearchValue('')
-                  // setFilteredData([...copyLead])
-                }}
-              />
+            <>
+              {showSearch && (
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  exiting={FadeOutUp.duration(150)}
+                >
+                  <SearchBar
+                    onClickCancel={() => {
+                      handleSearchChange("");
+                      setFocusSearch(false);
+                      setShowSearch(false);
+                    }}
+                    value={searchValue}
+                    onChangeText={(v) => handleSearchChange(v)}
+                    autoFocus={focusSearch}
+                  />
+                </Animated.View>
+              )}
               <HeaderProjectList />
-            </View>
+            </>
           }
           ListHeaderComponentStyle={{ paddingTop: 5 }}
           ListEmptyComponent={

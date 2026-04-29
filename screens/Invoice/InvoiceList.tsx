@@ -30,14 +30,14 @@ const InvoiceList = () => {
     permission,
     "Invoices",
     "viewDetails",
-    user?.role
+    user?.role,
   );
 
   const canViweList = checkPermission(
     permission,
     "Invoices",
     "viewList",
-    user?.role
+    user?.role,
   );
 
   // const debounceSearch = useCallback(
@@ -77,7 +77,7 @@ const InvoiceList = () => {
                   navigate(routeInvoice.InvoiceDetail, { item });
                 } else {
                   popUpConfToast.errorMessage(
-                    "You are not authorized to view invoice details."
+                    "You are not authorized to view invoice details.",
                   );
                 }
               }}

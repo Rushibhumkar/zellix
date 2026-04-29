@@ -26,13 +26,22 @@ const Remainders = () => {
   const toast = useAppToast();
   const [activeTab, setActiveTab] = useState("Upcoming");
 
-  const { data, isLoading, isError, refetch, isFetching } = useGetAllReminders({
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetAllReminders({
     filter: activeTab.toLowerCase(),
-    page: 1,
     limit: 10,
   });
 
-  const reminders = data?.data || [];
+  const reminders = data?.pages?.flatMap((page) => page?.data || []) || [];
+
   // myConsole("remindersss", reminders);
 
   const navigation = useNavigation();
@@ -156,7 +165,10 @@ const Remainders = () => {
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isLoading && isFetching}
+            onRefresh={refetch}
+          />
         }
         ListEmptyComponent={
           isLoading ? (
@@ -304,6 +316,17 @@ const Remainders = () => {
             </TouchableOpacity>
           );
         }}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator size="small" style={{ marginVertical: 20 }} />
+          ) : null
+        }
       />
     </View>
   );

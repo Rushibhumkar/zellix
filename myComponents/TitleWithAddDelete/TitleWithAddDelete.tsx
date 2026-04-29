@@ -296,18 +296,12 @@ const TitleWithAddDelete = ({
                 }
                 exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
                 style={{
-                  padding: 10,
                   ...iconWrapperStyle,
-                  borderWidth: 1,
-                  borderColor: color.strokeColor,
+                  padding: 6,
                 }}
                 onPress={!!onPressToDelete ? onPressToDelete : undefined}
               >
-                <MaterialIcons
-                  name="delete-outline"
-                  size={24}
-                  color={color.mainTxtColor}
-                />
+                <MaterialIcons name="delete-outline" size={20} color={"#fff"} />
               </AnimatedTouchableOpacity>
             )}
 
@@ -319,10 +313,10 @@ const TitleWithAddDelete = ({
                     : undefined
                 }
                 exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
-                style={{ padding: 10 }}
+                style={{ ...iconWrapperStyle, padding: 6 }}
                 onPress={!!onPressToEdit ? onPressToEdit : undefined}
               >
-                <EditIcon />
+                <Feather name="edit-2" size={20} color="#fff" />
               </AnimatedTouchableOpacity>
             )}
 

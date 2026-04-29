@@ -1,7 +1,7 @@
 // src/components/Dashboard/DashbordHeader.tsx
 import { useGetNotificationInCRM } from "../../hooks/useGetQuerryHRM";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -106,7 +106,7 @@ const DashbordHeader = () => {
             >
               {isLoading ? (
                 <SkeletonView
-                  wrapperStyle={{ width: 120, height: 18, borderRadius: 6 }}
+                  wrapperStyle={{ width: 90, height: 18, borderRadius: 6 }}
                 />
               ) : (
                 <CustomText style={styles.userName}>
@@ -121,10 +121,9 @@ const DashbordHeader = () => {
               {isLoading ? (
                 <SkeletonView
                   wrapperStyle={{
-                    width: 90,
-                    height: 14,
+                    width: 70,
+                    height: 16,
                     borderRadius: 5,
-                    marginTop: 4,
                   }}
                 />
               ) : user?.role === "sup_admin" ? (
@@ -139,7 +138,7 @@ const DashbordHeader = () => {
             {isLoading ? (
               <SkeletonView
                 wrapperStyle={{
-                  width: 180,
+                  width: 140,
                   height: 14,
                   borderRadius: 5,
                   marginTop: 6,

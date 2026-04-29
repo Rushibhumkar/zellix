@@ -6,76 +6,37 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { Popup } from "react-native-popup-confirm-toast";
+import { useSelector } from "react-redux";
+import { Feather } from "@expo/vector-icons";
+
 import Header from "../../components/Header";
 import { color } from "../../const/color";
 import { myConsole } from "../../hooks/useConsole";
 import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import MainTitle from "../../myComponents/MainTitle/MainTitle";
-import RowItem from "../../myComponents/RowItem/RowItem";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import { roleEnum, userTypes } from "../../utils/data";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetIndividualIncentiveDetail } from "./query/useIncentive";
-import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
-import { sizes } from "../../const";
 
 const IncentiveDetail = () => {
   const { params } = useRoute();
   const item = params?.item || {};
-  const { data, refetch } = useGetIndividualIncentiveDetail({ id: item?._id });
+  const { data, refetch } = useGetIndividualIncentiveDetail({
+    id: item?._id,
+  });
 
   const { user } = useSelector(selectUser);
+
   const isSubSupSrMng =
     user?.role === roleEnum?.sub_admin ||
     user?.role === roleEnum?.sup_admin ||
     user?.role === roleEnum?.sr_manager;
-
-  const renderNoData = () => (
-    <CustomText style={styles.noDataText}>No Data</CustomText>
-  );
-
-  const renderPayCards = (bookings, title) => (
-    <>
-      <MainTitle title={title} containerStyle={styles.sectionTitle} />
-      {bookings.length > 0
-        ? bookings.map((el, i) => <PayCard key={i} item={el} />)
-        : renderNoData()}
-    </>
-  );
-
-  const renderPayDetails = () => (
-    <>
-      <MainTitle title="Pay Detail" containerStyle={styles.sectionTitle} />
-      {data?.distributions?.length > 0
-        ? data?.distributions?.map((el, i) => <PayDetail key={i} item={el} />)
-        : renderNoData()}
-    </>
-  );
-
-  const handlePayout = async () => {
-    try {
-      const res = await axiosInstance.post(
-        `/api/incentive/payIncentive/${item?._id}`,
-      );
-      popUpConfToast.successMessage(res?.data || "Payout Successfully!");
-      refetch();
-    } catch (err) {
-      myConsole("errPayout", err?.response?.data);
-      popUpConfToast.errorMessage(
-        err?.response?.data || "Something went wrong",
-      );
-    }
-    // finally {
-    //     Popup.hide();
-    // }
-  };
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -83,16 +44,48 @@ const IncentiveDetail = () => {
     try {
       setRefreshing(true);
       await refetch();
-    } catch (e) {
-      console.log("Incentive refresh error", e);
     } finally {
       setRefreshing(false);
     }
   };
 
+  const handlePayout = async () => {
+    try {
+      const res = await axiosInstance.post(
+        `/api/incentive/payIncentive/${item?._id}`,
+      );
+
+      popUpConfToast.successMessage(res?.data || "Payout Successfully!");
+
+      refetch();
+    } catch (err) {
+      myConsole("errPayout", err?.response?.data);
+
+      popUpConfToast.errorMessage(
+        err?.response?.data || "Something went wrong",
+      );
+    }
+  };
+
+  const DetailCard = ({ icon, title, value }: any) => (
+    <View style={styles.detailCard}>
+      <View style={styles.detailLeft}>
+        <View style={styles.iconBox}>
+          <Feather name={icon} size={16} color="#2D67C6" />
+        </View>
+
+        <View>
+          <CustomText style={styles.cardTitle}>{title}</CustomText>
+          <CustomText style={styles.cardValue}>{value || "-"}</CustomText>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <>
       <Header title="Incentive Detail" />
+
       <Container>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -101,79 +94,109 @@ const IncentiveDetail = () => {
           }
         >
           <View style={styles.content}>
-            <MainTitle
-              title="Detail"
-              containerStyle={styles.mainTitle}
-              icon={
-                isSubSupSrMng ? (
-                  <CustomBtn
-                    title="Payout"
-                    containerStyle={{ backgroundColor: "gray" }}
-                    textStyle={{ fontSize: 14 }}
-                    onPress={() => {
-                      confirmPayout({
-                        callback: () => {
-                          handlePayout();
-                          confirmPayout({
-                            callback: () => console.log("first2"),
-                            isLoading: true,
-                          });
-                        },
-                        isLoading: false,
-                      });
-                    }}
-                  />
-                ) : (
-                  <></>
-                )
-              }
-            />
-            <RowItem
-              title="Name"
+            {/* Top Action */}
+            {isSubSupSrMng &&
+              data?.status !== "paid" &&
+              data?.totalIncentive - data?.paidIncentive > 0 && (
+                <CustomBtn
+                  title="Payout Incentive"
+                  containerStyle={styles.payBtn}
+                  textStyle={styles.payBtnText}
+                  onPress={() => {
+                    confirmPayout({
+                      callback: () => {
+                        handlePayout();
+
+                        confirmPayout({
+                          callback: () => console.log("loading"),
+                          isLoading: true,
+                        });
+                      },
+                      isLoading: false,
+                    });
+                  }}
+                />
+              )}
+
+            {/* Overview Section */}
+            <CustomText style={styles.sectionHeading}>Overview</CustomText>
+
+            <DetailCard
+              icon="user"
+              title="Employee Name"
               value={data?.userId?.name}
-              containerStyle={styles.rowItem}
             />
-            <RowItem
+
+            <DetailCard
+              icon="briefcase"
               title="Role"
               value={userTypes?.[data?.userId?.role]}
-              containerStyle={styles.rowItem}
             />
-            <RowItem
+
+            <DetailCard
+              icon="check-circle"
               title="Status"
               value={data?.status}
-              containerStyle={styles.rowItem}
             />
-            <RowItem
+
+            <DetailCard
+              icon="gift"
               title="Total Incentive"
-              value={data?.totalIncentive || "0"}
-              containerStyle={styles.rowItem}
+              value={`₹${data?.totalIncentive || 0}`}
             />
-            <RowItem
+
+            <DetailCard
+              icon="credit-card"
               title="Paid Incentive"
-              value={data?.paidIncentive || "0"}
-              containerStyle={styles.rowItem}
+              value={`₹${data?.paidIncentive || 0}`}
             />
-            <RowItem
+
+            <DetailCard
+              icon="bar-chart-2"
               title="Total Revenue"
-              value={data?.totalRevenue || "0"}
-              containerStyle={styles.rowItem}
+              value={`₹${data?.totalRevenue || 0}`}
             />
-            <RowItem
-              title="Amount to be Pay"
-              value={data?.totalIncentive - data?.paidIncentive || "0"}
-              containerStyle={styles.rowItem}
+
+            <DetailCard
+              icon="credit-card"
+              title="Amount to be Paid"
+              value={`₹${data?.totalIncentive - data?.paidIncentive || 0}`}
             />
-            <CustomText
-              fontWeight="700"
-              fontSize={19}
-              color={color.saffronMango}
-              style={styles.bookingDetailTitle}
-            >
-              Booking Detail
+
+            {/* Closed Booking */}
+            <CustomText style={styles.sectionHeading}>
+              Closed Bookings
             </CustomText>
-            {renderPayCards(data?.bookings || [], "Closed Booking")}
-            {renderPayCards(data?.pendingBookings || [], "Pending Booking")}
-            {renderPayDetails()}
+
+            {data?.bookings?.length > 0 ? (
+              data?.bookings?.map((el, i) => <BookingCard key={i} item={el} />)
+            ) : (
+              <EmptyCard />
+            )}
+
+            {/* Pending Booking */}
+            <CustomText style={styles.sectionHeading}>
+              Pending Bookings
+            </CustomText>
+
+            {data?.pendingBookings?.length > 0 ? (
+              data?.pendingBookings?.map((el, i) => (
+                <BookingCard key={i} item={el} />
+              ))
+            ) : (
+              <EmptyCard />
+            )}
+
+            {/* Pay Details */}
+            <CustomText style={styles.sectionHeading}>Pay Details</CustomText>
+
+            {data?.distributions?.length > 0 ? (
+              data?.distributions?.map((el, i) => (
+                <PayDetailCard key={i} item={el} />
+              ))
+            ) : (
+              <EmptyCard />
+            )}
           </View>
         </ScrollView>
       </Container>
@@ -181,101 +204,181 @@ const IncentiveDetail = () => {
   );
 };
 
-const PayCard = ({ item }) => (
-  <View style={styles.cardContainer}>
-    <CustomText
-      fontWeight="600"
-      fontSize={18}
-      color={color.saffronMango}
-      style={styles.cardTitle}
-    >
-      Calculated
-    </CustomText>
-    <RowItem
-      title="Lead Name"
+const BookingCard = ({ item }: any) => (
+  <View style={styles.bookingCard}>
+    <DetailItem
+      icon="user"
+      label="Lead Name"
       value={item?.bookingId?.clientName || "N/A"}
-      containerStyle={styles.rowItem}
     />
-    <RowItem
-      title="Project Name"
+
+    <DetailItem
+      icon="home"
+      label="Project Name"
       value={item?.bookingId?.projectName || "N/A"}
-      containerStyle={styles.rowItem}
     />
-    <RowItem
-      title="Revenue"
-      value={item?.revenue || "0"}
-      containerStyle={styles.rowItem}
+
+    <DetailItem
+      icon="dollar-sign"
+      label="Revenue"
+      value={`₹${item?.revenue || 0}`}
     />
-    <TouchableOpacity style={styles.viewDetailsButton} activeOpacity={0.5}>
-      <CustomText fontWeight="600" color={color.saffronMango}>
-        View Details
-      </CustomText>
-    </TouchableOpacity>
   </View>
 );
 
-const PayDetail = ({ item }) => (
-  <View style={styles.cardContainer}>
-    <RowItem
-      title="Amount"
-      value={item?.amount || "0"}
-      containerStyle={styles.rowItem}
+const PayDetailCard = ({ item }: any) => (
+  <View style={styles.bookingCard}>
+    <DetailItem
+      icon="credit-card"
+      label="Amount"
+      value={`₹${item?.amount || 0}`}
     />
-    <RowItem
-      title="Date & Time"
+
+    <DetailItem
+      icon="calendar"
+      label="Date"
       value={
-        item?.createdAt ? moment(item?.createdAt).format("DD/MM/YYYY") : "N/A"
+        item?.createdAt ? moment(item?.createdAt).format("DD MMM YYYY") : "N/A"
       }
-      containerStyle={styles.rowItem}
     />
-    <RowItem
-      title="Paid By"
+
+    <DetailItem
+      icon="user-check"
+      label="Paid By"
       value={item?.userId?.name || "N/A"}
-      containerStyle={styles.rowItem}
     />
   </View>
 );
+
+const DetailItem = ({ icon, label, value }: any) => (
+  <View style={styles.detailItem}>
+    <View style={styles.itemLeft}>
+      <Feather name={icon} size={15} color="#2D67C6" />
+      <CustomText style={styles.itemLabel}>{label}</CustomText>
+    </View>
+
+    <CustomText style={styles.itemValue}>{value || "-"}</CustomText>
+  </View>
+);
+
+const EmptyCard = () => (
+  <View style={styles.emptyBox}>
+    <CustomText style={styles.emptyText}>No Data Found</CustomText>
+  </View>
+);
+
+export default IncentiveDetail;
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    paddingBottom: 50,
+    paddingBottom: 40,
   },
+
   content: {
-    padding: 20,
+    padding: 16,
   },
-  mainTitle: {
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    marginBottom: 10,
-  },
-  rowItem: {
-    marginBottom: 10,
-  },
-  bookingDetailTitle: {
+
+  payBtn: {
     marginBottom: 20,
+    borderRadius: 12,
+    backgroundColor: "#2D67C6",
   },
-  cardContainer: {
+
+  payBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 12,
+    marginTop: 18,
+  },
+
+  detailCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
     borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  detailLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  iconBox: {
+    backgroundColor: "#EEF4FF",
     padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    borderColor: color?.borderColor,
+    borderRadius: 12,
+    marginRight: 12,
   },
+
   cardTitle: {
-    marginBottom: 10,
+    fontSize: 12,
+    color: "#64748B",
   },
-  viewDetailsButton: {
-    alignSelf: "flex-end",
+
+  cardValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 2,
   },
-  noDataText: {
-    marginLeft: sizes.width / 2 - 40,
+
+  bookingCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  detailItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+
+  itemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  itemLabel: {
+    fontSize: 13,
+    color: "#64748B",
+  },
+
+  itemValue: {
+    fontSize: 14,
+    fontWeight: "600",
     color: color.mainTxtColor,
-    marginVertical: 40,
+  },
+
+  emptyBox: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    padding: 20,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+  },
+
+  emptyText: {
+    color: "#94A3B8",
+    fontSize: 14,
   },
 });
-
-export default IncentiveDetail;
 
 const confirmPayout = ({ callback, isLoading }: any) => {
   Popup.show({
@@ -295,7 +398,12 @@ const confirmPayout = ({ callback, isLoading }: any) => {
     iconHeaderStyle: {
       marginBottom: -10,
     },
-    okButtonStyle: { backgroundColor: "#DC7331" },
-    confirmButtonStyle: { borderColor: "black", borderWidth: 1 },
+    okButtonStyle: {
+      backgroundColor: "#2D67C6",
+    },
+    confirmButtonStyle: {
+      borderColor: "#CBD5E1",
+      borderWidth: 1,
+    },
   });
 };

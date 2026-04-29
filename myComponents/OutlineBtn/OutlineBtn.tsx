@@ -31,7 +31,6 @@ const OutlineBtn = ({
       title={title}
       containerStyle={[
         {
-          backgroundColor: "white",
           // borderWidth: 2,
           // borderColor: color.saffronMango
         },

@@ -15,91 +15,94 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import CustomListPermissionMsg from "../../components/CustomListPermissionMsg";
+import { myConsole } from "../../hooks/useConsole";
 
 const ExpenseList = () => {
   const nav = useNavigation();
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const expenseQuery = useGetExpensesList({ search: "" });
+  myConsole("expenseQueryyy", expenseQuery);
   const canAddExpense = checkPermission(
     permission,
     "Expenses",
     "add",
-    user?.role
+    user?.role,
   );
   const canEditExpense = checkPermission(
     permission,
     "Expenses",
     "edit",
-    user?.role
+    user?.role,
   );
   const canViewExpDetail = checkPermission(
     permission,
     "Expenses",
     "viewDetails",
-    user?.role
+    user?.role,
   );
   const canDeleteExp = checkPermission(
     permission,
     "Expenses",
     "delete",
-    user?.role
+    user?.role,
   );
   const canAddCat = checkPermission(
     permission,
     "Expenses",
     "addCategory",
-    user?.role
+    user?.role,
   );
   const canEditCat = checkPermission(
     permission,
     "Expenses",
     "editCategory",
-    user?.role
+    user?.role,
   );
   const canDelCat = checkPermission(
     permission,
     "Expenses",
     "deleteCategory",
-    user?.role
+    user?.role,
   );
   const canViewCat = checkPermission(
     permission,
     "Expenses",
     "viewCategory",
-    user?.role
+    user?.role,
   );
 
   const canViewExpenses = checkPermission(
     permission,
     "Expenses",
     "view",
-    user?.role
+    user?.role,
   );
 
   const canViewExpList = checkPermission(
     permission,
     "Expenses",
     "viewList",
-    user?.role
+    user?.role,
   );
 
   return (
     <>
-      <Header title={"Expense List"} />
+      <Header
+        title={"Expense List"}
+        showActions={true}
+        moduleName="expense"
+        onPressAdd={
+          canAddExpense
+            ? () => nav.navigate(routeExpense.ExpenseForm)
+            : () =>
+                popUpConfToast.errorMessage(
+                  "You are not authorized to add expense details.",
+                )
+        }
+      />
       <Container>
-        <TitleWithAddDelete
-          arrLength={0}
-          title="Expense"
-          onPressToNavigate={
-            canAddExpense
-              ? () => nav.navigate(routeExpense.ExpenseForm)
-              : () =>
-                  popUpConfToast.errorMessage(
-                    "You are not authorized to add expense details."
-                  )
-          }
-        />
+        <TitleWithAddDelete arrLength={0} title="Expense" showAddBtn={false} />
         {canViewCat && (
           <TouchableOpacity
             onPress={() => nav.navigate(routeExpense.ExpenseCategoryList)}
@@ -126,7 +129,7 @@ const ExpenseList = () => {
                     ? () => nav.navigate("ExpenseDetail", { item })
                     : () =>
                         popUpConfToast.errorMessage(
-                          "You are not authorized to view expense details."
+                          "You are not authorized to view expense details.",
                         )
                 }
               />

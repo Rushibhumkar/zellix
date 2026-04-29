@@ -19,6 +19,7 @@ const HeaderRowLeave = () => {
           justifyContent: "space-between",
           flexDirection: "row",
           marginBottom: 15,
+          marginHorizontal: 8,
         },
       ]}
     >
@@ -31,7 +32,7 @@ const HeaderRowLeave = () => {
         </SlideFadeIn>
         <SlideFadeIn>
           <CustomText style={styles.text2}>
-            Days
+            Role
             {/* {item?.days} */}
           </CustomText>
         </SlideFadeIn>
@@ -39,7 +40,7 @@ const HeaderRowLeave = () => {
       <View style={styles.row2}>
         <SlideFadeIn>
           <CustomText style={styles.text1}>
-            Role
+            Days
             {/* {roleHRM[item?.role]} */}
           </CustomText>
         </SlideFadeIn>

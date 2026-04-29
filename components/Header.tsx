@@ -417,7 +417,7 @@ const Header: React.FC<HeaderProps> = ({
 const styles = StyleSheet.create({
   gradientBackground: {
     width: "100%",
-    paddingTop: Platform.OS === "ios" ? 12 : 12, // ensures gradient extends behind translucent StatusBar
+    paddingTop: Platform.OS === "ios" ? 12 : 12,
   },
   container: {
     flexDirection: "row",

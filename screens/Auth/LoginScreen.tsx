@@ -44,12 +44,12 @@ const LoginScreen = () => {
     // password: "12345678",
     // email: "test@test.com",
     // password: "123456789",
-    // email: "dev20@swavishtek.com",
+    // email: "dev20@swavishtek.com",a
     // password: "123456789",
-    // email: "tech@skgestates.com",
-    // password: "Rohit@1112",
-    email: "",
-    password: "",
+    email: "tech@skgestates.com",
+    password: "1234567890",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
@@ -105,6 +105,7 @@ const LoginScreen = () => {
       console.log("Biometric error:", e);
     }
   };
+
   const handleFormSubmit = async (values: any) => {
     const deviceId = await getData("deviceId");
     setIsLoading(true);
@@ -117,6 +118,7 @@ const LoginScreen = () => {
     login(data)
       .then(async (res) => {
         let isAdmin = res?.role === roleEnum.sup_admin;
+        console.log("res?.token", res?.token);
         await storeData("token", res?.token);
         await storeDataJson("userDetail", { ...res, isAdmin });
 

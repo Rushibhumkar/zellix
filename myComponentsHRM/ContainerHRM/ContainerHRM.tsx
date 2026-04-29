@@ -33,6 +33,7 @@ import { logOut } from "../../services/authApi/auth";
 import { Feather } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { iconWrapperStyle } from "../../const/globalStyle";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedTouchableOpacity =
@@ -221,8 +222,11 @@ const ContainerHRM = ({
           }}
         >
           {!!isBAck?.isEdit && (
-            <Pressable onPress={() => isBAck?.isEdit()}>
-              <EditIcon />
+            <Pressable
+              onPress={() => isBAck?.isEdit()}
+              style={{ ...iconWrapperStyle, padding: 7 }}
+            >
+              <Feather name="edit-2" size={18} color={"#fff"} />
             </Pressable>
           )}
           {!!isBAck?.isDelete && (
@@ -287,14 +291,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
   },
-  // iconBtn: {
-  //   position: "relative",
-  //   padding: 8,
-  //   borderRadius: 50,
-  //   backgroundColor: "rgba(255,255,255,0.1)",
-  //   borderColor: "#ffffff29",
-  //   borderWidth: 2,
-  // },
 
   iconBtn: {
     position: "relative",

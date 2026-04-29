@@ -1,12 +1,9 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
+import { Feather } from "@expo/vector-icons";
+
 import { color } from "../../const/color";
-import {
-  shadow1,
-  shadowLight,
-  shadowPrimaryColor,
-} from "../../const/globalStyle";
-import { string } from "yup";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../CustomText/CustomText";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
@@ -29,43 +26,65 @@ const TeamRowItem = ({
   onLongPress,
   isSelected,
   bgColor,
-  index,
 }: TeamRowItem) => {
   return (
     <SlideFadeIn>
       <TouchableOpacity
+        activeOpacity={0.85}
+        onLongPress={!!onLongPress ? onLongPress : undefined}
         style={[
           styles.container,
           {
-            backgroundColor: isSelected
-              ? color.selectedBg
-              : bgColor
-                ? bgColor
-                : color.listCardBg,
+            backgroundColor: isSelected ? "#E8F1FF" : bgColor || "#FFFFFF",
+
+            borderColor: isSelected ? "#2D67C6" : color.borderColor,
           },
         ]}
-        activeOpacity={1}
-        onLongPress={!!onLongPress ? onLongPress : undefined}
       >
-        {typeof serial === "string" ? (
-          <CustomText numberOfLines={2} style={styles.box1}>
-            {serial}
+        {/* Left Avatar */}
+        <View style={styles.avatar}>
+          <CustomText style={styles.avatarText}>
+            {teamName?.charAt(0)?.toUpperCase() || "T"}
           </CustomText>
-        ) : (
-          <CustomText numberOfLines={2} style={styles.box1}>
-            {serial < 10 && "0"}
-            {serial}
-          </CustomText>
-        )}
-        <CustomText numberOfLines={2} style={styles.box2}>
-          {teamName}
-        </CustomText>
-        <CustomText numberOfLines={2} style={styles.box3}>
-          {managerName}
-        </CustomText>
-        <CustomText numberOfLines={2} style={styles.box4}>
-          {teamLeadName}
-        </CustomText>
+        </View>
+
+        {/* Team Details */}
+        <View style={styles.content}>
+          {/* Top Row */}
+          <View style={styles.topRow}>
+            <CustomText numberOfLines={1} style={styles.teamName}>
+              {teamName || "N/A"}
+            </CustomText>
+
+            <View style={styles.serialBox}>
+              <CustomText style={styles.serialText}>
+                {typeof serial === "string"
+                  ? serial
+                  : serial < 10
+                    ? `0${serial}`
+                    : serial}
+              </CustomText>
+            </View>
+          </View>
+
+          {/* Manager */}
+          <View style={styles.infoRow}>
+            <Feather name="briefcase" size={13} color="#64748B" />
+
+            <CustomText numberOfLines={1} style={styles.infoText}>
+              Manager : {managerName || "N/A"}
+            </CustomText>
+          </View>
+
+          {/* Team Lead */}
+          <View style={styles.infoRow}>
+            <Feather name="users" size={13} color="#64748B" />
+
+            <CustomText numberOfLines={1} style={styles.infoText}>
+              Team Lead : {teamLeadName || "N/A"}
+            </CustomText>
+          </View>
+        </View>
       </TouchableOpacity>
     </SlideFadeIn>
   );
@@ -75,42 +94,74 @@ export default TeamRowItem;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1.4,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderColor: color.borderColor,
-    backgroundColor: color.white,
+    marginHorizontal: 12,
+    marginTop: 6,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
     flexDirection: "row",
     alignItems: "center",
     ...shadowPrimaryColor,
-    marginHorizontal: 12,
   },
-  box1: {
-    width: "10%",
-    paddingRight: 3,
-    fontSize: 12,
-    fontWeight: "400",
-    color: color.mainTxtColor,
+
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
-  box2: {
-    width: "30%",
-    paddingRight: 3,
-    fontSize: 14,
+
+  avatarText: {
+    fontSize: 18,
     fontWeight: "700",
-    color: color.mainTxtColor,
+    color: "#2D67C6",
   },
-  box3: {
-    width: "30%",
-    paddingRight: 3,
-    fontSize: 14,
-    fontWeight: "400",
-    color: color.strokeColor,
+
+  content: {
+    flex: 1,
+    marginRight: 10,
   },
-  box4: {
-    width: "30%",
-    fontSize: 14,
-    fontWeight: "400",
-    color: color.mainTxtColor,
+
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  teamName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1E293B",
+    flex: 1,
+    marginRight: 10,
+  },
+
+  serialBox: {
+    backgroundColor: "#EEF4FF",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+
+  serialText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#2D67C6",
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 6,
+  },
+
+  infoText: {
+    fontSize: 12,
+    color: "#64748B",
+    flex: 1,
   },
 });

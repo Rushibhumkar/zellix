@@ -14,7 +14,6 @@ import {
   getLeaveDetail,
   getTodayLeave,
 } from "../services/hrmApi/leaveHrmApi";
-import { myConsole } from "./useConsole";
 import {
   getDeveloperForCheckInOut,
   getMeetingForCheckInOut,
@@ -48,9 +47,9 @@ export const useGetAllUserHRM = ({ search }) => {
     queryKey: ["getAllUserHRM", search],
     queryFn: ({ pageParam }) => getAllUserHRM({ search, pageParam }),
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage?.pagination?.isNextPage
-        ? parseInt(lastPage.pagination.currentPage) + 1
-        : null;
+      return lastPage?.pagination?.hasNext
+        ? lastPage?.pagination?.next
+        : undefined;
     },
   });
   let data: any = [];

@@ -1,12 +1,14 @@
 import {
   StyleProp,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
 import React from "react";
+import { Feather } from "@expo/vector-icons";
+import moment from "moment";
+
 import CustomText from "../../myComponents/CustomText/CustomText";
 import {
   punchType,
@@ -14,20 +16,17 @@ import {
   statusAttend,
   statusColorAttend,
 } from "../../utils/hrmKeysMatchToBE";
-import moment from "moment";
+
 import { color } from "../../const/color";
-import { myConsole } from "../../hooks/useConsole";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowAttendance {
   containerStyle?: StyleProp<ViewStyle>;
+
   onPress: () => void;
+
   item: {
-    // punchedIn:string;
-    // punchedInType:string;
-    // punchedOut:string;
-    // punchedOutType:string;
-    // createdAt:string;
     name: string;
     role: string;
     punchedInType: string;
@@ -37,107 +36,242 @@ interface TRowAttendance {
     resolve: boolean;
   };
 }
+
 const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
-  // myConsole('item', item)
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[
-        {
-          borderWidth: 1.8,
-          borderColor: color.borderColor,
-          padding: 10,
-          borderRadius: 14,
-          justifyContent: "space-between",
-          flexDirection: "row",
-        },
-        containerStyle,
-      ]}
-    >
-      <View style={styles.row1}>
-        <SlideFadeIn>
-          <CustomText style={styles.text1}>{item?.name}</CustomText>
-        </SlideFadeIn>
-        <SlideFadeIn>
-          <CustomText style={styles.text2}>{roleHRM[item?.role]}</CustomText>
-        </SlideFadeIn>
-      </View>
-      <View style={styles.row2}>
-        <SlideFadeIn>
-          <CustomText
-            style={{ textTransform: "capitalize" }}
-            fontWeight="900"
-            color={
-              item?.punchedInType === "office"
-                ? color?.strokeColor
-                : color?.mainTxtColor
-            }
+    <SlideFadeIn>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={onPress}
+        style={[styles.card, containerStyle]}
+      >
+        {/* ROW 1 */}
+        <View style={styles.topRow}>
+          <View style={styles.leftSection}>
+            <View style={styles.avatar}>
+              <CustomText style={styles.avatarText}>
+                {item?.name?.charAt(0)?.toUpperCase()}
+              </CustomText>
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <CustomText numberOfLines={1} style={styles.userName}>
+                {item?.name || "N/A"}
+              </CustomText>
+
+              <View style={styles.roleDateRow}>
+                <View style={styles.roleRow}>
+                  <Feather name="briefcase" size={10} color="#64748B" />
+
+                  <CustomText numberOfLines={1} style={styles.roleText}>
+                    {roleHRM[item?.role] || "N/A"}
+                  </CustomText>
+                </View>
+              </View>
+            </View>
+            <View style={styles.dateInline}>
+              <Feather name="calendar" size={10} color="#64748B" />
+
+              <CustomText style={styles.dateText}>
+                {moment(item?.createdAt).format("DD MMM YYYY")}
+              </CustomText>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor:
+                  item?.status === "present"
+                    ? "#DCFCE7" // light green (fixed)
+                    : `${statusColorAttend[item?.status]}15`,
+              },
+            ]}
           >
-            {punchType[item?.punchedInType]}
-          </CustomText>
-        </SlideFadeIn>
-        {
-          <SlideFadeIn>
             <CustomText
-              // style={styles.text1}
-              fontWeight="600"
-              color={!!item?.resolve ? color?.strokeColor : color?.strokeColor}
-              numberOfLines={1}
+              style={[
+                styles.statusText,
+                {
+                  color:
+                    item?.status === "present"
+                      ? "#15803D" // dark green (fixed)
+                      : statusColorAttend[item?.status] || color.mainTxtColor,
+                },
+              ]}
             >
-              {!item?.issue ? "-" : item?.resolve ? "Resolve" : "Unresolved"}
+              {statusAttend[item?.status]}
             </CustomText>
-          </SlideFadeIn>
-        }
-      </View>
-      <View style={styles.row3}>
-        <SlideFadeIn>
-          <CustomText
-            style={styles.text1}
-            color={statusColorAttend[item?.status]}
-          >
-            {statusAttend[item?.status]}
-          </CustomText>
-        </SlideFadeIn>
-        <SlideFadeIn>
-          <CustomText style={styles.text2}>
-            {moment(item?.createdAt).format("DD/MM/YYYY")}
-          </CustomText>
-        </SlideFadeIn>
-      </View>
-    </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ROW 2 */}
+        <View style={styles.middleRow}>
+          <View style={styles.infoItem}>
+            <Feather
+              name={item?.punchedInType === "office" ? "home" : "map-pin"}
+              size={11}
+              color="#2D67C6"
+            />
+
+            <CustomText style={styles.infoText}>
+              {punchType[item?.punchedInType] || "-"}
+            </CustomText>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Feather
+              name={
+                !item?.issue
+                  ? "check-circle"
+                  : item?.resolve
+                    ? "shield"
+                    : "alert-circle"
+              }
+              size={11}
+              color={
+                !item?.issue ? "#16A34A" : item?.resolve ? "#F59E0B" : "#DC2626"
+              }
+            />
+
+            <CustomText
+              style={[
+                styles.infoText,
+                {
+                  color: !item?.issue
+                    ? "#16A34A"
+                    : item?.resolve
+                      ? "#F59E0B"
+                      : "#DC2626",
+                },
+              ]}
+            >
+              {!item?.issue
+                ? "No Issue"
+                : item?.resolve
+                  ? "Resolved"
+                  : "Unresolved"}
+            </CustomText>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </SlideFadeIn>
   );
 };
 
 export default RowAttendance;
 
 const styles = StyleSheet.create({
-  row1: {
-    width: "50%",
-    gap: 5,
-    // backgroundColor: 'red'
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E6ECF5",
+    marginTop: 10,
+    ...shadowPrimaryColor,
   },
-  row2: {
-    width: "20%",
-    gap: 5,
+
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#EEF4FF",
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: 'green'
+    marginRight: 10,
   },
-  row3: {
-    width: "30%",
-    gap: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    // backgroundColor: 'blue'
-  },
-  text1: {
+
+  avatarText: {
     fontSize: 14,
-    fontWeight: "400",
-    color: color.mainTxtColor,
+    fontWeight: "700",
+    color: "#2D67C6",
   },
-  text2: {
-    fontSize: 12,
-    fontWeight: "300",
-    color: color.strokeColor,
+
+  userName: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1E293B",
+    textTransform: "capitalize",
+  },
+  roleText: {
+    fontSize: 11,
+    color: "#64748B",
+  },
+
+  statusText: {
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "capitalize",
+  },
+
+  middleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    gap: 8,
+  },
+
+  infoItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+
+  infoText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#1E293B",
+    flex: 1,
+  },
+
+  dateText: {
+    fontSize: 11,
+    color: "#64748B",
+  },
+
+  topRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    marginLeft: 10,
+    alignSelf: "center",
+  },
+
+  roleDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    width: "100%",
+  },
+
+  roleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    width: "48%",
+  },
+
+  dateInline: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "52%",
   },
 });

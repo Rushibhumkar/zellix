@@ -1,9 +1,12 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
+import { Feather } from "@expo/vector-icons";
+
 import { color } from "../../const/color";
-import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../CustomText/CustomText";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+
 interface TUserRowItem {
   serialNo: number;
   userName: string;
@@ -28,53 +31,57 @@ const UserRowItem = ({
   return (
     <SlideFadeIn>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.8}
+        onPress={!!onPress ? onPress : undefined}
+        onLongPress={!onLongPress ? undefined : onLongPress}
         style={[
           styles.container,
           {
-            backgroundColor: isSelected
-              ? color.selectedBg
-              : bgColor
-                ? bgColor
-                : color.listCardBg,
+            backgroundColor: isSelected ? "#E8F1FF" : bgColor || "#FFFFFF",
+
+            borderColor: isSelected ? "#2D67C6" : color.borderColor,
           },
         ]}
-        onPress={!!onPress ? onPress : undefined}
-        onLongPress={!onLongPress ? undefined : onLongPress}
       >
-        <View style={{ flexDirection: "row" }}>
-          {typeof serialNo !== "string" ? (
-            <CustomText style={styles.box1}>
-              {serialNo < 9 && 0}
-              {serialNo + 1}
-            </CustomText>
-          ) : (
-            <CustomText style={styles.box1}>{serialNo}</CustomText>
-          )}
-          <View style={styles.box2}>
-            <CustomText
-              numberOfLines={2}
-              style={[
-                styles.bold,
-                {
-                  textTransform: "capitalize",
-                  color: color.mainTxtColor,
-                  marginBottom: 2,
-                },
-              ]}
-            >
-              {userName ?? "N/A"}
-            </CustomText>
-            <CustomText numberOfLines={2} style={styles.lightText}>
-              {role ?? "N/A"}
+        {/* Left Side */}
+        <View style={styles.leftSection}>
+          {/* Avatar */}
+          <View style={styles.avatar}>
+            <CustomText style={styles.avatarText}>
+              {userName?.charAt(0)?.toUpperCase() || "U"}
             </CustomText>
           </View>
-          <CustomText
-            numberOfLines={2}
-            style={[styles.box3, { textAlign: "right" }]}
-          >
-            {email ?? "N/A"}
-          </CustomText>
+
+          {/* User Info */}
+          <View style={styles.userInfo}>
+            <View style={styles.nameRow}>
+              <CustomText numberOfLines={1} style={styles.userName}>
+                {userName ?? "N/A"}
+              </CustomText>
+
+              <View style={styles.serialBox}>
+                <CustomText style={styles.serialText}>
+                  {typeof serialNo !== "string" ? `${serialNo + 1}` : serialNo}
+                </CustomText>
+              </View>
+            </View>
+
+            <View style={styles.roleRow}>
+              <Feather name="briefcase" size={12} color="#64748B" />
+
+              <CustomText numberOfLines={1} style={styles.roleText}>
+                {role ?? "N/A"}
+              </CustomText>
+            </View>
+
+            <View style={styles.emailRow}>
+              <Feather name="mail" size={12} color="#64748B" />
+
+              <CustomText numberOfLines={1} style={styles.emailText}>
+                {email ?? "N/A"}
+              </CustomText>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
     </SlideFadeIn>
@@ -85,42 +92,98 @@ export default UserRowItem;
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1.4,
-    borderRadius: 14,
-    paddingHorizontal: 10,
     marginHorizontal: 12,
-    paddingVertical: 12,
-    borderColor: color.borderColor,
-    backgroundColor: color.white,
+    marginTop: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
     ...shadowPrimaryColor,
   },
-  box1: {
-    width: "10%",
-    paddingRight: 3,
-    fontSize: 12,
-    fontWeight: "400",
-    color: color.mainTxtColor,
+
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
-  box2: {
-    width: "45%",
-    paddingRight: 3,
+
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#E8F1FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
-  box3: {
-    width: "45%",
-    paddingRight: 3,
-    fontSize: 14,
-    fontWeight: "400",
-    color: color.mainTxtColor,
+
+  avatarText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2D67C6",
   },
-  bold: {
-    fontSize: 16,
+
+  userInfo: {
+    flex: 1,
+  },
+
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  userName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1E293B",
+    flex: 1,
+    marginRight: 10,
+    textTransform: "capitalize",
+  },
+
+  serialBox: {
+    backgroundColor: "#EEF4FF",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+
+  serialText: {
+    fontSize: 11,
     fontWeight: "600",
+    color: "#2D67C6",
   },
-  lightText: {
-    fontSize: 13,
-    fontWeight: "300",
-    color: color.strokeColor,
+
+  roleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 5,
+  },
+
+  roleText: {
+    fontSize: 12,
+    color: "#64748B",
+    textTransform: "capitalize",
+  },
+
+  emailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 4,
+  },
+
+  emailText: {
+    fontSize: 12,
+    color: "#94A3B8",
+    flex: 1,
+  },
+
+  arrowContainer: {
+    marginLeft: 10,
   },
 });

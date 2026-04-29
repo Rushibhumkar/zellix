@@ -101,11 +101,11 @@ export const textWhiteShadow = {
   textShadowRadius: 1,
 };
 export const iconWrapperStyle = {
-  backgroundColor: "#F9FBFD",
-  borderWidth: 1,
-  borderColor: "#739fe13a",
-  padding: 6,
+  padding: 8,
   borderRadius: 12,
+  backgroundColor: "rgba(255,255,255,0.1)",
+  borderColor: "#ffffff29",
+  borderWidth: 2,
 };
 
 export const headerIconWrapperStyle = {
@@ -122,4 +122,12 @@ export const headerRowItemsStyle = {
   borderRadius: 14,
   justifyContent: "space-between" as const,
   flexDirection: "row" as const,
+};
+
+export const buttonWrapper = {
+  backgroundColor: "rgba(255,255,255,0.1)",
+  borderRadius: 12,
+  padding: 8,
+  borderColor: "#ffffff29",
+  borderWidth: 2,
 };

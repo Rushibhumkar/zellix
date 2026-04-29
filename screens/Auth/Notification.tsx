@@ -86,19 +86,19 @@ const Notification = () => {
     permission,
     "Bookings",
     "viewDetails",
-    user?.role
+    user?.role,
   );
   const canViewBookings = checkPermission(
     permission,
     "Bookings",
     "sidebar",
-    user?.role
+    user?.role,
   );
   const canViewMeetings = checkPermission(
     permission,
     "Meeting",
     "sidebar",
-    user?.role
+    user?.role,
   );
 
   // const groupedNotifications = groupNotificationsByDate(user?.notifications);
@@ -119,7 +119,7 @@ const Notification = () => {
         if (!canViewMeetings) {
           Alert.alert(
             "Access Denied",
-            "You don't have access to view meetings."
+            "You don't have access to view meetings.",
           );
           return;
         }
@@ -139,7 +139,7 @@ const Notification = () => {
         if (!canViewBookings) {
           Alert.alert(
             "Access Denied",
-            "You don't have access to view bookings."
+            "You don't have access to view bookings.",
           );
           return;
         }
@@ -147,7 +147,7 @@ const Notification = () => {
         if (!canViewBookingDetails && item?.dataId) {
           Alert.alert(
             "Access Denied",
-            "You don't have access to view booking details."
+            "You don't have access to view booking details.",
           );
           return;
         }
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 16,
     paddingBottom: 24,
   },

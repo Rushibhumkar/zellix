@@ -9,6 +9,7 @@ import {
   FlatList,
   Linking,
   Platform,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -353,6 +354,14 @@ const AllLeads = () => {
             sourceTab: selectLeadType,
             isAgent: isAgent,
           })
+        }
+        rightSide={
+          <Pressable
+            onPress={() => navigation.navigate("Reminders")}
+            style={styles.reminderIconBtn}
+          >
+            <Feather name="clock" size={18} color="#fff" />
+          </Pressable>
         }
         onPressAdd={() => {
           if (canAddLead)
@@ -855,6 +864,13 @@ const styles = StyleSheet.create({
 
   activeText: {
     color: "#2D5FB8",
+  },
+  reminderIconBtn: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "#ffffff29",
+    borderWidth: 2,
   },
 });
 
