@@ -93,7 +93,7 @@ export default UserRowItem;
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 12,
-    marginTop: 12,
+    marginTop: 4,
     borderRadius: 18,
     borderWidth: 1,
     padding: 14,

@@ -4,6 +4,7 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import CustomBtn from "../../../myComponents/CustomBtn/CustomBtn";
 import { color } from "../../../const/color";
 import DropdownRNE from "../../../myComponents/DropdownRNE/DropdownRNE";
+import ActionButton from "../../../myComponents/ActionButton";
 
 interface TLeaveAppRemark {
   onPressSubmit: () => void;
@@ -40,14 +41,16 @@ const LeaveAppRemark = ({
         >
           {heading ?? "---------"}
         </CustomText>
-        <CustomBtn
+        <ActionButton
           title="Cancel"
-          containerStyle={{ backgroundColor: color.dullRed }}
-          textStyle={{
-            fontSize: 12,
-            fontWeight: 700,
-          }}
+          icon="x"
+          variant="danger"
           onPress={onPressCancel}
+          containerStyle={{
+            minWidth: 120,
+            flex: 0,
+            minHeight: 42,
+          }}
         />
       </View>
 
@@ -88,10 +91,20 @@ const LeaveAppRemark = ({
           onChangeText={onChangeText}
         />
       </View>
-      <CustomBtn
+      <ActionButton
         title="Submit"
-        containerStyle={{ alignSelf: "flex-start", paddingHorizontal: 25 }}
+        icon="check"
+        variant="primary"
         onPress={onPressSubmit}
+        containerStyle={{
+          alignSelf: "flex-start",
+          minWidth: 120,
+          minHeight: 42,
+          paddingVertical: 8,
+          paddingHorizontal: 14,
+          flex: 0,
+          marginTop: 6,
+        }}
       />
     </View>
   );

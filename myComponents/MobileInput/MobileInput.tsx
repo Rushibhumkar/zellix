@@ -199,6 +199,7 @@ const MobileInput = ({
                 <TextInput
                   onChangeText={(v) => onSelect({ numb: v })}
                   value={phone?.number}
+                  keyboardType="number-pad"
                   style={{
                     flex: 1,
                     fontSize: 16,

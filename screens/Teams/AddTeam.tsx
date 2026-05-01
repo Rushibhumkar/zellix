@@ -20,6 +20,7 @@ import { routeTeam } from "../../utils/routes";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
+import ActionButton from "../../myComponents/ActionButton";
 
 const AddTeam = () => {
   const navigation = useNavigation();
@@ -70,7 +71,7 @@ const AddTeam = () => {
   const filterAllAgents = (allUsers) => {
     let allAgents = allUsers
       ?.filter((user) =>
-        user.role === "agent" ? { _id: user._id, name: user.name } : null
+        user.role === "agent" ? { _id: user._id, name: user.name } : null,
       )
       .map((user) => ({ _id: user._id, name: user.name }));
     return allAgents;
@@ -80,7 +81,7 @@ const AddTeam = () => {
 
   return (
     <Container>
-      <Header title={"Add Teams"} />
+      <Header title={data ? "Update Team" : "Add Team"} />
       <CustomModelMessage
         isVisible={isVisible}
         setIsVisible={setIsVisible}
@@ -225,11 +226,16 @@ const AddTeam = () => {
                   </CustomText>
                 )}
 
-                <CustomBtn
-                  title="Submit"
-                  isLoading={isLoading}
+                <ActionButton
+                  title={data ? "Update Team" : "Create Team"}
+                  icon="check"
+                  loading={isLoading}
+                  variant="primary"
                   onPress={handleSubmit}
-                  containerStyle={{ margin: 20 }}
+                  containerStyle={{
+                    marginTop: 20,
+                    minHeight: 52,
+                  }}
                 />
               </View>
             </ScrollViewWithKeyboardAvoid>

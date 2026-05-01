@@ -6,6 +6,7 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import OutlineBtn from "../../myComponents/OutlineBtn/OutlineBtn";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import ActionButton from "../../myComponents/ActionButton";
 
 interface search {
   search: string;
@@ -75,31 +76,27 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
           value={search?.search}
         />
       )}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          margin: 10,
-        }}
-      >
-        <OutlineBtn
+      <View style={styles.buttonRow}>
+        <ActionButton
           title="Clear"
-          containerStyle={{ width: 70 }}
+          icon="x"
+          variant="outline"
+          containerStyle={{ marginRight: 10 }}
           onPress={() => {
+            setSearch(initial);
             !!onPressSubmit && onPressSubmit(initial);
             popUpConfToast.popUpClose();
           }}
-          textStyle={{ fontSize: 13 }}
         />
-        <CustomBtn
+
+        <ActionButton
           title="Search"
-          containerStyle={{ width: 80 }}
+          icon="search"
+          variant="primary"
           onPress={() => {
             !!onPressSubmit && onPressSubmit(search);
             popUpConfToast.popUpClose();
           }}
-          textStyle={{ fontSize: 13 }}
         />
       </View>
     </Pressable>
@@ -108,4 +105,11 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
 
 export default SearchBox;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  buttonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+});

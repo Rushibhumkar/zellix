@@ -41,31 +41,19 @@ const PopupModal = ({
 
           <Text style={styles.message}>{message}</Text>
           <View style={styles.btnRow}>
-            {/* Read Button */}
             <TouchableOpacity
-              style={styles.button}
+              style={styles.openBtn}
               activeOpacity={0.8}
-              onPress={onRead}
+              onPress={onOpen}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>READ</Text>
-              )}
-            </TouchableOpacity>
-
-            {/* External Link Icon */}
-            <TouchableOpacity
-              style={styles.iconBtn}
-              activeOpacity={0.8}
-              onPress={onOpen}
-            >
-              {/* <Feather name="external-link" size={20} color="#2563EB" /> */}
-              {loading ? (
-                <ActivityIndicator color={color.mainTxtColor} />
-              ) : (
-                <Text style={{ color: color.mainTxtColor }}>OPEN</Text>
+                <>
+                  <Feather name="external-link" size={18} color="#fff" />
+                  <Text style={styles.openBtnText}>OPEN</Text>
+                </>
               )}
             </TouchableOpacity>
           </View>
@@ -136,5 +124,22 @@ const styles = StyleSheet.create({
     borderColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  openBtn: {
+    width: "100%",
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#2563EB",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+  openBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

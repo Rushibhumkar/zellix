@@ -28,6 +28,7 @@ import { useAppToast } from "../../components/AppToast";
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { shadowPrimaryColor } from "../../const/globalStyle";
+import ActionButton from "../../myComponents/ActionButton";
 
 const whichStatus = {
   Cancel: "leaveCancelById",
@@ -158,25 +159,31 @@ const LeaveDetail = () => {
             data?.status,
           ) === -1 && (
             <>
-              <CustomBtn
+              <ActionButton
                 title="Approve"
-                textStyle={styles.btnText}
+                icon="check"
+                variant="primary"
                 onPress={() => toggleModal("Approve")}
+                containerStyle={styles.actionBtn}
               />
 
-              <OutlineBtn
+              <ActionButton
                 title="Reject"
-                textStyle={styles.rejectText}
+                icon="x"
+                variant="outline"
                 onPress={() => toggleModal("Reject")}
+                containerStyle={styles.actionBtn}
               />
             </>
           )}
 
           {data?.status === statusKeyHRM.approved && (
-            <OutlineBtn
+            <ActionButton
               title="Cancel Leave"
-              textStyle={styles.rejectText}
+              icon="slash"
+              variant="danger"
               onPress={() => toggleModal("Cancel")}
+              containerStyle={styles.cancelActionBtn}
             />
           )}
         </View>
@@ -353,6 +360,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 10,
     paddingHorizontal: 12,
+  },
+
+  actionBtn: {
+    flex: 1,
+    minHeight: 48,
+  },
+
+  cancelActionBtn: {
+    width: "100%",
+    minHeight: 48,
   },
 
   approveBtn: {

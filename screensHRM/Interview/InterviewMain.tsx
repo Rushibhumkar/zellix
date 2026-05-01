@@ -1,7 +1,6 @@
 import {
   FlatList,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   ActivityIndicator,
@@ -27,22 +26,21 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { rescheduleInterview } from "../../services/hrmApi/userHrmApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { popupModal2 } from "../../utils/toastFunction";
-import ExportIcon from "../../assets/svg/ExportIcon";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useFormik } from "formik";
-import { myConsole } from "../../hooks/useConsole";
-import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
-import { checkPermission } from "../../utils/commonFunctions";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import { Feather } from "@expo/vector-icons";
+import ActionButton from "../../myComponents/ActionButton";
 
 const InterviewMain = () => {
   const { navigate } = useNavigation();
   const { user } = useSelector(selectUser);
   const queryClient = useQueryClient();
+
   const {
     data: candidates,
     isLoading,
@@ -51,6 +49,7 @@ const InterviewMain = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useGetAllCandidates({ search: "" });
+
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -62,7 +61,7 @@ const InterviewMain = () => {
       .trim()
       .matches(
         /^[a-zA-Z0-9\s.,'-]+$/,
-        "Only letters, numbers, and punctuation allowed"
+        "Only letters, numbers, and punctuation allowed",
       )
       .min(5, "Minimum 5 characters required")
       .max(200, "Maximum 200 characters allowed")
@@ -78,16 +77,26 @@ const InterviewMain = () => {
     onSubmit: async (values) => {
       try {
         setRescheduleLoading(true);
+
         await rescheduleInterview({
           candidateId: selectedInterview?._id,
           stage: "reschedule",
           time: values.dateTime,
           remarks: values.remark,
         });
+
         popUpConfToast.successMessage("Interview rescheduled successfully!");
+
         setShowRescheduleModal(false);
-        queryClient.invalidateQueries({ queryKey: ["getAllCandidates"] });
-        queryClient.invalidateQueries({ queryKey: ["getCandidateDetails"] });
+
+        queryClient.invalidateQueries({
+          queryKey: ["getAllCandidates"],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["getCandidateDetails"],
+        });
+
         rescheduleFormik.resetForm();
       } catch (e) {
         console.error(e);
@@ -103,7 +112,9 @@ const InterviewMain = () => {
       const excelData = await downloadInterviewsExcel();
 
       const base64Data = excelData?.file?.split(",")[1] || "";
+
       const fileName = "interviews.xlsx";
+
       const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
 
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
@@ -131,132 +142,183 @@ const InterviewMain = () => {
 
   const renderItem = ({ item }) => {
     const status = item?.interview?.status || "pending";
+
     const statusColor =
       status === "scheduled"
-        ? "green"
+        ? "#16A34A"
         : status === "rescheduled"
-        ? "red"
-        : status === "selected"
-        ? "#8e44ad"
-        : color.saffronMango;
+          ? "#DC2626"
+          : status === "selected"
+            ? "#7C3AED"
+            : color.saffronMango;
+
     return (
-      <View style={styles.card}>
+      <SlideFadeIn>
         <TouchableOpacity
-          style={{ flex: 1 }}
+          activeOpacity={0.8}
+          style={styles.card}
           onPress={() => navigate("CandidateDetails", { item })}
         >
-          <SlideFadeIn>
-            <CustomText style={styles.name}>{item?.name}</CustomText>
-          </SlideFadeIn>
-          <SlideFadeIn>
-            <CustomText style={styles.email}>{item?.email}</CustomText>
-          </SlideFadeIn>
-        </TouchableOpacity>
-        <SlideFadeIn>
-          <CustomText style={[styles.status, { color: statusColor }]}>
-            {status.charAt(0).toUpperCase() +
-              status.slice(1).toLowerCase().replace(/_/g, " ")}
-          </CustomText>
-        </SlideFadeIn>
+          <View style={styles.avatar}>
+            <CustomText style={styles.avatarText}>
+              {item?.name?.charAt(0)?.toUpperCase()}
+            </CustomText>
+          </View>
 
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedInterview(item);
-            setShowOptionsModal(true);
-          }}
-        >
-          <SlideFadeIn>
-            <CustomText style={styles.more}>More</CustomText>
-          </SlideFadeIn>
+          <View style={styles.infoContainer}>
+            <CustomText style={styles.name}>{item?.name}</CustomText>
+
+            <View style={styles.emailRow}>
+              <Feather name="mail" size={13} color="#64748B" />
+
+              <CustomText numberOfLines={1} style={styles.email}>
+                {item?.email}
+              </CustomText>
+            </View>
+
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor: `${statusColor}15`,
+                },
+              ]}
+            >
+              <CustomText
+                style={[
+                  styles.status,
+                  {
+                    color: statusColor,
+                  },
+                ]}
+              >
+                {status.charAt(0).toUpperCase() +
+                  status.slice(1).toLowerCase().replace(/_/g, " ")}
+              </CustomText>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedInterview(item);
+              setShowOptionsModal(true);
+            }}
+            style={styles.moreBtn}
+          >
+            <Feather
+              name="more-vertical"
+              size={18}
+              color={color.mainTxtColor}
+            />
+          </TouchableOpacity>
         </TouchableOpacity>
-      </View>
+      </SlideFadeIn>
     );
   };
+
   return (
     <ContainerHRM headingTitle="Interview">
+      {/* OPTIONS MODAL */}
+
       <ModalWithBlur
         visible={showOptionsModal}
         onClose={() => setShowOptionsModal(false)}
       >
-        {["View Details", "Post Interview", "Reschedule", "Delete"].map(
-          (option, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                setShowOptionsModal(false);
-                if (option === "View Details")
-                  navigate("CandidateDetails", { item: selectedInterview });
-                else if (option === "Post Interview")
-                  navigate("PostIntProcess", { item: selectedInterview });
-                else if (option === "Reschedule") {
-                  setShowOptionsModal(false);
-                  setShowRescheduleModal(true);
-                } else if (option === "Delete") {
-                  popupModal2.wantDelete({
-                    onConfirm: async () => {
-                      try {
-                        await deleteInterview(selectedInterview?._id);
-                        popUpConfToast.successMessage(
-                          "Interview deleted successfully"
-                        );
-                        // Popup.hide();
-                        await queryClient.invalidateQueries({
-                          queryKey: ["getAllCandidates"],
-                        });
-                      } catch (err) {
-                        console.error("Delete failed", err);
-                        popUpConfToast.errorMessage(
-                          "Failed to delete interview"
-                        );
-                      }
-                    },
-                  });
-                }
-              }}
-              style={{
-                paddingVertical: 12,
-                borderBottomWidth: index !== 3 ? 1 : 0,
-                borderColor: "#ddd",
-              }}
-            >
-              <SlideFadeIn>
-                <CustomText
-                  style={{
-                    fontSize: 16,
-                    textAlign: "center",
-                    color: color.mainTxtColor,
+        <View style={styles.modalContainer}>
+          {["View Details", "Post Interview", "Reschedule", "Delete"].map(
+            (option, index) => {
+              const iconName =
+                option === "View Details"
+                  ? "eye"
+                  : option === "Post Interview"
+                    ? "clipboard"
+                    : option === "Reschedule"
+                      ? "calendar"
+                      : "trash-2";
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.7}
+                  style={[styles.optionRow, index !== 3 && styles.optionBorder]}
+                  onPress={() => {
+                    setShowOptionsModal(false);
+
+                    if (option === "View Details") {
+                      navigate("CandidateDetails", {
+                        item: selectedInterview,
+                      });
+                    } else if (option === "Post Interview") {
+                      navigate("PostIntProcess", {
+                        item: selectedInterview,
+                      });
+                    } else if (option === "Reschedule") {
+                      setShowRescheduleModal(true);
+                    } else if (option === "Delete") {
+                      popupModal2.wantDelete({
+                        onConfirm: async () => {
+                          try {
+                            await deleteInterview(selectedInterview?._id);
+
+                            popUpConfToast.successMessage(
+                              "Interview deleted successfully",
+                            );
+
+                            await queryClient.invalidateQueries({
+                              queryKey: ["getAllCandidates"],
+                            });
+                          } catch (err) {
+                            console.error("Delete failed", err);
+
+                            popUpConfToast.errorMessage(
+                              "Failed to delete interview",
+                            );
+                          }
+                        },
+                      });
+                    }
                   }}
                 >
-                  {option}
-                </CustomText>
-              </SlideFadeIn>
-            </TouchableOpacity>
-          )
-        )}
-        <TouchableOpacity
-          style={{
-            alignSelf: "flex-end",
-            backgroundColor: color.saffronMango,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 6,
-          }}
-          onPress={() => setShowOptionsModal(false)}
-        >
-          <SlideFadeIn>
-            <CustomText style={{ color: "#fff" }}>Cancel</CustomText>
-          </SlideFadeIn>
-        </TouchableOpacity>
+                  <View style={styles.optionLeft}>
+                    <Feather
+                      name={iconName}
+                      size={18}
+                      color={
+                        option === "Delete" ? "#DC2626" : color.mainTxtColor
+                      }
+                    />
+
+                    <CustomText
+                      style={[
+                        styles.optionText,
+                        option === "Delete" && {
+                          color: "#DC2626",
+                        },
+                      ]}
+                    >
+                      {option}
+                    </CustomText>
+                  </View>
+
+                  <Feather name="chevron-right" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              );
+            },
+          )}
+        </View>
       </ModalWithBlur>
+
+      {/* RESCHEDULE MODAL */}
 
       <ModalWithBlur
         visible={showRescheduleModal}
         onClose={() => setShowRescheduleModal(false)}
       >
-        <View style={{ gap: 12 }}>
-          <CustomText style={{ fontSize: 18, fontWeight: "bold" }}>
-            Reschedule Time
+        <View style={styles.rescheduleModal}>
+          <CustomText style={styles.modalTitle}>
+            Reschedule Interview
           </CustomText>
+
           <DatePickerExpo
             title="Enter Date & Time"
             initialValue={rescheduleFormik.values.dateTime}
@@ -264,15 +326,18 @@ const InterviewMain = () => {
             onSelect={(v) => rescheduleFormik.setFieldValue("dateTime", v)}
             minimumDate={new Date()}
           />
+
           {rescheduleFormik.touched.dateTime &&
             rescheduleFormik.errors.dateTime && (
-              <CustomText style={[styles.errorText, { marginBottom: 14 }]}>
+              <CustomText style={styles.errorText}>
                 {rescheduleFormik.errors.dateTime}
               </CustomText>
             )}
+
           <CustomInput
             label="Remark"
             placeholder="Type here..."
+            containerStyle={{ marginTop: 8 }}
             multiline
             numberOfLines={4}
             value={rescheduleFormik.values.remark}
@@ -281,79 +346,86 @@ const InterviewMain = () => {
               rescheduleFormik.touched.remark && rescheduleFormik.errors.remark
             }
           />
-          <CustomBtn
-            title={rescheduleLoading ? "Submitting..." : "Submit"}
-            disabled={rescheduleLoading}
-            onPress={rescheduleFormik.handleSubmit}
-          />
-          <CustomBtn
-            title="Cancel"
-            onPress={() => setShowRescheduleModal(false)}
-            containerStyle={{
-              backgroundColor: "red",
-              marginTop: 4,
-            }}
-            titleStyle={{ color: "white" }}
-          />
+          <View style={styles.buttonRow}>
+            <ActionButton
+              title="Cancel"
+              variant="outline"
+              icon="x"
+              onPress={() => {
+                rescheduleFormik.resetForm();
+                setShowRescheduleModal(false);
+              }}
+              containerStyle={{ marginRight: 10 }}
+            />
+
+            <ActionButton
+              title={rescheduleLoading ? "Submitting..." : "Submit"}
+              loading={rescheduleLoading}
+              icon="check"
+              variant="primary"
+              disabled={rescheduleLoading}
+              onPress={rescheduleFormik.handleSubmit}
+            />
+          </View>
         </View>
       </ModalWithBlur>
 
+      {/* MAIN CONTENT */}
+
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.headerBox}>
-          <SlideFadeIn>
-            <CustomText style={styles.headerText}>
+        {/* HEADER */}
+
+        <View style={styles.headerCard}>
+          <View>
+            <CustomText style={styles.headerTitle}>
               Schedule Interview
             </CustomText>
-          </SlideFadeIn>
+
+            <CustomText style={styles.headerSubtitle}>
+              Manage and track candidate interviews
+            </CustomText>
+          </View>
+
           <TouchableOpacity
             style={styles.scheduleButton}
             onPress={() => navigate("ScheduleInterview")}
           >
-            <SlideFadeIn>
-              <CustomText style={styles.scheduleButtonText}>
-                Schedule
-              </CustomText>
-            </SlideFadeIn>
+            <Feather name="plus" size={18} color="#fff" />
+
+            <CustomText style={styles.scheduleButtonText}>Schedule</CustomText>
           </TouchableOpacity>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <SlideFadeIn>
-            <CustomText style={styles.subHeading}>Interviews</CustomText>
-          </SlideFadeIn>
-          {/* <TouchableOpacity activeOpacity={0.6} onPress={() => null}>
-            <ExportIcon />
+        {/* TITLE ROW */}
+
+        <View style={styles.titleRow}>
+          <CustomText style={styles.subHeading}>Interviews</CustomText>
+
+          {/* <TouchableOpacity
+            style={styles.exportBtn}
+            activeOpacity={0.7}
+            onPress={handleExportInterviewsExcel}
+          >
+            <Feather name="download" size={17} color="#fff" />
           </TouchableOpacity> */}
         </View>
 
-        {/* List */}
+        {/* LIST */}
+
         {isLoading ? (
           <ActivityIndicator
             size="large"
             color={color.mainTxtColor}
-            style={{ marginTop: 300 }}
+            style={{
+              marginTop: 300,
+            }}
           />
         ) : isError ? (
-          <View style={{ flex: 1, paddingVertical: 200 }}>
+          <View style={styles.noDataWrapper}>
             <NoDataFound height={200} width={200} />
           </View>
         ) : candidates.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: -100,
-            }}
-          >
+          <View style={styles.noDataWrapper}>
             <NoDataFound height={200} width={200} />
           </View>
         ) : (
@@ -361,7 +433,9 @@ const InterviewMain = () => {
             data={candidates}
             keyExtractor={(item) => item?._id}
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{
+              paddingBottom: 30,
+            }}
             showsVerticalScrollIndicator={false}
             onEndReached={() => {
               if (hasNextPage) fetchNextPage();
@@ -379,7 +453,13 @@ const InterviewMain = () => {
             }
             ListFooterComponent={
               isFetchingNextPage ? (
-                <ActivityIndicator size="small" color={color.mainTxtColor} />
+                <ActivityIndicator
+                  size="small"
+                  color={color.mainTxtColor}
+                  style={{
+                    marginVertical: 12,
+                  }}
+                />
               ) : null
             }
           />
@@ -394,75 +474,212 @@ export default InterviewMain;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 12,
+    paddingTop: 18,
   },
-  headerBox: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: `#fff`,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: color.saffronMango,
-    padding: 12,
+
+  headerCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 16,
     marginBottom: 20,
+    paddingLeft: 16,
+    paddingRight: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    ...shadowPrimaryColor,
   },
-  headerText: {
-    fontSize: 16,
-    color: color.mainTxtColor,
+  buttonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
   },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+
+  headerSubtitle: {
+    fontSize: 13,
+    color: "#64748B",
+    marginTop: 4,
+  },
+
   scheduleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     backgroundColor: color.saffronMango,
+    paddingHorizontal: 10,
     paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    elevation: 2,
+    borderRadius: 14,
   },
+
   scheduleButtonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 15,
+    fontWeight: "700",
+    fontSize: 14,
   },
+
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+
   subHeading: {
-    fontSize: 18,
-    fontWeight: "600",
-    borderBottomWidth: 1,
-    color: color.mainTxtColor,
-    borderColor: color.mainTxtColor,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0F172A",
   },
+
+  exportBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: color.saffronMango,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   card: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1.4,
-    borderColor: color.borderColor,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    ...shadowPrimaryColor,
   },
+
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+
+  avatarText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#4338CA",
+  },
+
+  infoContainer: {
+    flex: 1,
+  },
+
   name: {
-    fontWeight: "600",
-    fontSize: 15,
-    color: color.mainTxtColor,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0F172A",
   },
+
+  emailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 5,
+  },
+
   email: {
     fontSize: 13,
-    color: color.mainTxtColor,
+    color: "#64748B",
+    flex: 1,
   },
+
+  statusBadge: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+
   status: {
-    marginHorizontal: 10,
-    fontWeight: "bold",
-    marginRight: 40,
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "capitalize",
   },
-  more: {
+
+  moreBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 22,
+    overflow: "hidden",
+  },
+
+  optionRow: {
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  optionBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+
+  optionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  optionText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#0F172A",
+  },
+
+  rescheduleModal: {
+    backgroundColor: "#fff",
+    borderRadius: 22,
+    padding: 18,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
     color: color.mainTxtColor,
-    textDecorationLine: "underline",
+    marginBottom: 16,
   },
+
   errorText: {
-    fontSize: 14,
-    color: "red",
+    fontSize: 13,
+    color: "#DC2626",
     marginBottom: 10,
+    marginTop: -6,
+  },
+
+  noDataWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
   },
 });

@@ -169,6 +169,13 @@ const BottomTabs = () => {
       <Tab.Screen
         name="allLead2"
         component={LeadsNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate("allLead2", {
+              screen: "AllLeads",
+            });
+          },
+        })}
         options={{
           tabBarLabel: "",
           headerShown: false,

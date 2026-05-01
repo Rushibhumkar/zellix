@@ -33,7 +33,10 @@ import { logOut } from "../../services/authApi/auth";
 import { Feather } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { iconWrapperStyle } from "../../const/globalStyle";
+import {
+  headerIconWrapperStyle,
+  iconWrapperStyle,
+} from "../../const/globalStyle";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedTouchableOpacity =
@@ -238,12 +241,10 @@ const ContainerHRM = ({
             <Pressable onPress={() => isBAck?.isStatus()}>
               <View
                 style={{
-                  backgroundColor: color.mainTxtColor,
-                  borderRadius: 50,
-                  padding: 8,
+                  ...headerIconWrapperStyle,
                 }}
               >
-                <ChangeStatus />
+                <Feather name="refresh-cw" size={18} color={"#fff"} />
               </View>
             </Pressable>
           )}

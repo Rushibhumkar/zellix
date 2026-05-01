@@ -48,7 +48,6 @@ const InvoiceDetail = () => {
       await Linking.openURL(url);
     }
   };
-  myConsole("dataaaaaa", data);
   const InfoRow = ({ icon, label, value }: any) => (
     <View style={styles.row}>
       <View style={styles.left}>

@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import moment from "moment";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import ActionButton from "../../myComponents/ActionButton";
 
 const AttendanceDetail = () => {
   const [attendanceDetailById, setAttendanceDetailById] = useState(
@@ -136,7 +137,6 @@ const AttendanceDetail = () => {
       setRefreshing(false);
     }
   };
-  myConsole("dataaaaa", data);
   return (
     <ContainerHRM
       isBAck={{
@@ -321,16 +321,16 @@ const AttendanceDetail = () => {
               </View>
             )}
 
-            <OutlineBtn
+            <ActionButton
               title="Raise Issue"
+              icon="alert-circle"
+              variant="outline"
               containerStyle={styles.issueBtn}
-              textStyle={styles.issueBtnText}
               onPress={() => {
                 setIssueRiseUpdate("raise");
                 toggleModal();
               }}
             />
-
             <View style={{ height: 40 }} />
           </>
         }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -18,13 +18,23 @@ import {
   useGetAllReminders,
 } from "../../services/rootApi/remaindersApi";
 import { myConsole } from "../../hooks/useConsole";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useAppToast } from "../../components/AppToast";
 
 const Remainders = () => {
   const toast = useAppToast();
-  const [activeTab, setActiveTab] = useState("Upcoming");
+  const route = useRoute();
+
+  const [activeTab, setActiveTab] = useState(
+    route?.params?.remindersActiveTab || "Upcoming",
+  );
+
+  useEffect(() => {
+    if (route?.params?.remindersActiveTab) {
+      setActiveTab(route?.params?.remindersActiveTab);
+    }
+  }, [route?.params?.remindersActiveTab]);
 
   const {
     data,
@@ -45,6 +55,7 @@ const Remainders = () => {
   // myConsole("remindersss", reminders);
 
   const navigation = useNavigation();
+
   const upcomingCount = reminders.filter(
     (i: any) => i?.status === "pending",
   ).length;
@@ -115,7 +126,7 @@ const Remainders = () => {
   return (
     <View style={styles.container}>
       <Header
-        title={"Remainders"}
+        title={"Reminders"}
         onBack={() =>
           navigation.navigate("Dashboard", {
             screen: "dashboard", // 👈 tab name
@@ -205,6 +216,7 @@ const Remainders = () => {
                     params: {
                       item: { _id: item.leadId._id },
                       from: "reminders",
+                      remindersActiveTab: activeTab,
                     },
                   });
                 }}
@@ -269,6 +281,7 @@ const Remainders = () => {
                   params: {
                     item: { _id: item.leadId._id },
                     from: "reminders",
+                    remindersActiveTab: activeTab,
                   },
                 });
               }}

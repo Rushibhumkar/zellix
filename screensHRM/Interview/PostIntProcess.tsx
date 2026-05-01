@@ -20,6 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
 import { uploadFile } from "../../utils/uploadFile";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
+import { color } from "../../const/color";
 
 const PostIntProcess = () => {
   const { params } = useRoute();
@@ -173,6 +174,7 @@ const PostIntProcess = () => {
             onEndReached={() => {
               if (usersHasNextPage) usersFetchNextPage();
             }}
+            containerStyle={{ marginTop: 8 }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               usersIsFetchingNextPage ? (
@@ -201,6 +203,7 @@ const PostIntProcess = () => {
             onEndReached={() => {
               if (usersHasNextPage) usersFetchNextPage();
             }}
+            containerStyle={{ marginTop: 8 }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               usersIsFetchingNextPage ? (
@@ -219,6 +222,7 @@ const PostIntProcess = () => {
 
           <ExpoImagePicker
             label="Offer Letter"
+            boxContainerStyle={{ marginTop: 8 }}
             onSelect={async (file) => {
               await uploadFile({
                 file: file?.assets,
@@ -239,6 +243,7 @@ const PostIntProcess = () => {
           )}
           <ExpoImagePicker
             label="CV After Interview"
+            boxContainerStyle={{ marginTop: 8 }}
             onSelect={async (file) => {
               await uploadFile({
                 file: file?.assets,
@@ -260,6 +265,7 @@ const PostIntProcess = () => {
 
           <CustomInput
             label="Remark"
+            containerStyle={{ marginTop: 8 }}
             placeholder="Type Here...."
             marginBottom={20}
             value={formik.values.remark}
@@ -288,7 +294,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     fontWeight: "500",
-    color: "#000",
+    color: color.mainTxtColor,
   },
   errorText: {
     fontSize: 14,
@@ -300,6 +306,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
     marginTop: 10,
+    color: color.mainTxtColor,
   },
   checkboxRow: {
     flexDirection: "row",

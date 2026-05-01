@@ -297,7 +297,7 @@ const LeadsDetails = () => {
 
   const navToCall = async () => {
     try {
-      console.log("1. Call Icon Clicked");
+      //console.log("1. Call Icon Clicked");
 
       await dispatch(
         setCallDetect({
@@ -306,39 +306,39 @@ const LeadsDetails = () => {
         }),
       );
 
-      console.log("2. setCallDetect completed");
+      //console.log("2. setCallDetect completed");
 
       setIsDialerOpened(true);
 
       isDialerOpenedRef.current = true;
 
-      console.log("3. isDialerOpened set to TRUE");
+      //console.log("3. isDialerOpened set to TRUE");
 
-      console.log("4. Opening Dialer...");
+      //console.log("4. Opening Dialer...");
 
       await Linking.openURL(`tel:+${917972755589}`);
 
-      console.log("5. Linking.openURL executed");
+      //console.log("5. Linking.openURL executed");
     } catch (err) {
       console.log("❌ Call error", err);
     }
   };
 
   useEffect(() => {
-    console.log("🟢 AppState Listener Mounted");
+    //console.log("🟢 AppState Listener Mounted");
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
-      console.log("━━━━━━━━━━━━━━━━━━━━━━");
-      console.log("📱 AppState Changed");
-      console.log("Previous State =>", appState.current);
-      console.log("Next State =>", nextAppState);
-      console.log("isDialerOpened =>", isDialerOpened);
-      console.log("isCallTracking =>", isCallTracking);
-      console.log("callStartTime =>", callStartTime);
+      //console.log("━━━━━━━━━━━━━━━━━━━━━━");
+      //console.log("📱 AppState Changed");
+      //console.log("Previous State =>", appState.current);
+      //console.log("Next State =>", nextAppState);
+      //console.log("isDialerOpened =>", isDialerOpened);
+      //console.log("isCallTracking =>", isCallTracking);
+      //console.log("callStartTime =>", callStartTime);
 
       // App moved to background AFTER user clicked CALL
       if (isDialerOpenedRef.current && nextAppState === "background") {
-        console.log("✅ CALL START DETECTED");
+        //console.log("✅ CALL START DETECTED");
 
         const startTime = Date.now();
 
@@ -356,29 +356,29 @@ const LeadsDetails = () => {
 
         setIsDialerOpened(false);
 
-        console.log("✅ isCallTracking TRUE");
-        console.log("✅ isDialerOpened FALSE");
+        //console.log("✅ isCallTracking TRUE");
+        //console.log("✅ isDialerOpened FALSE");
       }
 
       // User returned to app
       if (appState.current === "background" && nextAppState === "active") {
-        console.log("🟡 APP RETURNED TO FOREGROUND");
-        console.log("CURRENT APP STATE =>", nextAppState);
+        //console.log("🟡 APP RETURNED TO FOREGROUND");
+        //console.log("CURRENT APP STATE =>", nextAppState);
         if (callStartTimeRef.current && isCallTrackingRef.current) {
           const endTime = Date.now();
 
-          console.log("⏱️ Timer Ended At =>", endTime);
+          //console.log("⏱️ Timer Ended At =>", endTime);
 
           const durationInSeconds = Math.floor(
             (endTime - callStartTimeRef.current) / 1000,
           );
 
-          console.log(
-            "🔥 Actual Call Duration In Seconds =>",
-            durationInSeconds,
-          );
+          // console.log(
+          //   "🔥 Actual Call Duration In Seconds =>",
+          //   durationInSeconds,
+          // );
 
-          console.log("✅ Opening Change Status Popup");
+          //console.log("✅ Opening Change Status Popup");
 
           setShowChangeStatusPopup(true);
 
@@ -386,7 +386,7 @@ const LeadsDetails = () => {
 
           setIsCallTracking(false);
 
-          console.log("✅ Timer Reset Done");
+          //console.log("✅ Timer Reset Done");
         } else {
           console.log("❌ No active call tracking found");
         }
@@ -396,7 +396,7 @@ const LeadsDetails = () => {
     });
 
     return () => {
-      console.log("🔴 AppState Listener Removed");
+      //console.log("🔴 AppState Listener Removed");
 
       subscription.remove();
     };
@@ -721,7 +721,6 @@ const LeadsDetails = () => {
                   remindersActiveTab,
                 });
               } else {
-                console.log("clickeid allleads");
                 navigate(routeLead.allLead);
               }
             }}

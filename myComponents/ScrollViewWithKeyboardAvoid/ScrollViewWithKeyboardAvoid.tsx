@@ -22,7 +22,10 @@ const ScrollViewWithKeyboardAvoid = ({
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: 12, paddingBottom: 20 }}
+          >
             {children}
           </ScrollView>
         </KeyboardAvoidingView>
