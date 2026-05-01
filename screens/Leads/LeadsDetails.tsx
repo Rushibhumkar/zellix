@@ -1,9 +1,13 @@
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  CommonActions,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import * as MailComposer from "expo-mail-composer";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -14,6 +18,7 @@ import {
   View,
   TextInput,
   StyleSheet,
+  AppState,
   TouchableWithoutFeedback,
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
@@ -116,8 +121,23 @@ const combineDateAndTime = (dateStr, timeStr) => {
 const LeadsDetails = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
+  const navigation = useNavigation();
   const { navigate } = useNavigation();
   const { user, lead } = useSelector(selectUser);
+
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
+
+  const appState = useRef(AppState.currentState);
+
+  const [isCallTracking, setIsCallTracking] = useState(false);
+
+  const [isDialerOpened, setIsDialerOpened] = useState(false);
+
+  const isDialerOpenedRef = useRef(false);
+
+  const isCallTrackingRef = useRef(false);
+
+  const callStartTimeRef = useRef<number | null>(null);
 
   const isSubSupSrMng =
     user?.role === roleEnum?.sub_admin ||
@@ -133,6 +153,8 @@ const LeadsDetails = () => {
   let details = params?.item;
 
   let selectLeadType = params?.selectLeadType;
+  const from = params?.from;
+  const remindersActiveTab = params?.remindersActiveTab;
   //detail nam se state btao waha leadDetailById ka data save kro ##start
   // const { data: detail, isLoading: isLoadingQuery } = useGetLeadDetail(params?.item?._id);
   const {
@@ -183,7 +205,6 @@ const LeadsDetails = () => {
 
   const FUTModal = useModal();
 
-  //
   const isLeadEdit =
     (user?.role === roleEnum?.sup_admin ||
       user?.role === roleEnum?.sub_admin) &&
@@ -254,6 +275,7 @@ const LeadsDetails = () => {
       FUTModal.closeModal();
     }
   };
+
   const onChange = (key, value) => {
     setFields((prev) => {
       return { ...prev, [key]: value };
@@ -274,14 +296,111 @@ const LeadsDetails = () => {
   }, []);
 
   const navToCall = async () => {
-    await dispatch(
-      setCallDetect({
-        isCall: true,
-        leadId: detail?._id,
-      }),
-    );
-    await Linking.openURL(`tel:+${detail?.clientMobile}`);
+    try {
+      console.log("1. Call Icon Clicked");
+
+      await dispatch(
+        setCallDetect({
+          isCall: true,
+          leadId: detail?._id,
+        }),
+      );
+
+      console.log("2. setCallDetect completed");
+
+      setIsDialerOpened(true);
+
+      isDialerOpenedRef.current = true;
+
+      console.log("3. isDialerOpened set to TRUE");
+
+      console.log("4. Opening Dialer...");
+
+      await Linking.openURL(`tel:+${917972755589}`);
+
+      console.log("5. Linking.openURL executed");
+    } catch (err) {
+      console.log("❌ Call error", err);
+    }
   };
+
+  useEffect(() => {
+    console.log("🟢 AppState Listener Mounted");
+
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      console.log("━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("📱 AppState Changed");
+      console.log("Previous State =>", appState.current);
+      console.log("Next State =>", nextAppState);
+      console.log("isDialerOpened =>", isDialerOpened);
+      console.log("isCallTracking =>", isCallTracking);
+      console.log("callStartTime =>", callStartTime);
+
+      // App moved to background AFTER user clicked CALL
+      if (isDialerOpenedRef.current && nextAppState === "background") {
+        console.log("✅ CALL START DETECTED");
+
+        const startTime = Date.now();
+
+        setCallStartTime(startTime);
+
+        callStartTimeRef.current = startTime;
+
+        setIsCallTracking(true);
+
+        isCallTrackingRef.current = true;
+
+        setIsDialerOpened(false);
+
+        isDialerOpenedRef.current = false;
+
+        setIsDialerOpened(false);
+
+        console.log("✅ isCallTracking TRUE");
+        console.log("✅ isDialerOpened FALSE");
+      }
+
+      // User returned to app
+      if (appState.current === "background" && nextAppState === "active") {
+        console.log("🟡 APP RETURNED TO FOREGROUND");
+        console.log("CURRENT APP STATE =>", nextAppState);
+        if (callStartTimeRef.current && isCallTrackingRef.current) {
+          const endTime = Date.now();
+
+          console.log("⏱️ Timer Ended At =>", endTime);
+
+          const durationInSeconds = Math.floor(
+            (endTime - callStartTimeRef.current) / 1000,
+          );
+
+          console.log(
+            "🔥 Actual Call Duration In Seconds =>",
+            durationInSeconds,
+          );
+
+          console.log("✅ Opening Change Status Popup");
+
+          setShowChangeStatusPopup(true);
+
+          setCallStartTime(null);
+
+          setIsCallTracking(false);
+
+          console.log("✅ Timer Reset Done");
+        } else {
+          console.log("❌ No active call tracking found");
+        }
+      }
+
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      console.log("🔴 AppState Listener Removed");
+
+      subscription.remove();
+    };
+  }, [callStartTime, isCallTracking, isDialerOpened]);
 
   const deleteNotes = async (notesId: any) => {
     try {
@@ -597,7 +716,14 @@ const LeadsDetails = () => {
                 : "Lead Details"
             }
             onBack={() => {
-              navigate(routeLead.allLead);
+              if (from === "reminders") {
+                navigation.navigate("Reminders", {
+                  remindersActiveTab,
+                });
+              } else {
+                console.log("clickeid allleads");
+                navigate(routeLead.allLead);
+              }
             }}
             rightSide={
               <>
