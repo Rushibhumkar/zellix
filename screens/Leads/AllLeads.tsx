@@ -431,7 +431,13 @@ const AllLeads = () => {
                 onLongPress={
                   isSubSupSrMng ? () => handleSelect(item?._id) : undefined
                 }
-                onCallPress={() => handleCallPress(item?.clientMobile)}
+                onCallPress={() =>
+                  navigation.navigate("LeadsDetails", {
+                    item,
+                    selectLeadType,
+                    triggerCall: true, // 👈 important flag
+                  })
+                }
                 onWhatsappIconPress={() => {
                   if (!item?.whatsapp) return;
                   Linking.openURL(item?.whatsapp);

@@ -130,3 +130,26 @@ export const getInitialsUsingTwoNames = (name = "", lastName = "") => {
 
   return first + last;
 };
+
+export const truncateText = (value: unknown, length: number = 8): string => {
+  try {
+    if (value === null || value === undefined) return "";
+
+    // Convert safely to string
+    const str = String(value);
+
+    if (!str.trim()) return "";
+
+    // Invalid length fallback
+    if (!length || length <= 0) return str;
+
+    // If already within limit
+    if (str.length <= length) return str;
+
+    // Truncate + add dots
+    return str.slice(0, length) + "...";
+  } catch (error) {
+    console.error("truncateText error:", error);
+    return "";
+  }
+};
