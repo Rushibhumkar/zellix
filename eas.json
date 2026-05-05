@@ -18,26 +18,26 @@
       "distribution": "internal",
       "channel": "preview"
     },
-  "production": {
-  "autoIncrement": true,
-  "channel": "production",
-  "env": {
-    "DISABLE_XCODE_SANDBOX": "1",
-    "XCODE_DISABLE_PACKAGE_SANDBOX": "1",
-    "XCODE_DISABLE_SCRIPT_SANDBOX": "1"
-  },
-  "android": {
-    "buildType": "app-bundle",
-    "credentialsSource": "remote"
-  }
-}
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "env": {
+        "DISABLE_XCODE_SANDBOX": "1",
+        "XCODE_DISABLE_PACKAGE_SANDBOX": "1",
+        "XCODE_DISABLE_SCRIPT_SANDBOX": "1"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "credentialsSource": "remote"
+      }
+    }
   },
   "submit": {
     "production": {
-      "ios":{
-        "appleId":"skgestates9@gmail.com",
-        "ascAppId":"6748918861",
-        "appleTeamId":"2ZUBH53J8W"
+      "ios": {
+        "appleId": "skgestates9@gmail.com",
+        "ascAppId": "6748918861",
+        "appleTeamId": "2ZUBH53J8W"
       }
     }
   }

@@ -7,7 +7,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -41,7 +40,7 @@ import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import { WIDTH } from "../../const/deviceInfo";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import ExpoImagePicker from "../../myComponents/ExpoImagePicker/ExpoImagePicker";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import mime from "mime";
 import moment from "moment";
 import {
@@ -58,6 +57,8 @@ import useModal from "../../hooks/useModal";
 import ThreeDotVerSvg from "../../assets/svg/ThreeDotVerSvg";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import * as Clipboard from "expo-clipboard";
+import { useAppToast } from "../../components/AppToast";
 
 const approvalStatus = {
   pending: "Pending",
@@ -88,25 +89,22 @@ const inputStatusKey = {
 };
 
 const BookingDetail = () => {
+  const toast = useAppToast();
   const queryClient = useQueryClient();
   const { params } = useRoute();
   const { navigate, goBack } = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
-  // const data = params?.item ?? null;
-  const [isApproveExecuted, setisApproveExecuted] = useState(false);
   const { data, isLoading } = useGetBookingById(params?.item?._id);
 
-  // myConsole("bodetailsss", data);
   const dispatch = useDispatch();
   const { user, lead, allUsers } = useSelector(selectUser);
-  // const filterLead = lead.find((lead) => lead._id === data?.meeting?.lead);
-  // const filterLead = data?.lead || {};
-  const [filterLead, setFilterLead] = useState({}); //
+  const [filterLead, setFilterLead] = useState({});
   const { data: developerList, isLoading: loadingDev } = useGetDeveloperList(
     data?.developer,
   );
   useEffect(() => {
     let temp = {
+      id: data?.lead?._id || data?._id || "NA",
       name: data?.name || data?.lead?.name || "NA",
       clientName: data?.clientName || data?.lead?.clientName || "NA",
       clientEmail: data?.clientEmail || data?.lead?.clientEmail || "NA",
@@ -116,14 +114,7 @@ const BookingDetail = () => {
       whatsapp: data?.whatsapp || data?.lead?.whatsapp || "NA",
     };
     setFilterLead(temp);
-    data?.inputStatus &&
-      setisApproveExecuted((prev) => {
-        return data?.inputStatus === "executed" ? true : false;
-      });
   }, [data]);
-
-  const developerObj = {};
-  developerOptions.forEach((el) => (developerObj[el?._id] = el?.name));
 
   const [isHideBtn, setIsHideBtn] = useState(true);
   const [isLoadingReject, setIsLoadingReject] = useState(false);
@@ -188,8 +179,6 @@ const BookingDetail = () => {
     } catch (err) {
       myConsole("err HandleAcceptRejectBooking", err);
     } finally {
-      // setIsLoadingReject(false);
-      // setIsLoadingApprove(false);
       setIsLoadingStatus(false);
       goBack();
     }
@@ -234,8 +223,6 @@ const BookingDetail = () => {
     }
     try {
       let a = await updateCase(data?._id, formData);
-      // await dispatch(getAllBookingFunc());
-      // navigate(routeBooking.allBookings)
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getBookingById, data?._id],
       });
@@ -262,11 +249,9 @@ const BookingDetail = () => {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-
       await queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getBookingById, params?.item?._id],
       });
-
       await queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getBooking],
       });
@@ -277,9 +262,88 @@ const BookingDetail = () => {
     }
   };
 
-  // myConsole("ownerInfo.passport1", ownerInfo.passport1);
-  // myConsole("dataaadsdfdsf", data);
+  const handleCopy = (text: string) => {
+    if (!text) return;
+    Clipboard.setStringAsync(text);
+    toast?.success?.("Copied to clipboard");
+  };
 
+  const renderRow = (
+    label: string,
+    value: string | number | null | undefined,
+    options?: {
+      onCopy?: () => void;
+      isPhone?: boolean;
+      isEmail?: boolean;
+      icon?: React.ReactNode;
+      rightIcon?: {
+        iconName?: string;
+        onPress?: () => void;
+        btnStyle?: any;
+        iconStyle?: {
+          size?: number;
+          color?: string;
+        };
+      };
+    },
+  ) => {
+    const displayValue = value ?? "—";
+    return (
+      <View style={styles.infoRow}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          {options?.icon && (
+            <View style={{ marginRight: 8 }}>{options.icon}</View>
+          )}
+          <View>
+            <CustomText style={styles.label}>{label}</CustomText>
+            <CustomText style={styles.value} numberOfLines={1}>
+              {displayValue}
+            </CustomText>
+          </View>
+        </View>
+        {/* {options?.onCopy && (
+          <TouchableOpacity onPress={options.onCopy} style={styles.copyButton}>
+            <Feather name="copy" size={16} color="#9b9b9b" />
+          </TouchableOpacity>
+        )} */}
+        {options?.rightIcon ? (
+          <TouchableOpacity
+            onPress={options?.rightIcon?.onPress ?? null}
+            style={[styles.copyButton, options?.rightIcon?.btnStyle]}
+          >
+            <Feather
+              name={options?.rightIcon?.iconName || "external-link"}
+              size={options?.rightIcon?.iconStyle?.size || 16}
+              color={options?.rightIcon?.iconStyle?.color || "#9b9b9b"}
+            />
+          </TouchableOpacity>
+        ) : (
+          options?.onCopy && (
+            <TouchableOpacity
+              onPress={options.onCopy}
+              style={styles.copyButton}
+            >
+              <Feather name="copy" size={16} color="#9b9b9b" />
+            </TouchableOpacity>
+          )
+        )}
+      </View>
+    );
+  };
+
+  const renderImgRow = (label: string, uri: string) => {
+    if (!uri) return null;
+    return (
+      <View style={styles.infoRow}>
+        <View style={{ flex: 1 }}>
+          <CustomText style={styles.label}>{label}</CustomText>
+          <ImgViewer uri={uri} />
+        </View>
+      </View>
+    );
+  };
+
+  // myConsole("ownerInfooo", ownerInfo);
   return (
     <>
       <Header title={"Booking Details"} />
@@ -288,684 +352,444 @@ const BookingDetail = () => {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
-          <View style={{ padding: 20, paddingBottom: 100 }}>
+          <View
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 18,
+              ...shadowPrimaryColor,
+            }}
+          >
             {isLoading && <ActivityIndicator />}
-            <>
-              {data?.ownerShipDetails?.length > 0 && (
-                <>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
+
+            {/* Ownership Details Card */}
+            {data?.ownerShipDetails?.length > 0 && (
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <CustomText style={styles.sectionTitle}>
+                    Ownership Details
+                  </CustomText>
+                  <TouchableOpacity
+                    onPress={() => setShowPopup(!showPopup)}
+                    style={styles.menuButton}
                   >
-                    <MainTitle
-                      title="Ownership Detail"
-                      containerStyle={{ marginBottom: 20 }}
-                    />
-                    <TouchableOpacity
-                      style={{
-                        marginBottom: 16,
-                        paddingVertical: 8,
-                        paddingHorizontal: 12,
-                      }}
-                      activeOpacity={0.6}
-                      onPress={() => setShowPopup(!showPopup)}
-                    >
-                      <ThreeDotVerSvg />
-                    </TouchableOpacity>
-                    <CustomModal
-                      visible={showPopup}
-                      onClose={() => setShowPopup(false)} // Close the modal on close
-                      hasBackdrop={true}
-                    >
-                      <View style={styles.modalContent}>
-                        <TouchableOpacity
-                          style={styles.modalOption}
-                          onPress={() => {
-                            (navigate("ReferralNavigator", {
-                              screen: "AddReferrals",
-                              params: { data: data, type: "clientLoyality" },
-                            }),
-                              setShowPopup(false));
-                          }}
-                        >
-                          <CustomText style={styles.modalText}>
-                            Pay Client Loyalty
-                          </CustomText>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.modalOption}
-                          onPress={() => {
-                            (navigate("ReferralNavigator", {
-                              screen: "AddReferrals",
-                              params: { data: data, type: "bookingRefferal" },
-                            }),
-                              setShowPopup(false));
-                          }}
-                        >
-                          <CustomText style={styles.modalText}>
-                            Pay Booking Referral
-                          </CustomText>
-                        </TouchableOpacity>
-                      </View>
-                    </CustomModal>
-                  </View>
-                  {data?.ownerShipDetails?.map((el, i) => {
-                    return (
+                    <ThreeDotVerSvg />
+                  </TouchableOpacity>
+
+                  <CustomModal
+                    visible={showPopup}
+                    onClose={() => setShowPopup(false)} // Close the modal on close
+                    hasBackdrop={true}
+                  >
+                    <View style={styles.modalContent}>
                       <TouchableOpacity
+                        style={styles.modalOption}
                         onPress={() => {
-                          setOwnerInfo(el);
-                          ownerInfoModal.openModal();
-                        }}
-                        key={i}
-                        activeOpacity={0.8}
-                        style={{
-                          padding: 10,
-                          backgroundColor: "white",
-                          borderRadius: 12,
-                          ...shadowPrimaryColor,
-                          marginBottom: 15,
+                          (navigate("ReferralNavigator", {
+                            screen: "AddReferrals",
+                            params: { data: data, type: "clientLoyality" },
+                          }),
+                            setShowPopup(false));
                         }}
                       >
-                        <CustomText
-                          fontSize={16}
-                          fontWeight="500"
-                          style={{ color: color.mainTxtColor }}
-                        >
-                          Client Info 1
+                        <CustomText style={styles.modalText}>
+                          Pay Client Loyalty
                         </CustomText>
                       </TouchableOpacity>
-                    );
-                  })}
-                </>
-              )}
+                      <TouchableOpacity
+                        style={styles.modalOption}
+                        onPress={() => {
+                          (navigate("ReferralNavigator", {
+                            screen: "AddReferrals",
+                            params: { data: data, type: "bookingRefferal" },
+                          }),
+                            setShowPopup(false));
+                        }}
+                      >
+                        <CustomText style={styles.modalText}>
+                          Pay Booking Referral
+                        </CustomText>
+                      </TouchableOpacity>
+                    </View>
+                  </CustomModal>
+                </View>
+                <View style={styles.divider} />
+                {data?.ownerShipDetails?.map((el, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => {
+                      setOwnerInfo(el);
+                      ownerInfoModal.openModal();
+                    }}
+                    activeOpacity={0.8}
+                    style={styles.ownerItem}
+                  >
+                    <Feather
+                      name="users"
+                      size={20}
+                      color={color.primaryColor}
+                    />
+                    <CustomText style={styles.ownerText}>
+                      Client Info {i + 1}
+                    </CustomText>
+                    <Feather
+                      name="chevron-right"
+                      size={18}
+                      color={color.mainTxtColor}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
-              <MainTitle
-                title="Other Details"
-                containerStyle={{ marginBottom: 20 }}
-                icon={
-                  canUpdateBooking ? (
-                    <TouchableOpacity
-                      style={{ padding: 5 }}
-                      onPress={() =>
-                        navigate(routeBooking?.DeveloperInformation, { data })
-                      }
-                    >
-                      <EditIcon />
-                    </TouchableOpacity>
-                  ) : (
-                    <></>
-                  )
-                }
-              />
-              <RowItem
-                title="Source"
-                value={filterLead?.name ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Client Name"
-                value={filterLead?.clientName ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Mobile Number"
-                component={
-                  filterLead?.clientMobile ? (
-                    <TouchableOpacity
-                      onPress={() =>
-                        // Linking.openURL(`tel:${filterLead?.clientMobile}`)
-                        navToCall()
-                      }
-                    >
-                      <CustomText style={{ color: color.mainTxtColor }}>
+            {/* Other Details Card */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <CustomText style={styles.sectionTitle}>
+                  Other Details
+                </CustomText>
+                {canUpdateBooking && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigate(routeBooking?.DeveloperInformation, { data })
+                    }
+                    style={styles.editButton}
+                  >
+                    <Feather
+                      name="edit-2"
+                      size={16}
+                      color={color.mainTxtColor}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View style={styles.divider} />
+
+              {renderRow("Source", filterLead?.name)}
+              {renderRow("Client Name", filterLead?.clientName, {
+                rightIcon: {
+                  iconName: "external-link",
+                  onPress: () => {
+                    if (!filterLead?.id) return;
+
+                    navigate("allLead2", {
+                      screen: "LeadsDetails",
+                      params: {
+                        item: { _id: filterLead.id },
+                      },
+                    });
+                  },
+                },
+              })}
+
+              {filterLead?.clientMobile && (
+                <View style={styles.infoRow}>
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>Mobile Number</CustomText>
+                    <TouchableOpacity onPress={navToCall}>
+                      <CustomText style={styles.value}>
                         {filterLead?.clientMobile}
                       </CustomText>
                     </TouchableOpacity>
-                  ) : (
-                    <CustomText>{"N/A"}</CustomText>
-                  )
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Email Address"
-                component={
-                  filterLead?.clientEmail ? (
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleCopy(filterLead?.clientMobile)}
+                    style={styles.copyButton}
+                  >
+                    <Feather name="copy" size={16} color="#9b9b9b" />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {filterLead?.clientEmail && (
+                <View style={styles.infoRow}>
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>Email Address</CustomText>
                     <TouchableOpacity
                       onPress={() =>
-                        isMailAvail ? openMail(filterLead?.clientEmail) : null
+                        isMailAvail && openMail(filterLead?.clientEmail)
                       }
+                      disabled={!isMailAvail}
                     >
-                      <CustomText
-                        numberOfLines={1}
-                        style={{ color: color.mainTxtColor }}
-                      >
+                      <CustomText style={styles.value}>
                         {filterLead?.clientEmail}
                       </CustomText>
                     </TouchableOpacity>
-                  ) : (
-                    <CustomText>{"N/A"}</CustomText>
-                  )
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Whatsapp Link"
-                icon={filterLead?.whatsapp ? "whatsapp" : "n/a"}
-                containerStyle={{ marginBottom: 10 }}
-                onPressIcon={() => {
-                  if (!filterLead?.whatsapp) return;
-                  Linking.openURL(filterLead.whatsapp);
-                }}
-              />
-
-              <RowItem
-                title="Date Of Birth"
-                value={
-                  data?.dateOfBirth
-                    ? moment(data?.dateOfBirth).format("DD/MM/YYYY")
-                    : "N/A"
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Type Of Property"
-                value={data?.typeOfProperty ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Type"
-                value={leadTypeObj[filterLead?.type] ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Comments"
-                value={filterLead?.comments ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Approval Status"
-                containerStyle={{ marginBottom: 15 }}
-                // value={data?.status ?? "N/A"}
-                component={
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleCopy(filterLead?.clientEmail)}
+                    style={styles.copyButton}
+                  >
+                    <Feather name="copy" size={16} color="#9b9b9b" />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {filterLead?.whatsapp && (
+                <View style={styles.infoRow}>
+                  <View style={{ flex: 1 }}>
+                    <CustomText style={styles.label}>WhatsApp Link</CustomText>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(filterLead.whatsapp)}
+                    >
+                      <CustomText style={[styles.value, { color: "#25D366" }]}>
+                        Open WhatsApp
+                      </CustomText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              {renderRow(
+                "Date of Birth",
+                data?.dateOfBirth
+                  ? moment(data.dateOfBirth).format("DD/MM/YYYY")
+                  : null,
+              )}
+              {renderRow("Type of Property", data?.typeOfProperty)}
+              {renderRow("Type", leadTypeObj[filterLead?.type])}
+              {renderRow("Comments", filterLead?.comments)}
+              <View style={styles.infoRow}>
+                <View>
+                  <CustomText style={styles.label}>Approval Status</CustomText>
                   <CustomText
-                    color={
-                      approvalStatusColor[data?.status] || color.mainTxtColor
-                    }
+                    style={[
+                      styles.value,
+                      {
+                        color:
+                          approvalStatusColor[data?.status] ||
+                          color.mainTxtColor,
+                      },
+                    ]}
                   >
                     {approvalStatus[data?.status] ?? "N/A"}
                   </CustomText>
-                }
-              />
-              <RowItem title="Ownership" value={data?.ownership ?? "N/A"} />
-              {data?.remarks && (
-                <RowItem
-                  title="Remarks"
-                  containerStyle={{ marginBottom: 15, marginTop: 8 }}
-                  // value={data?.status ?? "N/A"}
-                  component={
-                    <CustomText color={color.mainTxtColor}>
-                      {data?.remarks}
-                    </CustomText>
-                  }
-                />
-              )}
-              {data?.paymentProofArr?.length > 0 &&
-                data?.paymentProofArr?.map((el, i) => {
-                  return (
-                    <RowItem
-                      key={i}
-                      title="Payment Proof"
-                      containerStyle={{ marginBottom: 10 }}
-                      component={<ImgViewer uri={`${el}`} />}
-                      // onPressIcon={() => Linking.openURL(`${filterLead?.passport}`)}
-                    />
-                  );
-                })}
-              {data?.otherDocs?.length > 0 &&
-                data?.otherDocs?.map((el, i) => {
-                  return (
-                    <RowItem
-                      key={i}
-                      title="Other Docs"
-                      containerStyle={{ marginBottom: 10 }}
-                      component={<ImgViewer uri={`${el}`} />}
-                      // onPressIcon={() => Linking.openURL(`${filterLead?.passport}`)}
-                    />
-                  );
-                })}
+                </View>
+              </View>
+              {renderRow("Ownership", data?.ownership)}
+              {data?.remarks && renderRow("Remarks", data?.remarks)}
 
-              {data?.passport && (
-                <RowItem
-                  title="Client Passport"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<ImgViewer uri={`${data?.passport}`} />}
-                  // onPressIcon={() => Linking.openURL(`${filterLead?.passport}`)}
-                />
+              {/* Payment Proofs */}
+              {data?.paymentProofArr?.map((el, i) =>
+                renderImgRow(`Payment Proof ${i + 1}`, el),
               )}
-              {data?.passport2 && (
-                <RowItem
-                  title="Client Passport 2"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<ImgViewer uri={`${data?.passport2}`} />}
-                  // onPressIcon={() => Linking.openURL(`${filterLead?.passport}`)}
-                />
+              {data?.otherDocs?.map((el, i) =>
+                renderImgRow(`Other Doc ${i + 1}`, el),
               )}
-              {data?.passportNumber && (
-                <RowItem
-                  title="Passport Number"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<CustomText>{data?.passportNumber}</CustomText>}
-                />
-              )}
-              {data?.address && (
-                <RowItem
-                  title="Address"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<CustomText>{data?.address}</CustomText>}
-                />
-              )}
-              {data?.emiratesID && (
-                <RowItem
-                  title="Client ID"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<ImgViewer uri={`${data?.emiratesID}`} />}
-                />
-              )}
-              {data?.emiratesID2 && (
-                <RowItem
-                  title="Client ID 2"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<ImgViewer uri={`${data?.emiratesID2}`} />}
-                />
-              )}
-              {data?.visa && (
-                <RowItem
-                  title="Client Visa"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 30 }}
-                  component={<ImgViewer uri={`${data?.visa}`} />}
-                />
-              )}
-              {data?.visa2 && (
-                <RowItem
-                  title="Client Visa 2"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 30 }}
-                  component={<ImgViewer uri={`${data?.visa2}`} />}
-                />
-              )}
-              {data?.paymentProof && (
-                <RowItem
-                  title="payment Proof"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 30 }}
-                  component={<ImgViewer uri={`${data?.paymentProof}`} />}
-                />
-              )}
-              {data?.paymentProof2 && (
-                <RowItem
-                  title="payment Proof2"
-                  value="Maxini"
-                  containerStyle={{ marginBottom: 10 }}
-                  component={<ImgViewer uri={`${data?.paymentProof2}`} />}
-                />
-              )}
-            </>
+              {renderImgRow("Client Passport", data?.passport)}
+              {renderImgRow("Client Passport 2", data?.passport2)}
+              {renderRow("Passport Number", data?.passportNumber)}
+              {renderRow("Address", data?.address)}
+              {renderImgRow("Emirates ID", data?.emiratesID)}
+              {renderImgRow("Emirates ID 2", data?.emiratesID2)}
+              {renderImgRow("Visa", data?.visa)}
+              {renderImgRow("Visa 2", data?.visa2)}
+              {renderImgRow("Payment Proof", data?.paymentProof)}
+              {renderImgRow("Payment Proof 2", data?.paymentProof2)}
+            </View>
 
-            {/* unit details */}
-            <>
-              <MainTitle
-                title="Unit Details"
-                containerStyle={{ marginVertical: 20 }}
-              />
-              <RowItem
-                title="Developer Name"
-                // value={developerList?.name}
-                // value={developerList?.find((el) => el._id === data?.developer)?.name}
-                value={data?.developer?.name || "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Relationship Manager"
-                value={data?.relationshipManager}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Project Name"
-                value={data?.projectName}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Unit Number"
-                value={data?.unit}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Area SQFT"
-                value={data?.areaSQFT}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Total Price"
-                value={data?.total}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Booking Details"
-                value={data?.propertyDetails}
-                containerStyle={{ marginBottom: 10 }}
-              />
-            </>
-            <>
-              <MainTitle
-                title="Entry Status"
-                containerStyle={{ marginVertical: 20 }}
-              />
-              <RowItem
-                title="Status"
-                value={
-                  bookingEntryStatusObj[data?.inputStatus?.toString()] ?? "N/A"
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Payment Status"
-                value={
-                  !!data?.paymentStatus
-                    ? paymentStatusObj[data?.paymentStatus]
-                    : "N/A"
-                }
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Remarks"
-                value={data?.remarks?.toString()}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Business Status"
-                value={data?.businessStatus ?? "N/A"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-            </>
+            {/* Unit Details Card */}
+            <View style={styles.card}>
+              <CustomText style={styles.sectionTitle}>Unit Details</CustomText>
+              <View style={styles.divider} />
+              {renderRow("Developer Name", data?.developer?.name)}
+              {renderRow("Relationship Manager", data?.relationshipManager)}
+              {renderRow("Project Name", data?.projectName)}
+              {renderRow("Unit Number", data?.unit)}
+              {renderRow("Area SQFT", data?.areaSQFT)}
+              {renderRow("Total Price", data?.total)}
+              {renderRow("Booking Details", data?.propertyDetails)}
+            </View>
 
-            {/* Payment Details */}
-            <>
-              <MainTitle
-                title="Payment Details"
-                containerStyle={{ marginVertical: 20 }}
-              />
-              <RowItem
-                title="Payment Plan"
-                value={data?.paymentPlan ?? ""}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Mode of Payment"
-                value={data?.paymentMode ?? ""}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              {/* all good */}
-              <RowItem
-                title="Token Paid"
-                value={data?.token ? "Paid" : "UnPaid"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              {/* rest */}
-              <RowItem
-                title="Booking Amount"
-                value={data?.bookingAmount?.toString()}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Client Loyalty"
-                value={data?.clientLoyalty?.toString() ?? "0"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Broker Referral"
-                value={data?.brokerReferral?.toString() ?? "0"}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              {/* <RowItem
-                title="Proof of Payment"
-                value="N/A"
-                containerStyle={{ marginBottom: 10 }}
-                onPressIcon={() => Linking.openURL(`${data?.paymentProof}`)}
-              /> */}
-            </>
+            {/* Entry Status Card */}
+            <View style={styles.card}>
+              <CustomText style={styles.sectionTitle}>Entry Status</CustomText>
+              <View style={styles.divider} />
+              {renderRow(
+                "Status",
+                bookingEntryStatusObj[data?.inputStatus?.toString()],
+              )}
+              {renderRow(
+                "Payment Status",
+                data?.paymentStatus
+                  ? paymentStatusObj[data?.paymentStatus]
+                  : null,
+              )}
+              {renderRow("Remarks", data?.remarks?.toString())}
+              {renderRow("Business Status", data?.businessStatus)}
+            </View>
 
-            <>
-              <MainTitle
-                title="Commission Information"
-                containerStyle={{ marginVertical: 20 }}
-              />
-              <RowItem
-                title="Total Commission"
-                value={data?.commission?.toString()}
-                containerStyle={{ marginBottom: 10 }}
-              />
-              <RowItem
-                title="Net Commission"
-                value={(
+            {/* Payment Details Card */}
+            <View style={styles.card}>
+              <CustomText style={styles.sectionTitle}>
+                Payment Details
+              </CustomText>
+              <View style={styles.divider} />
+              {renderRow("Payment Plan", data?.paymentPlan)}
+              {renderRow("Mode of Payment", data?.paymentMode)}
+              {renderRow("Token Paid", data?.token ? "Paid" : "Unpaid")}
+              {renderRow("Booking Amount", data?.bookingAmount?.toString())}
+              {renderRow(
+                "Client Loyalty",
+                data?.clientLoyalty?.toString() ?? "0",
+              )}
+              {renderRow(
+                "Broker Referral",
+                data?.brokerReferral?.toString() ?? "0",
+              )}
+            </View>
+
+            {/* Commission Information Card */}
+            <View style={styles.card}>
+              <CustomText style={styles.sectionTitle}>
+                Commission Information
+              </CustomText>
+              <View style={styles.divider} />
+              {renderRow("Total Commission", data?.commission?.toString())}
+              {renderRow(
+                "Net Commission",
+                (
                   data?.commission -
                   (data?.clientLoyalty ?? 0) -
                   (data?.brokerReferral ?? 0)
                 )
                   .toFixed(2)
-                  .toString()}
-                // value={data?.commission?.toString()}
-                containerStyle={{ marginBottom: 10 }}
-              />
-            </>
-            <>
-              <MainTitle
-                title="Agent and Their Commission"
-                containerStyle={{ marginVertical: 20 }}
-              />
-              {data?.agents?.map((agent) => {
-                return (
-                  <RowItem
-                    key={agent?._id}
-                    title={
-                      allUsers?.find((user) => user._id === agent?._id)?.name
-                    }
-                    value={agent?.commission.toString()}
-                    containerStyle={{ marginBottom: 10 }}
-                  />
-                );
-              })}
-            </>
-            {/* update case */}
-            <>
-              {canUpdateBooking && (
-                <MainTitle
-                  title="Update Case"
-                  icon={
-                    <TouchableOpacity
-                      style={{ padding: 5 }}
-                      onPress={toggleIsModalUpdateCase}
-                    >
-                      <EditIcon />
-                    </TouchableOpacity>
-                  }
-                  containerStyle={{ marginVertical: 20 }}
-                />
+                  .toString(),
               )}
-              {data?.updateCase?.length > 0 &&
-                data?.updateCase?.map((el, i) => {
-                  return (
-                    <View key={i}>
-                      <RowItem
-                        title="Remarks"
-                        containerStyle={{ marginBottom: 10 }}
-                        component={
-                          <CustomText color={color.mainTxtColor}>
-                            {el?.remarks}
-                          </CustomText>
-                        }
-                      />
-                      <RowItem
-                        title="File"
-                        value={el?.file}
-                        containerStyle={{ marginBottom: 10 }}
-                        component={
-                          !!el?.file ? (
-                            <ImgViewer uri={`${el?.file}`} />
-                          ) : (
-                            <CustomText color={color.mainTxtColor}>
-                              ---
-                            </CustomText>
-                          )
-                        }
-                      />
+            </View>
+
+            {/* Agent Commissions Card */}
+            {data?.agents?.length > 0 && (
+              <View style={styles.card}>
+                <CustomText style={styles.sectionTitle}>
+                  Agent & Commission
+                </CustomText>
+                <View style={styles.divider} />
+                {data?.agents?.map((agent) => (
+                  <View key={agent?._id} style={styles.infoRow}>
+                    <CustomText style={styles.label}>
+                      {allUsers?.find((u) => u._id === agent?._id)?.name ||
+                        "Agent"}
+                    </CustomText>
+                    <CustomText style={styles.value}>
+                      {agent?.commission.toString()}
+                    </CustomText>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Update Case Card */}
+            {canUpdateBooking && (
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <CustomText style={styles.sectionTitle}>
+                    Update Case
+                  </CustomText>
+                  <TouchableOpacity
+                    onPress={toggleIsModalUpdateCase}
+                    style={styles.editButton}
+                  >
+                    <Feather name="plus" size={18} color={color.mainTxtColor} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.divider} />
+                {data?.updateCase?.length > 0 ? (
+                  data?.updateCase?.map((el, i) => (
+                    <View key={i} style={{ marginBottom: 12 }}>
+                      {renderRow("Remarks", el?.remarks)}
+                      {el?.file && renderImgRow("File", el?.file)}
                     </View>
-                  );
-                })}
-            </>
+                  ))
+                ) : (
+                  <CustomText style={styles.value}>No updates yet</CustomText>
+                )}
+              </View>
+            )}
+
+            {/* Payout Section */}
             {user?.role === roleEnum.sup_admin &&
               canChangePaymentStatus &&
-              data?.status === "approved" && (
-                <>
-                  <Payout id={data?._id} />
-                </>
-              )}
-            {/* approve reject btn */}
+              data?.status === "approved" && <Payout id={data?._id} />}
+
+            {/* Approve/Reject Buttons */}
             {(user?.role === roleEnum.sup_admin ||
               user?.role === roleEnum.sub_admin ||
               user?.role === roleEnum.sr_manager) &&
-              canApproveRejectBooking && (
-                <>
-                  {isHideBtn && data?.status === "pending" && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        marginVertical: 20,
-                        marginTop: 30,
-                      }}
-                    >
-                      <CustomBtn
-                        title="Reject"
-                        // onPress={() => handleAcceptRejectBooking("reject")}
-                        onPress={() => toggleModalApproveReject("reject")}
-                        isLoading={isLoadingReject}
-                        containerStyle={{
-                          width: "45%",
-                        }}
-                      />
-                      <CustomBtn
-                        title="Approve"
-                        // onPress={() => handleAcceptRejectBooking("approve")}
-                        onPress={() => toggleModalApproveReject("approve")}
-                        isLoading={isLoadingApprove}
-                        containerStyle={{
-                          width: "45%",
-                        }}
-                      />
-                    </View>
-                  )}
-                </>
+              canApproveRejectBooking &&
+              isHideBtn &&
+              data?.status === "pending" && (
+                <View style={styles.buttonRow}>
+                  <CustomBtn
+                    title="Reject"
+                    onPress={() => toggleModalApproveReject("reject")}
+                    containerStyle={styles.rejectButton}
+                    textStyle={{ fontSize: 14 }}
+                  />
+                  <CustomBtn
+                    title="Approve"
+                    onPress={() => toggleModalApproveReject("approve")}
+                    containerStyle={styles.approveButton}
+                    textStyle={{ fontSize: 14 }}
+                  />
+                </View>
               )}
           </View>
         </ScrollView>
       </Container>
+
+      {/* Modals (unchanged) */}
       <CustomModal
         visible={modalApproveReject}
         onClose={toggleModalApproveReject}
         hasBackdrop={false}
       >
-        <View
-          style={{
-            backgroundColor: "white",
-            width: WIDTH * 0.8,
-            padding: 20,
-            borderRadius: 10,
-          }}
-        >
+        <View style={styles.modalContent}>
           <CustomText
             fontSize={20}
             fontWeight="500"
             marginBottom={20}
             color={color.mainTxtColor}
           >
-            Reject Booking
+            {selectedStatus === "reject" ? "Reject Booking" : "Approve Booking"}
           </CustomText>
           <CustomInput
-            props={{
-              multiline: true,
-            }}
-            inputStyle={{
-              height: 100,
-              justifyContent: "flex-end",
-            }}
+            props={{ multiline: true }}
+            inputStyle={{ height: 100, justifyContent: "flex-end" }}
             placeholder="Remarks"
             onChangeText={(v) => setAppRejRemarks(v)}
             value={appRejRemarks}
           />
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              marginTop: 20,
-            }}
-          >
+          <View style={styles.modalButtonRow}>
             <CustomBtn
               title="Cancel"
-              containerStyle={{
-                backgroundColor: "blue",
-                marginEnd: 15,
-              }}
-              textStyle={{
-                fontSize: 14,
-              }}
+              containerStyle={styles.cancelButton}
+              textStyle={{ fontSize: 14 }}
               onPress={toggleModalApproveReject}
             />
             <CustomBtn
               title={selectedStatus === "reject" ? "Reject" : "Approve"}
-              containerStyle={{
-                backgroundColor: selectedStatus === "reject" ? "red" : "green",
-              }}
-              textStyle={{
-                fontSize: 14,
-              }}
+              containerStyle={
+                selectedStatus === "reject"
+                  ? styles.rejectButton
+                  : styles.approveButton
+              }
+              textStyle={{ fontSize: 14 }}
               onPress={() => handleAcceptRejectBooking(selectedStatus)}
               isLoading={isLoadingStatus}
             />
           </View>
         </View>
       </CustomModal>
+
       <CustomModal
         visible={isModalUpdateCase}
         hasBackdrop={true}
         onClose={toggleIsModalUpdateCase}
       >
         <Pressable
-          style={{
-            backgroundColor: "white",
-            width: WIDTH * 0.8,
-            paddingHorizontal: 20,
-            borderRadius: 10,
-            paddingTop: 10,
-            paddingBottom: 20,
-          }}
+          style={styles.updateModal}
           onPress={() => Keyboard.dismiss()}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
+          <View style={styles.updateModalHeader}>
             <CustomText
               fontSize={18}
               fontWeight="500"
@@ -977,19 +801,12 @@ const BookingDetail = () => {
               name="close"
               size={25}
               color={color.mainTxtColor}
-              style={{
-                alignSelf: "flex-end",
-                // paddingHorizontal: 10
-              }}
               onPress={toggleIsModalUpdateCase}
             />
           </View>
           <CustomInput
             label="Remarks"
-            props={{
-              multiline: true,
-              textAlignVertical: "top",
-            }}
+            props={{ multiline: true, textAlignVertical: "top" }}
             inputStyle={{
               height: 100,
               justifyContent: "flex-end",
@@ -997,11 +814,7 @@ const BookingDetail = () => {
             }}
             placeholder="Remarks"
             onChangeText={(v) =>
-              setUpdateCaseData((prev) => {
-                {
-                  return { ...prev, remarks: v };
-                }
-              })
+              setUpdateCaseData((prev) => ({ ...prev, remarks: v }))
             }
             value={updateCaseData.remarks}
           />
@@ -1009,11 +822,7 @@ const BookingDetail = () => {
             label="File"
             boxContainerStyle={{ marginBottom: 30 }}
             onSelect={(v) =>
-              setUpdateCaseData((prev) => {
-                {
-                  return { ...prev, file: v?.assets[0] };
-                }
-              })
+              setUpdateCaseData((prev) => ({ ...prev, file: v?.assets[0] }))
             }
           />
           <CustomBtn
@@ -1024,117 +833,34 @@ const BookingDetail = () => {
           />
         </Pressable>
       </CustomModal>
+
       <CustomModal
         hasBackdrop={true}
         onClose={ownerInfoModal.closeModal}
         visible={ownerInfoModal.visible}
       >
-        <ScrollView
-          style={{
-            backgroundColor: "white",
-            width: 300,
-            borderRadius: 10,
-            padding: 15,
-            maxHeight: 500,
-          }}
-        >
-          <RowItem
-            title="Client Name"
-            value={ownerInfo?.clientName || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Client Mobile"
-            value={ownerInfo?.clientMobile || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Client Email"
-            value={ownerInfo?.clientEmail || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Passport 1"
-            component={
-              ownerInfo?.passport ? (
-                <ImgViewer uri={`${ownerInfo.passport}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Passport 2"
-            component={
-              ownerInfo?.passport2 ? (
-                <ImgViewer uri={`${ownerInfo.passport2}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Emirates ID"
-            component={
-              ownerInfo?.emiratesID ? (
-                <ImgViewer uri={`${ownerInfo.emiratesID}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Emirates ID2"
-            component={
-              ownerInfo?.emiratesID2 ? (
-                <ImgViewer uri={`${ownerInfo.emiratesID2}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Visa"
-            component={
-              ownerInfo?.visa ? (
-                <ImgViewer uri={`${ownerInfo.visa}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Visa 2"
-            component={
-              ownerInfo?.visa2 ? (
-                <ImgViewer uri={`${ownerInfo.visa2}`} />
-              ) : (
-                <CustomText color={color.mainTxtColor}>N/A</CustomText>
-              )
-            }
-            containerStyle={{ marginBottom: 10 }}
-          />
-
-          <RowItem
-            title="Passport Number"
-            value={ownerInfo?.passportNumber || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Date of Birth"
-            value={moment(ownerInfo?.dateOfBirth).format("DD/MM/YYYY") || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
-          <RowItem
-            title="Address"
-            value={ownerInfo?.address || "N/A"}
-            containerStyle={{ marginBottom: 10 }}
-          />
+        <ScrollView style={styles.ownerModal}>
+          {renderRow("Client Name", ownerInfo?.clientName)}
+          {renderRow("Client Mobile", ownerInfo?.clientMobile, {
+            onCopy: () => handleCopy(ownerInfo?.clientMobile),
+          })}
+          {renderRow("Client Email", ownerInfo?.clientEmail, {
+            onCopy: () => handleCopy(ownerInfo?.clientEmail),
+          })}
+          {renderImgRow("Passport 1", ownerInfo?.passport)}
+          {renderImgRow("Passport 2", ownerInfo?.passport2)}
+          {renderImgRow("Emirates ID", ownerInfo?.emiratesID)}
+          {renderImgRow("Emirates ID 2", ownerInfo?.emiratesID2)}
+          {renderImgRow("Visa", ownerInfo?.visa)}
+          {renderImgRow("Visa 2", ownerInfo?.visa2)}
+          {renderRow("Passport Number", ownerInfo?.passportNumber)}
+          {renderRow(
+            "Date of Birth",
+            ownerInfo?.dateOfBirth
+              ? moment(ownerInfo.dateOfBirth).format("DD/MM/YYYY")
+              : null,
+          )}
+          {renderRow("Address", ownerInfo?.address)}
         </ScrollView>
       </CustomModal>
     </>
@@ -1144,12 +870,127 @@ const BookingDetail = () => {
 export default BookingDetail;
 
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E67BE",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E6EAF0",
+    marginVertical: 16,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 12,
+    color: "#8C97A8",
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  value: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2F3A4A",
+  },
+  copyButton: {
+    backgroundColor: "#9b9b9b18",
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  editButton: {
+    padding: 8,
+    backgroundColor: "#F0F4FA",
+    borderRadius: 20,
+  },
+  ownerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  ownerText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    color: color.mainTxtColor,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  rejectButton: {
+    width: "45%",
+    backgroundColor: "#F44336",
+  },
+  approveButton: {
+    width: "45%",
+    backgroundColor: "#4CAF50",
+  },
   modalContent: {
     backgroundColor: "white",
-    padding: 10,
-    borderRadius: 8,
-    width: 200, // Set the width as per your requirement
+    width: WIDTH * 0.8,
+    padding: 20,
+    borderRadius: 10,
   },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: "#2196F3",
+    marginRight: 15,
+  },
+  updateModal: {
+    backgroundColor: "white",
+    width: WIDTH * 0.8,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  updateModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  ownerModal: {
+    backgroundColor: "white",
+    width: 300,
+    borderRadius: 10,
+    padding: 15,
+    maxHeight: 500,
+  },
+
   modalOption: {
     paddingVertical: 10,
     paddingHorizontal: 15,

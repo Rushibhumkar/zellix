@@ -21,6 +21,8 @@ import { myConsole } from "../../hooks/useConsole";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useAppToast } from "../../components/AppToast";
+import { statusObj } from "../../utils/data";
+import { truncateText } from "../../utils/commonFunctions";
 
 const Remainders = () => {
   const toast = useAppToast();
@@ -234,11 +236,22 @@ const Remainders = () => {
                     <CustomText style={styles.title}>
                       {item?.leadId?.clientName || "N/A"}
                     </CustomText>
-                    <View style={styles.statusBadge}>
+                    {/* <View style={styles.statusBadge}>
                       <CustomText style={styles.statusText}>
                         {item?.status}
                       </CustomText>
-                    </View>
+                    </View> */}
+                    {item?.leadId?.type && (
+                      <View style={styles.statusBadge}>
+                        <CustomText style={styles.statusText}>
+                          {item?.leadId?.type === "calling_data"
+                            ? "Calling Data"
+                            : item?.leadId?.type === "lead"
+                              ? "Lead"
+                              : "-"}
+                        </CustomText>
+                      </View>
+                    )}
                   </View>
 
                   <CustomText style={styles.message}>
@@ -246,19 +259,27 @@ const Remainders = () => {
                   </CustomText>
 
                   <View style={styles.bottomRow}>
-                    <View style={styles.pill}>
-                      <Feather name="user" size={12} color="#7A869A" />
-                      <CustomText style={styles.pillText}>
-                        {item?.leadId?.name || "-"}
-                      </CustomText>
-                    </View>
+                    {item?.leadId?.name && (
+                      <View style={styles.pill}>
+                        <Feather name="user" size={12} color="#7A869A" />
+                        <CustomText style={styles.pillText}>
+                          {truncateText(item?.leadId?.name || "-", 18)}
+                        </CustomText>
+                      </View>
+                    )}
 
-                    <View style={styles.pill}>
-                      <Feather name="tag" size={12} color="#7A869A" />
-                      <CustomText style={styles.pillText}>
-                        {item?.type}
-                      </CustomText>
-                    </View>
+                    {item?.leadId?.status && (
+                      <View
+                        style={[styles.pill, { backgroundColor: "#c8e9c7" }]}
+                      >
+                        <Feather name="tag" size={12} color="#7a9a8c" />
+                        <CustomText style={styles.pillText}>
+                          {statusObj[item?.leadId?.status] ||
+                            item?.leadId?.status ||
+                            "-"}
+                        </CustomText>
+                      </View>
+                    )}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -300,29 +321,46 @@ const Remainders = () => {
                     {item?.leadId?.clientName || "N/A"}
                   </CustomText>
 
-                  <View style={styles.statusBadge}>
+                  {/* <View style={styles.statusBadge}>
                     <CustomText style={styles.statusText}>
                       {item?.status}
                     </CustomText>
-                  </View>
+                  </View> */}
+                  {item?.leadId?.type && (
+                    <View style={styles.statusBadge}>
+                      <CustomText style={styles.statusText}>
+                        {item?.leadId?.type === "calling_data"
+                          ? "Calling Data"
+                          : item?.leadId?.type === "lead"
+                            ? "Lead"
+                            : "-"}
+                      </CustomText>
+                    </View>
+                  )}
                 </View>
 
                 <CustomText style={styles.message}>{item?.message}</CustomText>
 
                 <View style={styles.bottomRow}>
-                  <View style={styles.pill}>
-                    <Feather name="user" size={12} color="#7A869A" />
-                    <CustomText style={styles.pillText}>
-                      {item?.leadId?.name || "-"}
-                    </CustomText>
-                  </View>
+                  {item?.leadId?.name && (
+                    <View style={styles.pill}>
+                      <Feather name="user" size={12} color="#7A869A" />
+                      <CustomText style={styles.pillText}>
+                        {truncateText(item?.leadId?.name || "-", 18)}
+                      </CustomText>
+                    </View>
+                  )}
 
-                  <View style={styles.pill}>
-                    <Feather name="tag" size={12} color="#7A869A" />
-                    <CustomText style={styles.pillText}>
-                      {item?.type}
-                    </CustomText>
-                  </View>
+                  {item?.leadId?.status && (
+                    <View style={[styles.pill, { backgroundColor: "#c8e9c7" }]}>
+                      <Feather name="tag" size={12} color="#7A869A" />
+                      <CustomText style={styles.pillText}>
+                        {statusObj[item?.leadId?.status] ||
+                          item?.leadId?.status ||
+                          "-"}
+                      </CustomText>
+                    </View>
+                  )}
                 </View>
               </View>
             </TouchableOpacity>
@@ -537,5 +575,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  typeBadge: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginRight: 6,
+  },
+
+  typeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#166534",
+    textTransform: "uppercase",
   },
 });

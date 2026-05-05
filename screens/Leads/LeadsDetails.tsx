@@ -80,6 +80,7 @@ import ActionButton from "./component/ActionButton";
 import * as Clipboard from "expo-clipboard";
 import { useFormik } from "formik";
 import { changeStatusSchema } from "../../utils/validation";
+import { createCallLog } from "../../services/rootApi/callLogsApi";
 
 const extractStringObj = (input) => {
   const parsedInput = JSON.parse(input);
@@ -137,6 +138,8 @@ const LeadsDetails = () => {
 
   const isCallTrackingRef = useRef(false);
 
+  const isCallLogSentRef = useRef(false);
+
   const callStartTimeRef = useRef<number | null>(null);
 
   const isSubSupSrMng =
@@ -145,6 +148,8 @@ const LeadsDetails = () => {
     user?.role === roleEnum?.sr_manager;
 
   const { params } = useRoute();
+
+  const shouldTriggerCall = params?.triggerCall;
 
   const modalNote = useModal();
   const [activeTab, setActiveTab] = useState(1);
@@ -171,6 +176,11 @@ const LeadsDetails = () => {
   const [message, setMessage] = useState(false);
   const [timePickerKey, setTimePickerKey] = useState(0);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+
+  const [callMeta, setCallMeta] = useState<{
+    initiatedAt: number | null;
+    finishedAt: number | null;
+  } | null>(null);
 
   //
   const [isLoading, setIsLoading] = useState(false);
@@ -306,17 +316,19 @@ const LeadsDetails = () => {
         }),
       );
 
-      //console.log("2. setCallDetect completed");
+      console.log("2. setCallDetect completed");
 
       setIsDialerOpened(true);
 
       isDialerOpenedRef.current = true;
 
-      //console.log("3. isDialerOpened set to TRUE");
+      // console.log("3. isDialerOpened set to TRUE");
 
       //console.log("4. Opening Dialer...");
 
-      await Linking.openURL(`tel:+${917972755589}`);
+      // await Linking.openURL(`tel:+${917972755589}`);
+      await Linking.openURL(`tel:+${detail?.clientMobile}`);
+      // await Linking.openURL(`tel:+${918097097583}`);
 
       //console.log("5. Linking.openURL executed");
     } catch (err) {
@@ -328,23 +340,30 @@ const LeadsDetails = () => {
     //console.log("🟢 AppState Listener Mounted");
 
     const subscription = AppState.addEventListener("change", (nextAppState) => {
-      //console.log("━━━━━━━━━━━━━━━━━━━━━━");
-      //console.log("📱 AppState Changed");
-      //console.log("Previous State =>", appState.current);
-      //console.log("Next State =>", nextAppState);
-      //console.log("isDialerOpened =>", isDialerOpened);
-      //console.log("isCallTracking =>", isCallTracking);
-      //console.log("callStartTime =>", callStartTime);
+      // console.log("━━━━━━━━━━━━━━━━━━━━━━");
+      // console.log("📱 AppState Changed");
+      // console.log("Previous State =>", appState.current);
+      // console.log("Next State =>", nextAppState);
+      // console.log("isDialerOpened =>", isDialerOpened);
+      // console.log("isCallTracking =>", isCallTracking);
+      // console.log("callStartTime =>", callStartTime);
 
       // App moved to background AFTER user clicked CALL
       if (isDialerOpenedRef.current && nextAppState === "background") {
-        //console.log("✅ CALL START DETECTED");
+        // console.log("✅ CALL START DETECTED");
+
+        isCallLogSentRef.current = false;
 
         const startTime = Date.now();
 
         setCallStartTime(startTime);
 
         callStartTimeRef.current = startTime;
+
+        setCallMeta({
+          initiatedAt: startTime,
+          finishedAt: null,
+        });
 
         setIsCallTracking(true);
 
@@ -356,18 +375,27 @@ const LeadsDetails = () => {
 
         setIsDialerOpened(false);
 
-        //console.log("✅ isCallTracking TRUE");
-        //console.log("✅ isDialerOpened FALSE");
+        // console.log("✅ isCallTracking TRUE");
+        // console.log("✅ isDialerOpened FALSE");
       }
 
       // User returned to app
       if (appState.current === "background" && nextAppState === "active") {
-        //console.log("🟡 APP RETURNED TO FOREGROUND");
-        //console.log("CURRENT APP STATE =>", nextAppState);
+        console.log("🟡 APP RETURNED TO FOREGROUND");
+        console.log("CURRENT APP STATE =>", nextAppState);
         if (callStartTimeRef.current && isCallTrackingRef.current) {
           const endTime = Date.now();
 
-          //console.log("⏱️ Timer Ended At =>", endTime);
+          setCallMeta((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  finishedAt: endTime,
+                }
+              : null,
+          );
+
+          console.log("⏱️ Timer Ended At =>", endTime);
 
           const durationInSeconds = Math.floor(
             (endTime - callStartTimeRef.current) / 1000,
@@ -378,7 +406,7 @@ const LeadsDetails = () => {
           //   durationInSeconds,
           // );
 
-          //console.log("✅ Opening Change Status Popup");
+          // console.log("✅ Opening Change Status Popup");
 
           setShowChangeStatusPopup(true);
 
@@ -386,7 +414,7 @@ const LeadsDetails = () => {
 
           setIsCallTracking(false);
 
-          //console.log("✅ Timer Reset Done");
+          // console.log("✅ Timer Reset Done");
         } else {
           console.log("❌ No active call tracking found");
         }
@@ -396,11 +424,17 @@ const LeadsDetails = () => {
     });
 
     return () => {
-      //console.log("🔴 AppState Listener Removed");
+      console.log("🔴 AppState Listener Removed");
 
       subscription.remove();
     };
   }, [callStartTime, isCallTracking, isDialerOpened]);
+
+  useEffect(() => {
+    if (shouldTriggerCall && detail?._id) {
+      navToCall();
+    }
+  }, [shouldTriggerCall, detail?._id]);
 
   const deleteNotes = async (notesId: any) => {
     try {
@@ -418,6 +452,104 @@ const LeadsDetails = () => {
       toast.error(err?.response?.data?.message || "Failed to delete note");
     } finally {
       setIsLoadingDelete("");
+    }
+  };
+
+  const hitCreateCallLog = async (statusAfterCall?: string) => {
+    console.log("hitcreatecalllogs");
+
+    // ✅ STOP duplicate calls
+    if (isCallLogSentRef.current) return;
+
+    try {
+      if (!callMeta?.initiatedAt || !callMeta?.finishedAt) return;
+
+      const durationInSec = Math.floor(
+        (callMeta.finishedAt - callMeta.initiatedAt) / 1000,
+      );
+
+      let callType: "not_connected" | "positive" | "negative" | "connected" =
+        "connected";
+
+      // ❌ very short call
+      if (durationInSec < 5) {
+        callType = "not_connected";
+      }
+
+      // ✅ status based
+      if (statusAfterCall) {
+        const positiveStatuses = [
+          "deal_booked",
+          "active_hot",
+          "meeting_done",
+          "meeting_scheduled",
+          "claimed",
+        ];
+
+        const negativeStatuses = [
+          "not_interested",
+          "not_interested_buy_later",
+          "lost",
+          "disqualified",
+          "wrong_details",
+          "deal_cancelled",
+          "not_able_to_connect",
+          "no_response",
+          "broker",
+        ];
+
+        const neutralStatuses = [
+          "followUp_required",
+          "call_back",
+          "active_cold",
+          "nr_event",
+          "assign",
+          "re_assigned",
+        ];
+
+        if (positiveStatuses.includes(statusAfterCall)) {
+          callType = "positive";
+        } else if (negativeStatuses.includes(statusAfterCall)) {
+          callType = "negative";
+        } else if (neutralStatuses.includes(statusAfterCall)) {
+          callType = "connected";
+        }
+      }
+
+      // ❌ cancel case
+      if (!statusAfterCall && durationInSec >= 5) {
+        callType = "connected";
+      }
+
+      isCallLogSentRef.current = true; // ✅ lock
+
+      const res = await createCallLog({
+        userId: user?._id,
+        leadId: detail?._id,
+        type: callType,
+        initiatedAt: new Date(callMeta.initiatedAt).toISOString(),
+        finishedAt: new Date(callMeta.finishedAt).toISOString(),
+        ...(statusAfterCall && { leadStatusAfterCall: statusAfterCall }),
+      });
+
+      myConsole("ressssssss", res);
+
+      if (res?.success) {
+        toast.success(res?.message || "Call log created successfully");
+      } else {
+        toast.error(res?.message || "Failed to create call log");
+      }
+
+      setCallMeta(null);
+    } catch (err: any) {
+      console.log("❌ createCallLog error", err);
+
+      const errMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong while creating call log";
+
+      toast.error(errMsg);
     }
   };
 
@@ -530,7 +662,7 @@ const LeadsDetails = () => {
       }));
 
       toast.success(res?.data?.message || "Status updated successfully");
-
+      await hitCreateCallLog(fields.status);
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
       });
@@ -690,6 +822,15 @@ const LeadsDetails = () => {
   }, [showChangeStatusPopup]);
 
   useEffect(() => {
+    return () => {
+      // ✅ app unmount / kill
+      if (callMeta?.initiatedAt && callMeta?.finishedAt) {
+        hitCreateCallLog();
+      }
+    };
+  }, [callMeta]);
+
+  useEffect(() => {
     if (!showChangeStatusPopup) {
       FUTModal.closeModal(); // ✅ ensure closed
     }
@@ -823,7 +964,10 @@ const LeadsDetails = () => {
                   right: -16,
                   marginTop: 4,
                 }}
-                onPress={() => setShowNotiPopup(false)}
+                onPress={() => {
+                  setShowChangeStatusPopup(false);
+                  hitCreateCallLog();
+                }}
               >
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
               </TouchableOpacity>
@@ -857,6 +1001,8 @@ const LeadsDetails = () => {
             visible={showChangeStatusPopup}
             onClose={() => {
               setShowChangeStatusPopup(false);
+              hitCreateCallLog();
+
               FUTModal.closeModal();
             }}
           >
@@ -870,7 +1016,10 @@ const LeadsDetails = () => {
                   right: -16,
                   marginTop: 4,
                 }}
-                onPress={() => setShowChangeStatusPopup(false)}
+                onPress={() => {
+                  setShowChangeStatusPopup(false);
+                  hitCreateCallLog();
+                }}
               >
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
               </TouchableOpacity>
@@ -1469,15 +1618,15 @@ const LeadsDetails = () => {
         </Container>
       )}
 
-      {activeTab === 3 && (
+      {/* {activeTab === 3 && (
         <LeadLogsInfo
           selectLeadType={selectLeadType}
           leadId={detail?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
-      )}
-      {activeTab === 4 && (
+      )} */}
+      {activeTab === 3 && (
         <MeetingInfo
           selectLeadType={selectLeadType}
           leadId={params?.item?._id}
