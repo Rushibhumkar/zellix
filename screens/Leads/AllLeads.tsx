@@ -318,6 +318,8 @@ const AllLeads = () => {
   useEffect(() => {
     if (route?.params?.tabType) {
       setSelectLeadType(route.params.tabType);
+    } else if (route?.params?.item?.type) {
+      setSelectLeadType(route.params.item.type);
     }
   }, [route?.params?.tabType]);
 

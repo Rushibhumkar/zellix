@@ -1,21 +1,23 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BackHandler } from "react-native";
 import PopupModal from "./PopupModal";
 import {
   useGetUserReminders,
   useMarkReminderAsRead,
 } from "../../services/remainderPopup/remainderPopupApi";
-import { myConsole } from "../../hooks/useConsole";
 import { navigationRef } from "../../navigation/navigationRef";
-import { markReminderAsCompleted } from "../../services/rootApi/remaindersApi";
 import { socket } from "../../screens/Dashboard/Dashboard";
-
+import { CommonActions } from "@react-navigation/native";
 const GlobalPopupManager = () => {
   const { data, isFetching } = useGetUserReminders();
   const { mutateAsync: markAsRead, isPending } = useMarkReminderAsRead();
 
+  const pauseTimeoutRef = React.useRef<any>(null);
   const [queue, setQueue] = useState<any[]>([]);
   const [current, setCurrent] = useState<any | null>(null);
+
+  const [isPaused, setIsPaused] = useState(false);
+
   // myConsole("current", current);
 
   useEffect(() => {
@@ -93,15 +95,32 @@ const GlobalPopupManager = () => {
 
     try {
       // ✅ mark as completed before navigation
-      await markReminderAsCompleted(current._id);
+      // await markReminderAsCompleted(current._id);
+      startPause(60000);
 
       if (navigationRef.isReady()) {
-        navigationRef.navigate("allLead2", {
-          screen: "LeadsDetails",
-          params: {
-            item: { _id: current.leadId },
-          },
-        });
+        navigationRef.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: "allLead2",
+                state: {
+                  index: 1,
+                  routes: [
+                    { name: "allLead" },
+                    {
+                      name: "LeadsDetails",
+                      params: {
+                        item: { _id: current.leadId },
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        );
       }
 
       // ✅ remove from queue after success
@@ -115,7 +134,42 @@ const GlobalPopupManager = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const route = navigationRef.getCurrentRoute();
+
+  //     // 👇 jab user LeadDetails se bahar aaye tab resume karo
+  //     if (route?.name !== "LeadsDetails") {
+  //       setIsPaused(false);
+  //     }
+  //   }, 500); // check every 0.5 sec
+
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current);
+      }
+    };
+  }, []);
+
   /* 📌 Read button handler */
+
+  const startPause = (duration = 60000) => {
+    // 1 min
+    setIsPaused(true);
+
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+    }
+
+    pauseTimeoutRef.current = setTimeout(() => {
+      setIsPaused(false);
+    }, duration);
+  };
+
   const handleRead = async () => {
     if (!current?._id || isPending) return;
 
@@ -133,7 +187,7 @@ const GlobalPopupManager = () => {
     }
   };
   // myConsole("currenttt", current);
-  if (!current) return null;
+  if (!current || isPaused) return null;
 
   return (
     <PopupModal
@@ -141,7 +195,6 @@ const GlobalPopupManager = () => {
       title={current.title}
       message={current.message}
       loading={isPending || isFetching}
-      onRead={handleRead}
       onOpen={handleOpenLead}
     />
   );

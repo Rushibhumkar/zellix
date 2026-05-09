@@ -279,21 +279,22 @@ const AdvanceSearch = () => {
               }}
               isAdvanceSearch
             />
-            {category === "lead" && !isAdmin && !isAgent && (
-              <DropdownRNE
-                label="Team Option"
-                arrOfObj={[
-                  { name: "Team Lead", _id: "teamLead" },
-                  { name: "My Lead", _id: "myLead" },
-                ]}
-                containerStyle={{ marginBottom: 15 }}
-                initialValue={teamOption}
-                onChange={(v) => {
-                  setTeamOption(v);
-                }}
-                isAdvanceSearch
-              />
-            )}
+            {(category === "lead" || category === "callingData") &&
+              !isAgent && (
+                <DropdownRNE
+                  label="Team Option"
+                  arrOfObj={[
+                    { name: "Team Lead", _id: "teamLead" },
+                    { name: "My Lead", _id: "myLead" },
+                  ]}
+                  containerStyle={{ marginBottom: 15 }}
+                  initialValue={teamOption}
+                  onChange={(v) => {
+                    setTeamOption(v);
+                  }}
+                  isAdvanceSearch
+                />
+              )}
             <DatePickerExpo
               key={`startDate-${resetKey}`}
               title="Start Date"

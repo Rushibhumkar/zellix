@@ -7,6 +7,7 @@ import { shadowPrimaryColor } from "../../../const/globalStyle";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import { color } from "../../../const/color";
 import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
+import { truncateText } from "../../../utils/commonFunctions";
 
 const CardProject = ({
   item,
@@ -68,7 +69,7 @@ const CardProject = ({
 
         {/* Bottom Section */}
         <View style={styles.bottomRow}>
-          <View style={styles.bottomItem}>
+          <View style={[styles.bottomItem, { flex: 3 }]}>
             <Feather name="layout" size={13} color="#64748B" />
 
             <CustomText numberOfLines={1} style={styles.bottomText}>
@@ -76,7 +77,7 @@ const CardProject = ({
             </CustomText>
           </View>
 
-          <View style={styles.bottomItem}>
+          <View style={[styles.bottomItem, { flex: 1 }]}>
             <Feather name="users" size={13} color="#64748B" />
 
             <CustomText style={styles.bottomText}>
@@ -84,7 +85,7 @@ const CardProject = ({
             </CustomText>
           </View>
 
-          <View style={styles.bottomItem}>
+          <View style={[styles.bottomItem, { flex: 2 }]}>
             <Feather name="calendar" size={13} color="#64748B" />
 
             <CustomText style={styles.bottomText}>

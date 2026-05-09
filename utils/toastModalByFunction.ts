@@ -37,12 +37,13 @@ const errorMessage = (message) => {
 const confirmModal = ({
   clickOnConfirm,
   message = "Do you want to delete users",
+  buttonText = "Delete",
 }) => {
   return Popup.show({
     type: "confirm",
     title: "Confirm!",
     textBody: message,
-    buttonText: "Delete",
+    buttonText,
     confirmText: "Cancel",
     callback: () => {
       console.log("Okey Callback && hidden");

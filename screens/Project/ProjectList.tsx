@@ -39,6 +39,7 @@ const ProjectList = () => {
     data,
     isLoading: loading,
     hasNextPage,
+    totalCount,
     fetchNextPage,
     isFetchingNextPage,
     refetch,
@@ -51,7 +52,6 @@ const ProjectList = () => {
       fetchNextPage && fetchNextPage();
     }
   };
-
   const onRefresh = async () => {
     try {
       setRefreshing(true);
@@ -94,10 +94,13 @@ const ProjectList = () => {
       setSelected([]);
     }
   };
+
+  // myConsole("dataaaa", data);
   return (
     <>
       <Header
         title={"Project List"}
+        totalCount={totalCount}
         moduleName="projects"
         showActions={true}
         onPressAdd={() => navigate(routeProject.ProjectForm)}

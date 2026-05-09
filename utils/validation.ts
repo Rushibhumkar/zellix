@@ -148,12 +148,30 @@ export const addExpenseSchema = Yup.object().shape({
 });
 
 export const addProjectSchema = Yup.object().shape({
-  projectName: Yup.string().required("Project Name required"),
-  formId: Yup.string().required("Form Id required"),
+  projectName: Yup.string().trim().required("Project Name is required"),
+  status: Yup.string().optional(),
+  srManager: Yup.string()
+    .length(24, "Sr Manager must be valid")
+    .required("Sr Manager is required"),
+  isActive: Yup.boolean().optional(),
+  activeStatus: Yup.boolean().optional(),
+  members: Yup.array()
+    .of(
+      Yup.object().shape({
+        user: Yup.string()
+          .length(24, "User must be valid ObjectId")
+          .required("User is required"),
+        isActive: Yup.boolean().optional(),
+        weight: Yup.number().min(1, "Weight must be at least 1").optional(),
+      }),
+    )
+    .min(1, "At least one member is required")
+    .required("Members are required"),
+  formId: Yup.string().required("Form Id is required"),
   pageName: Yup.string().required("Page Name is required"),
-  source: Yup.string().required("Source required"),
-  srManager: Yup.string().required("Manager required"),
-  members: Yup.array().required("Amount Excluded Vat required"),
+  source: Yup.string().required("Source is required"),
+  isRoadShow: Yup.boolean().optional(),
+  marketingContent: Yup.array().of(Yup.string()).optional(),
 });
 
 export const emailValidate = () =>

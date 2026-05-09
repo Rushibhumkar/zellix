@@ -88,6 +88,7 @@ interface TDropdownRNE {
   isCountryPicker?: boolean;
   disabled?: boolean;
   disabledItems?: string[];
+  showSelectedMembers?: boolean;
 }
 
 const DropdownRNE = ({
@@ -120,6 +121,7 @@ const DropdownRNE = ({
   disabled = false,
   disabledItems = [],
   onSelect,
+  showSelectedMembers = true,
 }: TDropdownRNE) => {
   //
   const { allUsers, team } = useSelector(selectUser);
@@ -282,7 +284,9 @@ const DropdownRNE = ({
           mode={mode}
           style={[styles.dropdown, dropdownStyle]}
           placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={[styles.selectedTextStyle]}
+          selectedStyle={
+            showSelectedMembers ? { borderRadius: 12 } : { display: "none" }
+          }
           searchPlaceholderTextColor={color.strokeColor}
           inputSearchStyle={[
             styles.inputSearchStyle,
@@ -310,13 +314,17 @@ const DropdownRNE = ({
             setSelected(item);
             onChange && onChange(item);
           }}
-          selectedStyle={{ borderRadius: 12 }}
           renderRightIcon={() => (
             <UpDownIcon
               color={color.mainTxtColor}
               transform={[{ rotate: !open ? "180deg" : "0deg" }]}
             />
           )}
+          renderSelectedItem={
+            showSelectedMembers
+              ? undefined
+              : () => <View style={{ width: 0, height: 0 }} />
+          }
           disable={disabled} // 👈 ADD
           pointerEvents={disabled ? "none" : "auto"} // 👈 ADD
           renderItem={renderItem}

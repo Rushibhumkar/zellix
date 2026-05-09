@@ -115,8 +115,14 @@ export const getTimeAgo = (dateString: any) => {
 };
 
 export const getInitials = (name = "") => {
-  const words = name.split(" ");
-  return words.length > 1 ? words[0][0] + words[1][0] : words[0]?.[0] || "";
+  const words = name
+    .trim()
+    .split(/\s+/) // remove extra spaces
+    .filter(Boolean);
+
+  return words.length > 1
+    ? (words[0][0] + words[1][0]).toUpperCase()
+    : (words[0]?.[0] || "").toUpperCase();
 };
 
 export const getInitialsUsingTwoNames = (name = "", lastName = "") => {

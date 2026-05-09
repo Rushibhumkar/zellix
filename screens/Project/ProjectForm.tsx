@@ -1,21 +1,19 @@
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
+  StyleSheet,
+  Platform,
+  Switch,
+  Pressable,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
 import { useFormik } from "formik";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import { useGetApproveUser } from "./useQuery/useProject";
-import { myConsole } from "../../hooks/useConsole";
 import { debounce } from "../../utils/debounce";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { addProject, updateProject } from "../../services/rootApi/projectApi";
@@ -26,15 +24,12 @@ import { routeProject } from "../../utils/routes";
 import { addProjectSchema } from "../../utils/validation";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import CustomText from "../../myComponents/CustomText/CustomText";
+import { myConsole } from "../../hooks/useConsole";
+import { useAppToast } from "../../components/AppToast";
 
 const source = [
   { _id: "tiktok", name: "Tik Tok" },
   { _id: "facebook", name: "Facebook" },
-  { _id: "whatsapp", name: "Whats App" },
-  { _id: "snapchat", name: "Snapchat" },
-  { _id: "google_ads", name: "Google Ads" },
-  { _id: "bayut", name: "Bayut" },
-  { _id: "dubizzle", name: "Dubizzle" },
 ];
 
 const ProjectForm = () => {
@@ -42,192 +37,233 @@ const ProjectForm = () => {
   const { navigate, goBack } = useNavigation();
   const { params } = useRoute() || {};
   const detail = params?.detail;
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [searchValue, setSearchValue] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
+  const toast = useAppToast();
 
-  const debounceSearch = React.useCallback(
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const debounceSearch = useCallback(
     debounce((value) => setDebouncedSearch(value), 500),
-    []
+    [],
   );
 
-  const userListQuery = useGetApproveUser({ search: "" });
+  const userListQuery = useGetApproveUser({ search: debouncedSearch });
+  myConsole("detail?.membersssss", detail?.members);
+  // 🔥 MAIN STATE (IMPORTANT)
+  const [members, setMembers] = useState(
+    detail?.members?.map((m) => ({
+      user: m?.user?._id || m?.user,
+      isActive: m?.isActive ?? true,
+      weight: m?.weight || 1,
+    })) || [],
+  );
 
   const formik = useFormik({
     validationSchema: addProjectSchema,
     initialValues: {
       formId: detail?.formId || "",
-      members: detail?.members?.map((el) => el?._id) || [],
       pageName: detail?.pageName || "",
       projectName: detail?.projectName || "",
       source: detail?.source || "",
-      srManager: detail?.srManager || "",
+      srManager: detail?.srManager?._id || detail?.srManager || "",
+      // status: detail?.status || "",
+      // isActive: detail?.isActive ?? true,
+      isRoadShow: detail?.isRoadShow ?? false,
+      members:
+        detail?.members?.map((m) => ({
+          user: m?.user?._id || m?.user,
+          isActive: m?.isActive ?? true,
+          weight: m?.weight || 1,
+        })) || [],
     },
+
     onSubmit: async (v) => {
-      if (detail?._id) {
-        const resPr = await updateProject({
-          data: v,
-          id: detail?._id,
-        });
-        console.log("resPr", resPr);
-        queryClient.invalidateQueries({
-          queryKey: ["getProjectById", detail?._id],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["getProjectList"],
-        });
-        popUpConfToast.successMessage(resPr || "Succesful");
+      try {
+        const payload = {
+          ...v,
+          members: v.members,
+        };
+
+        let res;
+        if (detail?._id) {
+          res = await updateProject({
+            data: payload,
+            id: detail?._id,
+          });
+          if (res?.success) {
+            queryClient.invalidateQueries({
+              queryKey: ["getProjectById", detail?._id],
+            });
+          }
+        } else {
+          res = await addProject({ data: payload });
+        }
+        if (!res?.success) {
+          toast.error(res?.message);
+          return;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["getProjectList"] });
+        toast.success(res?.message);
         goBack();
-        // navigate(routeProject.ProjectList)
-      } else {
-        const resPr = await addProject({
-          data: v,
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["getProjectList"],
-        });
-        popUpConfToast.successMessage(resPr || "Succesful");
-        navigate(routeProject.ProjectList);
+      } catch (e) {
+        console.log("submit error", e);
       }
     },
   });
+
+  // 🔥 ADD MEMBERS
+  const handleAddMembers = (ids) => {
+    const newMembers = ids.map((id) => ({
+      user: id,
+      isActive: true,
+      weight: 1,
+    }));
+
+    const unique = [...members];
+
+    newMembers.forEach((m) => {
+      if (!unique.find((u) => u.user === m.user)) {
+        unique.push(m);
+      }
+    });
+
+    setMembers(unique);
+  };
+
+  // 🔥 TOGGLE ACTIVE
+  const toggleMember = (id) => {
+    setMembers((prev) =>
+      prev.map((m) => (m.user === id ? { ...m, isActive: !m.isActive } : m)),
+    );
+  };
+
+  // 🔥 REMOVE MEMBER
+  const removeMember = (id) => {
+    setMembers((prev) => prev.filter((m) => m.user !== id));
+  };
 
   const handleSearchChange = (v) => {
     setSearchValue(v);
     debounceSearch(v);
   };
 
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      userListQuery?.refetch();
-    } catch (e) {
-      console.log("refreshGetAllLeave", e);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const initialMemberIds = new Set(
+    detail?.members?.map((m) => m?.user?._id || m?.user) || [],
+  );
 
-  const onEndReach = () => {
-    if (
-      userListQuery?.hasNextPage &&
-      !userListQuery?.isLoading &&
-      userListQuery?.data?.length > 0
-    ) {
-      userListQuery?.fetchNextPage && userListQuery.fetchNextPage();
-    }
-  };
-
+  useEffect(() => {
+    formik.setFieldValue("members", members);
+  }, [members]);
+  myConsole("formikvalues", formik.values);
+  myConsole("membersssss", members);
   return (
     <Container>
       <Header title={detail ? "Update Project" : "Add Project"} />
+
       <ScrollViewWithKeyboardAvoid isAndroidIssue={Platform.OS === "android"}>
-        <View style={{ padding: 20, paddingBottom: 140 }}>
+        <View style={styles.container}>
           <CustomInput
             label="Project Name"
-            value={formik?.values?.projectName}
-            onChangeText={formik?.handleChange("projectName")}
-            containerStyle={{ marginBottom: 15 }}
-            onBlur={formik?.handleBlur("projectName")}
+            value={formik.values.projectName}
+            onChangeText={formik.handleChange("projectName")}
           />
-          {formik.errors.projectName && formik.touched.projectName && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.projectName}
-            </CustomText>
-          )}
+
           <CustomInput
             label="Form ID"
-            value={formik?.values?.formId}
-            onChangeText={formik?.handleChange("formId")}
-            containerStyle={{ marginBottom: 15 }}
-            onBlur={formik?.handleBlur("formId")}
+            value={formik.values.formId}
+            onChangeText={formik.handleChange("formId")}
           />
-          {formik.errors.formId && formik.touched.formId && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.formId}
-            </CustomText>
-          )}
+
           <CustomInput
-            placeholder="Page Name"
-            value={formik?.values?.pageName}
-            onChangeText={formik?.handleChange("pageName")}
-            containerStyle={{ marginBottom: 15 }}
             label="Page Name"
-            onBlur={formik?.handleBlur("pageName")}
+            value={formik.values.pageName}
+            onChangeText={formik.handleChange("pageName")}
           />
-          {formik.errors.pageName && formik.touched.pageName && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.pageName}
-            </CustomText>
-          )}
 
           <DropdownRNE
-            keyValueShowInBox="name"
-            keyValueGetOnSelect="_id"
-            label={"Sr Manager"}
-            keyName="sr_Manager"
-            containerStyle={{ marginBottom: 15 }}
-            onChange={(a) => formik.setFieldValue("srManager", a)}
-            initialValue={formik.values?.srManager}
-            onBlur={formik.handleBlur("srManager")}
+            label="Sr Manager"
+            keyName="sr_manager"
+            onChange={(v) => formik.setFieldValue("srManager", v)}
+            initialValue={formik.values.srManager}
             mode="modal"
           />
-          {formik.errors.srManager && formik.touched.srManager && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.srManager}
-            </CustomText>
-          )}
 
           <DropdownRNE
             label="Source"
-            arrOfObj={source || []}
-            containerStyle={{ marginBottom: 15 }}
-            onChange={(a) => formik.setFieldValue("source", a)}
+            arrOfObj={source}
+            onChange={(v) => formik.setFieldValue("source", v)}
             initialValue={formik.values.source}
-            onBlur={formik.handleBlur("source")}
             mode="modal"
-          />
-          {formik.errors.source && formik.touched.source && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.source}
-            </CustomText>
-          )}
-          <DropdownRNE
-            arrOfObj={userListQuery?.data || []}
-            label="Members"
-            onChange={(a) => formik.setFieldValue("members", a)}
-            containerStyle={{ marginBottom: 30 }}
-            onBlur={formik.handleBlur("members")}
-            initialValue={formik.values.members}
-            isSearch
-            maxHeight={300}
-            mode="modal"
-            //
-            onEndReached={onEndReach}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              userListQuery?.isFetchingNextPage && (
-                <ActivityIndicator size={"small"} color={"#002E6B"} />
-              )
-            }
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            onChangeText={(v) => handleSearchChange(v)}
-            isLoading={userListQuery?.isLoading}
-            isMultiSelect
           />
 
-          {formik.errors.members && formik.touched.members && (
-            <CustomText style={styles.errorText}>
-              {formik.errors.members}
-            </CustomText>
-          )}
-          <CustomBtn
-            title="Submit"
-            onPress={formik.handleSubmit}
-            isLoading={formik.isSubmitting}
+          {/* <CustomInput
+            label="Status"
+            value={formik.values.status}
+            onChangeText={formik.handleChange("status")}
+          /> */}
+
+          {/* 🔥 ADD MEMBERS DROPDOWN */}
+          <DropdownRNE
+            arrOfObj={userListQuery?.data || []}
+            label="Add Members"
+            isMultiSelect
+            isSearch
+            showSelectedMembers={false}
+            onChange={handleAddMembers}
+            onChangeText={handleSearchChange}
           />
+
+          {/* 🔥 MEMBERS LIST */}
+          <View style={{ marginTop: 15 }}>
+            {members.map((m: any) => {
+              const userFromList = userListQuery?.data?.find(
+                (u) => u._id === m.user,
+              );
+              const isOldMember = initialMemberIds.has(m.user);
+
+              // 🔥 find from detail also
+              const userFromDetail = detail?.members?.find(
+                (d) => (d?.user?._id || d?.user) === m.user,
+              )?.user;
+
+              const user = userFromList || userFromDetail;
+
+              const fullName = user?.name
+                ? `${user?.name || ""} ${user?.lastName || ""}`
+                : "Unknown";
+              return (
+                <View key={m.user} style={styles.memberRow}>
+                  <CustomText style={styles.memberName}>{fullName}</CustomText>
+
+                  <View style={styles.row}>
+                    <Switch
+                      value={m.isActive}
+                      onValueChange={() => toggleMember(m.user)}
+                    />
+
+                    <Pressable
+                      onPress={() => {
+                        if (!isOldMember) removeMember(m.user);
+                      }}
+                      disabled={isOldMember}
+                    >
+                      <CustomText
+                        style={[
+                          styles.removeText,
+                          isOldMember && styles.removeDisabled,
+                        ]}
+                      >
+                        Remove
+                      </CustomText>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          <CustomBtn title="Submit" onPress={formik.handleSubmit} />
         </View>
       </ScrollViewWithKeyboardAvoid>
     </Container>
@@ -237,9 +273,39 @@ const ProjectForm = () => {
 export default ProjectForm;
 
 const styles = StyleSheet.create({
-  errorText: {
+  container: {
+    padding: 20,
+    paddingBottom: 120,
+    gap: 12,
+  },
+
+  memberRow: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  memberName: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  removeText: {
     color: "red",
-    marginTop: -10,
-    marginBottom: 8,
+    marginLeft: 10,
+  },
+
+  removeDisabled: {
+    color: "#999",
   },
 });

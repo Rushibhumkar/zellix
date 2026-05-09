@@ -157,7 +157,8 @@ const LeadsDetails = () => {
   // let detail = {};
   let details = params?.item;
 
-  let selectLeadType = params?.selectLeadType;
+  let selectLeadType = params?.selectLeadType ?? detail?.type ?? details?.type;
+
   const from = params?.from;
   const remindersActiveTab = params?.remindersActiveTab;
   //detail nam se state btao waha leadDetailById ka data save kro ##start
@@ -472,7 +473,7 @@ const LeadsDetails = () => {
         "connected";
 
       // ❌ very short call
-      if (durationInSec < 5) {
+      if (durationInSec < 12) {
         callType = "not_connected";
       }
 
@@ -517,7 +518,7 @@ const LeadsDetails = () => {
       }
 
       // ❌ cancel case
-      if (!statusAfterCall && durationInSec >= 5) {
+      if (!statusAfterCall && durationInSec >= 12) {
         callType = "connected";
       }
 
@@ -536,6 +537,14 @@ const LeadsDetails = () => {
 
       if (res?.success) {
         toast.success(res?.message || "Call log created successfully");
+
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getLead],
+        });
+        refetchLeadDetail();
       } else {
         toast.error(res?.message || "Failed to create call log");
       }
@@ -772,7 +781,7 @@ const LeadsDetails = () => {
   // 🔥 Activity Summary Data
   const lastActivityTime = detail?.updatedAt || detail?.createdAt;
 
-  const totalCalls = detail?.callLogs?.length || 0;
+  const totalCalls = detail?.callCount || 0;
   const totalNotes = detail?.notes?.length || 0;
   const totalStatusChanges = detail?.statusHistory?.length || 0;
 
@@ -836,7 +845,7 @@ const LeadsDetails = () => {
     }
   }, [showChangeStatusPopup]);
   // myConsole("tdForFUTtt", tdForFUT);
-  // myConsole("detail?.whatsapp", detail?.whatsapp);
+  myConsole("detail?", detail);
   return (
     <>
       {activeTab === 1 && (
@@ -852,7 +861,8 @@ const LeadsDetails = () => {
           />
           <Header
             title={
-              selectLeadType === "calling_data"
+              (selectLeadType ?? detail?.type ?? details?.type) ===
+              "calling_data"
                 ? "Calling Data Info"
                 : "Lead Details"
             }
@@ -862,7 +872,9 @@ const LeadsDetails = () => {
                   remindersActiveTab,
                 });
               } else {
-                navigate(routeLead.allLead);
+                navigate(routeLead.allLead, {
+                  tabType: selectLeadType ?? detail?.type ?? details?.type,
+                });
               }
             }}
             rightSide={
@@ -1209,7 +1221,6 @@ const LeadsDetails = () => {
                   <View style={styles.avatar}>
                     <Text style={styles.avatarText}>
                       {getInitials(detail?.clientName || "")}
-                      {/* getinitailsfunco */}
                     </Text>
                   </View>
 

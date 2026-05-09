@@ -15,7 +15,7 @@ interface Props {
   title: string;
   message: string;
   loading?: boolean;
-  onRead: () => void;
+  onRead?: () => void;
   onOpen?: () => void;
 }
 

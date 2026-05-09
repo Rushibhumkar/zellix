@@ -78,8 +78,9 @@ const Remainders = () => {
 
   const handleMarkReminderComplete = async (id: string) => {
     try {
-      const res = await markReminderAsCompleted(id);
-      refetch();
+      // const res = await markReminderAsCompleted(id);
+      // refetch();
+      return;
     } catch (err: any) {
       console.log("errrrr", err);
     }
@@ -87,6 +88,7 @@ const Remainders = () => {
 
   const handleDelete = async (id: string) => {
     try {
+      if (activeTab === "Upcoming") return;
       const res = await deleteReminder(id);
 
       myConsole("resssss", res);
@@ -100,19 +102,21 @@ const Remainders = () => {
   };
 
   const renderLeftActions = (item: any) => {
-    return (
-      <View style={styles.leftSwipeContainer}>
-        <TouchableOpacity
-          style={styles.readBtn}
-          onPress={() => handleMarkReminderComplete(item._id)}
-        >
-          <Feather name="check-circle" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    );
+    // return (
+    //   <View style={styles.leftSwipeContainer}>
+    //     <TouchableOpacity
+    //       style={styles.readBtn}
+    //       onPress={() => handleMarkReminderComplete(item._id)}
+    //     >
+    //       <Feather name="check-circle" size={20} color="#fff" />
+    //     </TouchableOpacity>
+    //   </View>
+    // );
+    return null;
   };
 
   const renderRightActions = (id: string) => {
+    if (activeTab === "Upcoming") return null;
     return (
       <View style={styles.deleteContainer}>
         <TouchableOpacity
@@ -210,9 +214,9 @@ const Remainders = () => {
                 activeOpacity={0.7}
                 onPress={async () => {
                   if (!item?.leadId?._id) return;
-                  if (item?.status?.toLowerCase()?.trim() === "missed") {
-                    await handleMarkReminderComplete(item._id);
-                  }
+                  // if (item?.status?.toLowerCase()?.trim() === "missed") {
+                  //   await handleMarkReminderComplete(item._id);
+                  // }
                   navigation.navigate("allLead2", {
                     screen: "LeadsDetails",
                     params: {
@@ -290,13 +294,13 @@ const Remainders = () => {
               activeOpacity={0.7}
               onPress={async () => {
                 if (!item?.leadId?._id) return;
-                if (
-                  ["pending", "missed"].includes(
-                    item?.status?.toLowerCase()?.trim(),
-                  )
-                ) {
-                  await handleMarkReminderComplete(item._id);
-                }
+                // if (
+                //   ["pending", "missed"].includes(
+                //     item?.status?.toLowerCase()?.trim(),
+                //   )
+                // ) {
+                //   await handleMarkReminderComplete(item._id);
+                // }
                 navigation.navigate("allLead2", {
                   screen: "LeadsDetails",
                   params: {
