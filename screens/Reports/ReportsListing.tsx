@@ -15,6 +15,11 @@ import { iconWrapperStyle } from "../../const/globalStyle";
 import { color } from "../../const/color";
 import { myConsole } from "../../hooks/useConsole";
 import { reportDummyData } from "../../utils/data";
+import * as XLSX from "xlsx";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import { Buffer } from "buffer";
+global.Buffer = Buffer;
 
 const { width } = Dimensions.get("window");
 
@@ -83,8 +88,76 @@ const ReportsListing = () => {
     }
   };
 
+  const handleExportReport = async (type: "xlsx" | "csv") => {
+    try {
+      const formattedData = dummyData.map((item, index) => ({
+        "S.No": index + 1,
+        "Lead ID": item?.leadId || "",
+        "Client Name": item?.clientName || "",
+        Mobile: item?.mobile || "",
+        Project: item?.project || "",
+        Source: item?.source || "",
+        "Assigned To": item?.assignedTo || "",
+        Team: item?.team || "",
+        Status: item?.status || "",
+        "Follow Up": item?.followUp || "",
+        Budget: item?.budget || "",
+        City: item?.city || "",
+        Meeting: item?.meeting || "",
+        "Site Visit": item?.siteVisit || "",
+        Booking: item?.booking || "",
+        Payment: item?.payment || "",
+        "Created At": item?.createdAt || "",
+        "Updated At": item?.updatedAt || "",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
+      const excelBuffer = XLSX.write(workbook, {
+        type: "binary",
+        bookType: type,
+      });
+
+      const fileName = `Reports_${Date.now()}.${type}`;
+
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      const binaryToBase64 = (binary: string) => {
+        let bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i) & 0xff;
+        }
+
+        return Buffer.from(bytes).toString("base64");
+      };
+
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        binaryToBase64(excelBuffer),
+        {
+          encoding: "base64",
+        },
+      );
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      }
+    } catch (error) {
+      console.log("Export Error =>", error);
+    }
+  };
+
   return (
-    <Container>
+    <Container
+      style={{
+        paddingBottom: 0,
+        marginBottom: 0,
+      }}
+    >
       <Header
         title={"Reports"}
         showBackIcon={false}
@@ -110,7 +183,10 @@ const ReportsListing = () => {
               <MaterialIcons name="zoom-in" size={18} color="#fff" />
             </TouchableOpacity> */}
 
-            <TouchableOpacity style={{ ...iconWrapperStyle }}>
+            <TouchableOpacity
+              style={{ ...iconWrapperStyle }}
+              onPress={() => handleExportReport("xlsx")}
+            >
               <Feather name="download" size={18} color={"#fff"} />
             </TouchableOpacity>
           </View>
@@ -124,52 +200,101 @@ const ReportsListing = () => {
       </View> */}
 
       <ScrollView
-        vertical
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: 12 }}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{
+          paddingBottom: 0,
+          marginBottom: 0,
+        }}
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          bounces={false}
+        <View
+          style={{
+            margin: 0,
+            padding: 0,
+            alignSelf: "flex-start",
+            transform: [{ scale: zoomLevel }],
+            transformOrigin: "top left",
+          }}
         >
+          {/* Sticky Header */}
           <View
             style={[
-              styles.tableContainer,
+              styles.headerRow,
               {
-                transform: [{ scale: zoomLevel }],
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 1000,
               },
             ]}
           >
-            {/* Header Row */}
-            <View style={styles.headerRow}>
-              {columns.map((column, index) => (
-                <View key={index} style={styles.headerCell}>
-                  <Text style={styles.headerText}>{column}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Body Rows */}
-            {tableData.map((row, rowIndex) => (
+            {columns.map((column, index) => (
               <View
-                key={rowIndex}
+                key={index}
                 style={[
-                  styles.bodyRow,
-                  {
-                    backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
+                  styles.headerCell,
+                  index === 0 && {
+                    position: "absolute",
+                    left: 0,
+                    zIndex: 3000,
+                    backgroundColor: color.primaryColor,
                   },
                 ]}
               >
-                {row.map((cell, cellIndex) => (
-                  <View key={cellIndex} style={styles.bodyCell}>
-                    <Text style={styles.bodyText}>{cell}</Text>
-                  </View>
-                ))}
+                <Text style={styles.headerText}>{column}</Text>
               </View>
             ))}
           </View>
-        </ScrollView>
+
+          {/* Vertical Scroll */}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            style={{
+              flexGrow: 0,
+            }}
+            contentContainerStyle={{
+              paddingTop: 40,
+              margin: 0,
+              paddingLeft: 0,
+              paddingBottom: 120,
+              flexGrow: 0,
+            }}
+          >
+            <View style={styles.tableContainer}>
+              {tableData.map((row, rowIndex) => (
+                <View
+                  key={rowIndex}
+                  style={[
+                    styles.bodyRow,
+                    {
+                      backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
+                    },
+                  ]}
+                >
+                  {row.map((cell, cellIndex) => (
+                    <View
+                      key={cellIndex}
+                      style={[
+                        styles.bodyCell,
+                        cellIndex === 0 && [
+                          styles.stickyColumn,
+                          {
+                            backgroundColor:
+                              rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
+                          },
+                        ],
+                      ]}
+                    >
+                      <Text style={styles.bodyText}>{cell}</Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </ScrollView>
     </Container>
   );
@@ -182,6 +307,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+  },
+
+  stickyColumn: {
+    position: "absolute",
+    left: 0,
+    zIndex: 2000,
+    backgroundColor: "#fff",
   },
 
   zoomBtn: {
@@ -200,30 +332,36 @@ const styles = StyleSheet.create({
 
   zoomText: {
     color: color.primary800,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
   },
 
   tableContainer: {
-    marginHorizontal: 15,
+    marginTop: 0,
+    marginLeft: 0,
+    paddingTop: 0,
+    paddingLeft: 0,
+    alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: color.primary50,
-    borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#fff",
-    marginTop: 5,
-    marginBottom: 40,
+    marginBottom: 0,
   },
 
   headerRow: {
+    height: 40,
     flexDirection: "row",
     backgroundColor: color.primaryColor,
+    paddingLeft: 120,
   },
 
   headerCell: {
-    width: 150,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    width: 120,
+    // minWidth: 100,
+    maxWidth: 160,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRightWidth: 1,
     borderColor: color.primary200,
     // justifyContent: "center",
@@ -232,19 +370,22 @@ const styles = StyleSheet.create({
   headerText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: 11,
   },
 
   bodyRow: {
     flexDirection: "row",
     borderTopWidth: 1,
     borderColor: color.primary50,
+    paddingLeft: 120,
   },
 
   bodyCell: {
-    width: 150,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    width: 120,
+    // minWidth: 100,
+    maxWidth: 160,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRightWidth: 1,
     borderColor: color.primary50,
     justifyContent: "center",
@@ -252,7 +393,7 @@ const styles = StyleSheet.create({
 
   bodyText: {
     color: color.primary800,
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "500",
   },
 });
