@@ -657,12 +657,10 @@ const LeadsDetails = () => {
             followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
           }),
       };
-
       const res = await leadStatusUpdate({
         id: detail?._id,
         data: payload,
       });
-
       setTdForFUT({ date: null, time: null });
       formik.resetForm();
       setFields((prev) => ({
@@ -845,7 +843,7 @@ const LeadsDetails = () => {
     }
   }, [showChangeStatusPopup]);
   // myConsole("tdForFUTtt", tdForFUT);
-  myConsole("detail?", detail);
+  // myConsole("detail?", detail);
   return (
     <>
       {activeTab === 1 && (
@@ -1215,73 +1213,78 @@ const LeadsDetails = () => {
                 <ActivityIndicator style={{ marginVertical: 10 }} />
               )}
               {/* -------------------- CARD 1 -------------------- */}
-              <View style={styles.card}>
-                {/* Top Section */}
-                <View style={styles.topRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {getInitials(detail?.clientName || "")}
-                    </Text>
-                  </View>
+              {detail && (
+                <View style={styles.card}>
+                  {/* Top Section */}
+                  <View style={styles.topRow}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>
+                        {getInitials(detail?.clientName || "")}
+                      </Text>
+                    </View>
 
-                  <View style={{ flex: 1, maxWidth: "70%" }}>
-                    <Text style={styles.name}>
-                      {detail?.clientName || "N/A"}
-                    </Text>
+                    <View style={{ flex: 1, maxWidth: "70%" }}>
+                      <Text style={styles.name}>
+                        {detail?.clientName || "N/A"}
+                      </Text>
 
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {!!detail?.source && (
-                        <Text style={styles.subText}>
-                          {detail?.source} {`•`}
-                        </Text>
-                      )}
-                      {!!detail?.name && (
-                        <Text style={[styles.subText, { fontSize: 13 }]}>
-                          {truncateString(detail?.name, 34)}
-                        </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 4,
+                        }}
+                      >
+                        {!!detail?.source && (
+                          <Text style={styles.subText}>
+                            {detail?.source} {`•`}
+                          </Text>
+                        )}
+                        {!!detail?.name && (
+                          <Text style={[styles.subText, { fontSize: 13 }]}>
+                            {truncateString(detail?.name, 34)}
+                          </Text>
+                        )}
+                      </View>
+                      {detail && (
+                        <TouchableOpacity
+                          style={styles.statusBadge}
+                          onPress={() => setShowChangeStatusPopup(true)}
+                          disabled={["assign", "new", "re_assigned"].includes(
+                            detail?.status,
+                          )}
+                        >
+                          <Text
+                            style={[
+                              styles.statusText,
+                              {
+                                color: [
+                                  "assign",
+                                  "new",
+                                  "re_assigned",
+                                ].includes(detail?.status)
+                                  ? color.mainTxtColorFade
+                                  : "#2E67BE",
+                              },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {statusObj[detail?.status]}
+                          </Text>
+                          {!["assign", "new", "re_assigned"].includes(
+                            detail?.status,
+                          ) && (
+                            <MaterialIcons
+                              name="change-circle"
+                              size={20}
+                              color={color.mainTxtColor}
+                            />
+                          )}
+                        </TouchableOpacity>
                       )}
                     </View>
-                    <TouchableOpacity
-                      style={styles.statusBadge}
-                      onPress={() => setShowChangeStatusPopup(true)}
-                      disabled={["assign", "new", "re_assigned"].includes(
-                        detail?.status,
-                      )}
-                    >
-                      <Text
-                        style={[
-                          styles.statusText,
-                          {
-                            color: ["assign", "new", "re_assigned"].includes(
-                              detail?.status,
-                            )
-                              ? color.mainTxtColorFade
-                              : "#2E67BE",
-                          },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {statusObj[detail?.status]}
-                      </Text>
-                      {!["assign", "new", "re_assigned"].includes(
-                        detail?.status,
-                      ) && (
-                        <MaterialIcons
-                          name="change-circle"
-                          size={20}
-                          color={color.mainTxtColor}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                  {/* <TouchableOpacity
+                    {/* <TouchableOpacity
                     style={{
                       ...headerIconWrapperStyle,
                       backgroundColor: `${color.mainTxtColor}10`,
@@ -1297,144 +1300,147 @@ const LeadsDetails = () => {
                       color={color.mainTxtColor}
                     />
                   </TouchableOpacity> */}
-                </View>
-                {(detail?.status === "assign" ||
-                  detail?.status === "re_assigned" ||
-                  detail?.status === "new") && (
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: color.mainTxtColor,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      paddingVertical: 12,
-                      borderRadius: 12,
-                      marginTop: 8,
-                    }}
-                    onPress={() => handleChangeStatusToClaim(detail?._id)}
-                  >
-                    <CustomText
-                      style={{
-                        color: "#fff",
-                        fontSize: 16,
-                        fontWeight: "600",
-                      }}
-                    >
-                      Claim Lead
-                    </CustomText>
-                  </TouchableOpacity>
-                )}
-                {/* Action Buttons */}
-                {!["assign", "new", "re_assigned"].includes(detail?.status) && (
-                  <View style={styles.actionRow}>
-                    {detail?.clientMobile && (
-                      <ActionButton
-                        label="Call"
-                        icon="phone-call"
-                        onPress={() => navToCall()}
-                      />
-                    )}
-
-                    {detail?.whatsapp && (
-                      <ActionButton
-                        label="WhatsApp"
-                        icon="message-circle"
-                        onPress={() => Linking.openURL(detail?.whatsapp)}
-                      />
-                    )}
-
-                    {detail?.clientEmail && (
-                      <ActionButton
-                        label="Email"
-                        icon="mail"
-                        onPress={() => openMail(detail?.clientEmail)}
-                      />
-                    )}
-
-                    {detail?.clientMobile && (
-                      <ActionButton
-                        label="SMS"
-                        icon="message-square"
-                        onPress={() =>
-                          Linking.openURL(`sms:${detail?.clientMobile}`)
-                        }
-                      />
-                    )}
                   </View>
-                )}
-
-                {detail?.clientMobile &&
-                  !["assign", "new", "re_assigned"].includes(
-                    detail?.status,
-                  ) && <View style={styles.divider} />}
-
-                {/* Mobile */}
-                {detail?.clientMobile &&
-                  !["assign", "new", "re_assigned"].includes(
+                  {(detail?.status === "assign" ||
+                    detail?.status === "re_assigned" ||
+                    detail?.status === "new") && (
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: color.mainTxtColor,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        marginTop: 8,
+                      }}
+                      onPress={() => handleChangeStatusToClaim(detail?._id)}
+                    >
+                      <CustomText
+                        style={{
+                          color: "#fff",
+                          fontSize: 16,
+                          fontWeight: "600",
+                        }}
+                      >
+                        Claim Lead
+                      </CustomText>
+                    </TouchableOpacity>
+                  )}
+                  {/* Action Buttons */}
+                  {!["assign", "new", "re_assigned"].includes(
                     detail?.status,
                   ) && (
-                    <View style={styles.infoRow}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Feather name="phone" size={18} color="#7A869A" />
-                        <View style={{ marginLeft: 12 }}>
-                          <Text style={styles.label}>MOBILE</Text>
-                          <Text style={styles.value}>
-                            {detail?.clientMobile}
-                          </Text>
-                        </View>
-                      </View>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#9b9b9b18",
-                          paddingHorizontal: 6,
-                          paddingVertical: 4,
-                          borderRadius: 6,
-                        }}
-                        onPress={() => handleCopy(detail?.clientMobile)}
-                      >
-                        <Feather name="copy" size={16} color={"#9b9b9b"} />
-                      </TouchableOpacity>
+                    <View style={styles.actionRow}>
+                      {detail?.clientMobile && (
+                        <ActionButton
+                          label="Call"
+                          icon="phone-call"
+                          onPress={() => navToCall()}
+                        />
+                      )}
+
+                      {detail?.whatsapp && (
+                        <ActionButton
+                          label="WhatsApp"
+                          icon="message-circle"
+                          onPress={() => Linking.openURL(detail?.whatsapp)}
+                        />
+                      )}
+
+                      {detail?.clientEmail && (
+                        <ActionButton
+                          label="Email"
+                          icon="mail"
+                          onPress={() => openMail(detail?.clientEmail)}
+                        />
+                      )}
+
+                      {detail?.clientMobile && (
+                        <ActionButton
+                          label="SMS"
+                          icon="message-square"
+                          onPress={() =>
+                            Linking.openURL(`sms:${detail?.clientMobile}`)
+                          }
+                        />
+                      )}
                     </View>
                   )}
 
-                {/* Email */}
-                {detail?.clientEmail &&
-                  !["assign", "new", "re_assigned"].includes(
-                    detail?.status,
-                  ) && (
-                    <View style={styles.infoRow}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Feather name="mail" size={18} color="#7A869A" />
-                        <View style={{ marginLeft: 12 }}>
-                          <Text style={styles.label}>EMAIL</Text>
-                          <Text style={styles.value}>
-                            {detail?.clientEmail}
-                          </Text>
+                  {detail?.clientMobile &&
+                    !["assign", "new", "re_assigned"].includes(
+                      detail?.status,
+                    ) && <View style={styles.divider} />}
+
+                  {/* Mobile */}
+                  {detail?.clientMobile &&
+                    !["assign", "new", "re_assigned"].includes(
+                      detail?.status,
+                    ) && (
+                      <View style={styles.infoRow}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Feather name="phone" size={18} color="#7A869A" />
+                          <View style={{ marginLeft: 12 }}>
+                            <Text style={styles.label}>MOBILE</Text>
+                            <Text style={styles.value}>
+                              {detail?.clientMobile}
+                            </Text>
+                          </View>
                         </View>
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: "#9b9b9b18",
+                            paddingHorizontal: 6,
+                            paddingVertical: 4,
+                            borderRadius: 6,
+                          }}
+                          onPress={() => handleCopy(detail?.clientMobile)}
+                        >
+                          <Feather name="copy" size={16} color={"#9b9b9b"} />
+                        </TouchableOpacity>
                       </View>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#9b9b9b18",
-                          paddingHorizontal: 6,
-                          paddingVertical: 4,
-                          borderRadius: 6,
-                        }}
-                        onPress={() => handleCopy(detail?.clientEmail)}
-                      >
-                        <Feather name="copy" size={16} color={"#9b9b9b"} />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-              </View>
+                    )}
+
+                  {/* Email */}
+                  {detail?.clientEmail &&
+                    !["assign", "new", "re_assigned"].includes(
+                      detail?.status,
+                    ) && (
+                      <View style={styles.infoRow}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Feather name="mail" size={18} color="#7A869A" />
+                          <View style={{ marginLeft: 12 }}>
+                            <Text style={styles.label}>EMAIL</Text>
+                            <Text style={styles.value}>
+                              {detail?.clientEmail}
+                            </Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: "#9b9b9b18",
+                            paddingHorizontal: 6,
+                            paddingVertical: 4,
+                            borderRadius: 6,
+                          }}
+                          onPress={() => handleCopy(detail?.clientEmail)}
+                        >
+                          <Feather name="copy" size={16} color={"#9b9b9b"} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                </View>
+              )}
 
               {/* -------------------- CARD 2 -------------------- */}
               <View style={styles.card}>

@@ -82,8 +82,6 @@ import ExpenseForm from "../screens/Expense/ExpenseForm";
 import ReferralList from "../screens/Referrals/ReferralList";
 import AddReferrals from "../screens/Referrals/AddReferrals";
 import ReferralDetails from "../screens/Referrals/ReferralDetails";
-import CallingFocus from "../assets/svg/CallingFocus";
-import CallingInfocus from "../assets/svg/CallingInfocus";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RSVPInvitationList from "../screens/RSVP/RSVPInvitationList";
 import RSVPInvitationDetail from "../screens/RSVP/RSVPInvitationDetail";
@@ -96,6 +94,11 @@ import RsvpInfocus from "../assets/svg/RsvpInfocus";
 import { navigationRef } from "./navigationRef";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
 import Reminders from "../screens/Auth/Reminders";
+import ReportsListing from "../screens/Reports/ReportsListing";
+import ReportsFilter from "../screens/Reports/ReportsFilter";
+import { Feather } from "@expo/vector-icons";
+import ReportFocus from "../assets/svg/ReportFocus";
+import ReportInfocus from "../assets/svg/ReportInfocus";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -218,6 +221,22 @@ const BottomTabs = () => {
               <RsvpFocus style={styles.iconPosition} />
             ) : (
               <RsvpInfocus style={styles.iconPosition} />
+            ),
+        }}
+      />
+      <Tab.Screen
+        name="ReportsNavigator"
+        component={ReportsNavigator}
+        options={{
+          tabBarLabel: "",
+          tableBarShowLable: false,
+          tabBarLabelStyle: false,
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <ReportFocus style={styles.iconPosition} />
+            ) : (
+              <ReportInfocus style={styles.iconPosition} />
             ),
         }}
       />
@@ -403,7 +422,6 @@ const UsersNavigator = () => {
   );
 };
 
-//ProjectNavigator
 const RSVPNavigator = () => {
   return (
     <Stack.Navigator>
@@ -442,6 +460,25 @@ const RSVPNavigator = () => {
     </Stack.Navigator>
   );
 };
+//ReportsNavigator
+const ReportsNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ReportsListing"
+        component={ReportsListing}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="ReportsFilter"
+        component={ReportsFilter}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 //ProjectNavigator
 const ProjectNavigator = () => {
   return (

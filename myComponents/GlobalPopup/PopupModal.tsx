@@ -17,6 +17,7 @@ interface Props {
   loading?: boolean;
   onRead?: () => void;
   onOpen?: () => void;
+  onIgnore?: () => void;
 }
 
 const PopupModal = ({
@@ -26,6 +27,7 @@ const PopupModal = ({
   loading,
   onRead,
   onOpen,
+  onIgnore,
 }: Props) => {
   return (
     <Modal
@@ -41,6 +43,15 @@ const PopupModal = ({
 
           <Text style={styles.message}>{message}</Text>
           <View style={styles.btnRow}>
+            <TouchableOpacity
+              style={styles.ignoreBtn}
+              activeOpacity={0.8}
+              onPress={onIgnore}
+              disabled={loading}
+            >
+              <Text style={styles.ignoreBtnText}>IGNORE</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.openBtn}
               activeOpacity={0.8}
@@ -127,7 +138,7 @@ const styles = StyleSheet.create({
   },
 
   openBtn: {
-    width: "100%",
+    flex: 1,
     height: 48,
     borderRadius: 12,
     backgroundColor: "#2563EB",
@@ -138,6 +149,21 @@ const styles = StyleSheet.create({
   },
 
   openBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  ignoreBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "#EF4444",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  ignoreBtnText: {
     color: "#fff",
     fontSize: 15,
     fontWeight: "700",

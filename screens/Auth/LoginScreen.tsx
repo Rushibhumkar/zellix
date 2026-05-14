@@ -39,8 +39,8 @@ const LoginScreen = () => {
     // password: "123456789",
     // email: "kashif22@mailinator.com",
     // password: "123456789",
-    // email: "mohdkashif1008@gmail.com",
-    // password: "123456789",
+    email: "mohdkashif1008@gmail.com",
+    password: "123456789",
     // password: "12345678",
     // email: "test@test.com",
     // password: "123456789",
@@ -48,8 +48,8 @@ const LoginScreen = () => {
     // password: "123456789",
     // email: "tech@skgestates.com",
     // password: "1234567890",
-    email: "",
-    password: "",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

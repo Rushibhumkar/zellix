@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
@@ -25,7 +26,7 @@ const { width } = Dimensions.get("window");
 
 const ReportsListing = () => {
   const { navigate } = useNavigation();
-
+  const verticalScrollRef = React.useRef<any>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const columns = useMemo(
@@ -199,103 +200,117 @@ const ReportsListing = () => {
         </Text>
       </View> */}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        contentContainerStyle={{
-          paddingBottom: 0,
-          marginBottom: 0,
+      <View
+        style={{
+          flexDirection: "row",
+          paddingBottom: 260,
         }}
       >
-        <View
-          style={{
-            margin: 0,
-            padding: 0,
-            alignSelf: "flex-start",
-            transform: [{ scale: zoomLevel }],
-            transformOrigin: "top left",
-          }}
-        >
-          {/* Sticky Header */}
+        {/* FIXED LEFT COLUMN */}
+        <View>
+          {/* Fixed Header */}
           <View
             style={[
-              styles.headerRow,
+              styles.fixedHeaderCell,
               {
-                position: "absolute",
-                top: 0,
-                left: 0,
-                zIndex: 1000,
+                height: 40,
               },
             ]}
           >
-            {columns.map((column, index) => (
+            <Text style={styles.headerText}>{columns[0]}</Text>
+          </View>
+
+          {/* Fixed Body */}
+          <FlatList
+            ref={verticalScrollRef}
+            data={tableData}
+            keyExtractor={(_, index) => `left-${index}`}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            scrollEnabled={false}
+            contentContainerStyle={{
+              paddingTop: 0,
+            }}
+            renderItem={({ item: row, index: rowIndex }) => (
               <View
-                key={index}
                 style={[
-                  styles.headerCell,
-                  index === 0 && {
-                    position: "absolute",
-                    left: 0,
-                    zIndex: 3000,
-                    backgroundColor: color.primaryColor,
+                  styles.fixedLeftCell,
+                  {
+                    backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
                   },
                 ]}
               >
-                <Text style={styles.headerText}>{column}</Text>
+                <Text style={styles.bodyText}>{row[0]}</Text>
               </View>
-            ))}
-          </View>
+            )}
+          />
+        </View>
 
-          {/* Vertical Scroll */}
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            bounces={false}
+        {/* HORIZONTAL SCROLLABLE TABLE */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+        >
+          <View
             style={{
-              flexGrow: 0,
-            }}
-            contentContainerStyle={{
-              paddingTop: 40,
-              margin: 0,
-              paddingLeft: 0,
-              paddingBottom: 120,
-              flexGrow: 0,
+              transform: [{ scale: zoomLevel }],
+              transformOrigin: "top left",
             }}
           >
-            <View style={styles.tableContainer}>
-              {tableData.map((row, rowIndex) => (
+            {/* Header */}
+            <View style={styles.headerRow}>
+              {columns.slice(1).map((column, index) => (
+                <View key={index} style={styles.headerCell}>
+                  <Text style={styles.headerText}>{column}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Body */}
+            <FlatList
+              data={tableData}
+              keyExtractor={(_, index) => `row-${index}`}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              onScroll={(event) => {
+                const offsetY = event.nativeEvent.contentOffset.y;
+
+                verticalScrollRef.current?.scrollToOffset({
+                  offset: offsetY,
+                  animated: false,
+                });
+              }}
+              scrollEventThrottle={16}
+              renderItem={({ item: row, index: rowIndex }) => (
                 <View
-                  key={rowIndex}
                   style={[
                     styles.bodyRow,
                     {
                       backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
+                      borderTopWidth: rowIndex === 0 ? 0 : 1,
                     },
                   ]}
                 >
-                  {row.map((cell, cellIndex) => (
+                  {row.slice(1).map((cell, cellIndex) => (
                     <View
                       key={cellIndex}
                       style={[
                         styles.bodyCell,
-                        cellIndex === 0 && [
-                          styles.stickyColumn,
-                          {
-                            backgroundColor:
-                              rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
-                          },
-                        ],
+                        rowIndex === 0 && {
+                          borderTopWidth: 0,
+                        },
                       ]}
                     >
                       <Text style={styles.bodyText}>{cell}</Text>
                     </View>
                   ))}
                 </View>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
-      </ScrollView>
+              )}
+            />
+          </View>
+        </ScrollView>
+      </View>
     </Container>
   );
 };
@@ -309,11 +324,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  stickyColumn: {
-    position: "absolute",
-    left: 0,
-    zIndex: 2000,
-    backgroundColor: "#fff",
+  fixedHeaderCell: {
+    width: 120,
+    backgroundColor: color.primaryColor,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRightWidth: 1,
+    borderColor: color.primary200,
+  },
+
+  fixedLeftCell: {
+    width: 120,
+    height: 40,
+    maxHeight: 40,
+    paddingHorizontal: 10,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: color.primary50,
+    justifyContent: "center",
   },
 
   zoomBtn: {
@@ -351,9 +379,9 @@ const styles = StyleSheet.create({
 
   headerRow: {
     height: 40,
+    maxHeight: 40,
     flexDirection: "row",
     backgroundColor: color.primaryColor,
-    paddingLeft: 120,
   },
 
   headerCell: {
@@ -377,12 +405,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderTopWidth: 1,
     borderColor: color.primary50,
-    paddingLeft: 120,
   },
 
   bodyCell: {
     width: 120,
     // minWidth: 100,
+    height: 39,
+    maxHeight: 40,
     maxWidth: 160,
     paddingVertical: 12,
     paddingHorizontal: 10,

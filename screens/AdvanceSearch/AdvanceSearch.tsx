@@ -193,12 +193,15 @@ const AdvanceSearch = () => {
       endDate: null,
       assignedAt: null,
       status: [],
+      type: null,
+      individual: false,
     },
     onSubmit: async (value) => {
       setIsLoading(true);
       try {
         const sendData = {
           ...values,
+          individual: teamOption === "myLead",
           startDate: values.startDate
             ? new Date(values.startDate).toISOString()
             : null,
@@ -209,7 +212,7 @@ const AdvanceSearch = () => {
             ? new Date(values.assignedAt).toISOString()
             : null,
         };
-
+        myConsole("sendDataaaa", sendData);
         if (category === "booking") {
           dispatch(setBookingQueryKey(sendData));
           navigate("BookingNavigator");
@@ -217,6 +220,7 @@ const AdvanceSearch = () => {
           dispatch(setMeetingQueryKey(sendData));
           navigate("MeetingsNavigator");
         } else if (category === "lead" || category === "callingData") {
+          console.log("categoyr", category);
           dispatch(
             setLeadQueryKey({
               ...sendData,
@@ -224,12 +228,12 @@ const AdvanceSearch = () => {
             }),
           );
 
-          navigate("Dashboard", {
-            screen: category === "callingData" ? "allLead" : "allLead2",
+          navigate("allLead", {
+            tabType: category === "callingData" ? "calling_data" : "lead",
           });
         }
       } catch (error) {
-        console.log("error in bookingRes", error);
+        console.log("error in navigation", error);
       } finally {
         setIsLoading(false);
       }
@@ -246,8 +250,10 @@ const AdvanceSearch = () => {
   useEffect(() => {
     if (category === "booking") {
       setValues(bookingQueryKey ?? {});
-    } else if (category === "lead") {
+    } else if (category === "lead" || category === "callingData") {
       setValues(leadQueryKey ?? {});
+
+      setTeamOption(leadQueryKey?.individual ? "myLead" : "teamLead");
     } else if (category === "meeting") {
       setValues(meetingQueryKey ?? {});
     }
@@ -345,7 +351,7 @@ const AdvanceSearch = () => {
             {onlyBooking && (
               <>
                 <DropdownRNE
-                  key={`dropdown-${resetKey}`}
+                  key={`booking-type-${resetKey}`}
                   label="Type"
                   containerStyle={{ marginBottom: 15 }}
                   arrOfObj={leadTypeInAS}
@@ -392,7 +398,7 @@ const AdvanceSearch = () => {
                 >
                   {onlyBooking && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`booking-country-code-${resetKey}`}
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{ width: 150, marginEnd: 10 }}
                       dropdownStyle={{
@@ -408,7 +414,7 @@ const AdvanceSearch = () => {
                   )}
                   {!onlyBooking && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`lead-country-code-${resetKey}`}
                       arrOfObj={mobileCodeWithIdKey || []}
                       containerStyle={{
                         width: 80,
@@ -439,7 +445,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`developer-dropdown-${resetKey}`}
                 label="Developer"
                 arrOfObj={developerSort?.length > 0 ? developerSort : []}
                 // dropdownPosition='top'
@@ -478,7 +484,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`booking-status-${resetKey}`}
                 label="Booking Status"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={inputStatusOptions}
@@ -492,7 +498,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`business-status-${resetKey}`}
                 label="Business Status"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={[
@@ -510,7 +516,7 @@ const AdvanceSearch = () => {
 
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`payment-status-${resetKey}`}
                 label="Payment Status"
                 containerStyle={{ marginBottom: 15 }}
                 isMultiSelect={true}
@@ -524,7 +530,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`payment-mode-${resetKey}`}
                 label="Mode of Payment"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={ModeOfPayment}
@@ -538,7 +544,7 @@ const AdvanceSearch = () => {
             )}
             {onlyBooking && (
               <DropdownRNE
-                key={`dropdown-${resetKey}`}
+                key={`token-dropdown-${resetKey}`}
                 label="Token"
                 containerStyle={{ marginBottom: 15 }}
                 arrOfObj={tokenInBooking}
@@ -554,7 +560,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdmin && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`booking-sr-manager-${resetKey}`}
                       label="Sr Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="sr_manager"
@@ -571,7 +577,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdminSrManager && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`booking-team-manager-${resetKey}`}
                       label="Team Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="manager"
@@ -587,7 +593,7 @@ const AdvanceSearch = () => {
 
                   {isAdminSrManagerManager && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`booking-assistant-manager-${resetKey}`}
                       label="Assistant Manager"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="assistant_manager"
@@ -604,7 +610,7 @@ const AdvanceSearch = () => {
                 <>
                   {isAdminSrMngMngAssistantMng && (
                     <DropdownRNE
-                      key={`dropdown-${resetKey}`}
+                      key={`booking-team-lead-${resetKey}`}
                       label="Team Lead"
                       containerStyle={{ marginBottom: 15 }}
                       keyName="team_lead"
@@ -619,7 +625,7 @@ const AdvanceSearch = () => {
                 </>
                 {!isAgent && (
                   <DropdownRNE
-                    key={`dropdown-${resetKey}`}
+                    key={`booking-agent-${resetKey}`}
                     label="Agents"
                     containerStyle={{ marginBottom: 15 }}
                     keyName="agent"
@@ -641,7 +647,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdmin && (
                         <DropdownRNE
-                          key={`dropdown-${resetKey}`}
+                          key={`lead-sr-manager-${resetKey}`}
                           label="Sr Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="sr_manager"
@@ -658,7 +664,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdminSrManager && (
                         <DropdownRNE
-                          key={`dropdown-${resetKey}`}
+                          key={`lead-team-manager-${resetKey}`}
                           label="Team Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="manager"
@@ -673,7 +679,7 @@ const AdvanceSearch = () => {
                       )}
                       {isAdminSrManagerManager && (
                         <DropdownRNE
-                          key={`dropdown-${resetKey}`}
+                          key={`lead-assistant-manager-${resetKey}`}
                           label="Assistant Manager"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="assistant_manager"
@@ -690,7 +696,7 @@ const AdvanceSearch = () => {
                     <>
                       {isAdminSrMngMngAssistantMng && (
                         <DropdownRNE
-                          key={`dropdown-${resetKey}`}
+                          key={`lead-team-lead-${resetKey}`}
                           label="Team Lead"
                           containerStyle={{ marginBottom: 15 }}
                           keyName="team_lead"
@@ -705,7 +711,7 @@ const AdvanceSearch = () => {
                     </>
                     {!isAgent && (
                       <DropdownRNE
-                        key={`dropdown-${resetKey}`}
+                        key={`lead-agent-${resetKey}`}
                         label="Agents"
                         containerStyle={{ marginBottom: 15 }}
                         keyName="agent"
@@ -768,10 +774,14 @@ const AdvanceSearch = () => {
                   endDate: null,
                   assignedAt: null,
                   status: [],
+
+                  type: null,
+                  individual: false,
                 },
               });
 
               setTempDate({ startDate: null, endDate: null });
+              setTeamOption("teamLead");
 
               dispatch(setBookingQueryKey(null));
               dispatch(setLeadQueryKey(null));

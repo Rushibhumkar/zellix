@@ -142,7 +142,7 @@ export default function App() {
         console.log("🟢 OTA runtime:", Updates.runtimeVersion);
         console.log("🟢 OTA check result:", update);
       } catch (e) {
-        console.log("🔴 OTA check error:", e);
+        // console.log("🔴 OTA check error:", e);
       }
     };
 

@@ -7,25 +7,26 @@
 			"com.tldraw.asset": 1,
 			"com.tldraw.camera": 1,
 			"com.tldraw.document": 2,
-			"com.tldraw.instance": 25,
+			"com.tldraw.instance": 26,
 			"com.tldraw.instance_page_state": 5,
 			"com.tldraw.page": 1,
 			"com.tldraw.instance_presence": 6,
 			"com.tldraw.pointer": 1,
 			"com.tldraw.shape": 4,
-			"com.tldraw.asset.bookmark": 2,
-			"com.tldraw.asset.image": 5,
+			"com.tldraw.user": 1,
+			"com.tldraw.asset.image": 6,
 			"com.tldraw.asset.video": 5,
+			"com.tldraw.asset.bookmark": 2,
 			"com.tldraw.shape.group": 0,
-			"com.tldraw.shape.text": 3,
+			"com.tldraw.shape.text": 4,
 			"com.tldraw.shape.bookmark": 2,
-			"com.tldraw.shape.draw": 2,
-			"com.tldraw.shape.geo": 10,
-			"com.tldraw.shape.note": 9,
+			"com.tldraw.shape.draw": 4,
+			"com.tldraw.shape.geo": 11,
+			"com.tldraw.shape.note": 12,
 			"com.tldraw.shape.line": 5,
 			"com.tldraw.shape.frame": 1,
-			"com.tldraw.shape.arrow": 7,
-			"com.tldraw.shape.highlight": 1,
+			"com.tldraw.shape.arrow": 8,
+			"com.tldraw.shape.highlight": 3,
 			"com.tldraw.shape.embed": 4,
 			"com.tldraw.shape.image": 5,
 			"com.tldraw.shape.video": 4,
@@ -66,6 +67,9 @@
 				"scale": 1,
 				"richText": {
 					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
 					"content": [
 						{
 							"type": "paragraph",
@@ -75,7 +79,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "{"
+									"text": "  /* 📌 Read button handler */"
 								}
 							]
 						},
@@ -86,1092 +90,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "  \"expo\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"name\": \"zellix\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"slug\": \"zellix\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"version\": \"1.4.9\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"orientation\": \"portrait\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"icon\": \"./assets/icon1.png\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"userInterfaceStyle\": \"light\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"splash\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"image\": \"./assets/splash1.png\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"resizeMode\": \"contain\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"backgroundColor\": \"#ffffff\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "    },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"assetBundlePatterns\": ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"**/*\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "    ],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"ios\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"bundleIdentifier\": \"com.skg.zellix\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"bundleNumber\": \"1.4.9\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"supportsTablet\": true,"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"buildNumber\": \"72\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"googleServicesFile\":  \"./GoogleService-Info.plist\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"config\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"googleServices\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"apiKey\": \"AIzaSyAyKgM64CXloNo0pmNa0ECXTplNyeAUH-U\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        }"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"permissions\": ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"READ_CALL_LOG\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"infoPlist\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"NSLocationWhenInUseUsageDescription\": \"Allow Zellix to access your location for scheduling and attending meetings efficiently.\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"NSLocationAlwaysUsageDescription\": \"Allow Zellix to access your location in the background to support location-based meeting features.\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      }"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "    },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"package\": \"com.skg.zellix\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"versionCode\": 75,"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"adaptiveIcon\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"foregroundImage\": \"./assets/icon1.png\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"backgroundColor\": \"#ffffff\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"googleServicesFile\": \"./google-services.json\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"permissions\": ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\""
-								},
-								{
-									"type": "text",
-									"marks": [
-										{
-											"type": "link",
-											"attrs": {
-												"href": "http://android.permission.POST",
-												"target": "_blank",
-												"rel": "noopener noreferrer nofollow",
-												"class": null
-											}
-										}
-									],
-									"text": "android.permission.POST"
-								},
-								{
-									"type": "text",
-									"text": "_NOTIFICATIONS\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\""
-								},
-								{
-									"type": "text",
-									"marks": [
-										{
-											"type": "link",
-											"attrs": {
-												"href": "http://android.permission.READ",
-												"target": "_blank",
-												"rel": "noopener noreferrer nofollow",
-												"class": null
-											}
-										}
-									],
-									"text": "android.permission.READ"
-								},
-								{
-									"type": "text",
-									"text": "_CALL_LOG\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\""
-								},
-								{
-									"type": "text",
-									"marks": [
-										{
-											"type": "link",
-											"attrs": {
-												"href": "http://android.permission.READ",
-												"target": "_blank",
-												"rel": "noopener noreferrer nofollow",
-												"class": null
-											}
-										}
-									],
-									"text": "android.permission.READ"
-								},
-								{
-									"type": "text",
-									"text": "_PHONE_STATE\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\""
-								},
-								{
-									"type": "text",
-									"marks": [
-										{
-											"type": "link",
-											"attrs": {
-												"href": "http://android.permission.READ",
-												"target": "_blank",
-												"rel": "noopener noreferrer nofollow",
-												"class": null
-											}
-										}
-									],
-									"text": "android.permission.READ"
-								},
-								{
-									"type": "text",
-									"text": "_PHONE_NUMBERS\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android.permission.PROCESS_OUTGOING_CALLS\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android.permission.RECORD_AUDIO\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android.permission.ACCESS_COARSE_LOCATION\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android.permission.ACCESS_FINE_LOCATION\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"android.permission.FOREGROUND_SERVICE\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ]"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "    },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"web\": {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"favicon\": \"./assets/favicon1.png\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "    },"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"plugins\": ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "       ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"@react-native-firebase/app\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"iosGoogleServicesFile\": \"./GoogleService-Info.plist\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"androidGoogleServicesFile\": \"./google-services.json\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        }"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "   ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"@react-native-firebase/messaging\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "  {}"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"expo-image-picker\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"photosPermission\": \"The app accesses your photos to upload the documents\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"cameraPermission\": \"$(PRODUCT_NAME) requires access to the Camera allows you to take photo to upload the documents\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        }"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"expo-location\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        {"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"locationAlwaysAndWhenInUsePermission\": \"Allow $(PRODUCT_NAME) to use your location for conduct meeting.\""
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        }"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ],"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "      ["
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "\"expo-build-properties\","
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "        {"
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1183,7 +105,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"android\": {"
+									"text": "const startPause = (duration = 60000) => {"
 								}
 							]
 						},
@@ -1195,7 +117,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"compileSdkVersion\": 36,"
+									"text": "// 1 min"
 								}
 							]
 						},
@@ -1207,7 +129,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"targetSdkVersion\": 36,"
+									"text": "setIsPaused(true);"
 								}
 							]
 						},
@@ -1218,8 +140,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "\"buildToolsVersion\": \"36.0.0\","
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1231,7 +155,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"minSdkVersion\": 24"
+									"text": "if (pauseTimeoutRef.current) {"
 								}
 							]
 						},
@@ -1243,7 +167,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "          },"
+									"text": "clearTimeout(pauseTimeoutRef.current);"
 								}
 							]
 						},
@@ -1255,7 +179,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"ios\": {"
+									"text": "    }"
 								}
 							]
 						},
@@ -1266,8 +190,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "\"deploymentTarget\": \"15.1\","
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1279,7 +205,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"useFrameworks\": \"static\""
+									"text": "pauseTimeoutRef.current = setTimeout(() => {"
 								}
 							]
 						},
@@ -1291,7 +217,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "          }"
+									"text": "setIsPaused(false);"
 								}
 							]
 						},
@@ -1303,7 +229,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "        }"
+									"text": "    }, duration);"
 								}
 							]
 						},
@@ -1315,7 +241,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "      ],"
+									"text": "  };"
 								}
 							]
 						},
@@ -1326,8 +252,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "\"expo-mail-composer\","
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1339,7 +267,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"expo-notifications\""
+									"text": "const handleRead = async () => {"
 								}
 							]
 						},
@@ -1351,7 +279,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "    ],"
+									"text": "if (!current?._id || isPending) return;"
 								}
 							]
 						},
@@ -1362,8 +290,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "\"owner\": \"rushibhumkar14\","
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1375,7 +305,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"runtimeVersion\": \"1.3.6\","
+									"text": "try {"
 								}
 							]
 						},
@@ -1387,7 +317,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"updates\": {"
+									"text": "await markAsRead(current._id);"
 								}
 							]
 						},
@@ -1398,8 +328,10 @@
 							},
 							"content": [
 								{
-									"type": "text",
-									"text": "\"fallbackToCacheTimeout\": 0,"
+									"type": "hardBreak",
+									"attrs": {
+										"dir": "auto"
+									}
 								}
 							]
 						},
@@ -1411,7 +343,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"checkAutomatically\": \"ON_LOAD\""
+									"text": "setQueue((prev) => {"
 								}
 							]
 						},
@@ -1423,7 +355,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "    },"
+									"text": "const remaining = prev.slice(1);"
 								}
 							]
 						},
@@ -1435,7 +367,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"extra\": {"
+									"text": "setCurrent(remaining.length > 0 ? remaining[0] : null);"
 								}
 							]
 						},
@@ -1447,7 +379,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"firebaseApiKey\": \"AIzaSyDUuI4NE54bTHHXDOJNFysIiImtRM1SmH0\","
+									"text": "return remaining;"
 								}
 							]
 						},
@@ -1459,7 +391,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"eas\": {"
+									"text": "      });"
 								}
 							]
 						},
@@ -1471,7 +403,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"projectId\": \"e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8\","
+									"text": "    } catch (e) {"
 								}
 							]
 						},
@@ -1483,7 +415,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "\"updateChannel\": \"production\""
+									"text": "// popup must stay if API fails"
 								}
 							]
 						},
@@ -1495,7 +427,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "      }"
+									"text": "console.log(\"Mark read failed\", e);"
 								}
 							]
 						},
@@ -1519,7 +451,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "  }"
+									"text": "  };"
 								}
 							]
 						},
@@ -1531,7 +463,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "}"
+									"text": "// myConsole(\"currenttt\", current);"
 								}
 							]
 						},
@@ -1542,7 +474,8 @@
 							},
 							"content": [
 								{
-									"type": "hardBreak"
+									"type": "text",
+									"text": "if (!current || isPaused) return null;"
 								}
 							]
 						}
@@ -1554,12 +487,12 @@
 			"typeName": "shape"
 		},
 		{
+			"x": 0,
+			"y": 0,
+			"lastActivityTimestamp": 0,
+			"meta": {},
 			"id": "pointer:pointer",
-			"typeName": "pointer",
-			"x": 488.2421875000009,
-			"y": 8958.089843750002,
-			"lastActivityTimestamp": 1764161140340,
-			"meta": {}
+			"typeName": "pointer"
 		},
 		{
 			"followingUserId": null,
@@ -1578,8 +511,8 @@
 			"screenBounds": {
 				"x": 0,
 				"y": 0,
-				"w": 801,
-				"h": 981
+				"w": 1050,
+				"h": 956
 			},
 			"insets": [
 				false,
@@ -1602,6 +535,7 @@
 			"isReadonly": false,
 			"meta": {},
 			"duplicateProps": null,
+			"cameraState": "idle",
 			"id": "instance:instance",
 			"currentPageId": "page:page",
 			"typeName": "instance"
@@ -1622,12 +556,20 @@
 			"typeName": "instance_page_state"
 		},
 		{
-			"x": 7158.632812499999,
-			"y": -925.9023437500014,
-			"z": 0.05,
+			"x": 1613.7313179347825,
+			"y": 223.69084012681157,
+			"z": 0.21297323366288884,
 			"meta": {},
 			"id": "camera:page:page",
 			"typeName": "camera"
+		},
+		{
+			"name": "",
+			"color": "#7B66DC",
+			"imageUrl": "",
+			"meta": {},
+			"id": "user:TWykZgidAeZvb97CCMzCE",
+			"typeName": "user"
 		}
 	]
 }

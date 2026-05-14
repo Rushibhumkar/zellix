@@ -11,6 +11,7 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -38,6 +39,7 @@ import LeadListHeading from "../../components/Leads/LeadHeading/LeadListHeading"
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
 import {
+  allLeadsFilterStatuses,
   leadTypeObj,
   roleEnum,
   statusColorObj,
@@ -112,6 +114,7 @@ const AllLeads = () => {
   const [selectLeadType, setSelectLeadType] = useState("calling_data");
   const [openLeadTypeModal, setOpenLeadTypeModal] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   //get Query
   const {
     data: leadData,
@@ -122,8 +125,9 @@ const AllLeads = () => {
     isFetchingNextPage,
   } = useGetLead({
     search: debouncedSearch,
-    type: leadQueryKey?.type ?? selectLeadType,
+    // type: leadQueryKey?.type ?? selectLeadType,
     ...leadQueryKey,
+    type: selectLeadType,
   });
   const handleSelect = (id) => {
     let temp = [...selected];
@@ -315,13 +319,22 @@ const AllLeads = () => {
     }
   }, [showSearch]);
 
+  // console.log("selectleadtypeseb4useeffecrt", selectLeadType);
+
   useEffect(() => {
     if (route?.params?.tabType) {
-      setSelectLeadType(route.params.tabType);
+      setSelectLeadType(route?.params?.tabType);
     } else if (route?.params?.item?.type) {
-      setSelectLeadType(route.params.item.type);
+      setSelectLeadType(route?.params?.item?.type);
     }
-  }, [route?.params?.tabType]);
+  }, [route?.params]);
+
+  // console.log("selectleadtypeseuseeffecrt", selectLeadType);
+
+  const filteredLeadData =
+    selectedStatus === "all"
+      ? leadData
+      : leadData?.filter((item) => item?.status === selectedStatus);
 
   // myConsole("alllesad", leadData);
   return (
@@ -335,7 +348,9 @@ const AllLeads = () => {
         //       : ""
         // }
         title={"Data Center"}
-        totalCount={totalCount}
+        totalCount={
+          selectedStatus === "all" ? totalCount : filteredLeadData?.length || 0
+        }
         isWithAnimation
         showBackIcon={false}
         showActions={true}
@@ -413,7 +428,7 @@ const AllLeads = () => {
 
           <FlatList
             ref={flatListRef}
-            data={leadData}
+            data={filteredLeadData}
             renderItem={({ item, index }) => (
               <LeadRowItem
                 index={index}
@@ -509,7 +524,59 @@ const AllLeads = () => {
                     </CustomText>
                   </TouchableOpacity>
                 </View>
+                {/* <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingHorizontal: 12,
+                    paddingTop: 12,
+                    paddingBottom: 4,
+                    gap: 8,
+                  }}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedStatus("all")}
+                    style={[
+                      styles.statusChip,
+                      selectedStatus === "all" && styles.activeStatusChip,
+                    ]}
+                  >
+                    <CustomText
+                      style={[
+                        styles.statusChipText,
+                        selectedStatus === "all" && styles.activeStatusChipText,
+                      ]}
+                    >
+                      All
+                    </CustomText>
+                  </TouchableOpacity>
 
+                  {allLeadsFilterStatuses?.map((item) => {
+                    const isSelected = selectedStatus === item?._id;
+
+                    return (
+                      <TouchableOpacity
+                        key={item?._id}
+                        activeOpacity={0.8}
+                        onPress={() => setSelectedStatus(item?._id)}
+                        style={[
+                          styles.statusChip,
+                          isSelected && styles.activeStatusChip,
+                        ]}
+                      >
+                        <CustomText
+                          style={[
+                            styles.statusChipText,
+                            isSelected && styles.activeStatusChipText,
+                          ]}
+                        >
+                          {item?.name}
+                        </CustomText>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView> */}
                 {/* <LeadListHeading
                   noText={"No"}
                   nameText={"Client Name"}
@@ -879,6 +946,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.1)",
     borderColor: "#ffffff29",
     borderWidth: 2,
+  },
+  statusChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 30,
+    backgroundColor: "#EEF4FF",
+    borderWidth: 1,
+    borderColor: "#D6E4FF",
+  },
+
+  activeStatusChip: {
+    backgroundColor: color.primaryColor,
+    borderColor: color.primaryColor,
+  },
+
+  statusChipText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: color.primaryColor,
+  },
+
+  activeStatusChipText: {
+    color: "#fff",
   },
 });
 

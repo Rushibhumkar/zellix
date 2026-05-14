@@ -66,7 +66,10 @@ import { checkPermission } from "../../utils/commonFunctions";
 import CallingDataQuality from "../../components/Dashboard/CallingDataQuality";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
-export let socket = io(`${baseURL}`);
+export const socket = io(baseURL, {
+  autoConnect: false,
+  transports: ["websocket"],
+});
 // const socket = io('https://api.crmaxproperty.com')
 const Dashboard = () => {
   const {
@@ -80,6 +83,7 @@ const Dashboard = () => {
     callDetect,
   } = useSelector(selectUser);
   const dispatch = useDispatch();
+  const reduxUser = useSelector(selectUser);
   const { navigate, dispatch: dispatchNav } = useNavigation();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -119,7 +123,7 @@ const Dashboard = () => {
   } = useGetCommissionCount();
   useEffect(() => {
     setUser();
-  }, []);
+  }, [socket]);
   //
   const fetchUserData = async () => {
     let data = await getDataJson("userDetail");
@@ -128,6 +132,27 @@ const Dashboard = () => {
     dispatch(setUserInfo(userData));
     setUser(userData);
   };
+
+  useEffect(() => {
+    if (!reduxUser?.user?._id) return;
+
+    socket.auth = {
+      userId: reduxUser?.user?._id,
+    };
+
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("🟢 SOCKET CONNECTED =>", socket.id);
+      console.log("🟢 SOCKET AUTH USER =>", reduxUser?.user?._id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log("🔴 SOCKET ERROR =>", err?.message);
+    });
+
+    return () => {};
+  }, [reduxUser?.user?._id]);
 
   const ifUserNotOnBoard = async () => {
     if (["resign", "terminated"].includes(user?.activeStatus)) {
@@ -186,7 +211,8 @@ const Dashboard = () => {
   //
   useEffect(() => {
     // Connect to the socket
-    socket.connect();
+    // socket.connect();
+    if (!socket) return;
     let isGetData = async (data) => {
       let a = (await user?.role) === "sup_admin" || user?.role === "sub_admin";
       let b = (await data?.notifyUsers?.indexOf(user?._id ?? user?._id)) !== -1;
@@ -203,7 +229,7 @@ const Dashboard = () => {
       return isTrue;
     };
     /////lead/////////
-    socket.on("Add Lead", async (data) => {
+    socket?.on("Add Lead", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -218,7 +244,7 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Update Lead", async (data) => {
+    socket?.on("Update Lead", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -233,7 +259,7 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Assign Lead", async (data) => {
+    socket?.on("Assign Lead", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -247,14 +273,14 @@ const Dashboard = () => {
       // }
       return;
     });
-    socket.on("Delete Lead", async (data) => {
+    socket?.on("Delete Lead", async (data) => {
       if (data?.actionBy === user?._id) return;
       await dispatch(getAllLeadFunc());
       return;
     });
 
     /////Meeting/////////
-    socket.on("Add Meeting", async (data) => {
+    socket?.on("Add Meeting", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = isGetData(data);
       if (isGet) {
@@ -270,7 +296,7 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Update Meeting", async (data) => {
+    socket?.on("Update Meeting", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -286,14 +312,14 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Delete Meeting", async (data) => {
+    socket?.on("Delete Meeting", async (data) => {
       if (data?.actionBy === user?._id) return;
       await dispatch(getAllMeetingFunc());
       return;
     });
 
     ////Booking/////
-    socket.on("Add Booking", async (data) => {
+    socket?.on("Add Booking", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -309,7 +335,7 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Update Booking", async (data) => {
+    socket?.on("Update Booking", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -323,7 +349,7 @@ const Dashboard = () => {
       // }
       return;
     });
-    socket.on("Approve Booking", async (data) => {
+    socket?.on("Approve Booking", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -338,7 +364,7 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Reject Booking", async (data) => {
+    socket?.on("Reject Booking", async (data) => {
       if (data?.actionBy === user?._id) return;
       let isGet = await isGetData(data);
       if (isGet) {
@@ -354,15 +380,13 @@ const Dashboard = () => {
       return;
     });
 
-    socket.on("Delete Booking", async (data) => {
+    socket?.on("Delete Booking", async (data) => {
       if (data?.actionBy === user?._id) return;
       await dispatch(getAllBookingFunc());
       return;
     });
     ///////
-    return () => {
-      socket.disconnect();
-    };
+    return () => {};
   }, []);
 
   // const { user } = useSelector(selectUser);
