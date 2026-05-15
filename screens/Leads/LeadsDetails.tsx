@@ -541,9 +541,15 @@ const LeadsDetails = () => {
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
         });
+
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLead],
         });
+
+        queryClient.invalidateQueries({
+          queryKey: ["getLeadCallReports"],
+        });
+
         refetchLeadDetail();
       } else {
         toast.error(res?.message || "Failed to create call log");
@@ -975,8 +981,8 @@ const LeadsDetails = () => {
                   marginTop: 4,
                 }}
                 onPress={() => {
-                  setShowChangeStatusPopup(false);
-                  hitCreateCallLog();
+                  setShowNotiPopup(false);
+                  // hitCreateCallLog();
                 }}
               >
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />

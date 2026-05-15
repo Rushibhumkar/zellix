@@ -7,75 +7,109 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
-import { useNavigation } from "@react-navigation/native";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { Feather, AntDesign } from "@expo/vector-icons";
 import { iconWrapperStyle } from "../../const/globalStyle";
 import { color } from "../../const/color";
-import { myConsole } from "../../hooks/useConsole";
-import { reportDummyData } from "../../utils/data";
 import * as XLSX from "xlsx";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { Buffer } from "buffer";
+import { useGetLeadCallReports } from "../../services/rootApi/reportsApi";
+import { myConsole } from "../../hooks/useConsole";
+import CustomText from "../../myComponents/CustomText/CustomText";
+import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 global.Buffer = Buffer;
 
 const { width } = Dimensions.get("window");
 
 const ReportsListing = () => {
+  const navigation: any = useNavigation();
   const { navigate } = useNavigation();
+
+  const route: any = useRoute();
+
+  const filters = route?.params?.filters;
+
+  const selectedStartDate = filters?.startDate || null;
+
+  const selectedEndDate = filters?.endDate || null;
+
+  const selectedLeadType = filters?.leadType || "lead";
+
+  const {
+    data: leadCallReports,
+    isLoading,
+    isError,
+  } = useGetLeadCallReports({
+    startDate: selectedStartDate,
+    endDate: selectedEndDate,
+    // startDate: null,
+    // endDate: null,
+    leadType: selectedLeadType,
+  });
+  myConsole("leadCallReports", leadCallReports);
   const verticalScrollRef = React.useRef<any>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const columns = useMemo(
     () => [
-      "Lead ID",
-      "Client Name",
-      "Mobile",
-      "Project",
-      "Source",
-      "Assigned To",
-      "Team",
-      "Status",
-      "Follow Up",
-      "Budget",
-      "City",
-      "Meeting",
-      "Site Visit",
-      "Booking",
-      "Payment",
-      "Created At",
-      "Updated At",
+      "S.No",
+      "User Name",
+      "User Email",
+      "Total Calls",
+      "Connected",
+      "Not Connected",
+      "Positive",
+      "Negative",
+      "Inbound",
+      "Outbound",
+      "Connection %",
+      "Avg Duration",
+      "Total Duration",
     ],
     [],
   );
 
-  const dummyData = useMemo(() => reportDummyData || [], []);
+  const reportData = useMemo(
+    () => leadCallReports?.data || [],
+    [leadCallReports],
+  );
+
+  // const reportData = useMemo(() => {
+  //   const apiData = leadCallReports?.data || [];
+
+  //   return Array(29)
+  //     .fill(apiData[0])
+  //     .map((item, index) => ({
+  //       ...item,
+  //       userName: `${item?.userName} ${index + 1}`,
+  //     }));
+  // }, [leadCallReports]);
+
   // myConsole("reportDummyDataaa", reportDummyData);
   const tableData = useMemo(
     () =>
-      (dummyData || []).map((item) => [
-        item?.leadId,
-        item?.clientName,
-        item?.mobile,
-        item?.project,
-        item?.source,
-        item?.assignedTo,
-        item?.team,
-        item?.status,
-        item?.followUp,
-        item?.budget,
-        item?.city,
-        item?.meeting,
-        item?.siteVisit,
-        item?.booking,
-        item?.payment,
-        item?.createdAt,
-        item?.updatedAt,
+      (reportData || []).map((item: any, index: number) => [
+        index + 1,
+        item?.userName || "-",
+        item?.userEmail || "-",
+        item?.totalCalls || 0,
+        item?.connectedCalls || 0,
+        item?.notConnectedCalls || 0,
+        item?.positiveCalls || 0,
+        item?.negativeCalls || 0,
+        item?.inboundCalls || 0,
+        item?.outboundCalls || 0,
+        item?.connectionRate || 0,
+        item?.avgDuration || 0,
+        item?.totalDuration || 0,
       ]),
-    [dummyData],
+    [reportData],
   );
   const increaseZoom = () => {
     if (zoomLevel < 1.5) {
@@ -91,25 +125,20 @@ const ReportsListing = () => {
 
   const handleExportReport = async (type: "xlsx" | "csv") => {
     try {
-      const formattedData = dummyData.map((item, index) => ({
+      const formattedData = reportData.map((item: any, index: number) => ({
         "S.No": index + 1,
-        "Lead ID": item?.leadId || "",
-        "Client Name": item?.clientName || "",
-        Mobile: item?.mobile || "",
-        Project: item?.project || "",
-        Source: item?.source || "",
-        "Assigned To": item?.assignedTo || "",
-        Team: item?.team || "",
-        Status: item?.status || "",
-        "Follow Up": item?.followUp || "",
-        Budget: item?.budget || "",
-        City: item?.city || "",
-        Meeting: item?.meeting || "",
-        "Site Visit": item?.siteVisit || "",
-        Booking: item?.booking || "",
-        Payment: item?.payment || "",
-        "Created At": item?.createdAt || "",
-        "Updated At": item?.updatedAt || "",
+        "User Name": item?.userName || "",
+        "User Email": item?.userEmail || "",
+        "Total Calls": item?.totalCalls || 0,
+        Connected: item?.connectedCalls || 0,
+        "Not Connected": item?.notConnectedCalls || 0,
+        Positive: item?.positiveCalls || 0,
+        Negative: item?.negativeCalls || 0,
+        Inbound: item?.inboundCalls || 0,
+        Outbound: item?.outboundCalls || 0,
+        "Connection %": item?.connectionRate || 0,
+        "Avg Duration": item?.avgDuration || 0,
+        "Total Duration": item?.totalDuration || 0,
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(formattedData);
@@ -152,6 +181,22 @@ const ReportsListing = () => {
     }
   };
 
+  const columnWidths: any = {
+    0: 40, // S.No
+    1: 140, // User Name
+    2: 200, // Email
+    3: 80, // Total Calls
+    4: 80, // Connected
+    5: 100, // Not Connected
+    6: 80, // Positive
+    7: 80, // Negative
+    8: 80, // InBound
+    9: 80, // OutBound
+    10: 98, // Connection%
+    11: 96, // Avg Duration
+    12: 100, // Total Duration
+  };
+
   return (
     <Container
       style={{
@@ -162,12 +207,11 @@ const ReportsListing = () => {
       <Header
         title={"Reports"}
         showBackIcon={false}
-        totalCount={dummyData?.length}
+        totalCount={reportData?.length || 0}
         isWithAnimation
         showActions={true}
         moduleName={"report"}
         showSearch={false}
-        onPressFilter={() => navigate("ReportsFilter")}
         rightSide={
           <View style={styles.headerRightContainer}>
             {/* <TouchableOpacity
@@ -175,21 +219,78 @@ const ReportsListing = () => {
               onPress={decreaseZoom}
             >
               <MaterialIcons name="zoom-out" size={18} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{ ...iconWrapperStyle }}
-              onPress={increaseZoom}
-            >
-              <MaterialIcons name="zoom-in" size={18} color="#fff" />
             </TouchableOpacity> */}
 
-            <TouchableOpacity
-              style={{ ...iconWrapperStyle }}
-              onPress={() => handleExportReport("xlsx")}
-            >
-              <Feather name="download" size={18} color={"#fff"} />
-            </TouchableOpacity>
+            <View>
+              {(selectedStartDate ||
+                selectedEndDate ||
+                selectedLeadType !== "lead") && (
+                <TouchableOpacity
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    borderRadius: 50,
+                    backgroundColor: "#ffffff",
+                    zIndex: 12,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: "#d8d8d8",
+                  }}
+                  onPress={() => {
+                    navigate("ReportsListing", {
+                      filters: {
+                        startDate: null,
+                        endDate: null,
+                        leadType: "lead",
+                      },
+                    });
+                  }}
+                >
+                  <AntDesign
+                    name="close"
+                    size={10}
+                    color={color.mainTxtColor}
+                    style={{ padding: 2 }}
+                  />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={{ ...iconWrapperStyle }}
+                onPress={() =>
+                  navigate("ReportsFilter", {
+                    filters: {
+                      startDate: selectedStartDate,
+                      endDate: selectedEndDate,
+                      leadType: selectedLeadType,
+                    },
+                  })
+                }
+              >
+                <Feather
+                  name="filter"
+                  size={18}
+                  color={
+                    selectedStartDate ||
+                    selectedEndDate ||
+                    selectedLeadType !== "lead"
+                      ? color.mainTxtColor
+                      : "#fff"
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+
+            {!isLoading && !isError && !!reportData?.length && (
+              <TouchableOpacity
+                style={{ ...iconWrapperStyle }}
+                onPress={() => handleExportReport("xlsx")}
+              >
+                <Feather name="download" size={18} color={"#fff"} />
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -200,117 +301,181 @@ const ReportsListing = () => {
         </Text>
       </View> */}
 
-      <View
-        style={{
-          flexDirection: "row",
-          paddingBottom: 260,
-        }}
-      >
-        {/* FIXED LEFT COLUMN */}
-        <View>
-          {/* Fixed Header */}
-          <View
-            style={[
-              styles.fixedHeaderCell,
-              {
-                height: 40,
-              },
-            ]}
-          >
-            <Text style={styles.headerText}>{columns[0]}</Text>
-          </View>
-
-          {/* Fixed Body */}
-          <FlatList
-            ref={verticalScrollRef}
-            data={tableData}
-            keyExtractor={(_, index) => `left-${index}`}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-            scrollEnabled={false}
-            contentContainerStyle={{
-              paddingTop: 0,
-            }}
-            renderItem={({ item: row, index: rowIndex }) => (
-              <View
-                style={[
-                  styles.fixedLeftCell,
-                  {
-                    backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
-                  },
-                ]}
-              >
-                <Text style={styles.bodyText}>{row[0]}</Text>
-              </View>
-            )}
-          />
-        </View>
-
-        {/* HORIZONTAL SCROLLABLE TABLE */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          bounces={false}
+      {isLoading ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <View
-            style={{
-              transform: [{ scale: zoomLevel }],
-              transformOrigin: "top left",
-            }}
-          >
-            {/* Header */}
-            <View style={styles.headerRow}>
-              {columns.slice(1).map((column, index) => (
-                <View key={index} style={styles.headerCell}>
-                  <Text style={styles.headerText}>{column}</Text>
-                </View>
-              ))}
+          <ActivityIndicator
+            size={"small"}
+            color={color.mainTxtColor}
+            style={{ marginBottom: 4 }}
+          />
+          <CustomText style={{ color: color.mainTxtColor }}>
+            Loading reports...
+          </CustomText>
+        </View>
+      ) : isError ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CustomText style={{ color: color.mainTxtColor }}>
+            Failed to load reports
+          </CustomText>
+        </View>
+      ) : !reportData?.length ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <NoDataFound
+            width={180}
+            height={180}
+            style={{ marginBottom: 16, marginTop: -24 }}
+          />
+          <CustomText style={{ color: color.mainTxtColor }}>
+            No reports found
+          </CustomText>
+        </View>
+      ) : (
+        <View
+          style={{
+            flexDirection: "row",
+            paddingBottom: 260,
+          }}
+        >
+          {/* FIXED LEFT COLUMN */}
+          <View>
+            {/* Fixed Header */}
+            <View
+              style={[
+                styles.fixedHeaderCell,
+                {
+                  height: 40,
+                },
+              ]}
+            >
+              <Text style={styles.headerText}>{columns[0]}</Text>
             </View>
 
-            {/* Body */}
+            {/* Fixed Body */}
             <FlatList
+              ref={verticalScrollRef}
               data={tableData}
-              keyExtractor={(_, index) => `row-${index}`}
+              keyExtractor={(_, index) => `left-${index}`}
               showsVerticalScrollIndicator={false}
               bounces={false}
-              onScroll={(event) => {
-                const offsetY = event.nativeEvent.contentOffset.y;
-
-                verticalScrollRef.current?.scrollToOffset({
-                  offset: offsetY,
-                  animated: false,
-                });
+              scrollEnabled={false}
+              contentContainerStyle={{
+                paddingTop: 0,
               }}
-              scrollEventThrottle={16}
               renderItem={({ item: row, index: rowIndex }) => (
                 <View
                   style={[
-                    styles.bodyRow,
+                    styles.fixedLeftCell,
                     {
                       backgroundColor: rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
-                      borderTopWidth: rowIndex === 0 ? 0 : 1,
+                      height: tableData?.length - 1 === rowIndex ? 39 : 40,
                     },
                   ]}
                 >
-                  {row.slice(1).map((cell, cellIndex) => (
-                    <View
-                      key={cellIndex}
-                      style={[
-                        styles.bodyCell,
-                        rowIndex === 0 && {
-                          borderTopWidth: 0,
-                        },
-                      ]}
-                    >
-                      <Text style={styles.bodyText}>{cell}</Text>
-                    </View>
-                  ))}
+                  <Text style={styles.bodyText}>{row[0]}</Text>
                 </View>
               )}
             />
           </View>
-        </ScrollView>
-      </View>
+
+          {/* HORIZONTAL SCROLLABLE TABLE */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+          >
+            <View
+              style={{
+                transform: [{ scale: zoomLevel }],
+                transformOrigin: "top left",
+              }}
+            >
+              {/* Header */}
+              <View style={styles.headerRow}>
+                {columns.slice(1).map((column, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.headerCell,
+                      {
+                        width: columnWidths[index + 1] || 120,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.headerText}>{column}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Body */}
+              <FlatList
+                data={tableData}
+                keyExtractor={(_, index) => `row-${index}`}
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                onScroll={(event) => {
+                  const offsetY = event.nativeEvent.contentOffset.y;
+
+                  verticalScrollRef.current?.scrollToOffset({
+                    offset: offsetY,
+                    animated: false,
+                  });
+                }}
+                scrollEventThrottle={16}
+                renderItem={({ item: row, index: rowIndex }) => (
+                  <View
+                    style={[
+                      styles.bodyRow,
+                      {
+                        backgroundColor:
+                          rowIndex % 2 === 0 ? "#fff" : "#f8fafc",
+                        borderTopWidth: rowIndex === 0 ? 0 : 1,
+                      },
+                    ]}
+                  >
+                    {row.slice(1).map((cell: any, cellIndex: number) => (
+                      <View
+                        key={cellIndex}
+                        style={[
+                          styles.bodyCell,
+                          {
+                            width: columnWidths[cellIndex + 1] || 120,
+                          },
+                          rowIndex === 0 && {
+                            borderTopWidth: 0,
+                          },
+                          rowIndex === tableData?.length - 1 && {
+                            borderBottomWidth: 1,
+                          },
+                        ]}
+                      >
+                        <Text style={styles.bodyText}>{cell}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      )}
     </Container>
   );
 };
@@ -325,7 +490,7 @@ const styles = StyleSheet.create({
   },
 
   fixedHeaderCell: {
-    width: 120,
+    width: 70,
     backgroundColor: color.primaryColor,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -334,7 +499,7 @@ const styles = StyleSheet.create({
   },
 
   fixedLeftCell: {
-    width: 120,
+    width: 70,
     height: 40,
     maxHeight: 40,
     paddingHorizontal: 10,
@@ -387,7 +552,7 @@ const styles = StyleSheet.create({
   headerCell: {
     width: 120,
     // minWidth: 100,
-    maxWidth: 160,
+    // maxWidth: 160,
     paddingVertical: 12,
     paddingHorizontal: 10,
     borderRightWidth: 1,
@@ -412,7 +577,7 @@ const styles = StyleSheet.create({
     // minWidth: 100,
     height: 39,
     maxHeight: 40,
-    maxWidth: 160,
+    // maxWidth: 160,
     paddingVertical: 12,
     paddingHorizontal: 10,
     borderRightWidth: 1,

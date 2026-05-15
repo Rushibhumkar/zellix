@@ -74,17 +74,19 @@ export default function App() {
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification CLICK RESPONSE:", response);
+        myConsole("Notification CLICK RESPONSE:", response);
 
         const notData = response?.notification?.request?.content?.data;
 
-        console.log("📦 CLICK DATA:", notData);
+        myConsole("📦 CLICK DATA:", notData);
 
         if (notData?.module === "leads" && notData?.id) {
           navigate("allLead2", {
             screen: "LeadsDetails",
             params: {
-              item: { _id: notData.id },
+              item: {
+                _id: notData?.id?._id || notData?.id,
+              },
             },
           });
         }
@@ -104,7 +106,9 @@ export default function App() {
             navigate("allLead2", {
               screen: "LeadsDetails",
               params: {
-                item: { _id: notData.id },
+                item: {
+                  _id: notData?.id?._id || notData?.id,
+                },
               },
             });
           }, 500); // important delay
@@ -142,7 +146,7 @@ export default function App() {
         console.log("🟢 OTA runtime:", Updates.runtimeVersion);
         console.log("🟢 OTA check result:", update);
       } catch (e) {
-        // console.log("🔴 OTA check error:", e);
+        console.log("🔴 OTA check error:", e);
       }
     };
 

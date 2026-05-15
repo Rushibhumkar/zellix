@@ -44,8 +44,10 @@ const LoginScreen = () => {
     // password: "12345678",
     // email: "test@test.com",
     // password: "123456789",
-    // email: "dev20@swavishtek.com",a
+    // email: "dev20@swavishtek.com",
     // password: "123456789",
+    // email: "marketing@skgestates.com",
+    // password: "1234567890",
     // email: "tech@skgestates.com",
     // password: "1234567890",
     // email: "",

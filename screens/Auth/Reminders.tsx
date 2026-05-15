@@ -14,7 +14,6 @@ import moment from "moment";
 import { Feather } from "@expo/vector-icons";
 import {
   deleteReminder,
-  markReminderAsCompleted,
   useGetAllReminders,
 } from "../../services/rootApi/remaindersApi";
 import { myConsole } from "../../hooks/useConsole";
@@ -116,17 +115,17 @@ const Remainders = () => {
   };
 
   const renderRightActions = (id: string) => {
-    if (activeTab === "Upcoming") return null;
-    return (
-      <View style={styles.deleteContainer}>
-        <TouchableOpacity
-          style={styles.deleteBtn}
-          onPress={() => handleDelete(id)}
-        >
-          <Feather name="trash-2" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    );
+    // if (activeTab === "Upcoming") return null;
+    // return (
+    //   <View style={styles.deleteContainer}>
+    //     <TouchableOpacity
+    //       style={styles.deleteBtn}
+    //       onPress={() => handleDelete(id)}
+    //     >
+    //       <Feather name="trash-2" size={20} color="#fff" />
+    //     </TouchableOpacity>
+    //   </View>
+    // );
   };
 
   return (
@@ -278,9 +277,12 @@ const Remainders = () => {
                       >
                         <Feather name="tag" size={12} color="#7a9a8c" />
                         <CustomText style={styles.pillText}>
-                          {statusObj[item?.leadId?.status] ||
-                            item?.leadId?.status ||
-                            "-"}
+                          {truncateText(
+                            statusObj[item?.leadId?.status] ||
+                              item?.leadId?.status ||
+                              "-",
+                            14,
+                          )}
                         </CustomText>
                       </View>
                     )}
@@ -359,9 +361,12 @@ const Remainders = () => {
                     <View style={[styles.pill, { backgroundColor: "#c8e9c7" }]}>
                       <Feather name="tag" size={12} color="#7A869A" />
                       <CustomText style={styles.pillText}>
-                        {statusObj[item?.leadId?.status] ||
-                          item?.leadId?.status ||
-                          "-"}
+                        {truncateText(
+                          statusObj[item?.leadId?.status] ||
+                            item?.leadId?.status ||
+                            "-",
+                          14,
+                        )}
                       </CustomText>
                     </View>
                   )}

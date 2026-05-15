@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useFormik } from "formik";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
@@ -16,28 +16,40 @@ import { color } from "../../const/color";
 const ReportsFilter = () => {
   const navigation = useNavigation();
 
+  const route: any = useRoute();
+
+  const filters = route?.params?.filters;
+
   const { values, handleChange, setFieldValue, resetForm, handleSubmit } =
     useFormik({
       initialValues: {
-        reportType: "",
-        status: [],
-        assignedTo: "",
-        startDate: "",
-        endDate: "",
-        keyword: "",
-        sortBy: "",
+        leadType: filters?.leadType || "lead",
+        startDate: filters?.startDate || "",
+        endDate: filters?.endDate || "",
       },
 
       onSubmit: (formValues) => {
-        console.log("FILTER VALUES => ", formValues);
+        const payload = {
+          startDate: formValues?.startDate || null,
+          endDate: formValues?.endDate || null,
+          leadType: formValues?.leadType || "lead",
+        };
+
+        console.log("FILTER VALUES => ", payload);
 
         navigation.goBack();
+
+        setTimeout(() => {
+          navigation.navigate("ReportsListing", {
+            filters: payload,
+          });
+        }, 100);
       },
     });
 
   return (
     <Container>
-      <Header title={"Advance Search"} />
+      <Header title={"Reports Filter"} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -45,45 +57,14 @@ const ReportsFilter = () => {
       >
         {/* Report Type */}
         <DropdownRNE
-          label="Report Type"
+          label="Lead Type"
           arrOfObj={[
-            { name: "Lead Report", _id: "lead_report" },
-            { name: "Booking Report", _id: "booking_report" },
-            { name: "Meeting Report", _id: "meeting_report" },
-            { name: "Revenue Report", _id: "revenue_report" },
+            { name: "Lead", _id: "lead" },
+            { name: "Calling Data", _id: "calling_data" },
           ]}
           containerStyle={styles.fieldContainer}
-          initialValue={values?.reportType}
-          onChange={(v) => setFieldValue("reportType", v)}
-        />
-
-        {/* Status */}
-        <DropdownRNE
-          label="Status"
-          arrOfObj={[
-            { name: "Hot", _id: "hot" },
-            { name: "Warm", _id: "warm" },
-            { name: "Cold", _id: "cold" },
-            { name: "Closed", _id: "closed" },
-          ]}
-          containerStyle={styles.fieldContainer}
-          isMultiSelect
-          initialValue={values?.status}
-          onChange={(v) => setFieldValue("status", v)}
-        />
-
-        {/* Assigned To */}
-        <DropdownRNE
-          label="Assigned To"
-          arrOfObj={[
-            { name: "Amit", _id: "amit" },
-            { name: "Rohit", _id: "rohit" },
-            { name: "Sneha", _id: "sneha" },
-            { name: "Priya", _id: "priya" },
-          ]}
-          containerStyle={styles.fieldContainer}
-          initialValue={values?.assignedTo}
-          onChange={(v) => setFieldValue("assignedTo", v)}
+          initialValue={values?.leadType}
+          onChange={(v) => setFieldValue("leadType", v)}
         />
 
         {/* Start Date */}
@@ -91,7 +72,12 @@ const ReportsFilter = () => {
           title="Start Date"
           boxContainerStyle={styles.fieldContainer}
           initialValue={values?.startDate}
-          onSelect={(v) => setFieldValue("startDate", v)}
+          onSelect={(v) =>
+            setFieldValue(
+              "startDate",
+              v ? new Date(v).toISOString().split("T")[0] : "",
+            )
+          }
         />
 
         {/* End Date */}
@@ -99,30 +85,12 @@ const ReportsFilter = () => {
           title="End Date"
           boxContainerStyle={styles.fieldContainer}
           initialValue={values?.endDate}
-          onSelect={(v) => setFieldValue("endDate", v)}
-        />
-
-        {/* Keyword */}
-        <CustomInput
-          label="Search Keyword"
-          placeholder="Search by client, project, source..."
-          containerStyle={styles.fieldContainer}
-          value={values?.keyword}
-          onChangeText={handleChange("keyword")}
-        />
-
-        {/* Sort By */}
-        <DropdownRNE
-          label="Sort By"
-          arrOfObj={[
-            { name: "Newest First", _id: "newest" },
-            { name: "Oldest First", _id: "oldest" },
-            { name: "Budget High to Low", _id: "high_to_low" },
-            { name: "Budget Low to High", _id: "low_to_high" },
-          ]}
-          containerStyle={styles.fieldContainer}
-          initialValue={values?.sortBy}
-          onChange={(v) => setFieldValue("sortBy", v)}
+          onSelect={(v) =>
+            setFieldValue(
+              "endDate",
+              v ? new Date(v).toISOString().split("T")[0] : "",
+            )
+          }
         />
 
         <View style={{ height: 20 }} />
@@ -139,7 +107,7 @@ const ReportsFilter = () => {
           </TouchableOpacity>
 
           <CustomBtn
-            title="Submit"
+            title="Apply"
             onPress={handleSubmit}
             containerStyle={styles.submitBtn}
           />
