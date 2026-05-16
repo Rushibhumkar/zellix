@@ -8,7 +8,7 @@ interface GetLeadCallReportsParams {
   leadType?: string;
   pnls?: string[];
   teams?: string[];
-  users?: string[];
+  agents?: string[];
 }
 
 export const getLeadCallReports = async ({
@@ -17,7 +17,7 @@ export const getLeadCallReports = async ({
   leadType = "lead",
   pnls = [],
   teams = [],
-  users = [],
+  agents = [],
 }: GetLeadCallReportsParams) => {
   const res = await axiosInstance.get("/api/lead/reports/call-logs", {
     params: {
@@ -26,7 +26,7 @@ export const getLeadCallReports = async ({
       leadType,
       pnls,
       teams,
-      users,
+      agents,
     },
   });
   // myConsole("API RESPONSE =>", res?.data);
@@ -39,7 +39,7 @@ export const useGetLeadCallReports = ({
   leadType = "lead",
   pnls = [],
   teams = [],
-  users = [],
+  agents = [],
 }: GetLeadCallReportsParams) => {
   return useQuery({
     queryKey: [
@@ -49,7 +49,7 @@ export const useGetLeadCallReports = ({
       leadType,
       pnls,
       teams,
-      users,
+      agents,
     ],
     queryFn: () =>
       getLeadCallReports({
@@ -58,7 +58,7 @@ export const useGetLeadCallReports = ({
         leadType,
         pnls,
         teams,
-        users,
+        agents,
       }),
 
     staleTime: 1000 * 60 * 5,

@@ -17,11 +17,17 @@ import { selectUser } from "../../redux/userSlice";
 import { myConsole } from "../../hooks/useConsole";
 import { roleEnum } from "../../utils/data";
 import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
+import { useGetMyAllTeamMembers } from "../../services/rootApi/api";
 
 const ReportsFilter = () => {
   const navigation = useNavigation();
 
   const { user: reduxUser, team } = useSelector(selectUser);
+
+  const { data: users, isLoading, isError } = useGetMyAllTeamMembers();
+
+  // myConsole("userssssdataas", users);
+  // myConsole("userssdatalength", users?.data?.length);
 
   // myConsole("reduxUserrrr", reduxUser);
   // myConsole("allUserssss", allUsers);
@@ -39,7 +45,7 @@ const ReportsFilter = () => {
         endDate: filters?.endDate || "",
         pnls: filters?.pnls || [],
         teams: filters?.teams || [],
-        users: filters?.users || [],
+        agents: filters?.agents || [],
       },
 
       onSubmit: (formValues) => {
@@ -50,7 +56,7 @@ const ReportsFilter = () => {
 
           pnls: formValues?.pnls?.length > 0 ? formValues?.pnls : [],
           teams: formValues?.teams?.length > 0 ? formValues?.teams : [],
-          users: formValues?.users?.length > 0 ? formValues?.users : [],
+          agents: formValues?.agents?.length > 0 ? formValues?.agents : [],
         };
 
         myConsole("FILTER VALUES => ", payload);
@@ -86,62 +92,17 @@ const ReportsFilter = () => {
         ? (team || [])?.filter((el: any) =>
             values?.pnls?.includes(el?.srManager?._id),
           )
-        : (team || [])?.filter((el: any) => el?.srManager?._id);
+        : team || [];
 
   const teamOptions = filteredTeams?.map((el: any) => ({
     name: el?.name,
     _id: el?._id,
   }));
 
-  const usersOptions =
-    values?.teams?.length > 0
-      ? (team || [])
-          ?.filter((el: any) => values?.teams?.includes(el?._id))
-          ?.flatMap((el: any) => [
-            ...(el?.agents || []),
-            ...(el?.teamLead ? [el?.teamLead] : []),
-            ...(el?.srManager ? [el?.srManager] : []),
-          ])
-          ?.filter(
-            (value: any, index: number, self: any[]) =>
-              index === self.findIndex((t: any) => t?._id === value?._id),
-          )
-          ?.map((el: any) => ({
-            name: el?.name,
-            _id: el?._id,
-          }))
-      : values?.pnls?.length > 0
-        ? (team || [])
-            ?.filter((el: any) => values?.pnls?.includes(el?.srManager?._id))
-            ?.flatMap((el: any) => [
-              ...(el?.agents || []),
-              ...(el?.teamLead ? [el?.teamLead] : []),
-              ...(el?.srManager ? [el?.srManager] : []),
-            ])
-            ?.filter(
-              (value: any, index: number, self: any[]) =>
-                index === self.findIndex((t: any) => t?._id === value?._id),
-            )
-            ?.map((el: any) => ({
-              name: el?.name,
-              _id: el?._id,
-            }))
-        : (team || [])
-            ?.flatMap((el: any) => [
-              ...(el?.agents || []),
-              ...(el?.teamLead ? [el?.teamLead] : []),
-              ...(el?.srManager ? [el?.srManager] : []),
-            ])
-            ?.filter(
-              (value: any, index: number, self: any[]) =>
-                value?._id &&
-                index === self.findIndex((t: any) => t?._id === value?._id),
-            )
-            ?.map((el: any) => ({
-              name: el?.name,
-              _id: el?._id,
-            }));
+  // myConsole("teammmmm", team);
+  const usersOptions = users?.agent || [];
 
+  myConsole("usersOptions", usersOptions?.length);
   // myConsole("userRolerrr", reduxUser);
 
   return (
@@ -173,7 +134,7 @@ const ReportsFilter = () => {
             onChange={(v) => {
               setFieldValue("pnls", v);
               setFieldValue("teams", []);
-              setFieldValue("users", []);
+              setFieldValue("agents", []);
             }}
             isMultiSelect
             isSearch
@@ -193,7 +154,7 @@ const ReportsFilter = () => {
             initialValue={values?.teams}
             onChange={(v) => {
               setFieldValue("teams", v);
-              setFieldValue("users", []);
+              setFieldValue("agents", []);
             }}
             isMultiSelect
             isSearch
@@ -207,11 +168,14 @@ const ReportsFilter = () => {
           roleEnum.sr_manager,
         ].includes(userRole) && (
           <DropdownRNE
-            label="Users"
-            arrOfObj={usersOptions}
+            label="Agents"
+            arrOfObj={(usersOptions || [])?.map((el: any) => ({
+              name: el?.label,
+              _id: el?.value,
+            }))}
             containerStyle={styles.fieldContainer}
-            initialValue={values?.users}
-            onChange={(v) => setFieldValue("users", v)}
+            initialValue={values?.agents}
+            onChange={(v) => setFieldValue("agents", v)}
             isMultiSelect
             isSearch
           />

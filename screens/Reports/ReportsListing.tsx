@@ -45,7 +45,7 @@ const ReportsListing = () => {
 
   const selectedTeams = filters?.teams || [];
 
-  const selectedUsers = filters?.users || [];
+  const selectedAgents = filters?.agents || [];
 
   const {
     data: leadCallReports,
@@ -59,7 +59,7 @@ const ReportsListing = () => {
     leadType: selectedLeadType,
     pnls: selectedPnls,
     teams: selectedTeams,
-    users: selectedUsers,
+    agents: selectedAgents,
   });
   // myConsole("leadCallReports", leadCallReports);
   const verticalScrollRef = React.useRef<any>(null);
@@ -236,7 +236,7 @@ const ReportsListing = () => {
                 selectedLeadType !== "lead" ||
                 selectedPnls?.length > 0 ||
                 selectedTeams?.length > 0 ||
-                selectedUsers?.length > 0) && (
+                selectedAgents?.length > 0) && (
                 <TouchableOpacity
                   style={{
                     position: "absolute",
@@ -258,7 +258,7 @@ const ReportsListing = () => {
                         leadType: "lead",
                         pnls: [],
                         teams: [],
-                        users: [],
+                        agents: [],
                       },
                     });
                   }}
@@ -282,7 +282,7 @@ const ReportsListing = () => {
                       leadType: selectedLeadType,
                       pnls: selectedPnls,
                       teams: selectedTeams,
-                      users: selectedUsers,
+                      agents: selectedAgents,
                     },
                   })
                 }
@@ -296,7 +296,7 @@ const ReportsListing = () => {
                     selectedLeadType !== "lead" ||
                     selectedPnls?.length > 0 ||
                     selectedTeams?.length > 0 ||
-                    selectedUsers?.length > 0
+                    selectedAgents?.length > 0
                       ? color.mainTxtColor
                       : "#fff"
                   }

@@ -41,6 +41,7 @@ export const userTypes = {
 
 export const roleEnum = {
   sr_manager: "sr_manager",
+  pnl: "pnl",
   manager: "manager",
   team_lead: "team_lead",
   agent: "agent",

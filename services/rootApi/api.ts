@@ -1,10 +1,30 @@
+import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../authApi/axiosInstance";
 
 export const getAllUser = () =>
   axiosInstance.get("/api/user").then((res) => res?.data);
 
+export const getMyAllTeamMembers = () =>
+  axiosInstance.get("/api/team/getMyAllTeamMembers").then((res) => res?.data);
+
 export const getAllMeeting = () => {
   return axiosInstance.get("/api/meeting").then((res) => res?.data);
+};
+
+export const useGetMyAllTeamMembers = () => {
+  return useQuery({
+    queryKey: ["getMyAllTeamMembers"],
+
+    queryFn: () => getMyAllTeamMembers(),
+
+    staleTime: Infinity,
+
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+
+    retry: 1,
+  });
 };
 
 export const getAllLead = ({ type = null }) => {

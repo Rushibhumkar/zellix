@@ -3,7 +3,7 @@
     "name": "zellix",
     "scheme": "zellix",
     "slug": "zellix",
-    "version": "1.9.2",
+    "version": "1.9.3",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
-      "bundleNumber": "1.9.2",
+      "bundleNumber": "1.9.3",
       "supportsTablet": true,
       "buildNumber": "145",
       "infoPlist": {
@@ -82,7 +82,7 @@
       "expo-font"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "1.9.2",
+    "runtimeVersion": "1.9.3",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
@@ -93,7 +93,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "1.9.2"
+      "appVersion": "1.9.3"
     },
     "android.buildType": "app-bundle"
   }
