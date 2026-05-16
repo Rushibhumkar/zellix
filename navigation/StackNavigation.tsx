@@ -99,6 +99,7 @@ import ReportsFilter from "../screens/Reports/ReportsFilter";
 import { Feather } from "@expo/vector-icons";
 import ReportFocus from "../assets/svg/ReportFocus";
 import ReportInfocus from "../assets/svg/ReportInfocus";
+import { myConsole } from "../hooks/useConsole";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -224,22 +225,24 @@ const BottomTabs = () => {
             ),
         }}
       />
-      <Tab.Screen
-        name="ReportsNavigator"
-        component={ReportsNavigator}
-        options={{
-          tabBarLabel: "",
-          tableBarShowLable: false,
-          tabBarLabelStyle: false,
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <ReportFocus style={styles.iconPosition} />
-            ) : (
-              <ReportInfocus style={styles.iconPosition} />
-            ),
-        }}
-      />
+      {!isAgent && (
+        <Tab.Screen
+          name="ReportsNavigator"
+          component={ReportsNavigator}
+          options={{
+            tabBarLabel: "",
+            tableBarShowLable: false,
+            tabBarLabelStyle: false,
+            headerShown: false,
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <ReportFocus style={styles.iconPosition} />
+              ) : (
+                <ReportInfocus style={styles.iconPosition} />
+              ),
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 };

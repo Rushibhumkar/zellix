@@ -37,21 +37,44 @@ const LoginScreen = () => {
     // password: "Application@2025*!",
     // email: "suurajkummargupta@gmail.com",
     // password: "123456789",
+
     // email: "kashif22@mailinator.com",
     // password: "123456789",
-    email: "mohdkashif1008@gmail.com",
-    password: "123456789",
-    // password: "12345678",
+
+    // dev : agent
+    // email: "dev1@swavishtek.com",
+    // password: "123456789",
+
+    // call karna hai iss wale se
+    // email: "test1@swavishtek.com",
+    // password: "123456789",
+
+    // dev : super admin
     // email: "test@test.com",
     // password: "123456789",
+
+    // dev : super admin
+    // email: "mohdkashif1008@gmail.com",
+    // password: "123456789",
+
+    // dev  : sr manager ( Rohit Barate )
     // email: "dev20@swavishtek.com",
     // password: "123456789",
+
+    // dev  : team lead( pradeep shukla )
+    // email: "pradeep@swavishsoftware.com",
+    // password: "123456789",
+
+    // live : seo
     // email: "marketing@skgestates.com",
     // password: "1234567890",
+
+    // live : super admin
     // email: "tech@skgestates.com",
     // password: "1234567890",
-    // email: "",
-    // password: "",
+
+    email: "",
+    password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

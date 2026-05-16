@@ -25,33 +25,23 @@ import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import {
   selectUser,
-  setAdvanceBooking,
-  setAdvanceLead,
-  setAdvanceMeeting,
   setBookingQueryKey,
   setLeadQueryKey,
   setMeetingQueryKey,
 } from "../../redux/userSlice";
-import {
-  getASBooking,
-  getASLead,
-  getASMeeting,
-} from "../../services/rootApi/advanceSearch";
+
 import {
   ModeOfPayment,
   PaymentStatus,
-  developerOptions,
   inBookingStatus,
   inLeadStatus,
   inMeetingStatus,
   inputStatusOptions,
   leadTypeInAS,
-  mobileCode,
   mobileCodeWithIdKey,
   roleEnum,
   tokenInBooking,
 } from "../../utils/data";
-import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
 import { color } from "../../const/color";
 
 //

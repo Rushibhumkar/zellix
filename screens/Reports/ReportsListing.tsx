@@ -41,6 +41,12 @@ const ReportsListing = () => {
 
   const selectedLeadType = filters?.leadType || "lead";
 
+  const selectedPnls = filters?.pnls || [];
+
+  const selectedTeams = filters?.teams || [];
+
+  const selectedUsers = filters?.users || [];
+
   const {
     data: leadCallReports,
     isLoading,
@@ -51,8 +57,11 @@ const ReportsListing = () => {
     // startDate: null,
     // endDate: null,
     leadType: selectedLeadType,
+    pnls: selectedPnls,
+    teams: selectedTeams,
+    users: selectedUsers,
   });
-  myConsole("leadCallReports", leadCallReports);
+  // myConsole("leadCallReports", leadCallReports);
   const verticalScrollRef = React.useRef<any>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
@@ -224,7 +233,10 @@ const ReportsListing = () => {
             <View>
               {(selectedStartDate ||
                 selectedEndDate ||
-                selectedLeadType !== "lead") && (
+                selectedLeadType !== "lead" ||
+                selectedPnls?.length > 0 ||
+                selectedTeams?.length > 0 ||
+                selectedUsers?.length > 0) && (
                 <TouchableOpacity
                   style={{
                     position: "absolute",
@@ -244,6 +256,9 @@ const ReportsListing = () => {
                         startDate: null,
                         endDate: null,
                         leadType: "lead",
+                        pnls: [],
+                        teams: [],
+                        users: [],
                       },
                     });
                   }}
@@ -265,6 +280,9 @@ const ReportsListing = () => {
                       startDate: selectedStartDate,
                       endDate: selectedEndDate,
                       leadType: selectedLeadType,
+                      pnls: selectedPnls,
+                      teams: selectedTeams,
+                      users: selectedUsers,
                     },
                   })
                 }
@@ -275,7 +293,10 @@ const ReportsListing = () => {
                   color={
                     selectedStartDate ||
                     selectedEndDate ||
-                    selectedLeadType !== "lead"
+                    selectedLeadType !== "lead" ||
+                    selectedPnls?.length > 0 ||
+                    selectedTeams?.length > 0 ||
+                    selectedUsers?.length > 0
                       ? color.mainTxtColor
                       : "#fff"
                   }

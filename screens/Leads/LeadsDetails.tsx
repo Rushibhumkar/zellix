@@ -533,7 +533,7 @@ const LeadsDetails = () => {
         ...(statusAfterCall && { leadStatusAfterCall: statusAfterCall }),
       });
 
-      myConsole("ressssssss", res);
+      // myConsole("ressssssss", res);
 
       if (res?.success) {
         toast.success(res?.message || "Call log created successfully");

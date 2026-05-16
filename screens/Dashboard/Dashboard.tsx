@@ -20,28 +20,15 @@ import {
   getUserFunc,
   onLogOutEmpty,
 } from "../../redux/action";
-import {
-  selectUser,
-  setIsCalling,
-  setUserInfo,
-  setCallDetect,
-} from "../../redux/userSlice";
+import { selectUser, setUserInfo } from "../../redux/userSlice";
 import BookingCard from "../../components/Dashboard/BookingCard";
 import MeetingCard from "../../components/Dashboard/MeetingCard";
-import { schedulePushNotification } from "../../App";
-//
 import io from "socket.io-client";
-import { myConsole } from "../../hooks/useConsole";
 import CommissionGraph from "../../components/Dashboard/CommissionGraph";
-import SkeletonLoadingDashboard from "../../components/Dashboard/SkeletonLoadingDashboard";
 import BookingMeetingLoader from "../../myComponents/Loader/BookingMeetingLoader";
-import useInternetConnectivity from "../../hooks/useInternetConnectivity";
 import { baseURL } from "../../services/authApi/axiosInstance";
 // import CallDetectorManager from "react-native-call-detection";
 import * as Device from "expo-device";
-import moment from "moment";
-import { leadCallTrack } from "../../services/rootApi/leadApi";
-import { routeLead } from "../../utils/routes";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { userDetailHRM } from "../../services/hrmApi/userHrmApi";
@@ -51,13 +38,9 @@ import {
   useGetCommissionCount,
   useGetDashboardCount,
   useGetMeetingCount,
-  useGetLeadQuality,
-  useGetClosingLeadProjectWise,
-  useGetLeadProjectWise,
 } from "../../hooks/useCRMgetQuerry";
 import GraphData from "../../components/Dashboard/GraphData/GraphData";
 import DashboardCard from "../../components/Dashboard/DashboardCard/DashboardCard";
-import CustomText from "../../myComponents/CustomText/CustomText";
 import LeadQualityCard from "../../components/Dashboard/LeadQualityCard";
 import LeadProjectCard from "../../components/Dashboard/LeadProjectCard";
 import ClosingLeadProjCard from "../../components/Dashboard/ClosingLeadProjCard";
