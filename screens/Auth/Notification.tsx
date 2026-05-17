@@ -1,5 +1,5 @@
 import moment from "moment";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -16,13 +16,10 @@ import Header from "../../components/Header";
 import { MaterialIcons } from "@expo/vector-icons";
 import { selectUser } from "../../redux/userSlice";
 import { getNotificationSeenById } from "../../services/rootApi/userApi";
-import { getNotificationById } from "../../services/rootApi/userApi";
-import { setNotication } from "../../redux/userSlice";
 import { useGetNotificationInCRM } from "../../hooks/useGetQuerryHRM";
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
-import { routeBooking, routeLead, routeMeeting } from "../../utils/routes";
-import { myConsole } from "../../hooks/useConsole";
+import { routeBooking, routeMeeting } from "../../utils/routes";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";

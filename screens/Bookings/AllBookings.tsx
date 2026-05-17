@@ -5,41 +5,30 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
-import {
-  selectUser,
-  setAdvanceBooking,
-  setBookingQueryKey,
-} from "../../redux/userSlice";
-import DeleteIcon from "../../assets/svg/DeleteIcon";
+import { selectUser, setBookingQueryKey } from "../../redux/userSlice";
 import { deleteBookings } from "../../services/rootApi/bookingApi";
-import { getAllBookingFunc } from "../../redux/action";
-import { myConsole } from "../../hooks/useConsole";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { shadow2, shadow1, shadowPrimaryColor } from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import DeleteModel from "../../myComponents/DeleteModel";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import SearchBar from "../../myComponents/SearchBar/SearchBar";
-import BookingListHeading from "../../components/Booking/BookingListHeader";
 import SkeletonLoadingBooking from "../../components/Booking/SkeletonLoadingBooking";
 import { roleEnum } from "../../utils/data";
 import { useGetBooking } from "../../hooks/useCRMgetQuerry";
 import { debounce } from "../../utils/debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyCRM } from "../../utils/queryKeys";
-import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import CustomCheckBox from "../../myComponentsHRM/CutomCheckBox/CustomCheckBox";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import useModal from "../../hooks/useModal";

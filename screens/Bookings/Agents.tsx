@@ -2,13 +2,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import mime from "mime";
 import React, { useEffect, useState } from "react";
-import {
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, TouchableOpacity, View } from "react-native";
 import { useDispatch } from "react-redux";
 import Header from "../../components/Header";
 import { color } from "../../const/color";
@@ -307,7 +301,7 @@ const Agents = () => {
             navigate(
               isFromMeeting
                 ? routeBooking.bookingNavigator
-                : routeBooking?.allBookings
+                : routeBooking?.allBookings,
             );
           },
         });
@@ -325,7 +319,7 @@ const Agents = () => {
             navigate(
               isFromMeeting
                 ? routeBooking.bookingNavigator
-                : routeBooking?.allBookings
+                : routeBooking?.allBookings,
             );
           },
         });
@@ -392,10 +386,10 @@ const Agents = () => {
         myConsole("sendData2", sendData);
         const res = await axiosInstance.post(
           `/api/booking/updateBookingByIdV2/${bookingId}`,
-          sendData
+          sendData,
         );
         popUpConfToast.successMessage(
-          res?.data || "Booking Update Successfully.."
+          res?.data || "Booking Update Successfully..",
         );
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getBooking],
@@ -411,7 +405,7 @@ const Agents = () => {
     } catch (e) {
       myConsole("eeeee", e);
       popUpConfToast.errorMessage(
-        e?.response?.data?.message || e?.message || "Something went wrong"
+        e?.response?.data?.message || e?.message || "Something went wrong",
       );
     } finally {
       setLoader(false);

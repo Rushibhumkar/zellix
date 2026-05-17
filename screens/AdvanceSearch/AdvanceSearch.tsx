@@ -4,9 +4,8 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { useFormik } from "formik";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,

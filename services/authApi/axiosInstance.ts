@@ -9,7 +9,7 @@ import { myConsole } from "../../hooks/useConsole";
 let testURL = "http://192.168.1.105:5001";
 // let testURL = "https://zellix-backend-1.onrender.com";
 
-const isLive = false;
+const isLive = true;
 
 export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 

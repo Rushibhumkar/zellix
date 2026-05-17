@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Pressable,
   ActivityIndicator,
@@ -34,11 +33,8 @@ import InvoiceSvg from "../../assets/svg/InvoiceSvg";
 import IncentiveSvg from "../../assets/svg/IncentiveSvg";
 import ReferralSvg from "../../assets/svg/ReferralSvg";
 import { checkPermission } from "../../utils/commonFunctions";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
-import { myConsole } from "../../hooks/useConsole";
 import UserIcon from "../../assets/svg/UserIcon";
-import UsersManagement from "../Users/UsersManagement";
 
 const Setting = () => {
   const dispatch = useDispatch();
@@ -64,7 +60,7 @@ const Setting = () => {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        })
+        }),
       );
     } catch (error) {
       console.error("Error logging out:", error);
@@ -78,13 +74,13 @@ const Setting = () => {
     permission,
     "Expenses",
     "viewList",
-    user?.role
+    user?.role,
   );
   const canViewInvoices = checkPermission(
     permission,
     "Invoices",
     "viewList",
-    user?.role
+    user?.role,
   );
   return (
     <>
