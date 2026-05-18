@@ -40,7 +40,7 @@ const ReportsFilter = () => {
   const { values, handleChange, setFieldValue, resetForm, handleSubmit } =
     useFormik({
       initialValues: {
-        leadType: filters?.leadType || "lead",
+        leadType: filters?.leadType || "",
         startDate: filters?.startDate || "",
         endDate: filters?.endDate || "",
         pnls: filters?.pnls || [],
@@ -52,7 +52,7 @@ const ReportsFilter = () => {
         const payload = {
           startDate: formValues?.startDate || null,
           endDate: formValues?.endDate || null,
-          leadType: formValues?.leadType || "lead",
+          leadType: formValues?.leadType || "",
 
           pnls: formValues?.pnls?.length > 0 ? formValues?.pnls : [],
           teams: formValues?.teams?.length > 0 ? formValues?.teams : [],
@@ -117,6 +117,7 @@ const ReportsFilter = () => {
         <DropdownRNE
           label="Lead Type"
           arrOfObj={[
+            { name: "All", _id: "" },
             { name: "Lead", _id: "lead" },
             { name: "Calling Data", _id: "calling_data" },
           ]}

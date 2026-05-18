@@ -12,7 +12,12 @@ import {
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { Feather, AntDesign } from "@expo/vector-icons";
+import {
+  Feather,
+  AntDesign,
+  MaterialCommunityIcons,
+  FontAwesome6,
+} from "@expo/vector-icons";
 import { iconWrapperStyle } from "../../const/globalStyle";
 import { color } from "../../const/color";
 import * as XLSX from "xlsx";
@@ -23,6 +28,7 @@ import { useGetLeadCallReports } from "../../services/rootApi/reportsApi";
 import { myConsole } from "../../hooks/useConsole";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
+import { formatSeconds } from "../../utils/commonFunctions";
 global.Buffer = Buffer;
 
 const { width } = Dimensions.get("window");
@@ -39,7 +45,7 @@ const ReportsListing = () => {
 
   const selectedEndDate = filters?.endDate || null;
 
-  const selectedLeadType = filters?.leadType || "lead";
+  const selectedLeadType = filters?.leadType || "";
 
   const selectedPnls = filters?.pnls || [];
 
@@ -65,9 +71,57 @@ const ReportsListing = () => {
   const verticalScrollRef = React.useRef<any>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
+  const [userNameSortOrder, setUserNameSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [connectionSortOrder, setConnectionSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [avgDurationSortOrder, setAvgDurationSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [totalDurationSortOrder, setTotalDurationSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [emailSortOrder, setEmailSortOrder] = useState<"none" | "asc" | "desc">(
+    "none",
+  );
+
+  const [totalCallsSortOrder, setTotalCallsSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [connectedSortOrder, setConnectedSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [notConnectedSortOrder, setNotConnectedSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [positiveSortOrder, setPositiveSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [negativeSortOrder, setNegativeSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [inboundSortOrder, setInboundSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
+  const [outboundSortOrder, setOutboundSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
   const columns = useMemo(
     () => [
-      "S.No",
+      // "S.No",
       "User Name",
       "User Email",
       "Total Calls",
@@ -84,10 +138,185 @@ const ReportsListing = () => {
     [],
   );
 
-  const reportData = useMemo(
-    () => leadCallReports?.data || [],
-    [leadCallReports],
-  );
+  const resetAllSorts = () => {
+    setUserNameSortOrder("none");
+    setEmailSortOrder("none");
+    setTotalCallsSortOrder("none");
+    setConnectedSortOrder("none");
+    setNotConnectedSortOrder("none");
+    setPositiveSortOrder("none");
+    setNegativeSortOrder("none");
+    setInboundSortOrder("none");
+    setOutboundSortOrder("none");
+    setConnectionSortOrder("none");
+    setAvgDurationSortOrder("none");
+    setTotalDurationSortOrder("none");
+  };
+
+  const reportData = useMemo(() => {
+    const data = [...(leadCallReports?.data || [])];
+
+    if (userNameSortOrder === "asc") {
+      return data.sort((a: any, b: any) =>
+        (a?.userName || "").localeCompare(b?.userName || ""),
+      );
+    }
+
+    if (userNameSortOrder === "desc") {
+      return data.sort((a: any, b: any) =>
+        (b?.userName || "").localeCompare(a?.userName || ""),
+      );
+    }
+
+    if (connectionSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.connectionRate || 0) - (b?.connectionRate || 0),
+      );
+    }
+
+    if (connectionSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.connectionRate || 0) - (a?.connectionRate || 0),
+      );
+    }
+
+    if (avgDurationSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.avgDuration || 0) - (b?.avgDuration || 0),
+      );
+    }
+
+    if (avgDurationSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.avgDuration || 0) - (a?.avgDuration || 0),
+      );
+    }
+
+    if (totalDurationSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.totalDuration || 0) - (b?.totalDuration || 0),
+      );
+    }
+
+    if (totalDurationSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.totalDuration || 0) - (a?.totalDuration || 0),
+      );
+    }
+    if (emailSortOrder === "asc") {
+      return data.sort((a: any, b: any) =>
+        (a?.userEmail || "").localeCompare(b?.userEmail || ""),
+      );
+    }
+
+    if (emailSortOrder === "desc") {
+      return data.sort((a: any, b: any) =>
+        (b?.userEmail || "").localeCompare(a?.userEmail || ""),
+      );
+    }
+
+    if (totalCallsSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.totalCalls || 0) - (b?.totalCalls || 0),
+      );
+    }
+
+    if (totalCallsSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.totalCalls || 0) - (a?.totalCalls || 0),
+      );
+    }
+
+    if (connectedSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.connectedCalls || 0) - (b?.connectedCalls || 0),
+      );
+    }
+
+    if (connectedSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.connectedCalls || 0) - (a?.connectedCalls || 0),
+      );
+    }
+
+    if (notConnectedSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) =>
+          (a?.notConnectedCalls || 0) - (b?.notConnectedCalls || 0),
+      );
+    }
+
+    if (notConnectedSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) =>
+          (b?.notConnectedCalls || 0) - (a?.notConnectedCalls || 0),
+      );
+    }
+
+    if (positiveSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.positiveCalls || 0) - (b?.positiveCalls || 0),
+      );
+    }
+
+    if (positiveSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.positiveCalls || 0) - (a?.positiveCalls || 0),
+      );
+    }
+
+    if (negativeSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.negativeCalls || 0) - (b?.negativeCalls || 0),
+      );
+    }
+
+    if (negativeSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.negativeCalls || 0) - (a?.negativeCalls || 0),
+      );
+    }
+
+    if (inboundSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.inboundCalls || 0) - (b?.inboundCalls || 0),
+      );
+    }
+
+    if (inboundSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.inboundCalls || 0) - (a?.inboundCalls || 0),
+      );
+    }
+
+    if (outboundSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) => (a?.outboundCalls || 0) - (b?.outboundCalls || 0),
+      );
+    }
+
+    if (outboundSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) => (b?.outboundCalls || 0) - (a?.outboundCalls || 0),
+      );
+    }
+
+    return data;
+  }, [
+    leadCallReports,
+    userNameSortOrder,
+    connectionSortOrder,
+    avgDurationSortOrder,
+    totalDurationSortOrder,
+    emailSortOrder,
+    totalCallsSortOrder,
+    connectedSortOrder,
+    notConnectedSortOrder,
+    positiveSortOrder,
+    negativeSortOrder,
+    inboundSortOrder,
+    outboundSortOrder,
+  ]);
 
   // const reportData = useMemo(() => {
   //   const apiData = leadCallReports?.data || [];
@@ -104,7 +333,7 @@ const ReportsListing = () => {
   const tableData = useMemo(
     () =>
       (reportData || []).map((item: any, index: number) => [
-        index + 1,
+        // index + 1,
         item?.userName || "-",
         item?.userEmail || "-",
         item?.totalCalls || 0,
@@ -115,11 +344,12 @@ const ReportsListing = () => {
         item?.inboundCalls || 0,
         item?.outboundCalls || 0,
         item?.connectionRate || 0,
-        item?.avgDuration || 0,
-        item?.totalDuration || 0,
+        formatSeconds(item?.avgDuration || 0, "short"),
+        formatSeconds(item?.totalDuration || 0, "short"),
       ]),
     [reportData],
   );
+
   const increaseZoom = () => {
     if (zoomLevel < 1.5) {
       setZoomLevel((prev) => prev + 0.1);
@@ -132,10 +362,113 @@ const ReportsListing = () => {
     }
   };
 
+  const getNextSortState = (current: "none" | "asc" | "desc") => {
+    if (current === "none") return "asc";
+
+    if (current === "asc") return "desc";
+
+    return "none";
+  };
+
+  const handleUserNameSort = () => {
+    const next = getNextSortState(userNameSortOrder);
+
+    resetAllSorts();
+
+    setUserNameSortOrder(next);
+  };
+  const handleConnectionSort = () => {
+    const next = getNextSortState(connectionSortOrder);
+
+    resetAllSorts();
+
+    setConnectionSortOrder(next);
+  };
+
+  const handleAvgDurationSort = () => {
+    const next = getNextSortState(avgDurationSortOrder);
+
+    resetAllSorts();
+
+    setAvgDurationSortOrder(next);
+  };
+
+  const handleTotalDurationSort = () => {
+    const next = getNextSortState(totalDurationSortOrder);
+
+    resetAllSorts();
+
+    setTotalDurationSortOrder(next);
+  };
+
+  const handleEmailSort = () => {
+    const next = getNextSortState(emailSortOrder);
+
+    resetAllSorts();
+
+    setEmailSortOrder(next);
+  };
+
+  const handleTotalCallsSort = () => {
+    const next = getNextSortState(totalCallsSortOrder);
+
+    resetAllSorts();
+
+    setTotalCallsSortOrder(next);
+  };
+
+  const handleConnectedSort = () => {
+    const next = getNextSortState(connectedSortOrder);
+
+    resetAllSorts();
+
+    setConnectedSortOrder(next);
+  };
+
+  const handleNotConnectedSort = () => {
+    const next = getNextSortState(notConnectedSortOrder);
+
+    resetAllSorts();
+
+    setNotConnectedSortOrder(next);
+  };
+
+  const handlePositiveSort = () => {
+    const next = getNextSortState(positiveSortOrder);
+
+    resetAllSorts();
+
+    setPositiveSortOrder(next);
+  };
+
+  const handleNegativeSort = () => {
+    const next = getNextSortState(negativeSortOrder);
+
+    resetAllSorts();
+
+    setNegativeSortOrder(next);
+  };
+
+  const handleInboundSort = () => {
+    const next = getNextSortState(inboundSortOrder);
+
+    resetAllSorts();
+
+    setInboundSortOrder(next);
+  };
+
+  const handleOutboundSort = () => {
+    const next = getNextSortState(outboundSortOrder);
+
+    resetAllSorts();
+
+    setOutboundSortOrder(next);
+  };
+
   const handleExportReport = async (type: "xlsx" | "csv") => {
     try {
       const formattedData = reportData.map((item: any, index: number) => ({
-        "S.No": index + 1,
+        // "S.No": index + 1,
         "User Name": item?.userName || "",
         "User Email": item?.userEmail || "",
         "Total Calls": item?.totalCalls || 0,
@@ -146,8 +479,9 @@ const ReportsListing = () => {
         Inbound: item?.inboundCalls || 0,
         Outbound: item?.outboundCalls || 0,
         "Connection %": item?.connectionRate || 0,
-        "Avg Duration": item?.avgDuration || 0,
-        "Total Duration": item?.totalDuration || 0,
+        "Avg Duration": formatSeconds(item?.avgDuration || 0, "short"),
+
+        "Total Duration": formatSeconds(item?.totalDuration || 0, "short"),
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(formattedData);
@@ -191,19 +525,59 @@ const ReportsListing = () => {
   };
 
   const columnWidths: any = {
-    0: 40, // S.No
-    1: 140, // User Name
-    2: 200, // Email
-    3: 80, // Total Calls
-    4: 80, // Connected
-    5: 100, // Not Connected
-    6: 80, // Positive
-    7: 80, // Negative
-    8: 80, // InBound
-    9: 80, // OutBound
-    10: 98, // Connection%
-    11: 96, // Avg Duration
-    12: 100, // Total Duration
+    // 0: 40, // S.No
+    0: 140, // User Name
+    1: 210, // Email
+    2: 100, // Total Calls
+    3: 100, // Connected
+    4: 110, // Not Connected
+    5: 80, // Positive
+    6: 80, // Negative
+    7: 80, // InBound
+    8: 90, // OutBound
+    9: 110, // Connection%
+    10: 110, // Avg Duration
+    11: 110, // Total Duration
+  };
+
+  const getColumnSortOrder = (column: string) => {
+    switch (column) {
+      case "User Email":
+        return emailSortOrder;
+
+      case "Total Calls":
+        return totalCallsSortOrder;
+
+      case "Connected":
+        return connectedSortOrder;
+
+      case "Not Connected":
+        return notConnectedSortOrder;
+
+      case "Positive":
+        return positiveSortOrder;
+
+      case "Negative":
+        return negativeSortOrder;
+
+      case "Inbound":
+        return inboundSortOrder;
+
+      case "Outbound":
+        return outboundSortOrder;
+
+      case "Connection %":
+        return connectionSortOrder;
+
+      case "Avg Duration":
+        return avgDurationSortOrder;
+
+      case "Total Duration":
+        return totalDurationSortOrder;
+
+      default:
+        return "none";
+    }
   };
 
   return (
@@ -233,7 +607,7 @@ const ReportsListing = () => {
             <View>
               {(selectedStartDate ||
                 selectedEndDate ||
-                selectedLeadType !== "lead" ||
+                !!selectedLeadType ||
                 selectedPnls?.length > 0 ||
                 selectedTeams?.length > 0 ||
                 selectedAgents?.length > 0) && (
@@ -255,7 +629,7 @@ const ReportsListing = () => {
                       filters: {
                         startDate: null,
                         endDate: null,
-                        leadType: "lead",
+                        leadType: "",
                         pnls: [],
                         teams: [],
                         agents: [],
@@ -293,7 +667,7 @@ const ReportsListing = () => {
                   color={
                     selectedStartDate ||
                     selectedEndDate ||
-                    selectedLeadType !== "lead" ||
+                    !!selectedLeadType ||
                     selectedPnls?.length > 0 ||
                     selectedTeams?.length > 0 ||
                     selectedAgents?.length > 0
@@ -378,16 +752,40 @@ const ReportsListing = () => {
           {/* FIXED LEFT COLUMN */}
           <View>
             {/* Fixed Header */}
-            <View
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleUserNameSort}
               style={[
                 styles.fixedHeaderCell,
                 {
                   height: 40,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 },
               ]}
             >
               <Text style={styles.headerText}>{columns[0]}</Text>
-            </View>
+
+              {userNameSortOrder === "none" ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: 6,
+                  }}
+                >
+                  <FontAwesome6 name="arrow-up-long" size={10} color="#fff" />
+
+                  <FontAwesome6 name="arrow-down-long" size={10} color="#fff" />
+                </View>
+              ) : userNameSortOrder === "asc" ? (
+                <FontAwesome6 name="arrow-up-long" size={10} color="#fff" />
+              ) : (
+                <FontAwesome6 name="arrow-down-long" size={10} color="#fff" />
+              )}
+            </TouchableOpacity>
 
             {/* Fixed Body */}
             <FlatList
@@ -410,7 +808,9 @@ const ReportsListing = () => {
                     },
                   ]}
                 >
-                  <Text style={styles.bodyText}>{row[0]}</Text>
+                  <Text style={styles.bodyText} numberOfLines={2}>
+                    {row[0]}
+                  </Text>
                 </View>
               )}
             />
@@ -440,7 +840,122 @@ const ReportsListing = () => {
                       },
                     ]}
                   >
-                    <Text style={styles.headerText}>{column}</Text>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      disabled={
+                        ![
+                          "User Email",
+                          "Total Calls",
+                          "Connected",
+                          "Not Connected",
+                          "Positive",
+                          "Negative",
+                          "Inbound",
+                          "Outbound",
+                          "Connection %",
+                          "Avg Duration",
+                          "Total Duration",
+                        ].includes(column)
+                      }
+                      onPress={() => {
+                        if (column === "Connection %") {
+                          handleConnectionSort();
+                        }
+
+                        if (column === "Avg Duration") {
+                          handleAvgDurationSort();
+                        }
+
+                        if (column === "Total Duration") {
+                          handleTotalDurationSort();
+                        }
+                        if (column === "User Email") {
+                          handleEmailSort();
+                        }
+
+                        if (column === "Total Calls") {
+                          handleTotalCallsSort();
+                        }
+
+                        if (column === "Connected") {
+                          handleConnectedSort();
+                        }
+
+                        if (column === "Not Connected") {
+                          handleNotConnectedSort();
+                        }
+
+                        if (column === "Positive") {
+                          handlePositiveSort();
+                        }
+
+                        if (column === "Negative") {
+                          handleNegativeSort();
+                        }
+
+                        if (column === "Inbound") {
+                          handleInboundSort();
+                        }
+
+                        if (column === "Outbound") {
+                          handleOutboundSort();
+                        }
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text style={styles.headerText}>{column}</Text>
+
+                      {[
+                        "User Email",
+                        "Total Calls",
+                        "Connected",
+                        "Not Connected",
+                        "Positive",
+                        "Negative",
+                        "Inbound",
+                        "Outbound",
+                        "Connection %",
+                        "Avg Duration",
+                        "Total Duration",
+                      ].includes(column) && (
+                        <>
+                          {getColumnSortOrder(column) === "none" ? (
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                marginLeft: 4,
+                              }}
+                            >
+                              <FontAwesome6
+                                name="arrow-up-long"
+                                size={9}
+                                color="#fff"
+                              />
+
+                              <FontAwesome6
+                                name="arrow-down-long"
+                                size={9}
+                                color="#fff"
+                              />
+                            </View>
+                          ) : (
+                            <FontAwesome6
+                              name={
+                                getColumnSortOrder(column) === "asc"
+                                  ? "arrow-up-long"
+                                  : "arrow-down-long"
+                              }
+                              size={9}
+                              color="#fff"
+                            />
+                          )}
+                        </>
+                      )}
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -487,7 +1002,10 @@ const ReportsListing = () => {
                           },
                         ]}
                       >
-                        <Text style={styles.bodyText}>{cell}</Text>
+                        <Text style={styles.bodyText}>
+                          {cell}
+                          {cellIndex === 8 ? " %" : ""}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -511,7 +1029,7 @@ const styles = StyleSheet.create({
   },
 
   fixedHeaderCell: {
-    width: 70,
+    width: 140,
     backgroundColor: color.primaryColor,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -520,7 +1038,7 @@ const styles = StyleSheet.create({
   },
 
   fixedLeftCell: {
-    width: 70,
+    width: 140,
     height: 40,
     maxHeight: 40,
     paddingHorizontal: 10,

@@ -159,3 +159,80 @@ export const truncateText = (value: unknown, length: number = 8): string => {
     return "";
   }
 };
+
+// <----------------- foramt second common function ----------------->
+
+// formatSeconds(182, "short")
+// 3m 2s
+
+// formatSeconds(182, "clock")
+// 00:03:02
+
+// formatSeconds(3782, "short")
+// 1h 3m 2s
+
+// formatSeconds(3782, "long")
+// 1 hour 3 minutes 2 seconds
+
+export const formatSeconds = (
+  value: number = 0,
+  format:
+    | "short"
+    | "long"
+    | "clock"
+    | "minute-second"
+    | "hour-minute-second" = "short",
+) => {
+  const totalSeconds = Math.max(0, Math.floor(value));
+
+  const hours = Math.floor(totalSeconds / 3600);
+
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  const seconds = totalSeconds % 60;
+
+  switch (format) {
+    // 1h 3m 2s
+    case "short":
+      return [
+        hours > 0 ? `${hours}h` : null,
+        minutes > 0 ? `${minutes}m` : null,
+        `${seconds}s`,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+    // 1 hour 3 minutes 2 seconds
+    case "long":
+      return [
+        hours > 0 ? `${hours} ${hours === 1 ? "hour" : "hours"}` : null,
+
+        minutes > 0
+          ? `${minutes} ${minutes === 1 ? "minute" : "minutes"}`
+          : null,
+
+        `${seconds} ${seconds === 1 ? "second" : "seconds"}`,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+    // 01:03:02
+    case "clock":
+      return [
+        hours.toString().padStart(2, "0"),
+        minutes.toString().padStart(2, "0"),
+        seconds.toString().padStart(2, "0"),
+      ].join(":");
+
+    // 3m 2s
+    case "minute-second":
+      return `${minutes + hours * 60}m ${seconds}s`;
+
+    // 1h 3m 2s
+    case "hour-minute-second":
+      return `${hours}h ${minutes}m ${seconds}s`;
+
+    default:
+      return `${seconds}s`;
+  }
+};
