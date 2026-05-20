@@ -82,21 +82,57 @@ import { useFormik } from "formik";
 import { changeStatusSchema } from "../../utils/validation";
 import { createCallLog } from "../../services/rootApi/callLogsApi";
 
-const extractStringObj = (input) => {
-  const parsedInput = JSON.parse(input);
-  const result = {};
-  for (let key in parsedInput) {
-    if (parsedInput?.hasOwnProperty(key)) {
-      const keyVal = key
-        .replace(/_/g, " ") // Replace underscores with spaces
-        .replace(/[^\w\s]/g, "") // Remove non-word characters (like periods)
-        .trim(); // Trim any extra spaces
+const extractStringObj = (input: any) => {
+  try {
+    const parsedInput = typeof input === "string" ? JSON.parse(input) : input;
 
-      // Add the transformed key-value pair to the result object
-      result[keyVal] = parsedInput[key];
+    // ✅ New Format -> Array
+    if (Array.isArray(parsedInput)) {
+      return parsedInput.map((obj) => {
+        const formattedObj = {};
+        let createdAt = obj?._at || null;
+
+        Object.keys(obj || {}).forEach((key) => {
+          if (key !== "_at") {
+            const formattedKey = key
+              .replace(/_/g, " ")
+              .replace(/[^\w\s]/g, "")
+              .trim();
+
+            formattedObj[formattedKey] = obj[key];
+          }
+        });
+
+        return {
+          questions: formattedObj,
+          createdAt,
+        };
+      });
     }
+
+    // ✅ Old Format -> Object
+    const result = {};
+
+    for (let key in parsedInput) {
+      if (parsedInput?.hasOwnProperty(key)) {
+        const keyVal = key
+          .replace(/_/g, " ")
+          .replace(/[^\w\s]/g, "")
+          .trim();
+
+        result[keyVal] = parsedInput[key];
+      }
+    }
+
+    return [
+      {
+        questions: result,
+        createdAt: parsedInput?._at || null,
+      },
+    ];
+  } catch (err) {
+    return [];
   }
-  return result;
 };
 
 const formatDateTime = (date, time) => {
@@ -485,6 +521,12 @@ const LeadsDetails = () => {
           "meeting_done",
           "meeting_scheduled",
           "claimed",
+          "followUp_required",
+          "call_back",
+          "active_cold",
+          "nr_event",
+          "assign",
+          "re_assigned",
         ];
 
         const negativeStatuses = [
@@ -850,6 +892,9 @@ const LeadsDetails = () => {
   }, [showChangeStatusPopup]);
   // myConsole("tdForFUTtt", tdForFUT);
   // myConsole("detail?", detail);
+
+  // myConsole("additionalQuestions =>", detail?.additionalQuestions);
+
   return (
     <>
       {activeTab === 1 && (
@@ -1482,30 +1527,65 @@ const LeadsDetails = () => {
                 <View style={styles.card}>
                   <Text style={styles.sectionTitle}>Additional Questions</Text>
                   <View style={styles.divider} />
-                  {Object.entries(
-                    extractStringObj(detail?.additionalQuestions),
-                  ).map(([key, value], index) => {
-                    return (
-                      <View key={index} style={styles.qaContainer}>
-                        <View style={styles.qRow}>
-                          <Text style={styles.qLabel}>Q.</Text>
-                          <Text style={styles.qText}>{key}</Text>
-                        </View>
+                  {extractStringObj(detail?.additionalQuestions)?.map(
+                    (item: any, parentIndex: number) => (
+                      <View key={parentIndex} style={styles.questionGroupCard}>
+                        {!!item?.createdAt && (
+                          <View style={styles.questionDateContainer}>
+                            <Text style={styles.questionDateText}>
+                              {moment(item?.createdAt).format(
+                                "DD MMM YYYY, hh:mm A",
+                              )}
+                            </Text>
+                            <View style={styles.dateUnderline} />
+                          </View>
+                        )}
+                        {Object.entries(item?.questions || {})?.map(
+                          ([key, value]: any, index: number) => {
+                            return (
+                              <View
+                                key={`${parentIndex}-${index}`}
+                                style={[
+                                  styles.compactQaRow,
+                                  index ===
+                                    Object.entries(item?.questions || {})
+                                      ?.length -
+                                      1 && {
+                                    borderBottomWidth: 0,
+                                    paddingBottom: 0,
+                                    marginBottom: 0,
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={styles.compactQuestion}
+                                  numberOfLines={3}
+                                >
+                                  {key}
+                                </Text>
 
-                        <View style={styles.aRow}>
-                          <Text style={styles.aLabel}>A.</Text>
-                          <Text style={styles.aText}>
-                            {value
-                              ? value
-                                  .replace(/_/g, " ")
-                                  .replace(/\s+/g, " ")
-                                  .trim()
-                              : "N/A"}
-                          </Text>
-                        </View>
+                                <Text
+                                  style={styles.compactAnswer}
+                                  numberOfLines={3}
+                                >
+                                  {typeof value === "string"
+                                    ? value
+                                        .replace(/_/g, " ")
+                                        .replace(/\s+/g, " ")
+                                        .trim()
+                                    : value !== undefined &&
+                                        value !== null &&
+                                        typeof value !== "object"
+                                      ? String(value)
+                                      : "N/A"}
+                                </Text>
+                              </View>
+                            );
+                          },
+                        )}
                       </View>
-                    );
-                  })}
+                    ),
+                  )}
                 </View>
               )}
 
@@ -1717,7 +1797,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    padding: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 16,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -1891,41 +1972,57 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: color.mainTxtColor,
   },
-  qaContainer: {
-    marginBottom: 16,
-  },
-
-  qRow: {
+  compactQaRow: {
     flexDirection: "row",
-    marginBottom: 4,
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF2F6",
+    gap: 12,
   },
 
-  qLabel: {
-    fontWeight: "700",
+  questionGroupCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E9EEF5",
+  },
+
+  questionDateContainer: {
+    // backgroundColor: "#2E67BE15",
+    alignSelf: "flex-start",
+    // paddingHorizontal: 14,
+    // borderRadius: 30,
+    // paddingVertical: 5,
+    // marginBottom: 10,
+  },
+
+  questionDateText: {
     color: "#2E67BE",
-    marginRight: 6,
-  },
-
-  qText: {
-    flex: 1,
-    fontSize: 15,
-    color: "#2F3A4A",
-    fontWeight: "600",
-  },
-
-  aRow: {
-    flexDirection: "row",
-  },
-
-  aLabel: {
     fontWeight: "700",
-    color: "#16A34A",
-    marginRight: 6,
+    fontSize: 13,
+  },
+  dateUnderline: {
+    borderBottomWidth: 0.8,
+    borderBottomColor: "#64748B",
+  },
+  compactQuestion: {
+    flex: 1,
+    fontSize: 13,
+    color: "#64748B",
+    fontWeight: "500",
+    lineHeight: 18,
   },
 
-  aText: {
+  compactAnswer: {
     flex: 1,
-    fontSize: 15,
-    color: "#4B5563",
+    fontSize: 14,
+    color: "#0F172A",
+    fontWeight: "700",
+    textAlign: "right",
+    lineHeight: 18,
   },
 });

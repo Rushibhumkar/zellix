@@ -21,6 +21,7 @@ import { toggleProjectActiveStatus } from "../../services/rootApi/projectApi";
 import { useAppToast } from "../../components/AppToast";
 import { useQueryClient } from "@tanstack/react-query";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
+import { myConsole } from "../../hooks/useConsole";
 
 const ProjectDetail = () => {
   const { params } = useRoute();
@@ -130,12 +131,36 @@ const ProjectDetail = () => {
       >
         {/* 🔥 HERO */}
         <View style={styles.hero}>
+          <View style={styles.projectStatusWrapper}>
+            <View style={styles.projectStatusContainer}>
+              <View
+                style={[
+                  styles.projectStatusDot,
+                  {
+                    backgroundColor: data?.isActive ? "#22C55E" : "#EF4444",
+                  },
+                ]}
+              />
+
+              <CustomText
+                style={[
+                  styles.projectStatusText,
+                  {
+                    color: data?.isActive ? "#16A34A" : "#DC2626",
+                  },
+                ]}
+              >
+                {data?.isActive ? "Active" : "Inactive"}
+              </CustomText>
+            </View>
+          </View>
+
           <View style={styles.row}>
             <View style={styles.icon}>
               <Feather name="folder" size={24} color="#2D67C6" />
             </View>
 
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingRight: 90 }}>
               <CustomText style={styles.title}>{data?.projectName}</CustomText>
 
               <CustomText style={styles.sub}>{data?.source}</CustomText>
@@ -144,8 +169,9 @@ const ProjectDetail = () => {
 
           <View style={styles.stats}>
             <Stat label="Leads" value={data?.totalLeads} />
+            <Stat label="Duplicate" value={data?.duplicateLeads || 0} />
+            <Stat label="International" value={data?.internationalLeads || 0} />
             <Stat label="Members" value={data?.members?.length} />
-            <Stat label="Active" value={data?.activeStatus ? "Yes" : "No"} />
           </View>
         </View>
 
@@ -187,10 +213,17 @@ const ProjectDetail = () => {
                 </CustomText>
 
                 <CustomText style={styles.memberSub}>
-                  {m?.user?.role} • {m?.assignedLeadsCount} leads
+                  {m?.user?.role} • {m?.assignedLeadsCount || 0} leads
+                  {!!m?.duplicateLeads && ` • ${m?.duplicateLeads} duplicate`}
                 </CustomText>
               </View>
-
+              {!!m?.duplicateLeads && (
+                <View style={styles.duplicateBadge}>
+                  <CustomText style={styles.duplicateText}>
+                    {m?.duplicateLeads}
+                  </CustomText>
+                </View>
+              )}
               <View
                 style={[
                   styles.statusDot,
@@ -230,7 +263,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     ...shadowPrimaryColor,
   },
-
+  projectStatusWrapper: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 99,
+  },
   row: { flexDirection: "row", alignItems: "center" },
 
   icon: {
@@ -245,11 +283,13 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 18, fontWeight: "700" },
   sub: { fontSize: 13, color: "#64748B", marginTop: 4 },
-
   stats: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 16,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#EEF2F6",
   },
 
   stat: { alignItems: "center", flex: 1 },
@@ -299,7 +339,7 @@ const styles = StyleSheet.create({
 
   avatarText: { color: "#fff", fontWeight: "700" },
 
-  memberName: { fontSize: 14, fontWeight: "600" },
+  memberName: { fontSize: 14, fontWeight: "600", marginBottom: 2 },
   memberSub: { fontSize: 12, color: "#64748B" },
 
   statusDot: {
@@ -322,5 +362,56 @@ const styles = StyleSheet.create({
     color: "#D32F2F",
     fontSize: 13,
     fontWeight: "600",
+  },
+
+  duplicateBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#FFEAEA",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    paddingHorizontal: 6,
+  },
+
+  duplicateText: {
+    color: "#EF4444",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  // projectStatusContainer: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   alignSelf: "flex-start",
+  //   marginTop: 10,
+  //   backgroundColor: "#F8FAFC",
+  //   paddingHorizontal: 10,
+  //   paddingVertical: 6,
+  //   borderRadius: 30,
+  // },
+
+  projectStatusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 30,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+
+  projectStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+
+  projectStatusText: {
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

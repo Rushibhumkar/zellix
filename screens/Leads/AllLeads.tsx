@@ -111,7 +111,7 @@ const AllLeads = () => {
     error: false,
   });
   const [assignLeadModal, setAssignLeadModal] = useState(false);
-  const [selectLeadType, setSelectLeadType] = useState("calling_data");
+  const [selectLeadType, setSelectLeadType] = useState("lead");
   const [openLeadTypeModal, setOpenLeadTypeModal] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -129,6 +129,7 @@ const AllLeads = () => {
     ...leadQueryKey,
     type: selectLeadType,
   });
+
   const handleSelect = (id) => {
     let temp = [...selected];
     let index = temp.indexOf(id);

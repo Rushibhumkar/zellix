@@ -85,8 +85,11 @@ const ReportsFilter = () => {
       _id: el?._id,
     }));
 
-  const filteredTeams =
-    userRole === roleEnum.sr_manager
+  const filteredTeams = [roleEnum.sup_admin, roleEnum.sub_admin].includes(
+    userRole,
+  )
+    ? team || []
+    : userRole === roleEnum.sr_manager
       ? (team || [])?.filter((el: any) => el?.srManager?._id === reduxUser?._id)
       : values?.pnls?.length > 0
         ? (team || [])?.filter((el: any) =>
@@ -102,7 +105,7 @@ const ReportsFilter = () => {
   // myConsole("teammmmm", team);
   const usersOptions = users?.agent || [];
 
-  myConsole("usersOptions", usersOptions?.length);
+  // myConsole("usersOptions", usersOptions?.length);
   // myConsole("userRolerrr", reduxUser);
 
   return (
