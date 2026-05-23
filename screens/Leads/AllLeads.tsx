@@ -337,6 +337,8 @@ const AllLeads = () => {
       ? leadData
       : leadData?.filter((item) => item?.status === selectedStatus);
 
+  // myConsole("filteredLeadDataaa", filteredLeadData);
+
   // myConsole("alllesad", leadData);
   return (
     <>
@@ -706,11 +708,22 @@ const LeadRowItem = React.memo(
             styles.mainlistcontainer,
             {
               marginTop: index === 0 ? 20 : 10,
-              backgroundColor: selected
-                ? color.primary200
-                : bgColor
-                  ? bgColor
-                  : "white",
+              // backgroundColor: selected
+              //   ? color.primary200
+              //   : bgColor
+              //     ? bgColor
+              //     : "white",
+              backgroundColor: item?.isDuplicate
+                ? "#FFF1F2"
+                : selected
+                  ? color.primary200
+                  : bgColor
+                    ? bgColor
+                    : "white",
+
+              borderColor: item?.isDuplicate ? "#EF4444" : "#E3E8EF",
+
+              borderWidth: item?.isDuplicate ? 1.2 : 1,
             },
           ]}
           onPress={onPress}
@@ -759,6 +772,7 @@ const LeadRowItem = React.memo(
               >
                 {item?.clientName}
               </CustomText>
+
               {isAgent ? (
                 <CustomText
                   numberOfLines={1}

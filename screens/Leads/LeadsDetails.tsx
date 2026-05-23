@@ -1274,7 +1274,12 @@ const LeadsDetails = () => {
               )}
               {/* -------------------- CARD 1 -------------------- */}
               {detail && (
-                <View style={styles.card}>
+                <View
+                  style={[
+                    styles.card,
+                    detail?.isDuplicate && styles.duplicateCard,
+                  ]}
+                >
                   {/* Top Section */}
                   <View style={styles.topRow}>
                     <View style={styles.avatar}>
@@ -1287,6 +1292,16 @@ const LeadsDetails = () => {
                       <Text style={styles.name}>
                         {detail?.clientName || "N/A"}
                       </Text>
+
+                      {!!detail?.isDuplicate && (
+                        <View style={styles.detailDuplicateBadge}>
+                          <Feather name="copy" size={12} color="#DC2626" />
+
+                          <Text style={styles.detailDuplicateText}>
+                            Duplicate Lead
+                          </Text>
+                        </View>
+                      )}
 
                       <View
                         style={{
@@ -2047,5 +2062,32 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "right",
     lineHeight: 18,
+  },
+
+  duplicateCard: {
+    backgroundColor: "#FFF1F2",
+    borderWidth: 1.2,
+    borderColor: "#FCA5A5",
+  },
+
+  detailDuplicateBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 30,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 4,
+    gap: 5,
+    marginBottom: 6,
+  },
+
+  detailDuplicateText: {
+    color: "#DC2626",
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

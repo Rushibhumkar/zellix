@@ -70,11 +70,11 @@ const LoginScreen = () => {
     // password: "1234567890",
 
     // live : super admin
-    // email: "tech@skgestates.com",
-    // password: "1234567890",
+    email: "tech@skgestates.com",
+    password: "1234567890",
 
-    email: "",
-    password: "",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
