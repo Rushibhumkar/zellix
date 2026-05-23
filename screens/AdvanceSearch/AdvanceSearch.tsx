@@ -257,7 +257,7 @@ const AdvanceSearch = () => {
         }}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ paddingBottom: 120 }}>
+          <View style={{ paddingBottom: 80 }}>
             <DropdownRNE
               label="Category"
               arrOfObj={[
@@ -733,6 +733,65 @@ const AdvanceSearch = () => {
               }}
               isAdvanceSearch
             /> */}
+
+            <View
+              style={{
+                // position: "absolute",
+                // top: Platform.OS === "ios" ? HEIGHT * 0.75 : HEIGHT * 0.8,
+                marginTop: 40,
+                alignSelf: "center",
+                flexDirection: "row",
+                gap: 10,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  resetForm({
+                    values: {
+                      startDate: null,
+                      endDate: null,
+                      assignedAt: null,
+                      status: [],
+
+                      type: null,
+                      individual: false,
+                    },
+                  });
+
+                  setTempDate({ startDate: null, endDate: null });
+                  setTeamOption("teamLead");
+
+                  dispatch(setBookingQueryKey(null));
+                  dispatch(setLeadQueryKey(null));
+                  dispatch(setMeetingQueryKey(null));
+
+                  setCategory(category);
+                  setResetKey((prev) => prev + 1);
+                }}
+                style={{
+                  width: 120,
+                  borderWidth: 1,
+                  borderColor: color.mainTxtColor,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 10,
+                  height: 45,
+                }}
+              >
+                <CustomText style={{ color: color.mainTxtColor }}>
+                  Clear All
+                </CustomText>
+              </TouchableOpacity>
+
+              <CustomBtn
+                title="Apply"
+                onPress={handleSubmit}
+                isLoading={isLoading}
+                containerStyle={{
+                  width: 120,
+                }}
+              />
+            </View>
           </View>
         </ScrollView>
         {/* <CustomBtn
@@ -746,63 +805,6 @@ const AdvanceSearch = () => {
             width: 200,
           }}
         /> */}
-        <View
-          style={{
-            position: "absolute",
-            top: Platform.OS === "ios" ? HEIGHT * 0.75 : HEIGHT * 0.8,
-            alignSelf: "center",
-            flexDirection: "row",
-            gap: 10,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => {
-              resetForm({
-                values: {
-                  startDate: null,
-                  endDate: null,
-                  assignedAt: null,
-                  status: [],
-
-                  type: null,
-                  individual: false,
-                },
-              });
-
-              setTempDate({ startDate: null, endDate: null });
-              setTeamOption("teamLead");
-
-              dispatch(setBookingQueryKey(null));
-              dispatch(setLeadQueryKey(null));
-              dispatch(setMeetingQueryKey(null));
-
-              setCategory(category);
-              setResetKey((prev) => prev + 1);
-            }}
-            style={{
-              width: 120,
-              borderWidth: 1,
-              borderColor: color.mainTxtColor,
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 10,
-              height: 45,
-            }}
-          >
-            <CustomText style={{ color: color.mainTxtColor }}>
-              Clear All
-            </CustomText>
-          </TouchableOpacity>
-
-          <CustomBtn
-            title="Apply"
-            onPress={handleSubmit}
-            isLoading={isLoading}
-            containerStyle={{
-              width: 120,
-            }}
-          />
-        </View>
       </Container>
     </>
   );

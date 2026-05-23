@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
+  Animated,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -36,7 +37,7 @@ const { width } = Dimensions.get("window");
 const ReportsListing = () => {
   const navigation: any = useNavigation();
   const { navigate } = useNavigation();
-
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
   const route: any = useRoute();
 
   const filters = route?.params?.filters;
@@ -57,6 +58,8 @@ const ReportsListing = () => {
     data: leadCallReports,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useGetLeadCallReports({
     startDate: selectedStartDate,
     endDate: selectedEndDate,
@@ -361,6 +364,31 @@ const ReportsListing = () => {
       setZoomLevel((prev) => prev - 0.1);
     }
   };
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  React.useEffect(() => {
+    if (isFetching) {
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ).start();
+    } else {
+      rotateAnim.stopAnimation();
+
+      rotateAnim.setValue(0);
+    }
+  }, [isFetching]);
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   const getNextSortState = (current: "none" | "asc" | "desc") => {
     if (current === "none") return "asc";
@@ -677,7 +705,27 @@ const ReportsListing = () => {
                 />
               </TouchableOpacity>
             </View>
-
+            {!isLoading && (
+              <TouchableOpacity
+                style={{ ...iconWrapperStyle }}
+                activeOpacity={0.8}
+                onPress={handleRefresh}
+                disabled={isFetching}
+              >
+                <Animated.View
+                  style={{
+                    transform: [{ rotate: spin }],
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="refresh"
+                    size={18}
+                    // color={isFetching ? "#d1d5db" : "#fff"}
+                    color={"#fff"}
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+            )}
             {!isLoading && !isError && !!reportData?.length && (
               <TouchableOpacity
                 style={{ ...iconWrapperStyle }}
@@ -696,7 +744,7 @@ const ReportsListing = () => {
         </Text>
       </View> */}
 
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <View
           style={{
             flex: 1,
@@ -710,7 +758,7 @@ const ReportsListing = () => {
             style={{ marginBottom: 4 }}
           />
           <CustomText style={{ color: color.mainTxtColor }}>
-            Loading reports...
+            {isFetching ? "Refreshing reports..." : "Loading reports..."}
           </CustomText>
         </View>
       ) : isError ? (

@@ -374,12 +374,26 @@ const AllLeads = () => {
           })
         }
         rightSide={
-          <Pressable
-            onPress={() => navigation.navigate("Reminders")}
-            style={styles.reminderIconBtn}
+          <View
+            style={{
+              flexDirection: "row",
+              alignContent: "center",
+              gap: 8,
+            }}
           >
-            <Feather name="clock" size={18} color="#fff" />
-          </Pressable>
+            <Pressable
+              onPress={() => navigation.navigate("Reminders")}
+              style={styles.reminderIconBtn}
+            >
+              <Feather name="clock" size={18} color="#fff" />
+            </Pressable>
+            {/* <Pressable
+              onPress={() => navigation.navigate("CallListing")}
+              style={styles.reminderIconBtn}
+            >
+              <Feather name="phone-call" size={18} color="#fff" />
+            </Pressable> */}
+          </View>
         }
         onPressAdd={() => {
           if (canAddLead)

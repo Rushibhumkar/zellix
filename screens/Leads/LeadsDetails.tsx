@@ -890,10 +890,19 @@ const LeadsDetails = () => {
       FUTModal.closeModal(); // ✅ ensure closed
     }
   }, [showChangeStatusPopup]);
+
+  const additionalQuestionsData =
+    Array.isArray(detail?.additionalQuestionsV2) &&
+    detail?.additionalQuestionsV2?.length > 0
+      ? detail?.additionalQuestionsV2
+      : detail?.additionalQuestions
+        ? extractStringObj(detail?.additionalQuestions)
+        : [];
+
   // myConsole("tdForFUTtt", tdForFUT);
   // myConsole("detail?", detail);
-
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
+  // myConsole("additionalQuestionsv2 =>", detail?.additionalQuestionsV2);
 
   return (
     <>
@@ -1294,7 +1303,7 @@ const LeadsDetails = () => {
                         )}
                         {!!detail?.name && (
                           <Text style={[styles.subText, { fontSize: 13 }]}>
-                            {truncateString(detail?.name, 34)}
+                            {truncateString(detail?.name, 32)}
                           </Text>
                         )}
                       </View>
@@ -1523,66 +1532,70 @@ const LeadsDetails = () => {
                 />
               </View>
 
-              {!!detail?.additionalQuestions && (
+              {!!additionalQuestionsData?.length && (
                 <View style={styles.card}>
                   <Text style={styles.sectionTitle}>Additional Questions</Text>
                   <View style={styles.divider} />
-                  {extractStringObj(detail?.additionalQuestions)?.map(
+                  {additionalQuestionsData?.map(
                     (item: any, parentIndex: number) => (
                       <View key={parentIndex} style={styles.questionGroupCard}>
-                        {!!item?.createdAt && (
+                        {!!(item?.createdAt || item?.submittedAt) && (
                           <View style={styles.questionDateContainer}>
                             <Text style={styles.questionDateText}>
-                              {moment(item?.createdAt).format(
-                                "DD MMM YYYY, hh:mm A",
-                              )}
+                              {moment(
+                                item?.submittedAt || item?.createdAt,
+                              ).format("DD MMM YYYY, hh:mm A")}
                             </Text>
                             <View style={styles.dateUnderline} />
                           </View>
                         )}
-                        {Object.entries(item?.questions || {})?.map(
-                          ([key, value]: any, index: number) => {
-                            return (
-                              <View
-                                key={`${parentIndex}-${index}`}
-                                style={[
-                                  styles.compactQaRow,
-                                  index ===
-                                    Object.entries(item?.questions || {})
-                                      ?.length -
-                                      1 && {
-                                    borderBottomWidth: 0,
-                                    paddingBottom: 0,
-                                    marginBottom: 0,
-                                  },
-                                ]}
+                        {(Array.isArray(item?.questions)
+                          ? item.questions.map((q) => [
+                              q?.label || q?.key,
+                              q?.answer,
+                            ])
+                          : Object.entries(item?.questions || {})
+                        )?.map(([key, value]: any, index: number) => {
+                          return (
+                            <View
+                              key={`${parentIndex}-${index}`}
+                              style={[
+                                styles.compactQaRow,
+                                index ===
+                                  Object.entries(item?.questions || {})
+                                    ?.length -
+                                    1 && {
+                                  borderBottomWidth: 0,
+                                  paddingBottom: 0,
+                                  marginBottom: 0,
+                                },
+                              ]}
+                            >
+                              <Text
+                                style={styles.compactQuestion}
+                                numberOfLines={3}
                               >
-                                <Text
-                                  style={styles.compactQuestion}
-                                  numberOfLines={3}
-                                >
-                                  {key}
-                                </Text>
+                                {key}
+                              </Text>
 
-                                <Text
-                                  style={styles.compactAnswer}
-                                  numberOfLines={3}
-                                >
-                                  {typeof value === "string"
-                                    ? value
-                                        .replace(/_/g, " ")
-                                        .replace(/\s+/g, " ")
-                                        .trim()
-                                    : value !== undefined &&
-                                        value !== null &&
-                                        typeof value !== "object"
-                                      ? String(value)
-                                      : "N/A"}
-                                </Text>
-                              </View>
-                            );
-                          },
-                        )}
+                              <Text
+                                style={styles.compactAnswer}
+                                numberOfLines={3}
+                              >
+                                {typeof value === "string"
+                                  ? value
+                                      .replace(/_/g, " ")
+                                      .replace(/\s+/g, " ")
+                                      .trim()
+                                  : value !== undefined &&
+                                      value !== null &&
+                                      typeof value !== "object"
+                                    ? String(value)
+                                    : "N/A"}
+                              </Text>
+                            </View>
+                          );
+                        })}
                       </View>
                     ),
                   )}
@@ -1670,7 +1683,17 @@ const LeadsDetails = () => {
                 ? "Calling Data Info"
                 : "Lead Details"
             }
-            onBack={() => navigate(routeLead.allLead)}
+            onBack={() => {
+              if (from === "reminders") {
+                navigation.navigate("Reminders", {
+                  remindersActiveTab,
+                });
+              } else {
+                navigate(routeLead.allLead, {
+                  tabType: selectLeadType ?? detail?.type ?? details?.type,
+                });
+              }
+            }}
           />
           <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
 

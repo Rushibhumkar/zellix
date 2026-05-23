@@ -100,6 +100,7 @@ import { Feather } from "@expo/vector-icons";
 import ReportFocus from "../assets/svg/ReportFocus";
 import ReportInfocus from "../assets/svg/ReportInfocus";
 import { myConsole } from "../hooks/useConsole";
+import CallListing from "../screens/Leads/CallListing";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -316,6 +317,13 @@ const LeadsNavigator = () => {
       <Stack.Screen
         name="AddLeads"
         component={AddLeads}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CallListing"
+        component={CallListing}
         options={{
           headerShown: false,
         }}
