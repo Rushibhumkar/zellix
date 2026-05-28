@@ -1,4 +1,12 @@
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
@@ -44,62 +52,73 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
   };
 
   return (
-    <Pressable
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 20}
       style={{
-        backgroundColor: "white",
-        borderRadius: 8,
-        padding: 20,
+        justifyContent: "flex-end",
       }}
-      onPress={() => Keyboard.dismiss()}
     >
-      {!hideFiles?.startDate && (
-        <DatePickerExpo
-          title="Start Date"
-          boxContainerStyle={{ marginBottom: 10 }}
-          onSelect={(v) => handleSearch("startDate", v)}
-          initialValue={search?.startDate}
-        />
-      )}
-      {!hideFiles?.endDate && (
-        <DatePickerExpo
-          title="End Date"
-          boxContainerStyle={{ marginBottom: 10 }}
-          onSelect={(v) => handleSearch("endDate", v)}
-          initialValue={search?.endDate}
-        />
-      )}
-      {!hideFiles?.search && (
-        <CustomInput
-          label="Search"
-          marginBottom={15}
-          onChangeText={(v) => handleSearch("search", v)}
-          value={search?.search}
-        />
-      )}
-      <View style={styles.buttonRow}>
-        <ActionButton
-          title="Clear"
-          icon="x"
-          variant="outline"
-          containerStyle={{ marginRight: 10 }}
-          onPress={() => {
-            setSearch(initial);
-            !!onPressSubmit && onPressSubmit(initial);
-            popUpConfToast.popUpClose();
-          }}
-        />
+      <Pressable
+        style={{
+          backgroundColor: "white",
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          padding: 20,
+          paddingBottom: 35,
+        }}
+        onPress={() => Keyboard.dismiss()}
+      >
+        {!hideFiles?.startDate && (
+          <DatePickerExpo
+            title="Start Date"
+            boxContainerStyle={{ marginBottom: 10 }}
+            onSelect={(v) => handleSearch("startDate", v)}
+            initialValue={search?.startDate}
+          />
+        )}
+        {!hideFiles?.endDate && (
+          <DatePickerExpo
+            title="End Date"
+            boxContainerStyle={{ marginBottom: 10 }}
+            onSelect={(v) => handleSearch("endDate", v)}
+            initialValue={search?.endDate}
+          />
+        )}
+        {!hideFiles?.search && (
+          <CustomInput
+            label="Search"
+            marginBottom={15}
+            onChangeText={(v) => handleSearch("search", v)}
+            value={search?.search}
+          />
+        )}
+        <View style={styles.buttonRow}>
+          <ActionButton
+            title="Clear"
+            icon="x"
+            variant="outline"
+            containerStyle={{ marginRight: 10, minHeight: 40 }}
+            onPress={() => {
+              setSearch(initial);
+              !!onPressSubmit && onPressSubmit(initial);
+              popUpConfToast.popUpClose();
+            }}
+          />
 
-        <ActionButton
-          title="Search"
-          icon="search"
-          variant="primary"
-          onPress={() => {
-            !!onPressSubmit && onPressSubmit(search);
-            popUpConfToast.popUpClose();
-          }}
-        />
-      </View>
-    </Pressable>
+          <ActionButton
+            title="Search"
+            icon="search"
+            variant="primary"
+            containerStyle={{ minHeight: 40 }}
+            onPress={() => {
+              !!onPressSubmit && onPressSubmit(search);
+              popUpConfToast.popUpClose();
+            }}
+          />
+        </View>
+      </Pressable>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -110,6 +129,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 8,
   },
 });

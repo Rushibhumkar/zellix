@@ -22,7 +22,7 @@ const ModalWithBlur = ({ visible, onClose, children }: TModalWithBlur) => {
   return (
     <Modal
       visible={visible}
-      animationType="fade"
+      animationType="slide"
       transparent
       onRequestClose={onClose}
     >
@@ -32,19 +32,36 @@ const ModalWithBlur = ({ visible, onClose, children }: TModalWithBlur) => {
       >
         <BlurView tint="light" intensity={20} style={{ flex: 1 }}>
           <Pressable
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-            onPress={() => Keyboard.dismiss()}
+            style={{
+              flex: 1,
+              justifyContent: "flex-end",
+            }}
+            onPress={onClose}
           >
             <Pressable
               style={{
                 backgroundColor: "white",
-                padding: 20,
-                borderRadius: 10,
-                width: "90%",
+                paddingHorizontal: 20,
+                paddingTop: 14,
+                paddingBottom: Platform.OS === "ios" ? 34 : 20,
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                width: "100%",
+                maxHeight: "92%",
                 ...shadow1,
               }}
               onPress={() => Keyboard.dismiss()}
             >
+              <View
+                style={{
+                  width: 55,
+                  height: 5,
+                  borderRadius: 20,
+                  backgroundColor: "#D1D5DB",
+                  alignSelf: "center",
+                  marginBottom: 16,
+                }}
+              />
               {children}
             </Pressable>
           </Pressable>

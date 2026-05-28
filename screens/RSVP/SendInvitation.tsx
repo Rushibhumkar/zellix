@@ -388,7 +388,7 @@ const SendInvitation = () => {
                     onSelect={(d: any) =>
                       setFieldValue(
                         "scheduleDate",
-                        d instanceof Date ? d : new Date(d)
+                        d instanceof Date ? d : new Date(d),
                       )
                     }
                     initialValue={values.scheduleDate}

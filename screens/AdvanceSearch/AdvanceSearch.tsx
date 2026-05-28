@@ -42,6 +42,7 @@ import {
   tokenInBooking,
 } from "../../utils/data";
 import { color } from "../../const/color";
+import moment from "moment";
 
 //
 function filterObjectKeys(obj: any, keys: [string]) {
@@ -229,7 +230,7 @@ const AdvanceSearch = () => {
     },
   });
 
-  const onDateSelect = (key, value) => {
+  const onDateSelect = (key, value = null) => {
     setTempDate((prev) => ({
       ...prev,
       [key]: value || null,
@@ -294,8 +295,20 @@ const AdvanceSearch = () => {
               key={`startDate-${resetKey}`}
               title="Start Date"
               boxContainerStyle={{ marginBottom: 15 }}
-              onSelect={(v) => onDateSelect("startDate", v)}
+              onSelect={(v) => {
+                onDateSelect("startDate", v);
+
+                if (
+                  values?.endDate &&
+                  moment(v).isAfter(moment(values?.endDate), "day")
+                ) {
+                  onDateSelect("endDate", v);
+                }
+              }}
               initialValue={values?.startDate}
+              maximumDate={
+                values?.endDate ? new Date(values?.endDate) : new Date()
+              }
             />
             <DatePickerExpo
               key={`endDate-${resetKey}`}
@@ -303,13 +316,25 @@ const AdvanceSearch = () => {
               boxContainerStyle={{ marginBottom: 15 }}
               onSelect={(v) => onDateSelect("endDate", v)}
               initialValue={values?.endDate}
+              minimumDate={
+                values?.startDate ? new Date(values?.startDate) : undefined
+              }
+              maximumDate={new Date()}
             />
             <DatePickerExpo
               key={`assignedAt-${resetKey}`}
               title="Assigned At"
+              maximumDate={moment().add(1, "day").toDate()}
               boxContainerStyle={{ marginBottom: 15 }}
               onSelect={(v) => onDateSelect("assignedAt", v)}
-              initialValue={values?.assignedAt}
+              initialValue={
+                values?.assignedAt &&
+                values?.assignedAt !== "null" &&
+                values?.assignedAt !== "undefined" &&
+                moment(values?.assignedAt).isValid()
+                  ? values?.assignedAt
+                  : null
+              }
             />
             <DropdownRNE
               key={`status-${resetKey}`}

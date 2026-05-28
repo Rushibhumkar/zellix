@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   TouchableWithoutFeedback,
+  TextInput,
 } from "react-native";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
@@ -34,14 +35,15 @@ const DIAL_PAD = [
 
 const CallListing = () => {
   const [showDialPad, setShowDialPad] = useState(false);
+  const [countryCode, setCountryCode] = useState("+971");
   const [phoneNumber, setPhoneNumber] = useState("");
   const appState = useRef(AppState.currentState);
 
   const isCallingRef = useRef(false);
 
   const formattedNumber = useMemo(() => {
-    return phoneNumber;
-  }, [phoneNumber]);
+    return `${countryCode}${phoneNumber}`;
+  }, [countryCode, phoneNumber]);
 
   const handlePress = (digit: string) => {
     setPhoneNumber((prev) => prev + digit);
@@ -61,7 +63,7 @@ const CallListing = () => {
     try {
       isCallingRef.current = true;
 
-      await Linking.openURL(`tel:${phoneNumber}`);
+      await Linking.openURL(`tel:${formattedNumber}`);
     } catch (err) {
       console.log("Call Error", err);
     }
@@ -137,24 +139,31 @@ const CallListing = () => {
 
                 {/* Number */}
                 <View style={styles.numberContainer}>
-                  <Text
-                    numberOfLines={1}
-                    style={[
-                      styles.numberText,
-                      {
-                        color: !!formattedNumber
-                          ? "#0F172A"
-                          : color.placeholderGrey,
-                      },
-                    ]}
-                  >
-                    {formattedNumber || "Enter Number"}
-                  </Text>
+                  <TextInput
+                    value={countryCode}
+                    onChangeText={setCountryCode}
+                    placeholder="+971"
+                    placeholderTextColor={color.placeholderGrey}
+                    style={styles.countryCodeInput}
+                    keyboardType="phone-pad"
+                  />
 
-                  {!!phoneNumber && (
+                  <TextInput
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    placeholder="Enter Number"
+                    placeholderTextColor={color.placeholderGrey}
+                    style={styles.numberInput}
+                    keyboardType="phone-pad"
+                  />
+
+                  {!!(countryCode || phoneNumber) && (
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={handleClearAll}
+                      onPress={() => {
+                        setCountryCode("");
+                        setPhoneNumber("");
+                      }}
                       style={styles.clearButton}
                     >
                       <Feather name="x" size={16} color="#64748B" />
@@ -291,6 +300,25 @@ const styles = StyleSheet.create({
   },
 
   numberText: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+    letterSpacing: 1,
+  },
+
+  countryCodeInput: {
+    width: 70,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+    borderRightWidth: 1,
+    borderRightColor: "#E2E8F0",
+    marginRight: 10,
+    paddingRight: 8,
+  },
+
+  numberInput: {
     flex: 1,
     fontSize: 18,
     fontWeight: "700",

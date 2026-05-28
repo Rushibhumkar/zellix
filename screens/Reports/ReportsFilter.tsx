@@ -129,61 +129,64 @@ const ReportsFilter = () => {
           onChange={(v) => setFieldValue("leadType", v)}
         />
 
-        {[roleEnum.sup_admin, roleEnum.sub_admin].includes(userRole) && (
-          <DropdownRNE
-            label="Pnl's"
-            arrOfObj={srManagersList}
-            containerStyle={styles.fieldContainer}
-            initialValue={values?.pnls}
-            onChange={(v) => {
-              setFieldValue("pnls", v);
-              setFieldValue("teams", []);
-              setFieldValue("agents", []);
-            }}
-            isMultiSelect
-            isSearch
-          />
-        )}
+        {![roleEnum.agent].includes(userRole) &&
+          [roleEnum.sup_admin, roleEnum.sub_admin].includes(userRole) && (
+            <DropdownRNE
+              label="Pnl's"
+              arrOfObj={srManagersList}
+              containerStyle={styles.fieldContainer}
+              initialValue={values?.pnls}
+              onChange={(v) => {
+                setFieldValue("pnls", v);
+                setFieldValue("teams", []);
+                setFieldValue("agents", []);
+              }}
+              isMultiSelect
+              isSearch
+            />
+          )}
 
-        {[
-          roleEnum.sup_admin,
-          roleEnum.sub_admin,
-          roleEnum.sr_manager,
-          roleEnum.team_lead,
-        ].includes(userRole) && (
-          <DropdownRNE
-            label="Teams"
-            arrOfObj={teamOptions}
-            containerStyle={styles.fieldContainer}
-            initialValue={values?.teams}
-            onChange={(v) => {
-              setFieldValue("teams", v);
-              setFieldValue("agents", []);
-            }}
-            isMultiSelect
-            isSearch
-          />
-        )}
+        {![roleEnum.agent].includes(userRole) &&
+          [
+            roleEnum.sup_admin,
+            roleEnum.sub_admin,
+            roleEnum.sr_manager,
+            roleEnum.team_lead,
+          ].includes(userRole) && (
+            <DropdownRNE
+              label="Teams"
+              arrOfObj={teamOptions}
+              containerStyle={styles.fieldContainer}
+              initialValue={values?.teams}
+              onChange={(v) => {
+                setFieldValue("teams", v);
+                setFieldValue("agents", []);
+              }}
+              isMultiSelect
+              isSearch
+            />
+          )}
 
-        {[
-          roleEnum.team_lead,
-          roleEnum.sup_admin,
-          roleEnum.sub_admin,
-          roleEnum.sr_manager,
-        ].includes(userRole) && (
-          <DropdownRNE
-            label="Agents"
-            arrOfObj={(usersOptions || [])?.map((el: any) => ({
-              name: el?.label,
-              _id: el?.value,
-            }))}
-            containerStyle={styles.fieldContainer}
-            initialValue={values?.agents}
-            onChange={(v) => setFieldValue("agents", v)}
-            isMultiSelect
-            isSearch
-          />
-        )}
+        {![roleEnum.agent].includes(userRole) &&
+          [
+            roleEnum.team_lead,
+            roleEnum.sup_admin,
+            roleEnum.sub_admin,
+            roleEnum.sr_manager,
+          ].includes(userRole) && (
+            <DropdownRNE
+              label="Agents"
+              arrOfObj={(usersOptions || [])?.map((el: any) => ({
+                name: el?.label,
+                _id: el?.value,
+              }))}
+              containerStyle={styles.fieldContainer}
+              initialValue={values?.agents}
+              onChange={(v) => setFieldValue("agents", v)}
+              isMultiSelect
+              isSearch
+            />
+          )}
 
         {/* Start Date */}
         <DatePickerExpo

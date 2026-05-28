@@ -22,36 +22,28 @@ const DeleteModel = ({
       <CustomModal visible={modalVisible} onClose={toggleModal} hasBackdrop>
         <View style={styles.container}>
           {/* Warning Icon */}
-          <SlideFadeIn>
-            <View style={styles.iconContainer}>
-              <AntDesign name="warning" size={22} color="red" />
-            </View>
-          </SlideFadeIn>
+          <View style={styles.iconContainer}>
+            <AntDesign name="warning" size={22} color="red" />
+          </View>
 
           {/* Title */}
-          <SlideFadeIn>
-            <CustomText style={styles.title}>
-              Are you sure you want to delete {selectedUser}?
-            </CustomText>
-          </SlideFadeIn>
+          <CustomText style={styles.title}>
+            Are you sure you want to delete {selectedUser}?
+          </CustomText>
 
           {/* Buttons */}
           <View style={styles.btnRow}>
-            <SlideFadeIn>
-              <CustomBtn
-                textStyle={{ fontSize: 14 }}
-                title="Cancel"
-                onPress={toggleModal}
-              />
-            </SlideFadeIn>
-            <SlideFadeIn>
-              <CustomBtn
-                textStyle={{ fontSize: 14 }}
-                title="Delete"
-                isLoading={isLoading}
-                onPress={handleDeleteUser}
-              />
-            </SlideFadeIn>
+            <CustomBtn
+              textStyle={{ fontSize: 14 }}
+              title="Cancel"
+              onPress={toggleModal}
+            />
+            <CustomBtn
+              textStyle={{ fontSize: 14 }}
+              title="Delete"
+              isLoading={isLoading}
+              onPress={handleDeleteUser}
+            />
           </View>
         </View>
       </CustomModal>
@@ -66,13 +58,8 @@ export default DeleteModel;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: color.white,
-    width: width * 0.85, // 85% of screen width
-    maxWidth: 400,
-    minWidth: 260,
-    borderRadius: 18,
-    paddingVertical: 25,
     paddingHorizontal: 20,
-    alignSelf: "center",
+    paddingBottom: 10,
   },
 
   iconContainer: {

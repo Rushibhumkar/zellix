@@ -151,17 +151,9 @@ const AllLeads = () => {
       });
       setSelected([]);
       toggleModalClose();
-      setSnackBar({
-        visible: true,
-        text: res?.data,
-        error: false,
-      });
+      toast.success(res?.data || "Lead(s) deleted successfully");
     } catch (error) {
-      setSnackBar({
-        visible: true,
-        text: res?.data,
-        error: false,
-      });
+      toast.error(res?.data || "Failed to delete Lead(s)");
       myConsole("error", error);
     } finally {
       setIsLoading(false);
@@ -389,12 +381,12 @@ const AllLeads = () => {
             >
               <Feather name="clock" size={18} color="#fff" />
             </Pressable>
-            {/* <Pressable
+            <Pressable
               onPress={() => navigation.navigate("CallListing")}
               style={styles.reminderIconBtn}
             >
               <Feather name="phone-call" size={18} color="#fff" />
-            </Pressable> */}
+            </Pressable>
           </View>
         }
         onPressAdd={() => {
@@ -657,6 +649,7 @@ const AllLeads = () => {
         setSelected={setSelected}
         toggleModal={toggleModalAssignLead}
         setSnackBar={setSnackBar}
+        toast={toast}
       />
       {/* <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
         <View style={{ gap: 20 }}>
@@ -714,14 +707,14 @@ const LeadRowItem = React.memo(
               //     ? bgColor
               //     : "white",
               backgroundColor: item?.isDuplicate
-                ? "#FFF1F2"
+                ? "#FFFBEB"
                 : selected
                   ? color.primary200
                   : bgColor
                     ? bgColor
                     : "white",
 
-              borderColor: item?.isDuplicate ? "#EF4444" : "#E3E8EF",
+              borderColor: item?.isDuplicate ? "#FACC15" : "#E3E8EF",
 
               borderWidth: item?.isDuplicate ? 1.2 : 1,
             },

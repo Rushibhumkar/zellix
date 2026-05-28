@@ -33,14 +33,21 @@ const formatText = (value) => {
 
 export default function DashboardCard({ title = "" }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [startDate, setStartDate] = useState(moment().startOf("month"));
-  const [endDate, setEndDate] = useState(moment());
+  const [startDate, setStartDate] = useState(
+    moment().subtract(11, "months").startOf("month").toDate(),
+  );
+
+  const [endDate, setEndDate] = useState(moment().endOf("month").toDate());
   const [selectedItem, setSelectedItem] = useState("confirm_business");
   const [summaryData, setSummaryData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
+    if (
+      !startDate ||
+      !endDate ||
+      moment(startDate).isAfter(moment(endDate), "day")
+    ) {
       console.warn("Invalid date range: Start Date must be before End Date.");
       return;
     }
@@ -94,14 +101,24 @@ export default function DashboardCard({ title = "" }) {
             <DatePickerExpo
               title="Start Date"
               boxContainerStyle={styles.datePickerBox}
-              onSelect={setStartDate}
+              onSelect={(date) => {
+                setStartDate(date);
+
+                if (endDate && moment(date).isAfter(moment(endDate), "day")) {
+                  setEndDate(date);
+                }
+              }}
               initialValue={startDate}
+              maximumDate={endDate ? new Date(endDate) : new Date()}
             />
+
             <DatePickerExpo
               title="End Date"
               boxContainerStyle={styles.datePickerBox}
               onSelect={setEndDate}
               initialValue={endDate}
+              minimumDate={startDate ? new Date(startDate) : undefined}
+              maximumDate={new Date()}
             />
           </View>
         </SlideFadeIn>

@@ -54,12 +54,12 @@ export const deleteLead = (data: [string]) => {
       .post("/api/lead/deleteLeadsByIds", data)
       // .then((res) => res)
       .then((res) => {
-        popUpConfToast.successMessage(res?.data);
+        // popUpConfToast.successMessage(res?.data);
         return res?.data;
       })
       .catch((err) => {
         myConsole("errUpdateCase", err?.response?.data);
-        popUpConfToast.errorMessage("Server error");
+        // popUpConfToast.errorMessage("Server error");
       })
   );
 };

@@ -106,7 +106,7 @@ const AllUSersHRM = () => {
                 marginTop={12}
                 marginBottom={20}
                 onPressFilter={() =>
-                  popUpConfToast.plzWait({
+                  popUpConfToast.bottomSheet({
                     bodyComponent: () => (
                       <SearchBox
                         onPressSubmit={handleSearchSubmit}
@@ -117,6 +117,7 @@ const AllUSersHRM = () => {
                         }}
                       />
                     ),
+                    snapPoints: ["70%"],
                   })
                 }
               />

@@ -17,16 +17,16 @@ import { color } from "../../const/color";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import moment from "moment";
 
 const LeadProjectCard = ({ onRefresh }: any) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
 
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const [startDate, setStartDate] = useState(
+    moment().subtract(11, "months").startOf("month").toDate(),
+  );
 
-  const [startDate, setStartDate] = useState(firstDayOfMonth);
-  const [endDate, setEndDate] = useState(lastDayOfMonth);
+  const [endDate, setEndDate] = useState(moment().endOf("month").toDate());
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -39,9 +39,9 @@ const LeadProjectCard = ({ onRefresh }: any) => {
 
   const transformedData =
     leadProjectWise?.leadCount?.map((item) => ({
-      value: item.count,
+      value: item?.count,
       label:
-        item.projectName.length > 10
+        item?.projectName?.length > 10
           ? item.projectName.slice(0, 10) + "..."
           : item.projectName,
     })) || [];
@@ -147,9 +147,17 @@ const LeadProjectCard = ({ onRefresh }: any) => {
                 value={startDate}
                 mode="date"
                 display="default"
+                maximumDate={endDate}
                 onChange={(e, selectedDate) => {
                   setShowStartPicker(false);
-                  if (selectedDate) setStartDate(selectedDate);
+
+                  if (selectedDate) {
+                    setStartDate(selectedDate);
+
+                    if (moment(selectedDate).isAfter(endDate, "day")) {
+                      setEndDate(selectedDate);
+                    }
+                  }
                 }}
                 textColor={color.mainTxtColor}
               />
@@ -160,9 +168,14 @@ const LeadProjectCard = ({ onRefresh }: any) => {
                 value={endDate}
                 mode="date"
                 display="default"
+                minimumDate={startDate}
+                maximumDate={new Date()}
                 onChange={(e, selectedDate) => {
                   setShowEndPicker(false);
-                  if (selectedDate) setEndDate(selectedDate);
+
+                  if (selectedDate) {
+                    setEndDate(selectedDate);
+                  }
                 }}
                 textColor={color.mainTxtColor}
               />

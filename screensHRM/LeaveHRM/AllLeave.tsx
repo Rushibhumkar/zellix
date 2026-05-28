@@ -17,10 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { routeLeave } from "../../utils/routesHRM";
 import AddIcon from "../../assets/svgHRM/AddIcon";
 import { useGetAllLeave } from "../../hooks/useGetQuerryHRM";
-import { myConsole } from "../../hooks/useConsole";
-import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
-import HeaderRowLeave from "../../myComponentsHRM/Row/rowHeader/HeaderRowLeave";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
@@ -32,7 +29,6 @@ import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
-import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
 
 const AllLeave = () => {
@@ -101,13 +97,14 @@ const AllLeave = () => {
                 marginTop={12}
                 marginBottom={20}
                 onPressFilter={() =>
-                  popUpConfToast.plzWait({
+                  popUpConfToast.bottomSheet({
                     bodyComponent: () => (
                       <SearchBox
                         onPressSubmit={handleSearchSubmit}
                         initialValue={searchSubmit}
                       />
                     ),
+                    snapPoints: ["85%"],
                   })
                 }
               />

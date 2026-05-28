@@ -16,10 +16,10 @@ import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const LeadQualityCard = ({ onRefresh }: any) => {
   const [startDate, setStartDate] = useState(
-    moment("2025-06-01", "YYYY-MM-DD")
+    moment().subtract(11, "months").startOf("month").toDate(),
   );
 
-  const [endDate, setEndDate] = useState(moment("2026-01-31", "YYYY-MM-DD"));
+  const [endDate, setEndDate] = useState(moment().endOf("month").toDate());
 
   const {
     data,
@@ -67,14 +67,25 @@ const LeadQualityCard = ({ onRefresh }: any) => {
           <DatePickerExpo
             title="Start Date"
             boxContainerStyle={styles.dateBox}
-            onSelect={setStartDate}
+            onSelect={(date) => {
+              setStartDate(date);
+
+              // ✅ if start date becomes greater than end date
+              if (endDate && moment(date).isAfter(moment(endDate), "day")) {
+                setEndDate(date);
+              }
+            }}
             initialValue={startDate}
+            maximumDate={endDate ? new Date(endDate) : new Date()}
           />
+
           <DatePickerExpo
             title="End Date"
             boxContainerStyle={styles.dateBox}
             onSelect={setEndDate}
             initialValue={endDate}
+            minimumDate={startDate ? new Date(startDate) : undefined}
+            maximumDate={new Date()}
           />
         </View>
       </SlideFadeIn>

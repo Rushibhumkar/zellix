@@ -21,6 +21,7 @@ interface TMultipleLeadAssign {
   setSelected: (a: []) => void;
   toggleModal: () => void;
   setSnackBar: any;
+  toast: any;
 }
 
 const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
@@ -29,6 +30,7 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
   setSelected,
   toggleModal,
   setSnackBar,
+  toast,
 }) => {
   const queryClient = useQueryClient();
   const { team, user } = useSelector(selectUser);
@@ -94,6 +96,7 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
       setSelected([]);
     } catch (err) {
       myConsole("errorAssignLead", err);
+      toast.error(err?.message || "Error assigning lead");
     } finally {
       setIsLoading(false);
       onModalClose();
@@ -107,7 +110,6 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
           backgroundColor: "white",
           padding: 20,
           borderRadius: 10,
-          width: WIDTH * 0.7,
         }}
       >
         <View>
@@ -126,6 +128,7 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
             keyName="sr_manager"
             onChange={(v) => setSrManager(v)}
             // initialValue={srManager}
+            dropdownPosition={"top"}
           />
           <DropdownRNE
             label="Users"
@@ -134,6 +137,7 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
             arrOfObj={assigningUserList?.data || []}
             onChange={(v) => setAssign(v)}
             initialValue={assign}
+            dropdownPosition={"top"}
           />
           <CustomBtn
             title="Save"

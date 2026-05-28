@@ -1,38 +1,24 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useFormik } from "formik";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-
-import * as Yup from "yup";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
-import { getAllMeetingFunc } from "../../redux/action";
-import { selectUser } from "../../redux/userSlice";
 import { addMeeting, updateMeeting } from "../../services/rootApi/meetingApi";
-import { myConsole } from "../../hooks/useConsole";
 import { addMeetingSchema } from "../../utils/validation";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModelMessage from "../../myComponents/CustomModelMessage";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { AntDesign, Feather } from "@expo/vector-icons";
 import CustomMapView from "../../myComponents/CustomMapView/CustomMapView";
 import CustomGooglePlacesSearch from "../../myComponents/CustomGooglePlacesSearch/CustomGooglePlacesSearch";
-import { routeMeeting } from "../../utils/routes";
 import { navigateToMapApp } from "../../utils/navigateToMapApp";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";

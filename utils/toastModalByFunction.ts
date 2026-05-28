@@ -105,6 +105,17 @@ const plzWait = ({ bodyComponent }) => {
   });
 };
 
+const bottomSheet = ({ bodyComponent, snapPoints = ["50%"] }) => {
+  return SPSheet.show({
+    component: bodyComponent,
+    dragFromTopOnly: true,
+    height: snapPoints?.[0] || "65%",
+    closeOnPressMask: true,
+    rounded: 24,
+    maskClosable: true,
+  });
+};
+
 const popUpClose = () => {
   return Popup.hide();
 };
@@ -116,4 +127,5 @@ export const popUpConfToast = {
   plzWait,
   waitingModal,
   popUpClose,
+  bottomSheet,
 };

@@ -226,24 +226,23 @@ const BottomTabs = () => {
             ),
         }}
       />
-      {!isAgent && (
-        <Tab.Screen
-          name="ReportsNavigator"
-          component={ReportsNavigator}
-          options={{
-            tabBarLabel: "",
-            tableBarShowLable: false,
-            tabBarLabelStyle: false,
-            headerShown: false,
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <ReportFocus style={styles.iconPosition} />
-              ) : (
-                <ReportInfocus style={styles.iconPosition} />
-              ),
-          }}
-        />
-      )}
+
+      <Tab.Screen
+        name="ReportsNavigator"
+        component={ReportsNavigator}
+        options={{
+          tabBarLabel: "",
+          tableBarShowLable: false,
+          tabBarLabelStyle: false,
+          headerShown: false,
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <ReportFocus style={styles.iconPosition} />
+            ) : (
+              <ReportInfocus style={styles.iconPosition} />
+            ),
+        }}
+      />
     </Tab.Navigator>
   );
 };

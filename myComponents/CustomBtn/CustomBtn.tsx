@@ -55,17 +55,15 @@ const CustomBtn = ({
         style={[styles.gradientContainer, gradientContStyle]}
       >
         <View style={styles.textView}>
-          <SlideFadeIn>
-            <CustomText
-              style={[
-                styles.text,
-                { color: disabled ? color?.textGray : color.white },
-                textStyle,
-              ]}
-            >
-              {title}
-            </CustomText>
-          </SlideFadeIn>
+          <CustomText
+            style={[
+              styles.text,
+              { color: disabled ? color?.textGray : color.white },
+              textStyle,
+            ]}
+          >
+            {title}
+          </CustomText>
           {isLoading && (
             <ActivityIndicator
               style={{ marginStart: 4 }}

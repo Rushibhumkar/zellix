@@ -202,128 +202,78 @@ const LeadPoolRowItem = ({
   onLongPress,
   onPressClaim,
 }: any) => {
-  const { user, leadQueryKey } = useSelector(selectUser);
+  const { user } = useSelector(selectUser);
+
   const isSubSup =
     user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+
   return (
     <TouchableOpacity
       key={index}
-      activeOpacity={isSubSup ? 0.9 : 1}
+      activeOpacity={0.9}
       style={[
         styles.mainlistcontainer,
         {
-          marginTop: index === 0 ? 25 : 12,
-          backgroundColor: selected
-            ? "rgba(252, 244, 227, 1)"
-            : bgColor
-              ? bgColor
-              : "white",
+          marginTop: index === 0 ? 18 : 14,
+          backgroundColor: selected ? "#EEF4FF" : bgColor ? bgColor : "#FFFFFF",
+          borderColor: selected ? color.primaryColor : "#E8EEF7",
         },
       ]}
       onPress={onPress}
       onLongPress={onLongPress}
     >
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: "65%", paddingEnd: 3 }}>
+      <View style={styles.cardTopRow}>
+        <View style={styles.leftContent}>
           <SlideFadeIn>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "700",
-                fontSize: 16,
-                textTransform: "capitalize",
-              }}
-            >
-              {item?.name}
+            <CustomText numberOfLines={1} style={styles.projectName}>
+              {item?.name || "N/A"}
             </CustomText>
           </SlideFadeIn>
+
           <SlideFadeIn>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "400",
-                marginTop: 5,
-                textTransform: "capitalize",
-              }}
-            >
-              {item?.clientName}
+            <CustomText numberOfLines={1} style={styles.clientName}>
+              {item?.clientName || "N/A"}
             </CustomText>
           </SlideFadeIn>
         </View>
-        <View style={{ width: "35%", paddingEnd: 3 }}>
-          <SlideFadeIn>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "400",
-                fontSize: 15,
-                textTransform: "capitalize",
-              }}
-            >
-              {leadTypeObj?.[item?.type]}
+
+        <View style={styles.rightContent}>
+          <View style={styles.typeBadge}>
+            <CustomText numberOfLines={1} style={styles.typeText}>
+              {leadTypeObj?.[item?.type] || "N/A"}
             </CustomText>
-          </SlideFadeIn>
-          <SlideFadeIn>
-            <CustomText
-              numberOfLines={1}
-              style={{
-                color: color.mainTxtColor,
-                fontWeight: "400",
-                fontSize: 15,
-                textTransform: "capitalize",
-                marginTop: 5,
-              }}
-            >
-              {item?.source || "N/A"}
-            </CustomText>
-          </SlideFadeIn>
+          </View>
+
+          <CustomText numberOfLines={1} style={styles.sourceText}>
+            {item?.source || "N/A"}
+          </CustomText>
         </View>
       </View>
-      <CustomBtn
-        title="Claim"
-        textStyle={{ fontSize: 16 }}
-        containerStyle={{ marginTop: 20 }}
-        onPress={onPressClaim}
-      />
+
+      <View style={styles.bottomRow}>
+        <CustomBtn
+          title="Claim Lead"
+          textStyle={{
+            fontSize: 15,
+            fontWeight: "700",
+          }}
+          containerStyle={styles.claimBtn}
+          onPress={onPressClaim}
+        />
+      </View>
     </TouchableOpacity>
   );
 };
 
 const LeadPoolHeading = () => {
   return (
-    <Container style={[{ paddingHorizontal: 20 }]}>
+    <Container style={{ paddingHorizontal: 20 }}>
       <View style={styles.headingContainer}>
-        <View style={{ width: "65%" }}>
-          <SlideFadeIn>
-            <CustomText style={[styles.headingText]}>
-              {"Project Name"}
-            </CustomText>
-          </SlideFadeIn>
-          <SlideFadeIn>
-            <CustomText style={[styles.headingText, { marginTop: 5 }]}>
-              {"Client Name"}
-            </CustomText>
-          </SlideFadeIn>
-        </View>
-        <View style={{ width: "35%" }}>
-          <SlideFadeIn>
-            <CustomText style={[styles.headingText]}>{"Type"}</CustomText>
-          </SlideFadeIn>
-          <SlideFadeIn>
-            <CustomText style={[styles.headingText, { marginTop: 5 }]}>
-              {"Source"}
-            </CustomText>
-          </SlideFadeIn>
-        </View>
-        {/* <View style={{ width: "32%", alignItems: "center" }}>
-          <CustomText style={[styles.headingText]}>{"Status"}</CustomText>
-          <CustomText style={[styles.headingText, { marginTop: 5 }]}>
-            {"Assigned"}
-          </CustomText>
-        </View> */}
+        <CustomText style={styles.headingTitle}>Available Leads</CustomText>
+
+        <CustomText style={styles.headingSubTitle}>
+          Claim and manage your lead pool efficiently
+        </CustomText>
       </View>
     </Container>
   );
@@ -338,23 +288,110 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     marginVertical: -2,
   },
+
   mainlistcontainer: {
     borderWidth: 1,
-    padding: 13,
-    borderRadius: 14,
-    borderColor: "#2D67C6",
+    padding: 16,
+    borderRadius: 22,
     marginHorizontal: 20,
+    backgroundColor: "#FFFFFF",
     ...shadowPrimaryColor,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  headingContainer: {
-    backgroundColor: color.primary200,
+
+  cardTopRow: {
     flexDirection: "row",
-    padding: 10,
-    borderRadius: 11,
-    marginBottom: -8,
-    marginTop: 25,
-    // justifyContent: "space-between",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
+
+  leftContent: {
+    width: "64%",
+    paddingRight: 10,
+  },
+
+  rightContent: {
+    width: "36%",
+    alignItems: "flex-end",
+  },
+
+  projectName: {
+    color: color.mainTxtColor,
+    fontWeight: "700",
+    fontSize: 17,
+    textTransform: "capitalize",
+    lineHeight: 22,
+  },
+
+  clientName: {
+    color: "#6B7280",
+    fontWeight: "500",
+    marginTop: 8,
+    fontSize: 14,
+    textTransform: "capitalize",
+  },
+
+  typeBadge: {
+    backgroundColor: "#EDF4FF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 50,
+    alignSelf: "flex-end",
+  },
+
+  typeText: {
+    color: color.primaryColor,
+    fontWeight: "700",
+    fontSize: 12,
+    textTransform: "capitalize",
+  },
+
+  sourceText: {
+    color: "#6B7280",
+    fontWeight: "500",
+    fontSize: 13,
+    marginTop: 10,
+    textTransform: "capitalize",
+  },
+
+  bottomRow: {
+    marginTop: 18,
+  },
+
+  claimBtn: {
+    height: 46,
+    borderRadius: 14,
+  },
+
+  headingContainer: {
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    marginBottom: -2,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#E8EEF7",
+    ...shadowPrimaryColor,
+    shadowOpacity: 0.05,
+    elevation: 2,
+  },
+
+  headingTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: color.mainTxtColor,
+  },
+
+  headingSubTitle: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#6B7280",
+    marginTop: 4,
+  },
+
   headingText: {
     fontSize: 14,
     fontWeight: "700",

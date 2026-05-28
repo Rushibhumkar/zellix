@@ -437,13 +437,13 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: "#FFFFFF",
     borderRadius: 22,
-    padding: 20,
+    paddingVertical: 20,
   },
 
   modalTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
+    color: color.mainTxtColor,
     marginBottom: 18,
   },
 

@@ -23,6 +23,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import CustomGooglePlacesSearch from "../../myComponents/CustomGooglePlacesSearch/CustomGooglePlacesSearch";
 import { myConsole } from "../../hooks/useConsole";
+import moment from "moment";
 
 const validationSchema = Yup.object().shape({
   eventName: Yup.string().required("Event name is required"),
@@ -149,15 +150,23 @@ const AddEvent = ({ route }: any) => {
                   {/* START DATE */}
                   <DatePickerExpo
                     boxContainerStyle={{ marginHorizontal: 20, marginTop: 12 }}
-                    onSelect={(d: any) =>
-                      setFieldValue(
-                        "startDate",
-                        d instanceof Date ? d : new Date(d),
-                      )
-                    }
+                    onSelect={(d: any) => {
+                      const selectedDate = d instanceof Date ? d : new Date(d);
+
+                      setFieldValue("startDate", selectedDate);
+
+                      // ✅ auto-fix endDate
+                      if (
+                        values?.endDate &&
+                        moment(selectedDate).isAfter(values?.endDate)
+                      ) {
+                        setFieldValue("endDate", selectedDate);
+                      }
+                    }}
                     initialValue={values.startDate}
                     title="Start Date & Time"
                     mode="datetime"
+                    maximumDate={new Date()}
                   />
                   {touched.startDate && errors.startDate && (
                     <CustomText style={styles.errorText}>
@@ -177,6 +186,8 @@ const AddEvent = ({ route }: any) => {
                     initialValue={values.endDate}
                     title="End Date & Time"
                     mode="datetime"
+                    minimumDate={values?.startDate || undefined}
+                    maximumDate={new Date()}
                   />
                   {touched.endDate && errors.endDate && (
                     <CustomText style={styles.errorText}>

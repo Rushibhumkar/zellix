@@ -337,7 +337,7 @@ const InterviewMain = () => {
           <CustomInput
             label="Remark"
             placeholder="Type here..."
-            containerStyle={{ marginTop: 8 }}
+            containerStyle={{ marginTop: 10 }}
             multiline
             numberOfLines={4}
             value={rescheduleFormik.values.remark}
@@ -355,7 +355,7 @@ const InterviewMain = () => {
                 rescheduleFormik.resetForm();
                 setShowRescheduleModal(false);
               }}
-              containerStyle={{ marginRight: 10 }}
+              containerStyle={{ marginRight: 10, minHeight: 40 }}
             />
 
             <ActionButton
@@ -365,6 +365,7 @@ const InterviewMain = () => {
               variant="primary"
               disabled={rescheduleLoading}
               onPress={rescheduleFormik.handleSubmit}
+              containerStyle={{ minHeight: 40 }}
             />
           </View>
         </View>
@@ -659,7 +660,8 @@ const styles = StyleSheet.create({
   rescheduleModal: {
     backgroundColor: "#fff",
     borderRadius: 22,
-    padding: 18,
+    paddingHorizontal: 6,
+    paddingVertical: 20,
   },
 
   modalTitle: {

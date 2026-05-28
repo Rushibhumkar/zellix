@@ -971,7 +971,7 @@ const styles = StyleSheet.create({
   },
   updateModal: {
     backgroundColor: "white",
-    width: WIDTH * 0.8,
+    // width: WIDTH * 0.4,
     paddingHorizontal: 20,
     borderRadius: 10,
     paddingTop: 10,

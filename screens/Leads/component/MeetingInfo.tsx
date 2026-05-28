@@ -27,6 +27,7 @@ const MeetingInfo = ({
   setActiveTab,
   activeTab,
   selectLeadType,
+  onBackPress,
 }: any) => {
   const meetingsInfo = useLatestMeetings(leadId);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,6 +46,7 @@ const MeetingInfo = ({
             ? "Calling Data Info"
             : "Lead Details"
         }
+        onBack={onBackPress}
       />
       <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
       <ScrollView
