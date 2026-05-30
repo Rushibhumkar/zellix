@@ -32,6 +32,17 @@ export const addLead = (data, toast) => {
   );
 };
 
+export const createLeadFromCalling = (data) => {
+  return axiosInstance
+    .post("/api/lead/create/v2", data)
+    .then((res) => res?.data)
+    .catch((err) => {
+      myConsole("createLeadFromCallingErr", err?.response?.data);
+
+      throw err?.response?.data || new Error("Request failed");
+    });
+};
+
 export const updateLead = ({ id, data }, toast) => {
   return (
     axiosInstance

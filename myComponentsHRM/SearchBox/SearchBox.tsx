@@ -15,6 +15,7 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import OutlineBtn from "../../myComponents/OutlineBtn/OutlineBtn";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import ActionButton from "../../myComponents/ActionButton";
+import moment from "moment";
 
 interface search {
   search: string;
@@ -31,16 +32,26 @@ interface TSearchBox {
   };
 }
 
-const initial = {
+const getDefaultDates = () => ({
   search: "",
-  startDate: "",
-  endDate: "",
-};
+  startDate: moment().subtract(11, "months").startOf("month").toDate(),
+  endDate: moment().endOf("month").toDate(),
+});
+
+const initial = getDefaultDates();
 const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
-  const [search, setSearch] = useState(initial);
+  const [search, setSearch] = useState(getDefaultDates());
 
   useEffect(() => {
-    !!initialValue && setSearch(initialValue);
+    if (initialValue) {
+      setSearch({
+        search: initialValue?.search || "",
+        startDate:
+          initialValue?.startDate ||
+          moment().subtract(11, "months").startOf("month").toDate(),
+        endDate: initialValue?.endDate || moment().endOf("month").toDate(),
+      });
+    }
   }, [initialValue]);
   const handleSearch = (key: "search" | "startDate" | "endDate", val) => {
     setSearch((prev) => {
@@ -54,18 +65,18 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 20}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       style={{
-        justifyContent: "flex-end",
+        width: "100%",
       }}
     >
       <Pressable
         style={{
           backgroundColor: "white",
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          padding: 20,
-          paddingBottom: 35,
+          paddingHorizontal: 20,
+          paddingTop: 10,
+          paddingBottom: 30,
+          width: "100%",
         }}
         onPress={() => Keyboard.dismiss()}
       >
@@ -75,6 +86,9 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
             boxContainerStyle={{ marginBottom: 10 }}
             onSelect={(v) => handleSearch("startDate", v)}
             initialValue={search?.startDate}
+            maximumDate={
+              search?.endDate ? new Date(search.endDate) : new Date()
+            }
           />
         )}
         {!hideFiles?.endDate && (
@@ -83,6 +97,10 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
             boxContainerStyle={{ marginBottom: 10 }}
             onSelect={(v) => handleSearch("endDate", v)}
             initialValue={search?.endDate}
+            minimumDate={
+              search?.startDate ? new Date(search.startDate) : undefined
+            }
+            maximumDate={new Date()}
           />
         )}
         {!hideFiles?.search && (
@@ -100,8 +118,11 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
             variant="outline"
             containerStyle={{ marginRight: 10, minHeight: 40 }}
             onPress={() => {
-              setSearch(initial);
-              !!onPressSubmit && onPressSubmit(initial);
+              const resetData = getDefaultDates();
+
+              setSearch(resetData);
+
+              !!onPressSubmit && onPressSubmit(resetData);
               popUpConfToast.popUpClose();
             }}
           />
@@ -126,6 +147,7 @@ export default SearchBox;
 
 const styles = StyleSheet.create({
   buttonRow: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

@@ -50,9 +50,20 @@ const LeadQualityCard = ({ onRefresh }: any) => {
       color: "#E5E7EB",
     },
   ];
-
   useEffect(() => {
-    if (onRefresh) refetchCallingData();
+    if (onRefresh) {
+      const defaultStartDate = moment()
+        .subtract(11, "months")
+        .startOf("month")
+        .toDate();
+
+      const defaultEndDate = moment().endOf("month").toDate();
+
+      setStartDate(defaultStartDate);
+      setEndDate(defaultEndDate);
+
+      refetchCallingData();
+    }
   }, [onRefresh]);
   return (
     <View style={styles.card}>

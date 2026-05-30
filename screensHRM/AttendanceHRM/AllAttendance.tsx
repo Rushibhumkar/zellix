@@ -3,9 +3,6 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState } from "react";
@@ -13,19 +10,11 @@ import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowAttendance from "../../myComponentsHRM/Row/RowAttendance";
-import { Popup, Toast, SPSheet } from "react-native-popup-confirm-toast";
-import EditIcon from "../../assets/svg/EditIcon";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
-import { HEIGHT } from "../../const/deviceInfo";
 import { useNavigation } from "@react-navigation/native";
-import { routeAttendance, routeLeave } from "../../utils/routesHRM";
-import { myConsole } from "../../hooks/useConsole";
+import { routeAttendance } from "../../utils/routesHRM";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
-import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
-import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
-import CustomInput from "../../myComponents/CustomInput/CustomInput";
-import LeaveAppRemark from "../LeaveHRM/components/LeaveAppRemark";
 import {
   useGetAllAttendance,
   useGetIssueAttendance,
@@ -33,8 +22,6 @@ import {
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
-import HeaderRowAttendance from "../../myComponentsHRM/Row/rowHeader/HeaderRowAttendance";
-import PleaseWait from "../../myComponentsHRM/PleaseWait/PleaseWait";
 import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
@@ -42,10 +29,10 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
-import HeaderRowUserAtt from "../../myComponentsHRM/Row/rowHeader/HeaderRowUserAtt";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
+import moment from "moment";
 const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
@@ -86,6 +73,13 @@ const AllAttendance = () => {
   };
   //
   const onRefresh = async () => {
+    const defaultDates = {
+      search: "",
+      startDate: moment().subtract(11, "months").startOf("month").toDate(),
+      endDate: moment().endOf("month").toDate(),
+    };
+
+    setSearchSubmit(defaultDates);
     try {
       setRefreshing(true);
       await queryClient.invalidateQueries({
@@ -205,7 +199,8 @@ const AllAttendance = () => {
               marginBottom={0}
               marginTop={8}
               onPressFilter={() =>
-                popUpConfToast.plzWait({
+                popUpConfToast.bottomSheet({
+                  snapPoints: ["55%"],
                   bodyComponent: () => (
                     <SearchBox
                       onPressSubmit={handleSearchSubmit}

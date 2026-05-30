@@ -24,7 +24,8 @@ export default function GraphData({
   header,
   leftSubItems = [],
   rightSubValue = [],
-}) {
+  onRefresh,
+}: any) {
   const [selectedItem, setSelectedItem] = useState("total");
   const [startDate, setStartDate] = useState(
     moment().subtract(11, "months").startOf("month").toDate(),
@@ -33,6 +34,20 @@ export default function GraphData({
   const [endDate, setEndDate] = useState(moment().endOf("month").toDate());
   const [summaryData, setSummaryData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (onRefresh) {
+      const defaultStartDate = moment()
+        .subtract(11, "months")
+        .startOf("month")
+        .toDate();
+
+      const defaultEndDate = moment().endOf("month").toDate();
+
+      setStartDate(defaultStartDate);
+      setEndDate(defaultEndDate);
+    }
+  }, [onRefresh]);
 
   useEffect(() => {
     if (
@@ -117,7 +132,7 @@ export default function GraphData({
               }
             }}
             initialValue={startDate}
-            maximumDate={endDate ? new Date(endDate) : new Date()}
+            maximumDate={endDate || new Date()}
           />
 
           <DatePickerExpo
@@ -125,7 +140,7 @@ export default function GraphData({
             boxContainerStyle={styles.datePickerBox}
             onSelect={setEndDate}
             initialValue={endDate}
-            minimumDate={startDate ? new Date(startDate) : undefined}
+            minimumDate={startDate || undefined}
             maximumDate={new Date()}
           />
         </View>

@@ -59,7 +59,7 @@ const DatePickerExpo = ({
     if (Platform.OS === "android" && event?.type === "dismissed") {
       // 👇 clear selected date and close pickers
       setGetDate(null);
-      onSelect && onSelect(""); // clears the formik field
+      onSelect && onSelect(null);
       setShowPicker(false);
       setShowTimePicker(false);
       return; // stop further execution
@@ -96,10 +96,19 @@ const DatePickerExpo = ({
     }
   };
   useEffect(() => {
-    if (initialValue) {
+    if (
+      initialValue &&
+      initialValue !== "null" &&
+      initialValue !== "undefined" &&
+      moment(initialValue).isValid()
+    ) {
       const d = new Date(initialValue);
+
       setGetDate(d);
       setDate(d);
+    } else {
+      setGetDate(null);
+      setDate(new Date());
     }
   }, [initialValue]);
 
@@ -161,63 +170,85 @@ const DatePickerExpo = ({
       </View>
       {/* date picker code */}
       {Platform.OS === "ios" && (
-        <>
-          <Modal
-            isVisible={showPicker}
-            animationIn={"zoomIn"}
-            animationOut={"zoomOut"}
-          >
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 30,
-              }}
-            >
-              {showPicker && (
-                <DateTimePicker
-                  mode={mode} // ✅ ensure time mode works too
-                  display="spinner"
-                  value={date}
-                  onChange={(event, selectedDate) => {
-                    const current =
-                      selectedDate || new Date(event?.nativeEvent?.timestamp);
-                    setDate(current);
-                  }}
-                  maximumDate={maximumDate}
-                  minimumDate={minimumDate}
-                  textColor={color.mainTxtColor}
-                  accentColor={color.mainTxtColor}
-                  minuteInterval={minuteInterval}
-                />
-              )}
-              <>
-                <Button
-                  title="Cancel"
-                  onPress={() => {
-                    setDate(new Date()); // optional, can skip
-                    setGetDate(null); // ⛔ clear selected date
-                    onSelect && onSelect(""); // ⛔ clear formik field
-                    setShowPicker(false);
-                    setShowTimePicker(false);
-                  }}
-                  color={color.darkBlack}
-                />
+        <Modal
+          isVisible={showPicker}
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          swipeDirection="down"
+          onSwipeComplete={() => {
+            setShowPicker(false);
+            setShowTimePicker(false);
+          }}
+          onBackdropPress={() => {
+            setShowPicker(false);
+            setShowTimePicker(false);
+          }}
+          style={styles.bottomModal}
+          backdropOpacity={0.35}
+          useNativeDriver
+          hideModalContentWhileAnimating
+        >
+          <View style={styles.bottomSheet}>
+            {/* Handle */}
+            <View style={styles.dragHandle} />
 
-                <Button
-                  title="Ok"
-                  onPress={() => {
+            {/* Header */}
+            <View style={styles.sheetHeader}>
+              <TouchableOpacity
+                onPress={() => {
+                  setDate(new Date());
+                  setGetDate(null);
+                  onSelect && onSelect(null);
+                  setShowPicker(false);
+                  setShowTimePicker(false);
+                }}
+              >
+                <CustomText style={styles.cancelText}>Cancel</CustomText>
+              </TouchableOpacity>
+
+              <CustomText style={styles.sheetTitle}>
+                Select {mode === "time" ? "Time" : "Date"}
+              </CustomText>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (date) {
                     const finalDate = new Date(date);
+
                     setGetDate(finalDate);
-                    onSelect && onSelect(finalDate); // ✅ yahi bhejna hai
-                    setShowPicker(false);
-                    setShowTimePicker(false);
-                  }}
-                  color={color.darkBlack}
-                />
-              </>
+
+                    onSelect && onSelect(finalDate);
+                  }
+
+                  setShowPicker(false);
+                  setShowTimePicker(false);
+                }}
+              >
+                <CustomText style={styles.doneText}>Done</CustomText>
+              </TouchableOpacity>
             </View>
-          </Modal>
-        </>
+
+            {/* Picker */}
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                mode={mode}
+                display="spinner"
+                value={date || new Date()}
+                onChange={(event, selectedDate) => {
+                  const current =
+                    selectedDate || new Date(event?.nativeEvent?.timestamp);
+
+                  setDate(current);
+                }}
+                maximumDate={maximumDate}
+                minimumDate={minimumDate}
+                textColor={color.mainTxtColor}
+                accentColor={color.mainTxtColor}
+                minuteInterval={minuteInterval}
+              />
+            </View>
+          </View>
+        </Modal>
       )}
       {Platform.OS === "android" && (
         <>
@@ -225,7 +256,7 @@ const DatePickerExpo = ({
             <DateTimePicker
               mode={mode === "datetime" ? "date" : "date"}
               display="default"
-              value={date}
+              value={date || new Date()}
               onChange={onChange}
               maximumDate={maximumDate}
               minimumDate={minimumDate}
@@ -236,7 +267,7 @@ const DatePickerExpo = ({
             <DateTimePicker
               mode="time"
               display="default"
-              value={date}
+              value={date || new Date()}
               onChange={onChange}
               minuteInterval={minuteInterval}
             />
@@ -249,4 +280,61 @@ const DatePickerExpo = ({
 
 export default DatePickerExpo;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  bottomModal: {
+    justifyContent: "flex-end",
+    margin: 0,
+  },
+
+  bottomSheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 10,
+    paddingBottom: 24,
+    overflow: "hidden",
+  },
+
+  dragHandle: {
+    width: 48,
+    height: 5,
+    borderRadius: 10,
+    backgroundColor: "#D1D5DB",
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+
+  sheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+
+  sheetTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: color.mainTxtColor,
+  },
+
+  cancelText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#EF4444",
+  },
+
+  doneText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: color.mainTxtColor,
+  },
+
+  pickerContainer: {
+    backgroundColor: "#ffffff",
+    paddingBottom: 10,
+    alignSelf: "center",
+  },
+});

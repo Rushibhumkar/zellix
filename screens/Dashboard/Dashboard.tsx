@@ -171,24 +171,26 @@ const Dashboard = () => {
     dispatch(getAllDeveloperFunc());
   }, []);
   //
-  const onRefresh = () => {
-    setRefreshing(true);
+  const onRefresh = async () => {
     try {
-      // fetchUserData();
-      // dispatch(getAllMeetingFunc());
+      setRefreshing(true);
+
       dispatch(getTeamFunc());
-      // dispatch(getAllBookingFunc());
       dispatch(getUserFunc());
-      // dispatch(getAllLeadFunc());
-      //
-      refetchBookingCount();
-      refetchMeetingCount();
-      refetchCommissionCount();
-      refetchDashboardCount();
+
+      await Promise.all([
+        refetchBookingCount(),
+        refetchMeetingCount(),
+        refetchCommissionCount(),
+        refetchDashboardCount(),
+      ]);
     } catch (err) {
-      console.log(err);
+      console.log("REFRESH ERROR =>", err);
     } finally {
-      setRefreshing(false);
+      setTimeout(() => {
+        console.log("REFRESH ENDED");
+        setRefreshing(false);
+      }, 800);
     }
   };
   //
@@ -581,12 +583,18 @@ const Dashboard = () => {
             )}
 
             {canViewConfirmBusiness && (
-              <GraphData header={"Confirmed Business"} />
+              <GraphData header={"Confirmed Business"} onRefresh={refreshing} />
             )}
+
             {canViewExpOfInterest && (
-              <GraphData header={"Expression of Interest"} />
+              <GraphData
+                header={"Expression of Interest"}
+                onRefresh={refreshing}
+              />
             )}
-            {canViewSummary && <DashboardCard title="Summary" />}
+            {canViewSummary && (
+              <DashboardCard title="Summary" onRefresh={refreshing} />
+            )}
             {!loadingBookingCount ? (
               <BookingCard item={bookingCount} />
             ) : (

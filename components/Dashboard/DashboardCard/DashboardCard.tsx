@@ -24,14 +24,14 @@ import SlideFadeIn from "../../../utils/animations/SlideFadeIn";
 const Line = () => <View style={styles.line} />;
 
 // Helper for formatting values
-const formatText = (value) => {
+const formatText = (value: any) => {
   if (typeof value === "number") {
     return new Intl.NumberFormat("en-US").format(value);
   }
   return value;
 };
 
-export default function DashboardCard({ title = "" }) {
+export default function DashboardCard({ title = "", onRefresh }: any) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [startDate, setStartDate] = useState(
     moment().subtract(11, "months").startOf("month").toDate(),
@@ -41,6 +41,20 @@ export default function DashboardCard({ title = "" }) {
   const [selectedItem, setSelectedItem] = useState("confirm_business");
   const [summaryData, setSummaryData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (onRefresh) {
+      const defaultStartDate = moment()
+        .subtract(11, "months")
+        .startOf("month")
+        .toDate();
+
+      const defaultEndDate = moment().endOf("month").toDate();
+
+      setStartDate(defaultStartDate);
+      setEndDate(defaultEndDate);
+    }
+  }, [onRefresh]);
 
   useEffect(() => {
     if (
@@ -109,7 +123,7 @@ export default function DashboardCard({ title = "" }) {
                 }
               }}
               initialValue={startDate}
-              maximumDate={endDate ? new Date(endDate) : new Date()}
+              maximumDate={endDate || new Date()}
             />
 
             <DatePickerExpo
@@ -117,7 +131,7 @@ export default function DashboardCard({ title = "" }) {
               boxContainerStyle={styles.datePickerBox}
               onSelect={setEndDate}
               initialValue={endDate}
-              minimumDate={startDate ? new Date(startDate) : undefined}
+              minimumDate={startDate || undefined}
               maximumDate={new Date()}
             />
           </View>

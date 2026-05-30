@@ -20,6 +20,7 @@ import {
   StyleSheet,
   AppState,
   TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
@@ -891,16 +892,20 @@ const LeadsDetails = () => {
     }
   }, [showChangeStatusPopup]);
 
-  const additionalQuestionsData =
+  const hasValidAdditionalQuestionsV2 =
     Array.isArray(detail?.additionalQuestionsV2) &&
-    detail?.additionalQuestionsV2?.length > 0
-      ? detail?.additionalQuestionsV2
-      : detail?.additionalQuestions
-        ? extractStringObj(detail?.additionalQuestions)
-        : [];
+    detail.additionalQuestionsV2.some(
+      (item) => Array.isArray(item?.questions) && item.questions.length > 0,
+    );
+
+  const additionalQuestionsData = hasValidAdditionalQuestionsV2
+    ? detail.additionalQuestionsV2
+    : detail?.additionalQuestions
+      ? extractStringObj(detail.additionalQuestions)
+      : [];
 
   // myConsole("tdForFUTtt", tdForFUT);
-  // myConsole("detail?", detail);
+  myConsole("detail?", detail);
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
   // myConsole("additionalQuestionsv2 =>", detail?.additionalQuestionsV2);
 
@@ -1018,7 +1023,7 @@ const LeadsDetails = () => {
             </TouchableWithoutFeedback>
           )}
 
-          {/* <----------- Send follow up notification popup---------------> */}
+          {/* <----------- Send follow up notification popup ---------------> */}
           <ModalWithBlur
             visible={showNotiPopup}
             onClose={() => setShowNotiPopup(false)}
@@ -1027,12 +1032,12 @@ const LeadsDetails = () => {
               <CustomText style={styles.title}>
                 Send follow up notification
               </CustomText>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={{
                   position: "absolute",
                   top: 0,
-                  right: -16,
-                  marginTop: 4,
+                  right: 6,
+                  marginTop: 0,
                 }}
                 onPress={() => {
                   setShowNotiPopup(false);
@@ -1040,7 +1045,7 @@ const LeadsDetails = () => {
                 }}
               >
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <CustomText style={styles.label}>Message</CustomText>
               <TextInput
                 style={styles.input}
@@ -1066,7 +1071,7 @@ const LeadsDetails = () => {
             </View>
           </ModalWithBlur>
 
-          {/* <----------------Change Status popup-------------> */}
+          {/* <---------------- Change Status popup -------------> */}
           <ModalWithBlur
             visible={showChangeStatusPopup}
             onClose={() => {
@@ -1079,7 +1084,7 @@ const LeadsDetails = () => {
             <View style={styles.modalContent}>
               <CustomText style={styles.title}>Change Status</CustomText>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={{
                   position: "absolute",
                   top: 0,
@@ -1092,7 +1097,7 @@ const LeadsDetails = () => {
                 }}
               >
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <DropdownRNE
                 placeholder="Select Status"
@@ -1154,8 +1159,9 @@ const LeadsDetails = () => {
                     numberOfLines={3}
                     marginBottom={10}
                     // inputContainerStyle={{
-                    //   height: 160,
-                    //   alignItems: "flex-start",
+                    //   // height: 160,
+                    //   backgroundColor: "red",
+                    //   alignSelf: "flex-start",
                     // }}
                     containerStyle={{ marginTop: 8 }}
                     inputStyle={{ height: 140 }}
@@ -1168,7 +1174,6 @@ const LeadsDetails = () => {
                     <View
                       style={{
                         backgroundColor: "white",
-                        width: 300,
                         padding: 20,
                         borderRadius: 10,
                       }}
@@ -1211,8 +1216,9 @@ const LeadsDetails = () => {
                         title="Submit"
                         containerStyle={{
                           marginBottom: 20,
-                          width: 100,
-                          alignSelf: "center",
+                          marginTop: 20,
+                          // width: 100,
+                          // alignSelf: "center",
                         }}
                         onPress={() => {
                           FUTModal.closeModal(); // ✅ only close modal, no API call
@@ -1260,7 +1266,10 @@ const LeadsDetails = () => {
           </ModalWithBlur>
 
           <ScrollView
-            style={{ padding: 20 }}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 20,
+            }}
             refreshControl={
               <RefreshControl
                 refreshing={isFetching}
@@ -1295,7 +1304,7 @@ const LeadsDetails = () => {
 
                       {!!detail?.isDuplicate && (
                         <View style={styles.detailDuplicateBadge}>
-                          <Feather name="copy" size={12} color="#DC2626" />
+                          <Feather name="copy" size={12} color="#FACC15" />
 
                           <Text style={styles.detailDuplicateText}>
                             Duplicate Lead
@@ -1547,20 +1556,40 @@ const LeadsDetails = () => {
                 />
               </View>
 
-              {!!additionalQuestionsData?.length && (
+              {additionalQuestionsData?.length > 0 && (
                 <View style={styles.card}>
                   <Text style={styles.sectionTitle}>Additional Questions</Text>
                   <View style={styles.divider} />
                   {additionalQuestionsData?.map(
                     (item: any, parentIndex: number) => (
-                      <View key={parentIndex} style={styles.questionGroupCard}>
-                        {!!(item?.createdAt || item?.submittedAt) && (
+                      <View
+                        key={parentIndex}
+                        style={[
+                          styles.questionGroupCard,
+                          // {
+                          //   borderBottomColor: "#000",
+                          //   borderBottomWidth:
+                          //     parentIndex ===
+                          //     additionalQuestionsData?.length - 1
+                          //       ? 0
+                          //       : 1,
+                          // },
+                        ]}
+                      >
+                        {!!(
+                          item?.createdAt ||
+                          item?.submittedAt ||
+                          detail?.createdAt
+                        ) && (
                           <View style={styles.questionDateContainer}>
                             <Text style={styles.questionDateText}>
                               {moment(
-                                item?.submittedAt || item?.createdAt,
+                                item?.submittedAt ||
+                                  item?.createdAt ||
+                                  detail?.createdAt,
                               ).format("DD MMM YYYY, hh:mm A")}
                             </Text>
+
                             <View style={styles.dateUnderline} />
                           </View>
                         )}
@@ -1576,6 +1605,7 @@ const LeadsDetails = () => {
                               key={`${parentIndex}-${index}`}
                               style={[
                                 styles.compactQaRow,
+                                { paddingTop: index === 0 ? 4 : 0 },
                                 index ===
                                   Object.entries(item?.questions || {})
                                     ?.length -
@@ -1586,27 +1616,42 @@ const LeadsDetails = () => {
                                 },
                               ]}
                             >
-                              <Text
-                                style={styles.compactQuestion}
-                                numberOfLines={3}
-                              >
-                                {key}
+                              <Text style={styles.questionLabel}>
+                                Q.{" "}
+                                <Text style={styles.compactQuestion}>
+                                  {String(key).charAt(0).toUpperCase() +
+                                    String(key).slice(1)}
+                                </Text>
                               </Text>
 
-                              <Text
-                                style={styles.compactAnswer}
-                                numberOfLines={3}
-                              >
-                                {typeof value === "string"
-                                  ? value
-                                      .replace(/_/g, " ")
-                                      .replace(/\s+/g, " ")
-                                      .trim()
-                                  : value !== undefined &&
-                                      value !== null &&
-                                      typeof value !== "object"
-                                    ? String(value)
-                                    : "N/A"}
+                              <Text style={styles.answerLabel}>
+                                A.{" "}
+                                <Text style={styles.compactAnswer}>
+                                  {(typeof value === "string"
+                                    ? value
+                                        .replace(/_/g, " ")
+                                        .replace(/\s+/g, " ")
+                                        .trim()
+                                    : value !== undefined &&
+                                        value !== null &&
+                                        typeof value !== "object"
+                                      ? String(value)
+                                      : "N/A"
+                                  )
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                    (typeof value === "string"
+                                      ? value
+                                          .replace(/_/g, " ")
+                                          .replace(/\s+/g, " ")
+                                          .trim()
+                                      : value !== undefined &&
+                                          value !== null &&
+                                          typeof value !== "object"
+                                        ? String(value)
+                                        : "N/A"
+                                    ).slice(1)}
+                                </Text>
                               </Text>
                             </View>
                           );
@@ -1773,6 +1818,17 @@ const LeadsDetails = () => {
           leadId={params?.item?._id}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          onBackPress={() => {
+            if (from === "reminders") {
+              navigation.navigate("Reminders", {
+                remindersActiveTab,
+              });
+            } else {
+              navigate(routeLead.allLead, {
+                tabType: selectLeadType ?? detail?.type ?? details?.type,
+              });
+            }
+          }}
         />
       )}
 
@@ -1794,10 +1850,8 @@ export default LeadsDetails;
 const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "white",
-    borderRadius: 10,
-    // padding: 20,
-    width: "90%",
-    alignSelf: "center",
+    width: "100%",
+    paddingBottom: Platform.OS === "ios" ? 30 : 12,
   },
   title: {
     fontSize: 20,
@@ -1835,7 +1889,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     paddingVertical: 16,
     marginBottom: 20,
     shadowColor: "#000",
@@ -1943,6 +1997,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: color.mainTxtColor,
     fontWeight: "600",
+    marginBottom: 6,
+    marginLeft: 4,
   },
 
   value: {
@@ -2011,22 +2067,19 @@ const styles = StyleSheet.create({
     color: color.mainTxtColor,
   },
   compactQaRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    paddingVertical: 10,
+    // paddingBottom: 2,
+    // paddingTop: 4,
     borderBottomWidth: 1,
     borderBottomColor: "#EEF2F6",
-    gap: 12,
   },
 
   questionGroupCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E9EEF5",
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    // borderWidth: 1,
+    // borderColor: "#E9EEF5",
   },
 
   questionDateContainer: {
@@ -2041,42 +2094,26 @@ const styles = StyleSheet.create({
   questionDateText: {
     color: "#2E67BE",
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: 12,
   },
   dateUnderline: {
     borderBottomWidth: 0.8,
     borderBottomColor: "#64748B",
   },
-  compactQuestion: {
-    flex: 1,
-    fontSize: 13,
-    color: "#64748B",
-    fontWeight: "500",
-    lineHeight: 18,
-  },
-
-  compactAnswer: {
-    flex: 1,
-    fontSize: 14,
-    color: "#0F172A",
-    fontWeight: "700",
-    textAlign: "right",
-    lineHeight: 18,
-  },
 
   duplicateCard: {
-    backgroundColor: "#FFF1F2",
+    backgroundColor: "#FFFBEB",
     borderWidth: 1.2,
-    borderColor: "#FCA5A5",
+    borderColor: "#FACC15",
   },
 
   detailDuplicateBadge: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#FFFBEB",
     borderWidth: 1,
-    borderColor: "#FECACA",
+    borderColor: "#FACC15",
     borderRadius: 30,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -2086,8 +2123,39 @@ const styles = StyleSheet.create({
   },
 
   detailDuplicateText: {
-    color: "#DC2626",
+    color: "#FACC15",
     fontSize: 12,
     fontWeight: "700",
+  },
+
+  questionLabel: {
+    fontSize: 14,
+    color: color.mainTxtColor,
+    fontWeight: "700",
+    // marginBottom: 2,
+    lineHeight: 22,
+  },
+
+  answerLabel: {
+    fontSize: 14,
+    color: "#16A34A",
+    fontWeight: "700",
+    lineHeight: 22,
+  },
+
+  compactQuestion: {
+    fontSize: 14,
+
+    color: "#334155",
+    fontWeight: "500",
+    lineHeight: 22,
+  },
+
+  compactAnswer: {
+    fontSize: 14,
+
+    color: "#64748B",
+    fontWeight: "500",
+    lineHeight: 22,
   },
 });

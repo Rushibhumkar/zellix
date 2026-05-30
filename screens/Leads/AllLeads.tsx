@@ -373,6 +373,7 @@ const AllLeads = () => {
               flexDirection: "row",
               alignContent: "center",
               gap: 8,
+              marginRight: -10,
             }}
           >
             <Pressable

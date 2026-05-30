@@ -46,6 +46,16 @@ const ClosingLeadProjCard = ({ onRefresh }: any) => {
 
   useEffect(() => {
     if (onRefresh) {
+      const defaultStartDate = moment()
+        .subtract(11, "months")
+        .startOf("month")
+        .toDate();
+
+      const defaultEndDate = moment().endOf("month").toDate();
+
+      setStartDate(defaultStartDate);
+      setEndDate(defaultEndDate);
+
       refetchClosingLeadProjectWise();
     }
   }, [onRefresh]);
@@ -153,7 +163,7 @@ const ClosingLeadProjCard = ({ onRefresh }: any) => {
                 value={startDate}
                 mode="date"
                 display="default"
-                maximumDate={endDate}
+                maximumDate={endDate || new Date()}
                 onChange={(e, selectedDate) => {
                   setShowStartPicker(false);
 
@@ -173,7 +183,7 @@ const ClosingLeadProjCard = ({ onRefresh }: any) => {
                 value={endDate}
                 mode="date"
                 display="default"
-                minimumDate={startDate}
+                minimumDate={startDate || undefined}
                 maximumDate={new Date()}
                 onChange={(e, selectedDate) => {
                   setShowEndPicker(false);

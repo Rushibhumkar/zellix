@@ -236,3 +236,6 @@ export const formatSeconds = (
       return `${seconds}s`;
   }
 };
+
+export const normalizeAnswer = (value?: string) =>
+  value?.toLowerCase()?.trim()?.replace(/\s+/g, "_");

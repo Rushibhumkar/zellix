@@ -256,3 +256,26 @@ export const changeStatusSchema = Yup.object().shape({
     .required("Note is required")
     .min(3, "Minimum 3 characters"),
 });
+
+export const addManualLeadSchema = Yup.object({
+  clientName: Yup.string().when("$leadType", {
+    is: "interested",
+    then: (schema) => schema.trim().required("Name is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  clientMobile: Yup.string().trim().required("Mobile Number is required"),
+  status: Yup.string().required("Lead Status is required"),
+
+  clientEmail: Yup.string().when("$leadType", {
+    is: "interested",
+    then: (schema) => schema.email("Enter valid email"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+
+  clientAddress: Yup.string(),
+  clientLookingFor: Yup.string(),
+  projectLookingFor: Yup.string(),
+  howManyBedroomsLookingFor: Yup.string(),
+  budget: Yup.string(),
+  comment: Yup.string(),
+});
