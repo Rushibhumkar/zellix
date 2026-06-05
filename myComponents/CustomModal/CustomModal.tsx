@@ -7,6 +7,8 @@ import {
   Animated,
   Dimensions,
   PanResponder,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import React, { ReactNode, useEffect, useRef } from "react";
 
@@ -15,6 +17,7 @@ interface TCustomModal {
   onClose: () => void;
   children: ReactNode;
   hasBackdrop?: boolean;
+  modalStyle?: StyleProp<ViewStyle>;
 }
 
 const { height } = Dimensions.get("window");
@@ -24,6 +27,7 @@ const CustomModal = ({
   onClose,
   children,
   hasBackdrop,
+  modalStyle,
 }: TCustomModal) => {
   const translateY = useRef(new Animated.Value(height)).current;
 
@@ -50,14 +54,16 @@ const CustomModal = ({
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
-      onClose && onClose();
+      onClose?.();
     });
   };
 
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 10;
+        return Math.abs(gestureState.dy) > 5;
       },
 
       onPanResponderMove: (_, gestureState) => {
@@ -103,11 +109,16 @@ const CustomModal = ({
                 {
                   transform: [{ translateY }],
                 },
+                modalStyle,
               ]}
-              {...panResponder.panHandlers}
             >
-              {/* Drag Handle */}
-              <View style={styles.handle} />
+              {/* Drag Handle Only */}
+              <View
+                style={styles.handleContainer}
+                {...panResponder.panHandlers}
+              >
+                <View style={styles.handle} />
+              </View>
 
               {children}
             </Animated.View>
@@ -136,12 +147,17 @@ const styles = StyleSheet.create({
     maxHeight: height * 0.9,
   },
 
+  handleContainer: {
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
   handle: {
     width: 55,
     height: 5,
     borderRadius: 20,
     backgroundColor: "#D1D5DB",
-    alignSelf: "center",
-    marginBottom: 14,
   },
 });

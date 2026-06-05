@@ -116,6 +116,10 @@ const bottomSheet = ({ bodyComponent, snapPoints = ["50%"] }) => {
   });
 };
 
+const closeBottomSheet = () => {
+  SPSheet.hide();
+};
+
 const popUpClose = () => {
   return Popup.hide();
 };
@@ -127,5 +131,6 @@ export const popUpConfToast = {
   plzWait,
   waitingModal,
   popUpClose,
+  closeBottomSheet,
   bottomSheet,
 };

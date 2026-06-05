@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 15,
     borderColor: "#739fe141",
-    // backgroundColor: color.white
+    // backgroundColor: color.red,
   },
   icon: {
     marginRight: 5,
@@ -417,7 +417,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "red",
-    marginTop: 0,
+    marginTop: 4,
+    marginLeft: 2,
     fontSize: 12,
   },
   label: {

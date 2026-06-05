@@ -123,7 +123,7 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
               setSearch(resetData);
 
               !!onPressSubmit && onPressSubmit(resetData);
-              popUpConfToast.popUpClose();
+              popUpConfToast.closeBottomSheet();
             }}
           />
 
@@ -134,7 +134,7 @@ const SearchBox = ({ onPressSubmit, initialValue, hideFiles }: TSearchBox) => {
             containerStyle={{ minHeight: 40 }}
             onPress={() => {
               !!onPressSubmit && onPressSubmit(search);
-              popUpConfToast.popUpClose();
+              popUpConfToast.closeBottomSheet();
             }}
           />
         </View>

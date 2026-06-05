@@ -15,7 +15,7 @@ import moment from "moment";
 import { useRSVPInvitationDetails } from "./rsvpApi";
 import * as Linking from "expo-linking";
 import * as MailComposer from "expo-mail-composer";
-import { Feather, Fontisto } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAppToast } from "../../components/AppToast";
 
@@ -144,7 +144,7 @@ const RSVPInvitationDetail = ({ route }: any) => {
       <Header title="Invitation Details" />
       <Container>
         <ScrollView
-          style={{ padding: 20 }}
+          style={{ paddingHorizontal: 12, paddingVertical: 20 }}
           contentContainerStyle={{ paddingBottom: 120 }}
           refreshControl={
             <RefreshControl refreshing={isFetching} onRefresh={refetch} />

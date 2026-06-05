@@ -10,7 +10,6 @@ import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -26,7 +25,7 @@ import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { myConsole } from "../../hooks/useConsole";
-import { useGetLeadById, useGetMeeting } from "../../hooks/useCRMgetQuerry";
+import { useGetLeadById } from "../../hooks/useCRMgetQuerry";
 import useModal from "../../hooks/useModal";
 import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
@@ -38,7 +37,6 @@ import MainTitle from "../../myComponents/MainTitle/MainTitle";
 import RowItem from "../../myComponents/RowItem/RowItem";
 import { selectUser, setCallDetect } from "../../redux/userSlice";
 import {
-  deleteLead,
   leadStatusUpdate,
   useLatestMeetings,
 } from "../../services/rootApi/leadApi";
@@ -54,7 +52,6 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
 import AddNote from "./component/AddNote";
 import NotesCard from "./component/NotesCard";
-import LeadLogsInfo from "./component/LeadLogsInfo";
 import TabButton from "./component/TabButton";
 import MeetingInfo from "./component/MeetingInfo";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
@@ -69,7 +66,7 @@ import {
 } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { color } from "../../const/color";
-import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import {
   headerIconWrapperStyle,
   shadowPrimaryColor,
@@ -706,10 +703,12 @@ const LeadsDetails = () => {
             followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
           }),
       };
+      // myConsole("payloadddd", payload);
       const res = await leadStatusUpdate({
         id: detail?._id,
         data: payload,
       });
+      // myConsole("ressssss", res);
       setTdForFUT({ date: null, time: null });
       formik.resetForm();
       setFields((prev) => ({
@@ -905,7 +904,7 @@ const LeadsDetails = () => {
       : [];
 
   // myConsole("tdForFUTtt", tdForFUT);
-  myConsole("detail?", detail);
+  // myConsole("detail?", detail);
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
   // myConsole("additionalQuestionsv2 =>", detail?.additionalQuestionsV2);
 
@@ -934,6 +933,8 @@ const LeadsDetails = () => {
                 navigation.navigate("Reminders", {
                   remindersActiveTab,
                 });
+              } else if (from === "callLogs") {
+                navigation.goBack();
               } else {
                 navigate(routeLead.allLead, {
                   tabType: selectLeadType ?? detail?.type ?? details?.type,
@@ -1063,7 +1064,7 @@ const LeadsDetails = () => {
                 disabled={isNotificationLoading}
               >
                 {isNotificationLoading ? (
-                  <ActivityIndicator color="white" />
+                  <ActivityIndicator color={"white"} />
                 ) : (
                   <CustomText style={styles.buttonText}>Submit</CustomText>
                 )}
@@ -1080,6 +1081,7 @@ const LeadsDetails = () => {
 
               FUTModal.closeModal();
             }}
+            minHeight={"55%"}
           >
             <View style={styles.modalContent}>
               <CustomText style={styles.title}>Change Status</CustomText>
@@ -1279,7 +1281,10 @@ const LeadsDetails = () => {
           >
             <View style={{ paddingBottom: 150 }}>
               {isLoadingQuery && (
-                <ActivityIndicator style={{ marginVertical: 10 }} />
+                <ActivityIndicator
+                  style={{ marginVertical: 10 }}
+                  color={color.mainTxtColor}
+                />
               )}
               {/* -------------------- CARD 1 -------------------- */}
               {detail && (
@@ -1748,6 +1753,8 @@ const LeadsDetails = () => {
                 navigation.navigate("Reminders", {
                   remindersActiveTab,
                 });
+              } else if (from === "callLogs") {
+                navigation.goBack();
               } else {
                 navigate(routeLead.allLead, {
                   tabType: selectLeadType ?? detail?.type ?? details?.type,
@@ -1823,6 +1830,8 @@ const LeadsDetails = () => {
               navigation.navigate("Reminders", {
                 remindersActiveTab,
               });
+            } else if (from === "callLogs") {
+              navigation.goBack();
             } else {
               navigate(routeLead.allLead, {
                 tabType: selectLeadType ?? detail?.type ?? details?.type,

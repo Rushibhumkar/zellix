@@ -258,17 +258,18 @@ export const changeStatusSchema = Yup.object().shape({
 });
 
 export const addManualLeadSchema = Yup.object({
-  clientName: Yup.string().when("$leadType", {
+  clientName: Yup.string().when("leadType", {
     is: "interested",
-    then: (schema) => schema.trim().required("Name is required"),
+    then: (schema) => schema.trim().required("Client Name is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
   clientMobile: Yup.string().trim().required("Mobile Number is required"),
   status: Yup.string().required("Lead Status is required"),
 
-  clientEmail: Yup.string().when("$leadType", {
+  clientEmail: Yup.string().when("leadType", {
     is: "interested",
-    then: (schema) => schema.email("Enter valid email"),
+    then: (schema) =>
+      schema.trim().required("Email is required").email("Enter valid email"),
     otherwise: (schema) => schema.notRequired(),
   }),
 

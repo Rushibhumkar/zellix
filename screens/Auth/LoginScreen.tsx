@@ -54,8 +54,8 @@ const LoginScreen = () => {
     // password: "123456789",
 
     // dev : super admin
-    // email: "mohdkashif1008@gmail.com",
-    // password: "123456789",
+    email: "mohdkashif1008@gmail.com",
+    password: "123456789",
 
     // dev  : sr manager ( Rohit Barate )
     // email: "dev20@swavishtek.com",
@@ -71,10 +71,10 @@ const LoginScreen = () => {
 
     // live : super admin
     // email: "tech@skgestates.com",
-    // password: "1234567890",
+    // password: "Rohit@311001",
 
-    email: "",
-    password: "",
+    // email: "",
+    // password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

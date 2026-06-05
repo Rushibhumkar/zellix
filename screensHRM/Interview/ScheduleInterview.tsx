@@ -112,6 +112,9 @@ const ScheduleInterview = () => {
     },
   });
 
+  const minInterviewDate = new Date();
+  minInterviewDate.setMinutes(minInterviewDate.getMinutes() + 5);
+
   return (
     <ContainerHRM ph={20} isBAck={{ title: "Schedule Interview" }}>
       <ScrollViewWithKeyboardAvoid>
@@ -197,7 +200,7 @@ const ScheduleInterview = () => {
             mode="datetime"
             initialValue={formik.values.dateTime}
             onSelect={(v) => formik.setFieldValue("dateTime", v)}
-            minimumDate={new Date()}
+            minimumDate={minInterviewDate}
           />
 
           {formik.touched.dateTime && formik.errors.dateTime && (

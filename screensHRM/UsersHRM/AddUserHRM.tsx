@@ -164,7 +164,9 @@ const AddUserHRM = () => {
               title="Date Of Joining"
               boxContainerStyle={{ marginBottom: 15 }}
               onSelect={(v) => setFieldValue("dateOfJoining", v)}
-              initialValue={values?.dateOfJoining}
+              initialValue={
+                values?.dateOfJoining ? values.dateOfJoining : undefined
+              }
             />
             <DropdownRNE
               label="Active Status"

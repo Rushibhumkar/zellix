@@ -129,7 +129,7 @@ const RSVPEventDetail = ({ route }: any) => {
       />
       <Container>
         <ScrollView
-          style={{ padding: 20 }}
+          style={{ paddingHorizontal: 12, paddingVertical: 20 }}
           contentContainerStyle={{ paddingBottom: 120 }}
           refreshControl={
             <RefreshControl refreshing={isFetching} onRefresh={refetch} />

@@ -112,7 +112,6 @@ const NotificationHRM = () => {
           keyExtractor={(item) => item[0]}
           renderItem={({ item }) => {
             const [date, dateWiseData] = item;
-            console.log("dateWiseData", dateWiseData);
             return (
               <View style={styles.sectionContainer}>
                 <View style={styles.sectionHeader}>
@@ -352,7 +351,7 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   dateText: {
     color: "#2D3748",
@@ -365,7 +364,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   notificationsContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     gap: 12,
   },
   loadingFooter: {

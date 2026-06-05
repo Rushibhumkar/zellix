@@ -414,7 +414,7 @@ const AdvanceSearch = () => {
                     <DropdownRNE
                       key={`booking-country-code-${resetKey}`}
                       arrOfObj={mobileCodeWithIdKey || []}
-                      containerStyle={{ width: 150, marginEnd: 10 }}
+                      containerStyle={{ width: 80, marginEnd: 10 }}
                       dropdownStyle={{
                         height: Platform.OS === "ios" ? 40 : 46,
                       }}
@@ -453,6 +453,7 @@ const AdvanceSearch = () => {
                     placeholder="Mobile Number"
                     onChangeText={handleChange("mobile")}
                     value={values?.mobile}
+                    keyboardType="number-pad"
                   />
                 </View>
               </>

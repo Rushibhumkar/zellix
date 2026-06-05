@@ -200,7 +200,7 @@ const AllAttendance = () => {
               marginTop={8}
               onPressFilter={() =>
                 popUpConfToast.bottomSheet({
-                  snapPoints: ["55%"],
+                  snapPoints: ["75%"],
                   bodyComponent: () => (
                     <SearchBox
                       onPressSubmit={handleSearchSubmit}
