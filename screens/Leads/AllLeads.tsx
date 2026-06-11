@@ -11,9 +11,7 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -38,23 +36,13 @@ import { color } from "../../const/color";
 import LeadListHeading from "../../components/Leads/LeadHeading/LeadListHeading";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
-import {
-  allLeadsFilterStatuses,
-  leadTypeObj,
-  roleEnum,
-  statusColorObj,
-  statusObj,
-} from "../../utils/data";
+import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
-import {
-  checkPermission,
-  formatDate,
-  getTimeAgo,
-} from "../../utils/commonFunctions";
+import { checkPermission, getTimeAgo } from "../../utils/commonFunctions";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";

@@ -24,6 +24,8 @@ interface TMobileInput {
   isCountryPicker: boolean;
   onBlur: () => void;
   customStyle?: StyleProp<ViewStyle>;
+  countryCodeDisabled?: boolean;
+  mobileNumberDisabled?: boolean;
 }
 
 interface TOnSelect {
@@ -44,6 +46,8 @@ const MobileInput = ({
   isCountryPicker = false,
   onBlur,
   customStyle,
+  countryCodeDisabled = false,
+  mobileNumberDisabled = false,
 }: TMobileInput) => {
   const [number, setNumber] = useState({
     pin: value ? value?.split("-")[0] : "",
@@ -137,11 +141,13 @@ const MobileInput = ({
           ]}
         >
           <DropdownRNE
+            disabled={countryCodeDisabled}
             placeholderStyle={"#a9a9a9"}
-            dropdownStyle={{ height: 40, paddingTop: 8, borderRadius: 12 }}
             containerStyle={{
               width: "28%",
+              opacity: mobileNumberDisabled ? 0.5 : 1,
             }}
+            dropdownStyle={{ height: 40, paddingTop: 8, borderRadius: 12 }}
             placeholder="+971"
             arrOfObj={formattedCodes}
             keyValueGetOnSelect="code"
@@ -154,10 +160,14 @@ const MobileInput = ({
           />
           <CustomInput
             placeholder="Mobile Number"
-            containerStyle={{ width: "70%" }}
+            containerStyle={{
+              width: "70%",
+              opacity: mobileNumberDisabled ? 0.5 : 1,
+            }}
             onChangeText={(e) => handleChangeMobile(e, "phone")}
             props={{
               keyboardType: "number-pad",
+              editable: !mobileNumberDisabled,
             }}
             value={number?.phone}
           />

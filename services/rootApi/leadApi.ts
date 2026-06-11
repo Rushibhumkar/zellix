@@ -92,11 +92,11 @@ export const leadStatusUpdate = ({ id, data }) => {
   );
 };
 
-export const leadAssignById = (data) => {
+export const leadAssignById = (data: any) => {
   return axiosInstance.put(`/api/lead/leadAssignById`, data);
 };
 
-export const leadCallTrack = ({ id, data }) => {
+export const leadCallTrack = ({ id, data }: any) => {
   return axiosInstance.post(`/api/lead/updateCallLogById/${id}`, data);
 };
 
@@ -122,6 +122,10 @@ export const getLead = async ({
   startDate,
   endDate,
   skipType,
+  dateKey,
+  source,
+  projectId,
+  teamId,
 }) => {
   try {
     const response = await axiosInstance.get("api/lead", {
@@ -141,6 +145,10 @@ export const getLead = async ({
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
         ...(skipType && { skipType }),
+        ...(dateKey && { dateKey }),
+        ...(source && { source }),
+        ...(projectId && { projectId }),
+        ...(teamId && { teamId }),
       },
     });
     // console.log("🟢 getLead RAW response.data:", response.data);

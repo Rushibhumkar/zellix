@@ -7,9 +7,10 @@ import { formatSeconds } from "../../../utils/commonFunctions";
 interface Props {
   item: any;
   onPress?: () => void;
+  onCallPress?: (mobile: string) => void;
 }
 
-const CallLogCard = ({ item, onPress }: Props) => {
+const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
   const getStatusColor = (type: string) => {
     switch (type) {
       case "positive":
@@ -40,15 +41,49 @@ const CallLogCard = ({ item, onPress }: Props) => {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={styles.name}>{clientName}</Text>
+            <TouchableOpacity
+              disabled={!!leadDetails}
+              onPress={() => {
+                if (!leadDetails) {
+                  onCallPress?.(clientMobile);
+                }
+              }}
+            >
+              <View>
+                <Text style={styles.name}>{clientName}</Text>
 
-            {!!leadDetails?._id && (
+                {!leadDetails?._id && (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#858585",
+                      // marginTop: 1,
+                    }}
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {!!leadDetails?._id ? (
               <Feather
                 name="chevron-right"
                 size={16}
                 color="#64748B"
                 style={{ marginLeft: 4 }}
               />
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  onCallPress?.(clientMobile);
+                }}
+              >
+                <Feather
+                  name="phone-call"
+                  size={12}
+                  color="#64748B"
+                  style={{ marginLeft: 4 }}
+                />
+              </TouchableOpacity>
             )}
           </View>
 

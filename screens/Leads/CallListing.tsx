@@ -31,7 +31,7 @@ import {
   addManualLeadPositiveStatuses,
   clientLookingForOptions,
   DIAL_PAD,
-  FOLLOWUP_REQUIRED_STATUSES,
+  FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE,
   inLeadStatus,
   leadNeutralStatuses,
 } from "../../utils/data";
@@ -52,12 +52,14 @@ import CallLogCard from "./component/CallLogCard";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import moment from "moment";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CallListing = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
   const { navigate, goBack } = useNavigation();
   const { user, lead } = useSelector(selectUser);
+  const insets = useSafeAreaInsets();
 
   const [tdForFUT, setTdForFUT] = useState({
     date: null,
@@ -66,7 +68,6 @@ const CallListing = () => {
   const [followUpError, setFollowUpError] = useState("");
   const [timePickerKey, setTimePickerKey] = useState(0);
   const [showDialPad, setShowDialPad] = useState(false);
-  const [countryCode, setCountryCode] = useState("+971");
   const [phoneNumber, setPhoneNumber] = useState("");
   const appState = useRef(AppState.currentState);
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -117,8 +118,8 @@ const CallListing = () => {
   }, [data]);
 
   const formattedNumber = useMemo(() => {
-    return `${countryCode}${phoneNumber}`;
-  }, [countryCode, phoneNumber]);
+    return phoneNumber;
+  }, [phoneNumber]);
 
   // const handlePress = (digit: string) => {
   //   setPhoneNumber((prev) => prev + digit);
@@ -134,17 +135,21 @@ const CallListing = () => {
   const handleDelete = () => {
     setPhoneNumber((prev) => prev.slice(0, -1));
   };
+  const handleCall = async (mobile?: string) => {
+    const numberToCall = typeof mobile === "string" ? mobile : phoneNumber;
 
-  const handleCall = async () => {
-    console.log("CALLING NUMBER =>", phoneNumber);
-    console.log("CALLING COUNTRY CODE =>", countryCode);
-    if (!phoneNumber) return;
+    console.log("CALLING NUMBER =>", numberToCall);
 
+    if (!numberToCall || typeof numberToCall !== "string") {
+      return;
+    }
     try {
       isCallingRef.current = true;
       isCallLogSentRef.current = false;
-      dialedNumberRef.current = `${countryCode.replace("+", "")}-${phoneNumber}`;
-      await Linking.openURL(`tel:${formattedNumber}`);
+      console.log("TYPE OF NUMBER =>", typeof numberToCall, numberToCall);
+      dialedNumberRef.current = String(numberToCall);
+
+      await Linking.openURL(`tel:${numberToCall}`);
     } catch (err) {
       console.log("Call Error", err);
     }
@@ -176,7 +181,6 @@ const CallListing = () => {
       ) {
         const endTime = Date.now();
         console.log("PHONE NUMBER ON RETURN =>", phoneNumber);
-        console.log("COUNTRY CODE ON RETURN =>", countryCode);
         setCallMeta((prev) =>
           prev
             ? {
@@ -188,7 +192,6 @@ const CallListing = () => {
 
         const mobile = dialedNumberRef.current;
 
-        console.log("COUNTRY CODE =>", countryCode);
         console.log("PHONE NUMBER =>", phoneNumber);
         console.log("FORMATTED MOBILE =>", mobile);
 
@@ -351,9 +354,8 @@ const CallListing = () => {
 
       // console.log("FORM PAYLOAD =>", payload);
 
-      const isFollowUpRequired = FOLLOWUP_REQUIRED_STATUSES.includes(
-        values.status,
-      );
+      const isFollowUpRequired =
+        FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE.includes(values.status);
 
       if (isFollowUpRequired && (!tdForFUT?.date || !tdForFUT?.time)) {
         setFollowUpError("Please select follow-up date and time.");
@@ -511,7 +513,7 @@ const CallListing = () => {
 
   const shouldShowFollowUpField =
     leadType === "interested" ||
-    FOLLOWUP_REQUIRED_STATUSES.includes(formik.values.status);
+    FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE.includes(formik.values.status);
 
   useEffect(() => {
     console.log("CLIENT MOBILE CHANGED =>", formik.values.clientMobile);
@@ -537,6 +539,9 @@ const CallListing = () => {
                 },
                 from: "callLogs",
               });
+            }}
+            onCallPress={(mobile) => {
+              handleCall(mobile);
             }}
           />
         )}
@@ -586,7 +591,12 @@ const CallListing = () => {
       {/* Floating DialPad Button */}
       <TouchableOpacity
         activeOpacity={0.8}
-        style={styles.floatingDialPadBtn}
+        style={[
+          styles.floatingDialPadBtn,
+          {
+            bottom: insets.bottom + 80,
+          },
+        ]}
         onPress={() => setShowDialPad(true)}
       >
         <MaterialIcons name="dialpad" size={22} color="#fff" />
@@ -626,14 +636,14 @@ const CallListing = () => {
 
                 {/* Number */}
                 <View style={styles.numberContainer}>
-                  <TextInput
+                  {/* <TextInput
                     value={countryCode}
                     onChangeText={setCountryCode}
                     placeholder="+971"
                     placeholderTextColor={color.placeholderGrey}
                     style={styles.countryCodeInput}
                     keyboardType="phone-pad"
-                  />
+                  /> */}
 
                   <TextInput
                     value={phoneNumber}
@@ -647,7 +657,7 @@ const CallListing = () => {
                     maxLength={15}
                   />
 
-                  {!!(countryCode || phoneNumber) && (
+                  {!!phoneNumber && (
                     <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={() => {
@@ -896,7 +906,7 @@ const CallListing = () => {
                         }}
                       >
                         Follow Up Time
-                        {FOLLOWUP_REQUIRED_STATUSES.includes(
+                        {FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE.includes(
                           formik.values.status,
                         ) && (
                           <CustomText style={{ color: "red" }}> *</CustomText>
@@ -969,6 +979,10 @@ const CallListing = () => {
                       />
                       {/* <Text>Mobile Value : {formik.values.clientMobile}</Text> */}
                       <MobileInput
+                        hideCountryPicker={true}
+                        key={formik.values.clientMobile}
+                        countryCodeDisabled={true}
+                        mobileNumberDisabled={true}
                         value={formik.values.clientMobile}
                         onChange={(v) =>
                           formik.setFieldValue("clientMobile", v)
@@ -1127,7 +1141,7 @@ const styles = StyleSheet.create({
   floatingDialPadBtn: {
     position: "absolute",
     right: 22,
-    bottom: 100,
+    // bottom: 100,
     width: 62,
     height: 62,
     borderRadius: 31,
@@ -1211,19 +1225,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  countryCodeInput: {
-    width: 70,
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#0F172A",
-    borderRightWidth: 1,
-    borderRightColor: "#E2E8F0",
-    marginRight: 10,
-    paddingRight: 8,
-  },
-
   numberInput: {
     flex: 1,
+    width: "100%",
     fontSize: 18,
     fontWeight: "700",
     color: "#0F172A",

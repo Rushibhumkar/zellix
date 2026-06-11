@@ -64,6 +64,10 @@ export const useGetLead = ({
   startDate,
   endDate,
   skipType,
+  dateKey,
+  projectId,
+  source,
+  teamId,
 }) => {
   // return useQuery({
   //     queryKey: ['getLead'],
@@ -88,6 +92,10 @@ export const useGetLead = ({
       startDate,
       endDate,
       skipType,
+      dateKey,
+      source,
+      projectId,
+      teamId,
     ],
     queryFn: async ({ pageParam = 1 }) =>
       getLead({
@@ -106,6 +114,10 @@ export const useGetLead = ({
         startDate,
         endDate,
         skipType,
+        dateKey,
+        source,
+        projectId,
+        teamId,
       }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext

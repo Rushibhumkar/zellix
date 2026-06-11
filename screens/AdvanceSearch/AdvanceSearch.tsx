@@ -28,7 +28,6 @@ import {
   setLeadQueryKey,
   setMeetingQueryKey,
 } from "../../redux/userSlice";
-
 import {
   ModeOfPayment,
   PaymentStatus,
@@ -43,6 +42,7 @@ import {
 } from "../../utils/data";
 import { color } from "../../const/color";
 import moment from "moment";
+import { useGetProjectList } from "../Project/useQuery/useProject";
 
 //
 function filterObjectKeys(obj: any, keys: [string]) {
@@ -107,6 +107,21 @@ let arrOfKeys = {
   ],
 };
 
+const dateFilterOptions = [
+  {
+    _id: "createdAt",
+    name: "Creation Time",
+  },
+  {
+    _id: "updatedAt",
+    name: "Updation Time",
+  },
+  {
+    _id: "assignedAt",
+    name: "Assign Time",
+  },
+];
+
 let advanceStatus = {
   meeting: inMeetingStatus,
   booking: inBookingStatus,
@@ -119,8 +134,39 @@ const AdvanceSearch = () => {
   const dispatch = useDispatch();
   const isFocus = useIsFocused();
   const [resetKey, setResetKey] = useState(0);
-  const { user, developer, leadQueryKey, bookingQueryKey, meetingQueryKey } =
-    useSelector(selectUser);
+  const {
+    user,
+    developer,
+    leadQueryKey,
+    team,
+    bookingQueryKey,
+    meetingQueryKey,
+  } = useSelector(selectUser);
+  const userRole = user?.role;
+
+  const filteredTeams = [roleEnum.sup_admin, roleEnum.sub_admin].includes(
+    userRole,
+  )
+    ? team || []
+    : userRole === roleEnum.sr_manager
+      ? (team || []).filter((el: any) => el?.srManager?._id === user?._id)
+      : [];
+
+  const teamOptions = filteredTeams.map((el: any) => ({
+    name: el?.name,
+    _id: el?._id,
+  }));
+
+  const {
+    data: projectsData,
+    isLoading: loading,
+    hasNextPage,
+    totalCount,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useGetProjectList({});
+  // myConsole("projectsDataaaa", projectsData);
   const developerSort = [...developer]?.sort((a, b) =>
     a?.name === b?.name ? 0 : a?.name < b?.name ? -1 : 1,
   );
@@ -181,10 +227,14 @@ const AdvanceSearch = () => {
     initialValues: {
       startDate: null,
       endDate: null,
-      assignedAt: null,
+      // assignedAt: null,
+      dateKey: "createdAt",
       status: [],
       type: null,
       individual: false,
+      source: "",
+      projectId: "",
+      teamId: "",
     },
     onSubmit: async (value) => {
       setIsLoading(true);
@@ -198,9 +248,9 @@ const AdvanceSearch = () => {
           endDate: values.endDate
             ? new Date(values.endDate).toISOString()
             : null,
-          assignedAt: values.assignedAt
-            ? new Date(values.assignedAt).toISOString()
-            : null,
+          // assignedAt: values.assignedAt
+          //   ? new Date(values.assignedAt).toISOString()
+          //   : null,
         };
         myConsole("sendDataaaa", sendData);
         if (category === "booking") {
@@ -291,6 +341,15 @@ const AdvanceSearch = () => {
                   isAdvanceSearch
                 />
               )}
+            <DropdownRNE
+              key={`date-key-${resetKey}`}
+              label="Date Filter By"
+              arrOfObj={dateFilterOptions}
+              containerStyle={{ marginBottom: 15 }}
+              initialValue={values?.dateKey || "createdAt"}
+              onChange={(v) => setFieldValue("dateKey", v)}
+              isAdvanceSearch
+            />
             <DatePickerExpo
               key={`startDate-${resetKey}`}
               title="Start Date"
@@ -321,7 +380,7 @@ const AdvanceSearch = () => {
               }
               maximumDate={new Date()}
             />
-            <DatePickerExpo
+            {/* <DatePickerExpo
               key={`assignedAt-${resetKey}`}
               title="Assigned At"
               maximumDate={moment().add(1, "day").toDate()}
@@ -335,7 +394,7 @@ const AdvanceSearch = () => {
                   ? values?.assignedAt
                   : null
               }
-            />
+            /> */}
             <DropdownRNE
               key={`status-${resetKey}`}
               label="Status"
@@ -350,6 +409,29 @@ const AdvanceSearch = () => {
               isAdvanceSearch
               initialValue={values?.status}
             />
+            {(category === "lead" || category === "callingData") && (
+              <DropdownRNE
+                key={`project-${resetKey}`}
+                label="Project"
+                arrOfObj={projectsData || []}
+                keyValueShowInBox="projectName"
+                keyValueGetOnSelect="_id"
+                containerStyle={{ marginBottom: 15 }}
+                onChange={(v) => setFieldValue("projectId", v)}
+                initialValue={values?.projectId}
+                isSearch
+                isAdvanceSearch={false}
+                mode="modal"
+              />
+            )}
+            {(category === "lead" || category === "callingData") && (
+              <CustomInput
+                label="Source"
+                containerStyle={{ marginBottom: 15 }}
+                onChangeText={handleChange("source")}
+                value={values?.source}
+              />
+            )}
             {/* {onlyLead && (
               <DropdownRNE
                 label="Type"
@@ -743,7 +825,15 @@ const AdvanceSearch = () => {
                 )}
               </>
             )}
-
+            <DropdownRNE
+              key={`team-${resetKey}`}
+              label="Team"
+              arrOfObj={teamOptions}
+              initialValue={values?.teamId}
+              onChange={(v) => setFieldValue("teamId", v)}
+              isSearch
+              mode="modal"
+            />
             {/* <DropdownRNE
               label="Category"
               arrOfObj={[
@@ -776,11 +866,14 @@ const AdvanceSearch = () => {
                     values: {
                       startDate: null,
                       endDate: null,
-                      assignedAt: null,
+                      // assignedAt: null,
+                      dateKey: "createdAt",
                       status: [],
-
                       type: null,
                       individual: false,
+                      source: "",
+                      projectId: "",
+                      teamId: "",
                     },
                   });
 

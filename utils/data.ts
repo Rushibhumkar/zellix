@@ -536,6 +536,15 @@ export const FOLLOWUP_REQUIRED_STATUSES = [
   // "not_interested_buy_later",
 ];
 
+export const FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE = [
+  "call_back",
+  "active_cold",
+  "active_hot",
+  "followUp_required",
+  // "meeting_scheduled",
+  // "not_interested_buy_later",
+];
+
 export const leadTypeInAS = [
   { _id: "lead", name: "Lead" },
   { _id: "calling_data", name: "Calling Data" },

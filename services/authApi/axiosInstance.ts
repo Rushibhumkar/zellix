@@ -6,7 +6,7 @@ import { CommonActions } from "@react-navigation/native";
 import { navigationRef } from "../../navigation/navigationRef";
 import { myConsole } from "../../hooks/useConsole";
 
-let testURL = "http://192.168.0.123:5001";
+let testURL = "http://192.168.0.121:5001";
 // let testURL =
 //   "https://b65c-2409-40c2-314f-6b09-c1d2-6929-f244-49b8.ngrok-free.app";
 // let testURL = "https://zellix-backend-1.onrender.com";

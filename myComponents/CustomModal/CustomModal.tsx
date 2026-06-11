@@ -9,6 +9,7 @@ import {
   PanResponder,
   StyleProp,
   ViewStyle,
+  Platform,
 } from "react-native";
 import React, { ReactNode, useEffect, useRef } from "react";
 
@@ -18,6 +19,7 @@ interface TCustomModal {
   children: ReactNode;
   hasBackdrop?: boolean;
   modalStyle?: StyleProp<ViewStyle>;
+  minHeightPercent?: number;
 }
 
 const { height } = Dimensions.get("window");
@@ -28,6 +30,7 @@ const CustomModal = ({
   children,
   hasBackdrop,
   modalStyle,
+  minHeightPercent,
 }: TCustomModal) => {
   const translateY = useRef(new Animated.Value(height)).current;
 
@@ -108,6 +111,9 @@ const CustomModal = ({
                 styles.bottomSheet,
                 {
                   transform: [{ translateY }],
+                  ...(minHeightPercent && {
+                    minHeight: (height * minHeightPercent) / 100,
+                  }),
                 },
                 modalStyle,
               ]}
@@ -143,7 +149,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingTop: 12,
-    paddingBottom: 30,
+    paddingBottom: Platform.OS === "ios" ? 34 : 20,
     maxHeight: height * 0.9,
   },
 

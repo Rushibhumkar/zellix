@@ -2,18 +2,14 @@ import { View, Text } from "react-native";
 import React, { FC, useState } from "react";
 import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
-import { WIDTH } from "../../const/deviceInfo";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../redux/userSlice";
 import { myConsole } from "../../hooks/useConsole";
 import { leadAssignById } from "../../services/rootApi/leadApi";
-import { getAllLeadFunc } from "../../redux/action";
-import { useAssigningUser } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { color } from "../../const/color";
+import { useGetMyAllTeamMembers } from "../../services/rootApi/api";
 
 interface TMultipleLeadAssign {
   selected: [string];
@@ -33,17 +29,72 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
   toast,
 }) => {
   const queryClient = useQueryClient();
-  const { team, user } = useSelector(selectUser);
-  const [srManager, setSrManager] = useState("");
   const [assign, setAssign] = useState("");
-  const [assignUserList, setAssignUserList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useDispatch();
 
-  const { data: assigningUserList, isLoading: loadingAssign } =
-    useAssigningUser({
-      srManager,
-    });
+  const { data: myTeamMembers, isLoading: myTeamMembersLoading } =
+    useGetMyAllTeamMembers();
+  // myConsole("myTeamMemberss", myTeamMembers);
+  // const teamMembersOptions = [
+  //   ...(myTeamMembers?.sup_admin || []),
+  //   ...(myTeamMembers?.sub_admin || []),
+  //   ...(myTeamMembers?.sr_manager || []),
+  //   ...(myTeamMembers?.manager || []),
+  //   ...(myTeamMembers?.assistant_manager || []),
+  //   ...(myTeamMembers?.team_lead || []),
+  //   ...(myTeamMembers?.agent || []),
+  // ];
+
+  const teamMembersOptions = [
+    ...(myTeamMembers?.sup_admin || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Super Admin)`,
+      })),
+
+    ...(myTeamMembers?.sub_admin || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Sub Admin)`,
+      })),
+
+    ...(myTeamMembers?.sr_manager || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Sr Manager)`,
+      })),
+
+    ...(myTeamMembers?.manager || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Manager)`,
+      })),
+
+    ...(myTeamMembers?.assistant_manager || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Assistant Manager)`,
+      })),
+
+    ...(myTeamMembers?.team_lead || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Team Lead)`,
+      })),
+
+    ...(myTeamMembers?.agent || [])
+      .filter((i) => i?.label && i?.value)
+      .map((i) => ({
+        ...i,
+        label: `${i.label} (Agent)`,
+      })),
+  ];
 
   // const onSelectManager = (srMngId) => {
   //     let srManagerId = srMngId;
@@ -70,7 +121,6 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
   // }
   const onModalClose = () => {
     toggleModal();
-    setSrManager("");
     setAssign("");
   };
 
@@ -79,8 +129,7 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
       setIsLoading(true);
       const sendData = {
         leads: selected,
-        srManager,
-        ...(assign && { assign: assign }),
+        assign,
       };
 
       const resAssignLead = await leadAssignById(sendData);
@@ -104,45 +153,52 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
   };
 
   return (
-    <CustomModal visible={visible} onClose={onModalClose} hasBackdrop={true}>
+    <CustomModal
+      visible={visible}
+      onClose={onModalClose}
+      hasBackdrop={true}
+      minHeightPercent={70}
+    >
       <View
         style={{
           backgroundColor: "white",
           padding: 20,
           borderRadius: 10,
+          flex: 1,
         }}
       >
-        <View>
-          <CustomText
-            fontSize={20}
-            marginBottom={15}
-            fontWeight="500"
-            color={color.mainTxtColor}
-          >
-            Assign Lead
-          </CustomText>
-          <DropdownRNE
-            label="Sr Manager"
-            placeholder="Sr Manager"
-            containerStyle={{ marginBottom: 15 }}
-            keyName="sr_manager"
-            onChange={(v) => setSrManager(v)}
-            // initialValue={srManager}
-            dropdownPosition={"top"}
-          />
-          <DropdownRNE
-            label="Users"
-            placeholder="Users"
-            containerStyle={{ marginBottom: 10 }}
-            arrOfObj={assigningUserList?.data || []}
-            onChange={(v) => setAssign(v)}
-            initialValue={assign}
-            dropdownPosition={"top"}
-          />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "space-between",
+          }}
+        >
+          <View>
+            <CustomText
+              fontSize={20}
+              marginBottom={15}
+              fontWeight="500"
+              color={color.mainTxtColor}
+            >
+              Assign Lead
+            </CustomText>
+            <DropdownRNE
+              label="Select Team Member"
+              placeholder="Select Team Member"
+              containerStyle={{ marginBottom: 10 }}
+              arrOfObj={teamMembersOptions}
+              keyValueShowInBox="label"
+              keyValueGetOnSelect="value"
+              onChange={(v) => setAssign(v)}
+              initialValue={assign}
+              // dropdownPosition={"top"}
+              isSearch
+            />
+          </View>
           <CustomBtn
             title="Save"
             containerStyle={{ margin: 20 }}
-            disabled={!srManager}
+            disabled={!assign}
             onPress={handleSubmit}
             isLoading={isLoading}
           />
