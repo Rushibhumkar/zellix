@@ -359,6 +359,10 @@ const SendInvitation = () => {
                     onBlur={() => handleBlur("clientEmail")}
                     errors={touched.clientEmail ? errors.clientEmail : ""}
                     containerStyle={{ marginHorizontal: 20, marginTop: 8 }}
+                    props={{
+                      autoCapitalize: "none",
+                      autoCorrect: false,
+                    }}
                   />
 
                   {/* MOBILE */}

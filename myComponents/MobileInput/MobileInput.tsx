@@ -26,6 +26,7 @@ interface TMobileInput {
   customStyle?: StyleProp<ViewStyle>;
   countryCodeDisabled?: boolean;
   mobileNumberDisabled?: boolean;
+  hideCountryPicker?: boolean;
 }
 
 interface TOnSelect {
@@ -48,21 +49,38 @@ const MobileInput = ({
   customStyle,
   countryCodeDisabled = false,
   mobileNumberDisabled = false,
+  hideCountryPicker = false,
 }: TMobileInput) => {
   const [number, setNumber] = useState({
     pin: value ? value?.split("-")[0] : "",
     phone: value ? value?.split("-")[1] : "",
   });
   useEffect(() => {
-    if (value && value.includes("-")) {
+    if (!value) {
+      setNumber({
+        pin: "",
+        phone: "",
+      });
+      return;
+    }
+
+    if (value.includes("-")) {
       const [pin, phone] = value.split("-");
       setNumber({ pin, phone });
+    } else {
+      setNumber({
+        pin: "",
+        phone: value,
+      });
     }
   }, [value]);
 
   useEffect(() => {
     if (!number.pin) {
-      setNumber((prev) => ({ ...prev, pin: "971" }));
+      setNumber((prev) => ({
+        ...prev,
+        pin: "971",
+      }));
     }
   }, []);
 
@@ -82,7 +100,7 @@ const MobileInput = ({
   useEffect(() => {
     if (!number.phone) return;
 
-    onChange?.(`${number.pin || "971"}-${number.phone}`);
+    onChange?.(number.pin ? `${number.pin}-${number.phone}` : number.phone);
   }, [number.pin, number.phone]);
 
   const [phone, setPhone] = useState<TPhone>({
@@ -140,28 +158,30 @@ const MobileInput = ({
             customStyle,
           ]}
         >
-          <DropdownRNE
-            disabled={countryCodeDisabled}
-            placeholderStyle={"#a9a9a9"}
-            containerStyle={{
-              width: "28%",
-              opacity: mobileNumberDisabled ? 0.5 : 1,
-            }}
-            dropdownStyle={{ height: 40, paddingTop: 8, borderRadius: 12 }}
-            placeholder="+971"
-            arrOfObj={formattedCodes}
-            keyValueGetOnSelect="code"
-            // keyValueShowInBox="displayName"
-            onChange={(e) => handleChangeMobile(e, "pin")}
-            initialValue={String(number?.pin || "971")}
-            mode="modal"
-            isSearch
-            dpWidth={250}
-          />
+          {!hideCountryPicker && (
+            <DropdownRNE
+              disabled={countryCodeDisabled}
+              placeholderStyle={"#a9a9a9"}
+              containerStyle={{
+                width: "28%",
+                opacity: mobileNumberDisabled ? 0.5 : 1,
+              }}
+              dropdownStyle={{ height: 40, paddingTop: 8, borderRadius: 12 }}
+              placeholder="+971"
+              arrOfObj={formattedCodes}
+              keyValueGetOnSelect="code"
+              // keyValueShowInBox="displayName"
+              onChange={(e) => handleChangeMobile(e, "pin")}
+              initialValue={number?.pin || "971"}
+              mode="modal"
+              isSearch
+              dpWidth={250}
+            />
+          )}
           <CustomInput
             placeholder="Mobile Number"
             containerStyle={{
-              width: "70%",
+              width: hideCountryPicker ? "100%" : "70%",
               opacity: mobileNumberDisabled ? 0.5 : 1,
             }}
             onChangeText={(e) => handleChangeMobile(e, "phone")}

@@ -37,15 +37,25 @@ const AddSingleLead = ({ data, tabType }: any) => {
   const mobileDebounceRef = React.useRef<any>(null);
 
   const parseMobile = (val: string) => {
-    if (!val || !val.includes("-")) {
-      return { countryCode: "", phone: "" };
+    if (!val) {
+      return {
+        countryCode: "",
+        phone: "",
+      };
+    }
+
+    if (!val.includes("-")) {
+      return {
+        countryCode: "",
+        phone: val.replace(/\D/g, ""),
+      };
     }
 
     const [code, phone] = val.split("-");
 
     return {
-      countryCode: code.replace(/\D/g, ""), // "20"
-      phone: phone.replace(/\D/g, ""), // "9658412556"
+      countryCode: code.replace(/\D/g, ""),
+      phone: phone.replace(/\D/g, ""),
     };
   };
 
@@ -80,6 +90,7 @@ const AddSingleLead = ({ data, tabType }: any) => {
     },
     onSubmit: async (values) => {
       myConsole("formik_values", values);
+      myConsole("formik_values", errors);
       let isUpdate = !!data?._id;
       setLoading(true);
       try {
@@ -153,6 +164,7 @@ const AddSingleLead = ({ data, tabType }: any) => {
       }
     },
   });
+
   useEffect(() => {
     let srManager = "";
     if (data?.self) {
@@ -225,12 +237,16 @@ const AddSingleLead = ({ data, tabType }: any) => {
         onChange={(a) => {
           const { countryCode, phone } = parseMobile(a);
 
-          setFieldValue("clientMobile", `${countryCode}${phone}`);
+          setFieldValue(
+            "clientMobile",
+            countryCode ? `${countryCode}${phone}` : phone,
+          );
 
           if (mobileDebounceRef.current) {
             clearTimeout(mobileDebounceRef.current);
           }
-
+          console.log("MOBILE INPUT =>", a);
+          console.log("PARSED =>", { countryCode, phone });
           mobileDebounceRef.current = setTimeout(() => {
             if (!isWhatsappManuallyEdited && phone.length >= 8 && countryCode) {
               const whatsappValue = `+${countryCode}${phone}`;
@@ -250,6 +266,10 @@ const AddSingleLead = ({ data, tabType }: any) => {
         onChangeText={handleChange("clientEmail")}
         value={values?.clientEmail}
         onBlur={handleBlur("clientEmail")}
+        props={{
+          autoCapitalize: "none",
+          autoCorrect: false,
+        }}
       />
       {errors.clientEmail && touched.clientEmail && (
         <CustomText style={styles.errorText}>{errors.clientEmail}</CustomText>

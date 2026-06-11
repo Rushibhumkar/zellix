@@ -96,7 +96,6 @@ const AddUserHRM = () => {
     id: values?.srManager,
   });
   const { data: roleList } = useGetAvailableRoles({ id: values?.team });
-
   return (
     <ContainerHRM
       isBAck={{
@@ -130,9 +129,19 @@ const AddUserHRM = () => {
               Mobile Number
             </CustomText>
             <MobileInput
-              onChange={(v) =>
-                setFieldValue("mobile", `${v?.countryCode}${v?.number}`)
-              }
+              onChange={(v) => {
+                console.log("MOBILE INPUT VALUE =>", v);
+
+                if (typeof v === "string") {
+                  setFieldValue("mobile", v);
+                  return;
+                }
+
+                setFieldValue(
+                  "mobile",
+                  `${v?.countryCode || ""}${v?.number || ""}`,
+                );
+              }}
               value={values?.mobile}
               error={touched.mobile && errors.mobile ? errors.mobile : ""}
               isCountryPicker={true}
@@ -145,6 +154,10 @@ const AddUserHRM = () => {
               onBlur={handleBlur("email")}
               value={values.email}
               errors={touched.email && errors.email ? errors.email : ""}
+              props={{
+                autoCapitalize: "none",
+                autoCorrect: false,
+              }}
             />
             <CustomInput
               label="Salary"
@@ -251,16 +264,23 @@ const validationSchema = Yup.object().shape({
   mobile: Yup.string()
     .required("Phone number is required")
     .test("phone-number", "Invalid phone number", (value) => {
-      console.log("valueValidate", value);
-      if (value.length < 5) {
+      if (!value || value.length < 5) {
         return false;
-      } else
-        try {
-          const phoneNumber = parsePhoneNumber(value);
-          return phoneNumber.isValid();
-        } catch (error) {
-          console.error("Error validating phone number:", error.message);
-          return false;
-        }
+      }
+      console.log("MOBILE VALUE =>", value);
+      console.log(
+        "PHONE FOR VALIDATION =>",
+        value.startsWith("+") ? value : `+${value}`,
+      );
+      try {
+        const phoneNumber = parsePhoneNumber(
+          value.startsWith("+") ? value : `+${value}`,
+        );
+
+        return phoneNumber?.isValid() ?? false;
+      } catch (error) {
+        console.error("Error validating phone number:", error.message);
+        return false;
+      }
     }),
 });
