@@ -2,7 +2,6 @@ import {
   ActivityIndicator,
   StyleProp,
   StyleSheet,
-  Text,
   TextStyle,
   View,
   ViewStyle,
@@ -13,43 +12,47 @@ import UpDownIcon from "../../assets/svg/UpDownIcon";
 import { color } from "../../const/color";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
-import { myConsole } from "../../hooks/useConsole";
-import NoDataFound from "../NoDataFound/NoDataFound";
 import CustomText from "../CustomText/CustomText";
+import { myConsole } from "../../hooks/useConsole";
 // import { teamUsers } from '../../utils/teamUsers';
 
 //
 const teamUsers = (teams = [], users = []) => {
-  return users.filter((user) => {
-    let InTeam = false;
-    teams.forEach((team) => {
-      if (team.srManager?._id === user._id) {
-        InTeam = true;
-        return true;
-      } else if (team.manager?._id === user._id) {
-        InTeam = true;
-        return true;
-      } else if (team?.assistantManager?._id === user?._id) {
-        InTeam = true;
-        return true;
-      } else if (team.teamLead?._id === user._id) {
-        InTeam = true;
-        return true;
-      } else if (team.agents && team.agents.length > 0) {
-        team.agents.forEach((agent) => {
-          if (agent._id === user._id) {
-            InTeam = true;
-            return true;
-          }
-        });
-      }
-    });
+  return users
+    .filter((user) => {
+      let InTeam = false;
+      teams.forEach((team) => {
+        if (team.srManager?._id === user._id) {
+          InTeam = true;
+          return true;
+        } else if (team.manager?._id === user._id) {
+          InTeam = true;
+          return true;
+        } else if (team?.assistantManager?._id === user?._id) {
+          InTeam = true;
+          return true;
+        } else if (team.teamLead?._id === user._id) {
+          InTeam = true;
+          return true;
+        } else if (team.agents && team.agents.length > 0) {
+          team.agents.forEach((agent) => {
+            if (agent._id === user._id) {
+              InTeam = true;
+              return true;
+            }
+          });
+        }
+      });
 
-    if (InTeam) {
-      return true;
-    }
-    return false;
-  });
+      if (InTeam) {
+        return true;
+      }
+      return false;
+    })
+    .map((user) => ({
+      ...user,
+      name: `${user?.name || ""} ${user?.lastName || ""}`.trim(),
+    }));
 };
 //
 
@@ -173,9 +176,12 @@ const DropdownRNE = ({
     );
   };
 
-  const validData = (arrOfObj?.length ? arrOfObj : data)?.filter(
+  const sourceData = arrOfObj?.length ? arrOfObj : data;
+
+  const validData = sourceData?.filter(
     (item) => typeof item?.[keyValueShowInBox] === "string",
   );
+
   return (
     <View style={[containerStyle]}>
       {label && (

@@ -32,6 +32,11 @@ import IllusionBox from "../../myComponents/IllusionBoxForUpdate/IllusionBox";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { color } from "../../const/color";
 import moment from "moment";
+import { selectUser } from "../../redux/userSlice";
+import { useSelector } from "react-redux";
+import { roleEnum } from "../../utils/data";
+import { Feather } from "@expo/vector-icons";
+import { useAppToast } from "../../components/AppToast";
 
 const agents = [
   { label: "Ahmed", value: "Ahmed" },
@@ -40,11 +45,18 @@ const agents = [
 
 const AddMeeting = () => {
   const queryClient = useQueryClient();
+  const toast = useAppToast();
   // const { lead, user, allUsers } = useSelector(selectUser);
   // const dispatch = useDispatch();
   const { navigate, goBack } = useNavigation();
   const { params } = useRoute();
+  const { user } = useSelector(selectUser);
+
   let data = params?.detail;
+
+  const incomingStatus = params?.detail?.status;
+  const incomingUserId = params?.detail?.userId;
+
   const isUpdate = !!data?.productPitch;
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
@@ -80,6 +92,24 @@ const AddMeeting = () => {
     data?.lead?._id,
   );
 
+  const mappedMeetingStatus =
+    incomingStatus === "meeting_scheduled"
+      ? "schedule"
+      : incomingStatus === "meeting_done"
+        ? "conducted"
+        : data?.meetings?.length > 0
+          ? data?.meetings[0]?.status
+          : "";
+
+  // Default agents: if not sup/sub admin → pre-select self
+  const isAdmin =
+    user?.role === roleEnum?.sup_admin || user?.role === roleEnum?.sub_admin;
+
+  const defaultAgents =
+    !isAdmin && (incomingUserId || user?._id)
+      ? [incomingUserId || user?._id]
+      : (data?.agents ?? "");
+
   useEffect(() => {
     setTempDate({
       date: data?.scheduleDate?.date ?? new Date(),
@@ -107,8 +137,8 @@ const AddMeeting = () => {
       clientCountry: data?.clientCountry ?? "",
       location: data?.meetings?.length > 0 ? data?.meetings[0]?.location : "",
       remarks: data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : "",
-      status: data?.meetings?.length > 0 ? data?.meetings[0]?.status : "",
-      agents: data?.agents ?? "",
+      status: mappedMeetingStatus,
+      agents: defaultAgents,
       scheduleDate: data?.scheduleDate ?? new Date(),
     },
     onSubmit: async (value) => {
@@ -139,7 +169,7 @@ const AddMeeting = () => {
           });
           goBack();
           // navigate(routeMeeting.AllMeetings);
-          popUpConfToast.successMessage(res?.data);
+          toast.success(res?.data);
         } else {
           let res = await addMeeting(sendData);
           // myConsole("resAddMeeting", res)
@@ -149,7 +179,7 @@ const AddMeeting = () => {
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getMeeting],
           });
-          popUpConfToast.successMessage(res?.data);
+          toast.success(res?.data);
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
@@ -157,7 +187,8 @@ const AddMeeting = () => {
           // await navigate(routeMeeting.AllMeetings);
         }
       } catch (error) {
-        popUpConfToast.errorMessage("Server error");
+        toast.error("Server error");
+        console.log("errorrrrr", error);
         // setMessage(error?.response?.data);
         // setIsVisible(false);
       } finally {
@@ -199,6 +230,7 @@ const AddMeeting = () => {
     setSearchValue(v);
     debounceSearch(v);
   };
+
   return (
     <>
       <Header title={isUpdate ? "Update Meetings" : "Add Meetings"} />

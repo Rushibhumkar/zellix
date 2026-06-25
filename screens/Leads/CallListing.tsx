@@ -37,12 +37,15 @@ import {
 } from "../../utils/data";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { addManualLeadSchema } from "../../utils/validation";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import { useAppToast } from "../../components/AppToast";
 import { useQueryClient } from "@tanstack/react-query";
-import { createCallLog } from "../../services/rootApi/callLogsApi";
+import {
+  createCallLog,
+  useCallLogsByUserId,
+} from "../../services/rootApi/callLogsApi";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { myConsole } from "../../hooks/useConsole";
 import { normalizeAnswer } from "../../utils/commonFunctions";
@@ -53,12 +56,17 @@ import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import moment from "moment";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { routeLead } from "../../utils/routes";
 
 const CallListing = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
+  const route: any = useRoute();
   const { navigate, goBack } = useNavigation();
   const { user, lead } = useSelector(selectUser);
+  const userId = route?.params?.userId;
+  const userName = route?.params?.userName;
+  const from = route?.params?.from;
   const insets = useSafeAreaInsets();
 
   const [tdForFUT, setTdForFUT] = useState({
@@ -76,6 +84,13 @@ const CallListing = () => {
   const [leadType, setLeadType] = useState<"interested" | "not_interested">(
     "interested",
   );
+
+  const myLogsQuery = useGetMyCallLogs(10);
+
+  const userLogsQuery = useCallLogsByUserId(userId);
+
+  const activeQuery = userId ? userLogsQuery : myLogsQuery;
+
   const {
     data,
     isLoading,
@@ -84,7 +99,9 @@ const CallListing = () => {
     fetchNextPage,
     hasNextPage,
     refetch,
-  } = useGetMyCallLogs(10);
+    isError,
+    error,
+  } = activeQuery;
 
   const onRefresh = async () => {
     await refetch();
@@ -521,9 +538,66 @@ const CallListing = () => {
 
   // myConsole("callLogsssss", callLogs);
 
+  if (isError) {
+    return (
+      <Container>
+        <Header
+          title={userId ? `${userName} Calls` : "Calls"}
+          onBack={() => {
+            if (from === "reports") {
+              navigate("ReportsListing");
+            } else {
+              navigate(routeLead.allLead);
+            }
+          }}
+        />
+
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 20,
+          }}
+        >
+          <CustomText
+            style={{
+              marginBottom: 15,
+              textAlign: "center",
+            }}
+          >
+            Failed to load call logs
+          </CustomText>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => refetch()}
+            style={{
+              backgroundColor: color.mainTxtColor,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 10,
+            }}
+          >
+            <CustomText color="#fff">Retry</CustomText>
+          </TouchableOpacity>
+        </View>
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      <Header title="Calls" />
+      <Header
+        title={userId ? `${userName} Calls` : "Calls"}
+        onBack={() => {
+          if (from === "reports") {
+            navigate("ReportsListing");
+          } else {
+            navigate(routeLead.allLead);
+          }
+        }}
+      />
 
       <FlatList
         data={callLogs}
@@ -576,7 +650,22 @@ const CallListing = () => {
               <ActivityIndicator size="large" color={color.mainTxtColor} />
             </View>
           ) : (
-            <NoDataFound width={120} height={120} />
+            <View
+              style={{
+                alignItems: "center",
+                marginTop: 100,
+              }}
+            >
+              <NoDataFound width={120} height={120} />
+
+              <CustomText
+                style={{
+                  marginTop: 10,
+                }}
+              >
+                No call logs found
+              </CustomText>
+            </View>
           )
         }
         ListFooterComponent={
@@ -589,18 +678,20 @@ const CallListing = () => {
       />
 
       {/* Floating DialPad Button */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={[
-          styles.floatingDialPadBtn,
-          {
-            bottom: insets.bottom + 80,
-          },
-        ]}
-        onPress={() => setShowDialPad(true)}
-      >
-        <MaterialIcons name="dialpad" size={22} color="#fff" />
-      </TouchableOpacity>
+      {!userId && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.floatingDialPadBtn,
+            {
+              bottom: insets.bottom + 80,
+            },
+          ]}
+          onPress={() => setShowDialPad(true)}
+        >
+          <MaterialIcons name="dialpad" size={22} color="#fff" />
+        </TouchableOpacity>
+      )}
       {/* <TouchableOpacity
         activeOpacity={0.8}
         style={styles.floatingAddBtn}
@@ -732,65 +823,371 @@ const CallListing = () => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      <Modal visible={showLeadModal} transparent animationType="slide">
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0,0,0,0.4)",
-          }}
-        >
+      {!userId && (
+        <Modal visible={showLeadModal} transparent animationType="slide">
           <View
             style={{
-              backgroundColor: "#fff",
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
               flex: 1,
-              marginTop: 80,
+              justifyContent: "flex-end",
+              backgroundColor: "rgba(0,0,0,0.4)",
             }}
           >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+            <View
               style={{
+                backgroundColor: "#fff",
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
                 flex: 1,
+                marginTop: 80,
               }}
             >
-              <View
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
                 style={{
                   flex: 1,
-                  paddingHorizontal: 20,
-                  paddingBottom: 20,
                 }}
               >
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  keyboardDismissMode="interactive"
-                  contentContainerStyle={{
-                    marginTop: 22,
-                    paddingBottom: 40,
+                <View
+                  style={{
+                    flex: 1,
+                    paddingHorizontal: 20,
+                    paddingBottom: 20,
                   }}
-                  nestedScrollEnabled
                 >
-                  <View
-                    style={{
-                      marginBottom: 20,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                  <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="interactive"
+                    contentContainerStyle={{
+                      marginTop: 22,
+                      paddingBottom: 40,
                     }}
+                    nestedScrollEnabled
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: 20,
-                        fontWeight: "700",
-                        color: color.mainTxtColor,
+                        marginBottom: 20,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                       }}
                     >
-                      Lead Details
-                    </Text>
-                    <TouchableOpacity
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: "700",
+                          color: color.mainTxtColor,
+                        }}
+                      >
+                        Lead Details
+                      </Text>
+                      <TouchableOpacity
+                        onPress={async () => {
+                          await hitCreateCallLog();
+                          setShowLeadModal(false);
+                          formik.resetForm();
+                          setTdForFUT({
+                            date: null,
+                            time: null,
+                          });
+                          setLeadType("interested");
+                          // goBack();
+                        }}
+                      >
+                        <Feather
+                          name="x"
+                          size={24}
+                          color={color.mainTxtColor}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        marginBottom: 20,
+                        gap: 10,
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => {
+                          setLeadType("interested");
+                          formik.setFieldValue("status", "");
+                          formik.setFieldValue("leadType", "interested");
+                        }}
+                        style={{
+                          flex: 1,
+                          height: 45,
+                          borderRadius: 12,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor:
+                            leadType === "interested"
+                              ? color.mainTxtColor
+                              : "#F1F5F9",
+                        }}
+                      >
+                        <CustomText
+                          color={
+                            leadType === "interested"
+                              ? "#fff"
+                              : color.mainTxtColor
+                          }
+                        >
+                          Interested
+                        </CustomText>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => {
+                          setLeadType("not_interested");
+                          formik.setFieldValue("status", "");
+                          formik.setFieldValue("leadType", "not_interested");
+                        }}
+                        style={{
+                          flex: 1,
+                          height: 45,
+                          borderRadius: 12,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor:
+                            leadType === "not_interested"
+                              ? color.mainTxtColor
+                              : "#F1F5F9",
+                        }}
+                      >
+                        <CustomText
+                          color={
+                            leadType === "not_interested"
+                              ? "#fff"
+                              : color.mainTxtColor
+                          }
+                        >
+                          Not Looking Right Now
+                        </CustomText>
+                      </TouchableOpacity>
+                    </View>
+
+                    <DropdownRNE
+                      label="Lead Status *"
+                      placeholder="Select Status"
+                      arrOfObj={filteredLeadStatus}
+                      keyValueGetOnSelect="_id"
+                      keyValueShowInBox="name"
+                      initialValue={formik.values.status}
+                      onChange={(v) => {
+                        console.log("STATUS SELECTED =>", v);
+                        setFollowUpError("");
+                        formik.setFieldValue("status", v, false);
+
+                        setTimeout(() => {
+                          formik.setFieldTouched("status", false);
+                        }, 100);
+                      }}
+                      mode="auto"
+                      error={formik.touched.status ? formik.errors.status : ""}
+                      dropdownStyle={{ height: 42 }}
+                      containerStyle={{
+                        marginBottom: 10,
+                      }}
+                    />
+
+                    {shouldShowFollowUpField && (
+                      <>
+                        <CustomText
+                          style={{
+                            marginBottom: 6,
+                            fontWeight: "600",
+                            color: color.mainTxtColor,
+                          }}
+                        >
+                          Follow Up Time
+                          {FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE.includes(
+                            formik.values.status,
+                          ) && (
+                            <CustomText style={{ color: "red" }}> *</CustomText>
+                          )}
+                        </CustomText>
+
+                        <DatePickerExpo
+                          title="Date"
+                          minimumDate={new Date()}
+                          boxContainerStyle={{ marginBottom: 12 }}
+                          initialValue={tdForFUT.date}
+                          onSelect={(v) => {
+                            setTdForFUT((prev) => ({
+                              ...prev,
+                              date: v || null,
+                            }));
+
+                            setFollowUpError("");
+                          }}
+                        />
+
+                        <DatePickerExpo
+                          key={timePickerKey}
+                          title="Time"
+                          mode="time"
+                          minuteInterval={5}
+                          minimumDate={
+                            moment(tdForFUT.date).isSame(new Date(), "day")
+                              ? new Date()
+                              : undefined
+                          }
+                          boxContainerStyle={{ marginBottom: 15 }}
+                          initialValue={tdForFUT.time}
+                          onSelect={(v) => {
+                            setTdForFUT((prev) => ({
+                              ...prev,
+                              time: v ? roundToNext5Min(new Date(v)) : null,
+                            }));
+
+                            setFollowUpError("");
+                          }}
+                        />
+                        {!!followUpError && (
+                          <CustomText
+                            style={{
+                              color: "red",
+                              fontSize: 12,
+                              marginTop: -8,
+                              marginBottom: 10,
+                            }}
+                          >
+                            {followUpError}
+                          </CustomText>
+                        )}
+                      </>
+                    )}
+                    {leadType === "interested" && (
+                      <>
+                        <CustomInput
+                          label="Client Name"
+                          value={formik.values.clientName}
+                          onChangeText={formik.handleChange("clientName")}
+                          errors={
+                            formik.touched.clientName
+                              ? formik.errors.clientName
+                              : undefined
+                          }
+                          onBlur={() => formik.setFieldTouched("clientName")}
+                          marginBottom={15}
+                        />
+                        {/* <Text>Mobile Value : {formik.values.clientMobile}</Text> */}
+                        <MobileInput
+                          hideCountryPicker={true}
+                          key={formik.values.clientMobile}
+                          countryCodeDisabled={true}
+                          mobileNumberDisabled={true}
+                          value={formik.values.clientMobile}
+                          onChange={(v) =>
+                            formik.setFieldValue("clientMobile", v)
+                          }
+                          onBlur={() => formik.setFieldTouched("clientMobile")}
+                          error={
+                            formik.touched.clientMobile
+                              ? formik.errors.clientMobile
+                              : undefined
+                          }
+                        />
+
+                        <CustomInput
+                          label="Client Email"
+                          placeholder="Enter client email"
+                          value={formik.values.clientEmail}
+                          onChangeText={formik.handleChange("clientEmail")}
+                          errors={
+                            formik.touched.clientEmail
+                              ? formik.errors.clientEmail
+                              : undefined
+                          }
+                          props={{
+                            autoCapitalize: "none",
+                            autoCorrect: false,
+                          }}
+                          onBlur={() => formik.setFieldTouched("clientEmail")}
+                          marginBottom={15}
+                        />
+
+                        <CustomInput
+                          label="Client Address"
+                          value={formik.values.clientAddress}
+                          onChangeText={formik.handleChange("clientAddress")}
+                          marginBottom={15}
+                        />
+
+                        <DropdownRNE
+                          label="Client Looking For"
+                          placeholder="Select Requirement"
+                          arrOfObj={clientLookingForOptions}
+                          keyValueGetOnSelect="_id"
+                          keyValueShowInBox="name"
+                          initialValue={formik.values.clientLookingFor}
+                          onChange={(v) =>
+                            formik.setFieldValue("clientLookingFor", v)
+                          }
+                          mode="auto"
+                          dropdownStyle={{
+                            height: 42,
+                            marginBottom: 10,
+                          }}
+                        />
+                        <CustomInput
+                          label="Project Looking For"
+                          value={formik.values.projectLookingFor}
+                          onChangeText={formik.handleChange(
+                            "projectLookingFor",
+                          )}
+                          marginBottom={15}
+                        />
+                        <CustomInput
+                          label="How Many Bedrooms Looking For"
+                          value={formik.values.howManyBedroomsLookingFor}
+                          onChangeText={formik.handleChange(
+                            "howManyBedroomsLookingFor",
+                          )}
+                          marginBottom={15}
+                        />
+                        <CustomInput
+                          label="Budget"
+                          value={formik.values.budget}
+                          onChangeText={formik.handleChange("budget")}
+                          marginBottom={20}
+                        />
+                      </>
+                    )}
+                    <CustomInput
+                      label="Comment"
+                      placeholder="Add comment"
+                      value={formik.values.comment}
+                      onChangeText={formik.handleChange("comment")}
+                      marginBottom={20}
+                      multiline
+                      numberOfLines={4}
+                      inputStyle={{
+                        minHeight: 100,
+                        textAlignVertical: "top",
+                        paddingTop: 10,
+                      }}
+                    />
+                  </ScrollView>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 10,
+                      paddingTop: 10,
+                      paddingBottom: Platform.OS === "ios" ? 0 : 5,
+                      paddingHorizontal: 20,
+                      borderTopWidth: 1,
+                      borderTopColor: "#E5E7EB",
+                      backgroundColor: "#fff",
+                    }}
+                  >
+                    <CustomBtn
+                      title="Cancel"
+                      containerStyle={{
+                        flex: 1,
+                      }}
                       onPress={async () => {
                         await hitCreateCallLog();
                         setShowLeadModal(false);
@@ -802,335 +1199,37 @@ const CallListing = () => {
                         setLeadType("interested");
                         // goBack();
                       }}
-                    >
-                      <Feather name="x" size={24} color={color.mainTxtColor} />
-                    </TouchableOpacity>
-                  </View>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      marginBottom: 20,
-                      gap: 10,
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => {
-                        setLeadType("interested");
-                        formik.setFieldValue("status", "");
-                        formik.setFieldValue("leadType", "interested");
-                      }}
-                      style={{
+                    />
+
+                    <CustomBtn
+                      title="Submit"
+                      containerStyle={{
                         flex: 1,
-                        height: 45,
-                        borderRadius: 12,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        backgroundColor:
-                          leadType === "interested"
-                            ? color.mainTxtColor
-                            : "#F1F5F9",
                       }}
-                    >
-                      <CustomText
-                        color={
-                          leadType === "interested"
-                            ? "#fff"
-                            : color.mainTxtColor
-                        }
-                      >
-                        Interested
-                      </CustomText>
-                    </TouchableOpacity>
+                      onPress={async () => {
+                        formik.setTouched({
+                          clientName: true,
+                          clientMobile: true,
+                          clientEmail: true,
+                          status: true,
+                        });
 
-                    <TouchableOpacity
-                      onPress={() => {
-                        setLeadType("not_interested");
-                        formik.setFieldValue("status", "");
-                        formik.setFieldValue("leadType", "not_interested");
+                        formik.handleSubmit();
+                        // myConsole(
+                        //   "FORMIK validatiaonnn =>",
+                        //   await formik.validateForm(),
+                        // );
+                        // myConsole("FORMIK ERRORS =>", formik.errors);
+                        // myConsole("FORMIK Valuesss =>", formik.values);
                       }}
-                      style={{
-                        flex: 1,
-                        height: 45,
-                        borderRadius: 12,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        backgroundColor:
-                          leadType === "not_interested"
-                            ? color.mainTxtColor
-                            : "#F1F5F9",
-                      }}
-                    >
-                      <CustomText
-                        color={
-                          leadType === "not_interested"
-                            ? "#fff"
-                            : color.mainTxtColor
-                        }
-                      >
-                        Not Looking Right Now
-                      </CustomText>
-                    </TouchableOpacity>
+                    />
                   </View>
-
-                  <DropdownRNE
-                    label="Lead Status *"
-                    placeholder="Select Status"
-                    arrOfObj={filteredLeadStatus}
-                    keyValueGetOnSelect="_id"
-                    keyValueShowInBox="name"
-                    initialValue={formik.values.status}
-                    onChange={(v) => {
-                      console.log("STATUS SELECTED =>", v);
-                      setFollowUpError("");
-                      formik.setFieldValue("status", v, false);
-
-                      setTimeout(() => {
-                        formik.setFieldTouched("status", false);
-                      }, 100);
-                    }}
-                    mode="auto"
-                    error={formik.touched.status ? formik.errors.status : ""}
-                    dropdownStyle={{ height: 42 }}
-                    containerStyle={{
-                      marginBottom: 10,
-                    }}
-                  />
-
-                  {shouldShowFollowUpField && (
-                    <>
-                      <CustomText
-                        style={{
-                          marginBottom: 6,
-                          fontWeight: "600",
-                          color: color.mainTxtColor,
-                        }}
-                      >
-                        Follow Up Time
-                        {FOLLOWUP_REQUIRED_STATUSES_ONLY_POSITIVE.includes(
-                          formik.values.status,
-                        ) && (
-                          <CustomText style={{ color: "red" }}> *</CustomText>
-                        )}
-                      </CustomText>
-
-                      <DatePickerExpo
-                        title="Date"
-                        minimumDate={new Date()}
-                        boxContainerStyle={{ marginBottom: 12 }}
-                        initialValue={tdForFUT.date}
-                        onSelect={(v) => {
-                          setTdForFUT((prev) => ({
-                            ...prev,
-                            date: v || null,
-                          }));
-
-                          setFollowUpError("");
-                        }}
-                      />
-
-                      <DatePickerExpo
-                        key={timePickerKey}
-                        title="Time"
-                        mode="time"
-                        minuteInterval={5}
-                        minimumDate={
-                          moment(tdForFUT.date).isSame(new Date(), "day")
-                            ? new Date()
-                            : undefined
-                        }
-                        boxContainerStyle={{ marginBottom: 15 }}
-                        initialValue={tdForFUT.time}
-                        onSelect={(v) => {
-                          setTdForFUT((prev) => ({
-                            ...prev,
-                            time: v ? roundToNext5Min(new Date(v)) : null,
-                          }));
-
-                          setFollowUpError("");
-                        }}
-                      />
-                      {!!followUpError && (
-                        <CustomText
-                          style={{
-                            color: "red",
-                            fontSize: 12,
-                            marginTop: -8,
-                            marginBottom: 10,
-                          }}
-                        >
-                          {followUpError}
-                        </CustomText>
-                      )}
-                    </>
-                  )}
-                  {leadType === "interested" && (
-                    <>
-                      <CustomInput
-                        label="Client Name"
-                        value={formik.values.clientName}
-                        onChangeText={formik.handleChange("clientName")}
-                        errors={
-                          formik.touched.clientName
-                            ? formik.errors.clientName
-                            : undefined
-                        }
-                        onBlur={() => formik.setFieldTouched("clientName")}
-                        marginBottom={15}
-                      />
-                      {/* <Text>Mobile Value : {formik.values.clientMobile}</Text> */}
-                      <MobileInput
-                        hideCountryPicker={true}
-                        key={formik.values.clientMobile}
-                        countryCodeDisabled={true}
-                        mobileNumberDisabled={true}
-                        value={formik.values.clientMobile}
-                        onChange={(v) =>
-                          formik.setFieldValue("clientMobile", v)
-                        }
-                        onBlur={() => formik.setFieldTouched("clientMobile")}
-                        error={
-                          formik.touched.clientMobile
-                            ? formik.errors.clientMobile
-                            : undefined
-                        }
-                      />
-
-                      <CustomInput
-                        label="Client Email"
-                        placeholder="Enter client email"
-                        value={formik.values.clientEmail}
-                        onChangeText={formik.handleChange("clientEmail")}
-                        errors={
-                          formik.touched.clientEmail
-                            ? formik.errors.clientEmail
-                            : undefined
-                        }
-                        props={{
-                          autoCapitalize: "none",
-                          autoCorrect: false,
-                        }}
-                        onBlur={() => formik.setFieldTouched("clientEmail")}
-                        marginBottom={15}
-                      />
-
-                      <CustomInput
-                        label="Client Address"
-                        value={formik.values.clientAddress}
-                        onChangeText={formik.handleChange("clientAddress")}
-                        marginBottom={15}
-                      />
-
-                      <DropdownRNE
-                        label="Client Looking For"
-                        placeholder="Select Requirement"
-                        arrOfObj={clientLookingForOptions}
-                        keyValueGetOnSelect="_id"
-                        keyValueShowInBox="name"
-                        initialValue={formik.values.clientLookingFor}
-                        onChange={(v) =>
-                          formik.setFieldValue("clientLookingFor", v)
-                        }
-                        mode="auto"
-                        dropdownStyle={{
-                          height: 42,
-                          marginBottom: 10,
-                        }}
-                      />
-                      <CustomInput
-                        label="Project Looking For"
-                        value={formik.values.projectLookingFor}
-                        onChangeText={formik.handleChange("projectLookingFor")}
-                        marginBottom={15}
-                      />
-                      <CustomInput
-                        label="How Many Bedrooms Looking For"
-                        value={formik.values.howManyBedroomsLookingFor}
-                        onChangeText={formik.handleChange(
-                          "howManyBedroomsLookingFor",
-                        )}
-                        marginBottom={15}
-                      />
-                      <CustomInput
-                        label="Budget"
-                        value={formik.values.budget}
-                        onChangeText={formik.handleChange("budget")}
-                        marginBottom={20}
-                      />
-                    </>
-                  )}
-                  <CustomInput
-                    label="Comment"
-                    placeholder="Add comment"
-                    value={formik.values.comment}
-                    onChangeText={formik.handleChange("comment")}
-                    marginBottom={20}
-                    multiline
-                    numberOfLines={4}
-                    inputStyle={{
-                      minHeight: 100,
-                      textAlignVertical: "top",
-                      paddingTop: 10,
-                    }}
-                  />
-                </ScrollView>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 10,
-                    paddingTop: 10,
-                    paddingBottom: Platform.OS === "ios" ? 0 : 5,
-                    paddingHorizontal: 20,
-                    borderTopWidth: 1,
-                    borderTopColor: "#E5E7EB",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  <CustomBtn
-                    title="Cancel"
-                    containerStyle={{
-                      flex: 1,
-                    }}
-                    onPress={async () => {
-                      await hitCreateCallLog();
-                      setShowLeadModal(false);
-                      formik.resetForm();
-                      setTdForFUT({
-                        date: null,
-                        time: null,
-                      });
-                      setLeadType("interested");
-                      // goBack();
-                    }}
-                  />
-
-                  <CustomBtn
-                    title="Submit"
-                    containerStyle={{
-                      flex: 1,
-                    }}
-                    onPress={async () => {
-                      formik.setTouched({
-                        clientName: true,
-                        clientMobile: true,
-                        clientEmail: true,
-                        status: true,
-                      });
-
-                      formik.handleSubmit();
-                      // myConsole(
-                      //   "FORMIK validatiaonnn =>",
-                      //   await formik.validateForm(),
-                      // );
-                      // myConsole("FORMIK ERRORS =>", formik.errors);
-                      // myConsole("FORMIK Valuesss =>", formik.values);
-                    }}
-                  />
                 </View>
-              </View>
-            </KeyboardAvoidingView>
+              </KeyboardAvoidingView>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
     </Container>
   );
 };

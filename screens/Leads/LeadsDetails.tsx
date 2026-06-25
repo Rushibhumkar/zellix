@@ -79,6 +79,7 @@ import * as Clipboard from "expo-clipboard";
 import { useFormik } from "formik";
 import { changeStatusSchema } from "../../utils/validation";
 import { createCallLog } from "../../services/rootApi/callLogsApi";
+import CelebrationModal from "./component/CelebrationModal";
 
 const extractStringObj = (input: any) => {
   try {
@@ -159,6 +160,9 @@ const LeadsDetails = () => {
   const navigation = useNavigation();
   const { navigate } = useNavigation();
   const { user, lead } = useSelector(selectUser);
+
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationStatus, setCelebrationStatus] = useState<string>("");
 
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
 
@@ -262,6 +266,21 @@ const LeadsDetails = () => {
           lead: {
             _id: details?._id,
           },
+        },
+      },
+      screen: routeMeeting.AddMeeting,
+      initial: false,
+    });
+  };
+
+  const handleCelebrationCreateMeeting = () => {
+    setShowCelebration(false);
+    navigate(routeMeeting.MeetingsNavigator, {
+      params: {
+        detail: {
+          lead: { _id: detail?._id },
+          status: celebrationStatus,
+          userId: user?._id,
         },
       },
       screen: routeMeeting.AddMeeting,
@@ -717,6 +736,15 @@ const LeadsDetails = () => {
       }));
 
       toast.success(res?.data?.message || "Status updated successfully");
+
+      if (
+        fields.status === "meeting_scheduled" ||
+        fields.status === "meeting_done"
+      ) {
+        setCelebrationStatus(fields.status);
+        setShowCelebration(true);
+      }
+
       await hitCreateCallLog(fields.status);
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
@@ -733,7 +761,7 @@ const LeadsDetails = () => {
       setShowChangeStatusPopup(false);
       setStatusLoading(false);
     } catch (err: any) {
-      myConsole("err", err);
+      myConsole("errrrrr", err);
       toast.error(err?.response?.data?.message || "Failed to update status");
       FUTModal.closeModal();
       setShowActionsMenu(false);
@@ -902,6 +930,14 @@ const LeadsDetails = () => {
     : detail?.additionalQuestions
       ? extractStringObj(detail.additionalQuestions)
       : [];
+
+  const showContactDetails =
+    user?.role === roleEnum?.sup_admin || user?.role === roleEnum?.sub_admin;
+
+  const canShowContactDetails =
+    !["assign", "new", "re_assigned"].includes(detail?.status) ||
+    user?.role === roleEnum?.sup_admin ||
+    user?.role === roleEnum?.sub_admin;
 
   // myConsole("tdForFUTtt", tdForFUT);
   // myConsole("detail?", detail);
@@ -1456,78 +1492,71 @@ const LeadsDetails = () => {
                     </View>
                   )}
 
-                  {detail?.clientMobile &&
-                    !["assign", "new", "re_assigned"].includes(
-                      detail?.status,
-                    ) && <View style={styles.divider} />}
+                  {detail?.clientMobile && canShowContactDetails && (
+                    <View style={styles.divider} />
+                  )}
 
                   {/* Mobile */}
-                  {detail?.clientMobile &&
-                    !["assign", "new", "re_assigned"].includes(
-                      detail?.status,
-                    ) && (
-                      <View style={styles.infoRow}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Feather name="phone" size={18} color="#7A869A" />
-                          <View style={{ marginLeft: 12 }}>
-                            <Text style={styles.label}>MOBILE</Text>
-                            <Text style={styles.value}>
-                              {detail?.clientMobile}
-                            </Text>
-                          </View>
+                  {detail?.clientMobile && canShowContactDetails && (
+                    <View style={styles.infoRow}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Feather name="phone" size={18} color="#7A869A" />
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={styles.label}>MOBILE</Text>
+                          <Text style={styles.value}>
+                            {detail?.clientMobile}
+                          </Text>
                         </View>
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "#9b9b9b18",
-                            paddingHorizontal: 6,
-                            paddingVertical: 4,
-                            borderRadius: 6,
-                          }}
-                          onPress={() => handleCopy(detail?.clientMobile)}
-                        >
-                          <Feather name="copy" size={16} color={"#9b9b9b"} />
-                        </TouchableOpacity>
                       </View>
-                    )}
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#9b9b9b18",
+                          paddingHorizontal: 6,
+                          paddingVertical: 4,
+                          borderRadius: 6,
+                        }}
+                        onPress={() => handleCopy(detail?.clientMobile)}
+                      >
+                        <Feather name="copy" size={16} color={"#9b9b9b"} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
                   {/* Email */}
-                  {detail?.clientEmail &&
-                    !["assign", "new", "re_assigned"].includes(
-                      detail?.status,
-                    ) && (
-                      <View style={styles.infoRow}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Feather name="mail" size={18} color="#7A869A" />
-                          <View style={{ marginLeft: 12 }}>
-                            <Text style={styles.label}>EMAIL</Text>
-                            <Text style={styles.value}>
-                              {detail?.clientEmail}
-                            </Text>
-                          </View>
+                  {detail?.clientEmail && canShowContactDetails && (
+                    <View style={styles.infoRow}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Feather name="mail" size={18} color="#7A869A" />
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={styles.label}>EMAIL</Text>
+                          <Text style={styles.value}>
+                            {detail?.clientEmail}
+                          </Text>
                         </View>
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "#9b9b9b18",
-                            paddingHorizontal: 6,
-                            paddingVertical: 4,
-                            borderRadius: 6,
-                          }}
-                          onPress={() => handleCopy(detail?.clientEmail)}
-                        >
-                          <Feather name="copy" size={16} color={"#9b9b9b"} />
-                        </TouchableOpacity>
                       </View>
-                    )}
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#9b9b9b18",
+                          paddingHorizontal: 6,
+                          paddingVertical: 4,
+                          borderRadius: 6,
+                        }}
+                        onPress={() => handleCopy(detail?.clientEmail)}
+                      >
+                        <Feather name="copy" size={16} color={"#9b9b9b"} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               )}
 
@@ -1850,6 +1879,12 @@ const LeadsDetails = () => {
           remark={noteUpdate?.note}
         />
       )}
+      <CelebrationModal
+        visible={showCelebration}
+        status={celebrationStatus}
+        onCreateMeeting={handleCelebrationCreateMeeting}
+        onClose={() => setShowCelebration(false)}
+      />
     </>
   );
 };

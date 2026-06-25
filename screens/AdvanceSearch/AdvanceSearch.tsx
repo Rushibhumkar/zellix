@@ -825,15 +825,17 @@ const AdvanceSearch = () => {
                 )}
               </>
             )}
-            <DropdownRNE
-              key={`team-${resetKey}`}
-              label="Team"
-              arrOfObj={teamOptions}
-              initialValue={values?.teamId}
-              onChange={(v) => setFieldValue("teamId", v)}
-              isSearch
-              mode="modal"
-            />
+            {!isAgent && (
+              <DropdownRNE
+                key={`team-${resetKey}`}
+                label="Team"
+                arrOfObj={teamOptions}
+                initialValue={values?.teamId}
+                onChange={(v) => setFieldValue("teamId", v)}
+                isSearch
+                mode="modal"
+              />
+            )}
             {/* <DropdownRNE
               label="Category"
               arrOfObj={[
