@@ -408,7 +408,7 @@ const CallListing = () => {
 
         const leadPayload = {
           clientName: values.clientName?.trim(),
-          clientEmail: values.clientEmail?.trim(),
+          clientEmail: values.clientEmail?.trim() || "no_reply@skgestates.com",
           clientMobile: values.clientMobile?.replace(/[^0-9]/g, ""),
           status: values.status,
           ...(tdForFUT?.date &&

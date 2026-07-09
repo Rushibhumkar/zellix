@@ -11,32 +11,33 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
-import {
-  selectUser,
-  setAdvanceLead,
-  setLeadQueryKey,
-} from "../../redux/userSlice";
+import { selectUser, setLeadQueryKey } from "../../redux/userSlice";
 import Container from "../../myComponents/Container/Container";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import { deleteLead, leadStatusUpdate } from "../../services/rootApi/leadApi";
 import * as reduxAction from "../../redux/action";
-import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
+import { shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import DeleteModel from "../../myComponents/DeleteModel";
 import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import { color } from "../../const/color";
-import LeadListHeading from "../../components/Leads/LeadHeading/LeadListHeading";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
-import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
+import {
+  allLeadsFilterStatuses,
+  roleEnum,
+  statusColorObj,
+  statusObj,
+} from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
@@ -65,6 +66,13 @@ const AllLeads = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [statusChangeLoad, setStatusChangeLoad] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [dashboardFilterStatus, setDashboardFilterStatus] = useState<
+    string | null
+  >(null);
+  const [dashboardDateKey, setDashboardDateKey] = useState<string | null>(null);
+  const [dashboardMyLeads, setDashboardMyLeads] = useState<boolean>(false);
+
   // let lead = []
   // let loading = false;
   let advanceLead = [];
@@ -113,10 +121,19 @@ const AllLeads = () => {
     isFetchingNextPage,
   } = useGetLead({
     search: debouncedSearch,
-    // type: leadQueryKey?.type ?? selectLeadType,
     ...leadQueryKey,
     type: selectLeadType,
+    // ✅ dashboard filters
+    ...(dashboardFilterStatus && { status: [dashboardFilterStatus] }),
+    ...(dashboardDateKey && { dateKey: dashboardDateKey }),
+    ...(dashboardMyLeads && { individual: true }),
   });
+
+  const hasActiveFilter =
+    !!leadQueryKey ||
+    !!dashboardFilterStatus ||
+    !!dashboardDateKey ||
+    dashboardMyLeads;
 
   const handleSelect = (id) => {
     let temp = [...selected];
@@ -146,6 +163,14 @@ const AllLeads = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearAllFilters = () => {
+    dispatch(setLeadQueryKey(null));
+    setDashboardFilterStatus(null);
+    setDashboardDateKey(null);
+    setDashboardMyLeads(false);
+    setSelectedStatus("all");
   };
 
   const toggleModal = () => {
@@ -308,6 +333,29 @@ const AllLeads = () => {
     } else if (route?.params?.item?.type) {
       setSelectLeadType(route?.params?.item?.type);
     }
+
+    // ✅ Dashboard filter params
+    if (route?.params?.filterStatus) {
+      setDashboardFilterStatus(route.params.filterStatus);
+      setSelectedStatus(route.params.filterStatus);
+      setDashboardDateKey(null);
+      setDashboardMyLeads(false);
+    } else if (route?.params?.dateFilterType) {
+      setDashboardDateKey(route.params.dateFilterType);
+      setDashboardFilterStatus(null);
+      setDashboardMyLeads(false);
+      setSelectedStatus("all");
+    } else if (route?.params?.filterMyLeads) {
+      setDashboardMyLeads(true);
+      setDashboardFilterStatus(null);
+      setDashboardDateKey(null);
+      setSelectedStatus("all");
+    } else {
+      // reset when navigating normally
+      setDashboardFilterStatus(null);
+      setDashboardDateKey(null);
+      setDashboardMyLeads(false);
+    }
   }, [route?.params]);
 
   // console.log("selectleadtypeseuseeffecrt", selectLeadType);
@@ -331,9 +379,7 @@ const AllLeads = () => {
         //       : ""
         // }
         title={"Data Center"}
-        totalCount={
-          selectedStatus === "all" ? totalCount : filteredLeadData?.length || 0
-        }
+        totalCount={totalCount || 0}
         isWithAnimation
         showBackIcon={false}
         showActions={true}
@@ -345,9 +391,7 @@ const AllLeads = () => {
           setShowSearch((prev) => !prev);
           setFocusSearch(true);
         }}
-        onCloseSearch={
-          leadQueryKey !== null ? () => dispatch(setLeadQueryKey(null)) : false
-        }
+        onCloseSearch={hasActiveFilter ? handleClearAllFilters : false}
         onPressFilter={() =>
           navigation.navigate("AdvanceSearch", {
             type: "lead",

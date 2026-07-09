@@ -101,6 +101,8 @@ import ReportFocus from "../assets/svg/ReportFocus";
 import ReportInfocus from "../assets/svg/ReportInfocus";
 import { myConsole } from "../hooks/useConsole";
 import CallListing from "../screens/Leads/CallListing";
+import { useGetUserPermission } from "../services/rootApi/permissionApi";
+import { checkPermission } from "../utils/commonFunctions";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -116,6 +118,14 @@ const BottomTabs = () => {
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === "agent";
   const insets = useSafeAreaInsets();
+  const { data: permission = {} } = useGetUserPermission(user?._id);
+
+  const canViewMeetings = checkPermission(
+    permission,
+    "Meeting",
+    "sidebar",
+    user?.role,
+  );
 
   return (
     <Tab.Navigator
@@ -193,22 +203,24 @@ const BottomTabs = () => {
         }}
       />
 
-      <Tab.Screen
-        name="MeetingsNavigator"
-        component={MeetingsNavigator}
-        options={{
-          tabBarLabel: "",
-          tableBarShowLable: false,
-          tabBarLabelStyle: false,
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <MeetingFocus style={styles.iconPosition} />
-            ) : (
-              <MeetingIcon style={styles.iconPosition} />
-            ),
-        }}
-      />
+      {canViewMeetings && (
+        <Tab.Screen
+          name="MeetingsNavigator"
+          component={MeetingsNavigator}
+          options={{
+            tabBarLabel: "",
+            tableBarShowLable: false,
+            tabBarLabelStyle: false,
+            headerShown: false,
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <MeetingFocus style={styles.iconPosition} />
+              ) : (
+                <MeetingIcon style={styles.iconPosition} />
+              ),
+          }}
+        />
+      )}
 
       <Tab.Screen
         name="RSVPNavigator"

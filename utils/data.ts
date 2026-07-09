@@ -963,7 +963,7 @@ export const addManualLeadNegativeStatuses = [
   "not_interested",
   "not_interested_buy_later",
   "wrong_details",
-  "deal_cancelled",
+  // "deal_cancelled",
   "not_able_to_connect",
   "no_response",
   "broker",

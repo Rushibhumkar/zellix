@@ -1,4 +1,4 @@
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
@@ -7,17 +7,12 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
-import {
-  selectUser,
-  setAdvanceMeeting,
-  setMeetingQueryKey,
-} from "../../redux/userSlice";
+import { selectUser, setMeetingQueryKey } from "../../redux/userSlice";
 import Container from "../../myComponents/Container/Container";
 import { deleteMeeting } from "../../services/rootApi/meetingApi";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";

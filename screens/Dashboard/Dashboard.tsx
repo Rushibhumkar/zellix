@@ -47,6 +47,10 @@ import ClosingLeadProjCard from "../../components/Dashboard/ClosingLeadProjCard"
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import CallingDataQuality from "../../components/Dashboard/CallingDataQuality";
+import LeadStatusScroller from "../../components/Dashboard/LeadStatusScroller";
+import MeetingStatusScroller from "../../components/Dashboard/MeetingStatusScroller";
+import BookingStatusScroller from "../../components/Dashboard/BookingStatusScroller";
+import { myConsole } from "../../hooks/useConsole";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export const socket = io(baseURL, {
@@ -492,6 +496,23 @@ const Dashboard = () => {
     // }
   }, [callDetect?.isCall]); // Empty dependency array ensures the effect runs only once on mount
 
+  myConsole(" user?.role,", user?.role);
+  myConsole("permissionnnn", permission);
+  const canViewBookings = checkPermission(
+    permission,
+    "Bookings",
+    "sidebar",
+    user?.role,
+  );
+  const canViewMeetings = checkPermission(
+    permission,
+    "Meeting",
+    "sidebar",
+    user?.role,
+  );
+  myConsole("canViewMeetingsss", canViewMeetings);
+  myConsole("canViewBookings", canViewBookings);
+
   const canViewLeadQuality = checkPermission(
     permission,
     "Dashboard",
@@ -565,6 +586,11 @@ const Dashboard = () => {
             >
               <Card item={dashboardCount} loading={loadingDashboardCount} />
             </View>
+
+            <LeadStatusScroller />
+            {canViewMeetings && <MeetingStatusScroller />}
+            {canViewBookings && <BookingStatusScroller />}
+
             {isShowGraphs && (
               <>
                 {canViewLeadQuality && (

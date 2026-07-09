@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -40,7 +40,7 @@ const ReportsListing = () => {
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
   const route: any = useRoute();
 
-  const filters = route?.params?.filters;
+  const [filters, setFilters] = useState(route?.params?.filters ?? {});
 
   const selectedStartDate = filters?.startDate || null;
 
@@ -320,7 +320,7 @@ const ReportsListing = () => {
     inboundSortOrder,
     outboundSortOrder,
   ]);
-
+  // myConsole("reportDataaaa", reportData);
   // const reportData = useMemo(() => {
   //   const apiData = leadCallReports?.data || [];
 
@@ -364,6 +364,12 @@ const ReportsListing = () => {
       setZoomLevel((prev) => prev - 0.1);
     }
   };
+
+  useEffect(() => {
+    if (route?.params?.filters) {
+      setFilters(route.params.filters);
+    }
+  }, [route?.params?.filters]);
 
   const handleRefresh = useCallback(() => {
     refetch();
@@ -856,9 +862,34 @@ const ReportsListing = () => {
                     },
                   ]}
                 >
-                  <Text style={styles.bodyText} numberOfLines={2}>
-                    {row[0]}
-                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      navigation.navigate("allLead2", {
+                        screen: "CallListing",
+                        params: {
+                          from: "reports",
+                          userId: reportData[rowIndex]?.userId,
+                          userName: reportData[rowIndex]?.userName,
+                          filters,
+                        },
+                      });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.bodyText,
+                        {
+                          color: color.primaryColor,
+                          fontWeight: "600",
+                          textDecorationLine: "underline",
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {row[0]}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
             />

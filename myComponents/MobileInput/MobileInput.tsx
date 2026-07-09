@@ -184,6 +184,7 @@ const MobileInput = ({
               width: hideCountryPicker ? "100%" : "70%",
               opacity: mobileNumberDisabled ? 0.5 : 1,
             }}
+            onBlur={() => onBlur?.()}
             onChangeText={(e) => handleChangeMobile(e, "phone")}
             props={{
               keyboardType: "number-pad",

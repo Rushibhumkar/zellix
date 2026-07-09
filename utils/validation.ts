@@ -266,12 +266,7 @@ export const addManualLeadSchema = Yup.object({
   clientMobile: Yup.string().trim().required("Mobile Number is required"),
   status: Yup.string().required("Lead Status is required"),
 
-  clientEmail: Yup.string().when("leadType", {
-    is: "interested",
-    then: (schema) =>
-      schema.trim().required("Email is required").email("Enter valid email"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
+  clientEmail: Yup.string().trim().email("Enter valid email").notRequired(),
 
   clientAddress: Yup.string(),
   clientLookingFor: Yup.string(),
