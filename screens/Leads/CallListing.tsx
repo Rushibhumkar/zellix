@@ -16,6 +16,7 @@ import {
   Platform,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import Container from "../../myComponents/Container/Container";
 import Header from "../../components/Header";
@@ -57,6 +58,13 @@ import moment from "moment";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { routeLead } from "../../utils/routes";
+import {
+  getDataJson,
+  removeItemValue,
+  storeDataJson,
+} from "../../hooks/useAsyncStorage";
+
+import { PENDING_CALL_KEY } from "../../utils/pendingCallStorage";
 
 const CallListing = () => {
   const queryClient = useQueryClient();
@@ -84,6 +92,7 @@ const CallListing = () => {
   const [leadType, setLeadType] = useState<"interested" | "not_interested">(
     "interested",
   );
+  const isResumingRef = useRef(false);
 
   const myLogsQuery = useGetMyCallLogs(10);
 
@@ -152,6 +161,7 @@ const CallListing = () => {
   const handleDelete = () => {
     setPhoneNumber((prev) => prev.slice(0, -1));
   };
+
   const handleCall = async (mobile?: string) => {
     const numberToCall = typeof mobile === "string" ? mobile : phoneNumber;
 
@@ -166,20 +176,83 @@ const CallListing = () => {
       console.log("TYPE OF NUMBER =>", typeof numberToCall, numberToCall);
       dialedNumberRef.current = String(numberToCall);
 
+      // ✅ NEW: persist BEFORE opening dialer, so it survives app being killed
+      await storeDataJson(PENDING_CALL_KEY, {
+        number: String(numberToCall),
+        initiatedAt: Date.now(),
+      });
+
       await Linking.openURL(`tel:${numberToCall}`);
     } catch (err) {
       console.log("Call Error", err);
     }
   };
+  // ✅ NEW: resumes a call that was in-progress when the app got killed
+
+  const resumePendingCallIfAny = async () => {
+    if (isResumingRef.current) return;
+
+    const pending = await getDataJson(PENDING_CALL_KEY);
+    if (!pending?.number || !pending?.initiatedAt) return;
+
+    console.log("✅ RESUMING PENDING CALL =>", pending);
+
+    isResumingRef.current = true;
+
+    const endTime = Date.now();
+
+    setCallMeta({
+      initiatedAt: pending.initiatedAt,
+      finishedAt: endTime,
+    });
+
+    setCalledNumber(pending.number);
+    formik.setFieldValue("clientMobile", pending.number);
+
+    await removeItemValue(PENDING_CALL_KEY);
+
+    setPhoneNumber("");
+    setCallStartTime(null);
+    isCallingRef.current = false;
+    isCallTrackingRef.current = false;
+    callStartTimeRef.current = null;
+    setShowDialPad(false);
+
+    // ✅ NEW: visible confirmation popup before opening lead form
+    Alert.alert(
+      "Call Detected",
+      `We noticed your call to ${pending.number} was interrupted. Please add the lead details now.`,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            setShowLeadModal(true);
+            isResumingRef.current = false;
+          },
+        },
+      ],
+      { cancelable: false },
+    );
+  };
 
   useEffect(() => {
+    // covers case: app was killed mid-call and relaunched into this screen
+    resumePendingCallIfAny();
+
     const subscription = AppState.addEventListener("change", (nextAppState) => {
+      console.log(
+        `🔵 AppState changed: ${appState.current} → ${nextAppState} at ${new Date().toISOString()}`,
+        {
+          isCallingRef: isCallingRef.current,
+          isCallTrackingRef: isCallTrackingRef.current,
+        },
+      );
+
       // Call started
       if (isCallingRef.current && nextAppState === "background") {
         const startTime = Date.now();
 
         setCallStartTime(startTime);
-
         callStartTimeRef.current = startTime;
 
         setCallMeta({
@@ -190,7 +263,7 @@ const CallListing = () => {
         isCallTrackingRef.current = true;
       }
 
-      // Returned from call
+      // Returned from call — app was only backgrounded, NOT killed (normal case)
       if (
         nextAppState === "active" &&
         isCallTrackingRef.current &&
@@ -213,23 +286,24 @@ const CallListing = () => {
         console.log("FORMATTED MOBILE =>", mobile);
 
         setCalledNumber(mobile);
-
         formik.setFieldValue("clientMobile", mobile);
 
         console.log("FORMIK MOBILE AFTER SET =>", formik.values.clientMobile);
 
+        removeItemValue(PENDING_CALL_KEY);
+
         setPhoneNumber("");
-
         setCallStartTime(null);
-
         isCallingRef.current = false;
-
         isCallTrackingRef.current = false;
         setShowDialPad(false);
+
         setTimeout(() => {
           setShowLeadModal(true);
         }, 500);
       }
+      // ❌ REMOVED: the aggressive fallback that fired on every "active" transition
+      // (it was misfiring on the brief "inactive" blip from iOS's tel: confirmation dialog)
 
       appState.current = nextAppState;
     });
@@ -743,8 +817,8 @@ const CallListing = () => {
                     placeholderTextColor={color.placeholderGrey}
                     style={styles.numberInput}
                     showSoftInputOnFocus={false}
-                    caretHidden
-                    contextMenuHidden
+                    // caretHidden
+                    // contextMenuHidden
                     maxLength={15}
                   />
 

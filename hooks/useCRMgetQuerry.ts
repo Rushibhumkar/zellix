@@ -424,7 +424,7 @@ export const useAssigningUser = ({ srManager }) => {
         srManager,
       }),
     staleTime: Infinity,
-    enabled: !!srManager,
+    // enabled: !!srManager,
   });
   return res;
 };

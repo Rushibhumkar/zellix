@@ -496,8 +496,8 @@ const Dashboard = () => {
     // }
   }, [callDetect?.isCall]); // Empty dependency array ensures the effect runs only once on mount
 
-  myConsole(" user?.role,", user?.role);
-  myConsole("permissionnnn", permission);
+  // myConsole(" user?.role,", user?.role);
+  // myConsole("permissionnnn", permission);
   const canViewBookings = checkPermission(
     permission,
     "Bookings",
@@ -510,8 +510,8 @@ const Dashboard = () => {
     "sidebar",
     user?.role,
   );
-  myConsole("canViewMeetingsss", canViewMeetings);
-  myConsole("canViewBookings", canViewBookings);
+  // myConsole("canViewMeetingsss", canViewMeetings);
+  // myConsole("canViewBookings", canViewBookings);
 
   const canViewLeadQuality = checkPermission(
     permission,

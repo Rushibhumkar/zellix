@@ -63,7 +63,6 @@ const allLeadsFilterStatuses = [
   { _id: "nr_event", name: "NR Event", icon: "flag" },
   { _id: "active_hot", name: "Active Hot Leads", icon: "zap" },
   { _id: "lost", name: "Lost Leads", icon: "x-circle" },
-  { _id: "sxy", name: "xyd", icon: "align-right" },
 ];
 
 const CARD_WIDTH = 80;

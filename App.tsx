@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 import { Provider } from "react-redux";
 import StackNavigation, { navigate } from "./navigation/StackNavigation";
 import store from "./redux/store";
-import { storeData } from "./hooks/useAsyncStorage";
+import { getData, getDataJson, storeData } from "./hooks/useAsyncStorage";
 import { Root as PopupRootProvider } from "react-native-popup-confirm-toast";
 import "react-native-get-random-values";
 import UpdateChecker from "./myComponents/UpdateChecker/UpdateChecker";
@@ -19,6 +19,7 @@ import * as Updates from "expo-updates";
 import { Alert, Linking } from "react-native";
 import GlobalPopupManager from "./myComponents/GlobalPopup/GlobalPopupManager";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AppInstructionPopup from "./myComponents/AppInstruction/AppInstructionPopup";
 
 if (!BackHandler.removeEventListener) {
   BackHandler.removeEventListener = (type, handler) => true;
@@ -168,6 +169,7 @@ export default function App() {
                 <StackNavigation />
                 <GlobalPopupManager />
                 <UpdateChecker />
+                <AppInstructionPopup />
                 <ModalPortal />
               </ToastProvider>
             </Provider>
