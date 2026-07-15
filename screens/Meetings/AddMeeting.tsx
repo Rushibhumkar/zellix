@@ -140,6 +140,10 @@ const AddMeeting = () => {
       status: mappedMeetingStatus,
       agents: defaultAgents,
       scheduleDate: data?.scheduleDate ?? new Date(),
+      coordinates:
+        data?.meetings?.length > 0
+          ? data?.meetings[0]?.coordinates
+          : { lat: null, lng: null },
     },
     onSubmit: async (value) => {
       setLoading(true);
@@ -308,6 +312,31 @@ const AddMeeting = () => {
             {errors?.lead && touched?.lead && (
               <CustomText style={styles.errorText}>{errors?.lead}</CustomText>
             )}
+
+            <DropdownRNE
+              label="Status"
+              placeholder="Status"
+              containerStyle={{ marginBottom: 15 }}
+              arrOfObj={[
+                {
+                  name: "Meeting Schedule",
+                  _id: "schedule",
+                  value: "l",
+                },
+                {
+                  name: "Meeting Conducted",
+                  _id: "conducted",
+                  value: "o",
+                },
+              ]}
+              keyValueShowInBox="name"
+              keyValueGetOnSelect="_id"
+              onChange={(a) => setFieldValue("status", a)}
+              initialValue={values?.status}
+            />
+            {errors.status && touched.status && (
+              <CustomText style={styles.errorText}>{errors.status}</CustomText>
+            )}
             <CustomInput
               label="Product Pitch"
               placeholder="Product Pitch"
@@ -416,31 +445,6 @@ const AddMeeting = () => {
             />
             {errors.remarks && touched.remarks && (
               <CustomText style={styles.errorText}>{errors.remarks}</CustomText>
-            )}
-
-            <DropdownRNE
-              label="Status"
-              placeholder="Status"
-              containerStyle={{ marginBottom: 15 }}
-              arrOfObj={[
-                {
-                  name: "Meeting Schedule",
-                  _id: "schedule",
-                  value: "l",
-                },
-                {
-                  name: "Meeting Conducted",
-                  _id: "conducted",
-                  value: "o",
-                },
-              ]}
-              keyValueShowInBox="name"
-              keyValueGetOnSelect="_id"
-              onChange={(a) => setFieldValue("status", a)}
-              initialValue={values?.status}
-            />
-            {errors.status && touched.status && (
-              <CustomText style={styles.errorText}>{errors.status}</CustomText>
             )}
 
             <View

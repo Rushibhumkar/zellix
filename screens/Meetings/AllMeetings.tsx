@@ -410,25 +410,22 @@ const MeetingRowItem = ({
           </View>
 
           {/* Product */}
-          <CustomText style={styles.productText}>
-            {item?.productPitch || "-"}
-          </CustomText>
+          {item?.productPitch && (
+            <CustomText style={styles.productText}>
+              {item?.productPitch || "-"}
+            </CustomText>
+          )}
 
           {/* Location + Type */}
           <View style={styles.bottomRow}>
-            <View style={styles.infoPill}>
-              <Feather name="map-pin" size={12} color="#7A869A" />
-              <CustomText style={styles.pillText}>
-                {item?.clientCity || item?.clientCountry || "-"}
-              </CustomText>
-            </View>
-
-            <View style={styles.infoPill}>
-              <Feather name="video" size={12} color="#7A869A" />
-              <CustomText style={styles.pillText}>
-                {latestMeeting?.isMobile ? "Video Call" : "In-Person"}
-              </CustomText>
-            </View>
+            {(item?.clientCity || item?.clientCountry) && (
+              <View style={styles.infoPill}>
+                <Feather name="map-pin" size={12} color="#7A869A" />
+                <CustomText style={styles.pillText}>
+                  {item?.clientCity || item?.clientCountry || "-"}
+                </CustomText>
+              </View>
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -467,6 +464,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E3E8EF",
     ...shadowPrimaryColor,
+    minHeight: 80,
   },
 
   timeContainer: {

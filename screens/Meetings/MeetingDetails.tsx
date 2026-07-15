@@ -382,7 +382,8 @@ const MeetingDetails = () => {
                 </View>
 
                 <CustomText style={styles.infoText}>
-                  {detail?.meetings?.[detail?.meetings?.length - 1]?.location}
+                  {detail?.meetings?.[detail?.meetings?.length - 1]?.location ||
+                    "Not specified"}
                 </CustomText>
               </View>
 
@@ -613,7 +614,7 @@ const MeetingDetails = () => {
                       />
 
                       <CustomText style={styles.meetingLocationText}>
-                        {el?.location}
+                        {el?.location || "Not specified"}
                       </CustomText>
 
                       {el?.coordinates?.lat && (

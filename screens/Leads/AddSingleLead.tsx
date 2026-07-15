@@ -21,6 +21,7 @@ import { color } from "../../const/color";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useAppToast } from "../../components/AppToast";
+import { useAssigningUser } from "../../hooks/useCRMgetQuerry";
 
 const AddSingleLead = ({ data, tabType }: any) => {
   const queryClient = useQueryClient();
@@ -35,7 +36,12 @@ const AddSingleLead = ({ data, tabType }: any) => {
   const [isWhatsappManuallyEdited, setIsWhatsappManuallyEdited] =
     useState(false);
   const mobileDebounceRef = React.useRef<any>(null);
+  const lastMobileRef = React.useRef({ countryCode: "", phone: "" }); // 👈 naya
 
+  const { data: assignUsersData, isLoading: isAssignUsersLoading } =
+    useAssigningUser({ srManager: undefined });
+
+  // myConsole("assignUsersDatadddd", assignUsersData);
   const parseMobile = (val: string) => {
     if (!val) {
       return {
@@ -89,8 +95,8 @@ const AddSingleLead = ({ data, tabType }: any) => {
       ...(user?.isAdmin && { srManager: data?.team?.srManager ?? "" }),
     },
     onSubmit: async (values) => {
-      myConsole("formik_values", values);
-      myConsole("formik_values", errors);
+      // myConsole("formik_values", values);
+      // myConsole("formik_values", errors);
       let isUpdate = !!data?._id;
       setLoading(true);
       try {
@@ -166,33 +172,31 @@ const AddSingleLead = ({ data, tabType }: any) => {
   });
 
   useEffect(() => {
+    if (!data?.assign?._id) return; // koi assign hi nahi hai to kuch mat karo
+
     let srManager = "";
-    if (data?.self) {
-      team?.forEach((tm: any) => {
-        if (tm.srManager?._id === data?.assign?._id) {
-          srManager = tm.srManager?._id;
-          return;
-        } else if (tm.manager?._id === data?.assign?._id) {
-          srManager = tm.srManager?._id;
-          return;
-        } else if (tm?.assigntantManager?._id === data?.assign?._id) {
-          srManager = tm.srManager?._id;
-          return;
-        } else if (tm?.tmLead?._id === data?.assign?._id) {
-          srManager = tm.srManager?._id;
-          return;
-        } else if (!!tm?.agents && tm?.agents?.length > 0) {
-          tm.agents.forEach((ag: any) => {
-            if (ag._id === data?.assign?._id) {
-              srManager = tm.srManager?._id;
-              return;
-            }
-          });
-        }
-      });
+    team?.forEach((tm: any) => {
+      if (tm.srManager?._id === data?.assign?._id) {
+        srManager = tm.srManager?._id;
+      } else if (tm.manager?._id === data?.assign?._id) {
+        srManager = tm.srManager?._id;
+      } else if (tm?.assistantManager?._id === data?.assign?._id) {
+        srManager = tm.srManager?._id;
+      } else if (tm?.teamLead?._id === data?.assign?._id) {
+        srManager = tm.srManager?._id;
+      } else if (tm?.agents && tm?.agents?.length > 0) {
+        tm.agents.forEach((ag: any) => {
+          if (ag._id === data?.assign?._id) {
+            srManager = tm.srManager?._id;
+          }
+        });
+      }
+    });
+
+    if (srManager) {
       setFieldValue("srManager", srManager);
     }
-  }, [!!data]);
+  }, [!!data, team]);
 
   return (
     <View>
@@ -236,23 +240,37 @@ const AddSingleLead = ({ data, tabType }: any) => {
         value={values.clientMobile} // ✅ default 971
         onChange={(a) => {
           const { countryCode, phone } = parseMobile(a);
+          lastMobileRef.current = { countryCode, phone }; // 👈 latest value track karo
 
           setFieldValue(
             "clientMobile",
-            countryCode ? `${countryCode}${phone}` : phone,
+            countryCode ? `${countryCode}-${phone}` : phone, // 👈 dash add kiya (bug fix)
           );
 
           if (mobileDebounceRef.current) {
             clearTimeout(mobileDebounceRef.current);
           }
-          console.log("MOBILE INPUT =>", a);
-          console.log("PARSED =>", { countryCode, phone });
+          // console.log("MOBILE INPUT =>", a);
+          // console.log("PARSED =>", { countryCode, phone });
           mobileDebounceRef.current = setTimeout(() => {
             if (!isWhatsappManuallyEdited && phone.length >= 8 && countryCode) {
               const whatsappValue = `+${countryCode}${phone}`;
               setFieldValue("whatsapp", whatsappValue);
             }
           }, 600);
+        }}
+        onBlur={() => {
+          // 👇 Field se bahar jaate hi turant whatsapp number fill karo
+          if (mobileDebounceRef.current) {
+            clearTimeout(mobileDebounceRef.current);
+          }
+          const { countryCode, phone } = lastMobileRef.current;
+          if (!isWhatsappManuallyEdited && phone) {
+            const whatsappValue = countryCode
+              ? `+${countryCode}${phone}`
+              : phone;
+            setFieldValue("whatsapp", whatsappValue);
+          }
         }}
       />
 
@@ -312,7 +330,7 @@ const AddSingleLead = ({ data, tabType }: any) => {
         containerStyle={{ marginBottom: 15 }}
         value={values?.whatsapp}
         onChangeText={(text) => {
-          console.log("✏️ WhatsApp manual edit:", text);
+          // console.log("✏️ WhatsApp manual edit:", text);
           setIsWhatsappManuallyEdited(true);
           setSelectAll(false);
           handleChange("whatsapp")(text);
@@ -339,16 +357,17 @@ const AddSingleLead = ({ data, tabType }: any) => {
 
       {user?.isAdmin && (
         <DropdownRNE
-          keyValueShowInBox="name"
+          arrOfObj={assignUsersData?.data || []}
+          keyValueShowInBox="label"
           keyValueGetOnSelect="_id"
           label={"Assign To"}
-          keyName="sr_Manager"
           containerStyle={{ marginBottom: 15 }}
-          placeholder="Sr Manager"
+          placeholder="Select User"
           onChange={(a) => setFieldValue("srManager", a)}
-          // onBlur={handleBlur("srManager")}
           dropdownPosition="top"
           initialValue={values?.srManager}
+          isLoading={isAssignUsersLoading}
+          isSearch
         />
       )}
       {user?.isAdmin && errors.srManager && touched.srManager && (

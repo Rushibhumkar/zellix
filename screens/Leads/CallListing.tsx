@@ -77,6 +77,18 @@ const CallListing = () => {
   const from = route?.params?.from;
   const insets = useSafeAreaInsets();
 
+  // ✅ NEW
+  const DURATION_THRESHOLD_SEC = 25 * 60; // 25 min
+  // const DURATION_THRESHOLD_SEC = 10;
+  const [showDurationEditor, setShowDurationEditor] = useState(false);
+  const [editMinutes, setEditMinutes] = useState("");
+  const [editSeconds, setEditSeconds] = useState("");
+  const pendingResumeRef = useRef<{
+    number: string;
+    initiatedAt: number;
+    endTime: number;
+  } | null>(null);
+
   const [tdForFUT, setTdForFUT] = useState({
     date: null,
     time: null,
@@ -206,10 +218,65 @@ const CallListing = () => {
       finishedAt: endTime,
     });
 
-    setCalledNumber(pending.number);
-    formik.setFieldValue("clientMobile", pending.number);
-
     await removeItemValue(PENDING_CALL_KEY);
+
+    const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
+
+    if (diffSec > DURATION_THRESHOLD_SEC) {
+      setPhoneNumber("");
+      setCallStartTime(null);
+      isCallingRef.current = false;
+      isCallTrackingRef.current = false;
+      callStartTimeRef.current = null;
+      setShowDialPad(false);
+
+      pendingResumeRef.current = {
+        number: pending.number,
+        initiatedAt: pending.initiatedAt,
+        endTime,
+      };
+
+      // ✅ pre-fill with the calculated (unreliable) duration
+      const calcMinutes = Math.floor(diffSec / 60);
+      const calcSeconds = diffSec % 60;
+      setEditMinutes(String(calcMinutes));
+      setEditSeconds(String(calcSeconds));
+
+      setShowDurationEditor(true);
+      isResumingRef.current = false;
+      return;
+    }
+
+    // duration looks reasonable — normal flow
+    Alert.alert(
+      "Call Detected",
+      `We noticed your call to ${pending.number} was interrupted. Please add the lead details now.`,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            finalizeCallAndOpenLead(
+              pending.number,
+              pending.initiatedAt,
+              endTime,
+            );
+            isResumingRef.current = false;
+          },
+        },
+      ],
+      { cancelable: false },
+    );
+  };
+
+  // ✅ NEW: finalize call meta + open lead modal (shared by both flows)
+  const finalizeCallAndOpenLead = (
+    number: string,
+    initiatedAt: number,
+    finishedAt: number,
+  ) => {
+    setCallMeta({ initiatedAt, finishedAt });
+    setCalledNumber(number);
+    formik.setFieldValue("clientMobile", number);
 
     setPhoneNumber("");
     setCallStartTime(null);
@@ -218,21 +285,68 @@ const CallListing = () => {
     callStartTimeRef.current = null;
     setShowDialPad(false);
 
-    // ✅ NEW: visible confirmation popup before opening lead form
-    Alert.alert(
-      "Call Detected",
-      `We noticed your call to ${pending.number} was interrupted. Please add the lead details now.`,
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            setShowLeadModal(true);
-            isResumingRef.current = false;
-          },
-        },
-      ],
-      { cancelable: false },
-    );
+    setTimeout(() => {
+      setShowLeadModal(true);
+    }, 500);
+  };
+
+  // ✅ NEW: decides whether duration looks reliable (<=25min) or needs manual edit
+  // const handleCallEnd = (
+  //   number: string,
+  //   initiatedAt: number,
+  //   endTime: number,
+  // ) => {
+  //   const diffSec = Math.floor((endTime - initiatedAt) / 1000);
+
+  //   if (diffSec > DURATION_THRESHOLD_SEC) {
+  //     // duration looks unreliable (app was likely closed for a while) — ask user to confirm/edit
+  //     pendingResumeRef.current = { number, initiatedAt, endTime };
+  //     setEditMinutes("");
+  //     setEditSeconds("");
+  //     setShowDurationEditor(true);
+  //     return;
+  //   }
+
+  //   finalizeCallAndOpenLead(number, initiatedAt, endTime);
+  // };
+
+  const handleCallEnd = (
+    number: string,
+    initiatedAt: number,
+    endTime: number,
+  ) => {
+    const diffSec = Math.floor((endTime - initiatedAt) / 1000);
+
+    if (diffSec > DURATION_THRESHOLD_SEC) {
+      pendingResumeRef.current = { number, initiatedAt, endTime };
+
+      // ✅ pre-fill with the calculated (unreliable) duration so user can adjust instead of typing from scratch
+      const calcMinutes = Math.floor(diffSec / 60);
+      const calcSeconds = diffSec % 60;
+      setEditMinutes(String(calcMinutes));
+      setEditSeconds(String(calcSeconds));
+
+      setShowDurationEditor(true);
+      return;
+    }
+
+    finalizeCallAndOpenLead(number, initiatedAt, endTime);
+  };
+
+  // ✅ NEW: called when user confirms the edited duration
+  const confirmEditedDuration = () => {
+    if (!pendingResumeRef.current) return;
+
+    const mins = parseInt(editMinutes || "0", 10);
+    const secs = parseInt(editSeconds || "0", 10);
+    const { number, initiatedAt } = pendingResumeRef.current;
+
+    const adjustedFinishedAt = initiatedAt + (mins * 60 + secs) * 1000;
+
+    setShowDurationEditor(false);
+    pendingResumeRef.current = null;
+
+    finalizeCallAndOpenLead(number, initiatedAt, adjustedFinishedAt);
   };
 
   useEffect(() => {
@@ -284,23 +398,8 @@ const CallListing = () => {
 
         console.log("PHONE NUMBER =>", phoneNumber);
         console.log("FORMATTED MOBILE =>", mobile);
-
-        setCalledNumber(mobile);
-        formik.setFieldValue("clientMobile", mobile);
-
-        console.log("FORMIK MOBILE AFTER SET =>", formik.values.clientMobile);
-
         removeItemValue(PENDING_CALL_KEY);
-
-        setPhoneNumber("");
-        setCallStartTime(null);
-        isCallingRef.current = false;
-        isCallTrackingRef.current = false;
-        setShowDialPad(false);
-
-        setTimeout(() => {
-          setShowLeadModal(true);
-        }, 500);
+        handleCallEnd(mobile, callStartTimeRef.current!, endTime);
       }
       // ❌ REMOVED: the aggressive fallback that fired on every "active" transition
       // (it was misfiring on the brief "inactive" blip from iOS's tel: confirmation dialog)
@@ -1304,6 +1403,87 @@ const CallListing = () => {
           </View>
         </Modal>
       )}
+
+      <Modal visible={showDurationEditor} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 30,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              width: "100%",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#0F172A",
+                marginBottom: 6,
+              }}
+            >
+              Confirm Call Duration
+            </Text>
+            <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 16 }}>
+              We couldn't accurately track this call's duration. Please enter it
+              manually.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                >
+                  Minutes
+                </Text>
+                <TextInput
+                  value={editMinutes}
+                  onChangeText={setEditMinutes}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#E2E8F0",
+                    borderRadius: 10,
+                    padding: 10,
+                    fontSize: 16,
+                  }}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                >
+                  Seconds
+                </Text>
+                <TextInput
+                  value={editSeconds}
+                  onChangeText={setEditSeconds}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#E2E8F0",
+                    borderRadius: 10,
+                    padding: 10,
+                    fontSize: 16,
+                  }}
+                />
+              </View>
+            </View>
+
+            <CustomBtn title="Confirm" onPress={confirmEditedDuration} />
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 };

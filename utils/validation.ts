@@ -120,19 +120,21 @@ export const addLeadInBulk = Yup.object().shape({
 });
 
 export const addMeetingSchema = Yup.object().shape({
-  clientAddress: Yup.string().required("Field required"),
-  clientCity: Yup.string().required("Field required"),
-  clientCountry: Yup.string().required("Field required"),
-  location: Yup.string().required("Field required"),
-  productPitch: Yup.string().required("Field required"),
-  remarks: Yup.string().required("Field required"),
+  clientAddress: Yup.string(),
+  clientCity: Yup.string(),
+  clientCountry: Yup.string(),
+  location: Yup.string(),
+  productPitch: Yup.string(),
+  remarks: Yup.string(),
   // scheduleDate: Yup.string().required("Field required"),
   // self: Yup.string().required("Field required"),
   status: Yup.string().required("Field required"),
   lead: Yup.string().required("Field required"),
-  agents: Yup.array().of(Yup.string()).required("Field is required"),
+  agents: Yup.array()
+    .of(Yup.string())
+    .min(1, "At least one agent is required")
+    .required("At least one agent is required"),
 });
-
 export const addExpenseSchema = Yup.object().shape({
   expenseCategory: Yup.string().required("Expense Category required"),
   expenseSubCategory: Yup.string().required("Expense Sub Category required"),
