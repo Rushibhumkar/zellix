@@ -1,4 +1,5 @@
 import {
+  useFocusEffect,
   useIsFocused,
   useNavigation,
   useRoute,
@@ -6,6 +7,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   FlatList,
   Linking,
   Platform,
@@ -32,12 +34,7 @@ import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import { color } from "../../const/color";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
-import {
-  allLeadsFilterStatuses,
-  roleEnum,
-  statusColorObj,
-  statusObj,
-} from "../../utils/data";
+import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
@@ -51,7 +48,11 @@ import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useAppToast } from "../../components/AppToast";
-import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeOutUp,
+  runOnJS,
+} from "react-native-reanimated";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -72,6 +73,8 @@ const AllLeads = () => {
   >(null);
   const [dashboardDateKey, setDashboardDateKey] = useState<string | null>(null);
   const [dashboardMyLeads, setDashboardMyLeads] = useState<boolean>(false);
+
+  const [cameFromDashboard, setCameFromDashboard] = useState(false);
 
   // let lead = []
   // let loading = false;
@@ -144,6 +147,10 @@ const AllLeads = () => {
       temp.push(id);
     }
     setSelected(temp);
+  };
+
+  const goBackToDashboard = () => {
+    navigation.getParent()?.navigate("dashboard");
   };
 
   const handleDeleteLead = async () => {
@@ -269,6 +276,19 @@ const AllLeads = () => {
     }
   };
 
+  useEffect(() => {
+    if (!cameFromDashboard) return;
+
+    // iOS swipe-back intercept karo
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault(); // default back action rok do
+
+      goBackToDashboard(); // apna custom navigation karo
+    });
+
+    return unsubscribe;
+  }, [cameFromDashboard, navigation]);
+
   const onEmailPress = (email: any) => {
     if (!email) return;
 
@@ -328,6 +348,10 @@ const AllLeads = () => {
   // console.log("selectleadtypeseb4useeffecrt", selectLeadType);
 
   useEffect(() => {
+    if (route?.params?.fromDashboard) {
+      setCameFromDashboard(true);
+    }
+
     if (route?.params?.tabType) {
       setSelectLeadType(route?.params?.tabType);
     } else if (route?.params?.item?.type) {
@@ -369,7 +393,7 @@ const AllLeads = () => {
 
   // myConsole("alllesad", leadData);
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <Header
         // title={
         //   tabType === "calling_data"
@@ -698,7 +722,7 @@ const AllLeads = () => {
           />
         </View>
       </ModalWithBlur> */}
-    </>
+    </View>
   );
 };
 

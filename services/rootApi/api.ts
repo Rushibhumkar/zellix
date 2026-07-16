@@ -157,4 +157,10 @@ export const getAppVersion = () => {
   return axiosInstance.get("api/app-version");
 };
 
-// api/booking/getCommissionData
+export const getAppInstruction = () => {
+  return axiosInstance.get("api/app-instruction");
+};
+
+export const getAppSettings = () => {
+  return axiosInstance.get("api/app-settings");
+};

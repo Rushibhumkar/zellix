@@ -63,7 +63,8 @@ import {
   removeItemValue,
   storeDataJson,
 } from "../../hooks/useAsyncStorage";
-
+import { getAppSettings } from "../../services/rootApi/api";
+import { useQuery } from "@tanstack/react-query";
 import { PENDING_CALL_KEY } from "../../utils/pendingCallStorage";
 
 const CallListing = () => {
@@ -78,7 +79,7 @@ const CallListing = () => {
   const insets = useSafeAreaInsets();
 
   // ✅ NEW
-  const DURATION_THRESHOLD_SEC = 25 * 60; // 25 min
+  const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
   // const DURATION_THRESHOLD_SEC = 10;
   const [showDurationEditor, setShowDurationEditor] = useState(false);
   const [editMinutes, setEditMinutes] = useState("");
@@ -96,6 +97,8 @@ const CallListing = () => {
   const [followUpError, setFollowUpError] = useState("");
   const [timePickerKey, setTimePickerKey] = useState(0);
   const [showDialPad, setShowDialPad] = useState(false);
+  const [maxAllowedMinutes, setMaxAllowedMinutes] = useState(0);
+  const [maxAllowedSeconds, setMaxAllowedSeconds] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const appState = useRef(AppState.currentState);
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -107,6 +110,19 @@ const CallListing = () => {
   const isResumingRef = useRef(false);
 
   const myLogsQuery = useGetMyCallLogs(10);
+
+  const { data: appSettingsData } = useQuery({
+    queryKey: ["getAppSettings"],
+    queryFn: () => getAppSettings().then((res) => res?.data),
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const canShowCancelBtn =
+    appSettingsData?.data?.calling?.canShowCancelBtnForCreateLog ?? true;
 
   const userLogsQuery = useCallLogsByUserId(userId);
 
@@ -242,6 +258,9 @@ const CallListing = () => {
       setEditMinutes(String(calcMinutes));
       setEditSeconds(String(calcSeconds));
 
+      setMaxAllowedMinutes(calcMinutes);
+      setMaxAllowedSeconds(calcSeconds);
+
       setShowDurationEditor(true);
       isResumingRef.current = false;
       return;
@@ -325,6 +344,9 @@ const CallListing = () => {
       const calcSeconds = diffSec % 60;
       setEditMinutes(String(calcMinutes));
       setEditSeconds(String(calcSeconds));
+
+      setMaxAllowedMinutes(calcMinutes);
+      setMaxAllowedSeconds(calcSeconds);
 
       setShowDurationEditor(true);
       return;
@@ -880,121 +902,111 @@ const CallListing = () => {
         transparent
         onRequestClose={() => setShowDialPad(false)}
       >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setShowDialPad(false);
-            setPhoneNumber("");
-          }}
-        >
-          <View style={styles.overlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.bottomSheet}>
-                {/* Header */}
-                <View style={styles.sheetHeader}>
-                  <Text style={styles.sheetTitle}>Dial Pad</Text>
+        <View style={styles.overlay}>
+          {/* ✅ backdrop as a separate absolutely-positioned sibling — avoids fragile nested TouchableWithoutFeedback propagation issues on Android with rapid taps */}
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setShowDialPad(false);
+              setPhoneNumber("");
+            }}
+          >
+            <View style={StyleSheet.absoluteFill} />
+          </TouchableWithoutFeedback>
 
-                  <TouchableOpacity onPress={() => setShowDialPad(false)}>
-                    <Feather name="x" size={24} color="#0F172A" />
-                  </TouchableOpacity>
-                </View>
+          {/* ✅ content sits on top as a sibling, not wrapped in any dismiss-handler touchable */}
+          <View style={styles.bottomSheet}>
+            {/* Header */}
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Dial Pad</Text>
 
-                {/* Number */}
-                <View style={styles.numberContainer}>
-                  {/* <TextInput
-                    value={countryCode}
-                    onChangeText={setCountryCode}
-                    placeholder="+971"
-                    placeholderTextColor={color.placeholderGrey}
-                    style={styles.countryCodeInput}
-                    keyboardType="phone-pad"
-                  /> */}
+              <TouchableOpacity onPress={() => setShowDialPad(false)}>
+                <Feather name="x" size={24} color="#0F172A" />
+              </TouchableOpacity>
+            </View>
 
-                  <TextInput
-                    value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    placeholder="Enter Number"
-                    placeholderTextColor={color.placeholderGrey}
-                    style={styles.numberInput}
-                    showSoftInputOnFocus={false}
-                    // caretHidden
-                    // contextMenuHidden
-                    maxLength={15}
-                  />
+            {/* Number */}
+            <View style={styles.numberContainer}>
+              <TextInput
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                placeholder="Enter Number"
+                placeholderTextColor={color.placeholderGrey}
+                style={styles.numberInput}
+                showSoftInputOnFocus={false}
+                maxLength={15}
+              />
 
-                  {!!phoneNumber && (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        // setCountryCode("");
-                        setPhoneNumber("");
-                      }}
-                      style={styles.clearButton}
-                    >
-                      <Feather name="x" size={16} color="#64748B" />
-                    </TouchableOpacity>
+              {!!phoneNumber && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setPhoneNumber("");
+                  }}
+                  style={styles.clearButton}
+                >
+                  <Feather name="x" size={16} color="#64748B" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Dial Pad */}
+            <FlatList
+              data={DIAL_PAD}
+              keyExtractor={(_, index) => String(index)}
+              numColumns={3}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={{ paddingTop: 10 }}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={styles.keyButton}
+                  onPress={() => {
+                    handlePress(item[0]);
+                  }}
+                  onLongPress={() => {
+                    if (item[0] === "0") {
+                      setPhoneNumber((prev) => prev + "+");
+                    }
+                  }}
+                  delayLongPress={300}
+                >
+                  <Text style={styles.keyText}>{item[0]}</Text>
+
+                  {!!item[1] && (
+                    <Text style={styles.keySubText}>{item[1]}</Text>
                   )}
-                </View>
+                </Pressable>
+              )}
+            />
 
-                {/* Dial Pad */}
-                <FlatList
-                  data={DIAL_PAD}
-                  keyExtractor={(_, index) => String(index)}
-                  numColumns={3}
-                  scrollEnabled={false}
-                  columnWrapperStyle={styles.row}
-                  contentContainerStyle={{ paddingTop: 10 }}
-                  renderItem={({ item }) => (
-                    <Pressable
-                      style={styles.keyButton}
-                      onPress={() => {
-                        handlePress(item[0]);
-                      }}
-                      onLongPress={() => {
-                        if (item[0] === "0") {
-                          setPhoneNumber((prev) => prev + "+");
-                        }
-                      }}
-                      delayLongPress={300}
-                    >
-                      <Text style={styles.keyText}>{item[0]}</Text>
+            {/* Call Button */}
+            <View style={styles.bottomActions}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[
+                  styles.callButton,
+                  {
+                    opacity: phoneNumber ? 1 : 0.5,
+                  },
+                ]}
+                disabled={!phoneNumber}
+                onPress={handleCall}
+              >
+                <Feather name="phone-call" size={22} color="#fff" />
+              </TouchableOpacity>
 
-                      {!!item[1] && (
-                        <Text style={styles.keySubText}>{item[1]}</Text>
-                      )}
-                    </Pressable>
-                  )}
-                />
-
-                {/* Call Button */}
-                <View style={styles.bottomActions}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={[
-                      styles.callButton,
-                      {
-                        opacity: phoneNumber ? 1 : 0.5,
-                      },
-                    ]}
-                    disabled={!phoneNumber}
-                    onPress={handleCall}
-                  >
-                    <Feather name="phone-call" size={22} color="#fff" />
-                  </TouchableOpacity>
-
-                  {phoneNumber.length > 0 && (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={styles.backButton}
-                      onPress={handleDelete}
-                    >
-                      <Feather name="delete" size={20} color="#0F172A" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
+              {phoneNumber.length > 0 && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.backButton}
+                  onPress={handleDelete}
+                >
+                  <Feather name="delete" size={20} color="#0F172A" />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </TouchableWithoutFeedback>
+        </View>
       </Modal>
       {!userId && (
         <Modal visible={showLeadModal} transparent animationType="slide">
@@ -1055,26 +1067,64 @@ const CallListing = () => {
                       >
                         Lead Details
                       </Text>
-                      <TouchableOpacity
-                        onPress={async () => {
-                          await hitCreateCallLog();
-                          setShowLeadModal(false);
-                          formik.resetForm();
-                          setTdForFUT({
-                            date: null,
-                            time: null,
-                          });
-                          setLeadType("interested");
-                          // goBack();
+                      {canShowCancelBtn && (
+                        <TouchableOpacity
+                          onPress={async () => {
+                            await hitCreateCallLog();
+                            setShowLeadModal(false);
+                            formik.resetForm();
+                            setTdForFUT({
+                              date: null,
+                              time: null,
+                            });
+                            setLeadType("interested");
+                            // goBack();
+                          }}
+                        >
+                          <Feather
+                            name="x"
+                            size={24}
+                            color={color.mainTxtColor}
+                          />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+
+                    {!canShowCancelBtn && (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          backgroundColor: "#FEF3C7",
+                          borderWidth: 1,
+                          borderColor: "#FCD34D",
+                          borderRadius: 12,
+                          padding: 12,
+                          marginBottom: 20,
                         }}
                       >
                         <Feather
-                          name="x"
-                          size={24}
-                          color={color.mainTxtColor}
+                          name="alert-triangle"
+                          size={18}
+                          color="#B45309"
+                          style={{ marginTop: 1 }}
                         />
-                      </TouchableOpacity>
-                    </View>
+                        <Text
+                          style={{
+                            flex: 1,
+                            fontSize: 13,
+                            lineHeight: 18,
+                            color: "#92400E",
+                            fontWeight: "500",
+                          }}
+                        >
+                          Please update the lead status and submit before
+                          leaving this screen. Otherwise, this call will not be
+                          counted or logged.
+                        </Text>
+                      </View>
+                    )}
                     <View
                       style={{
                         flexDirection: "row",
@@ -1356,23 +1406,25 @@ const CallListing = () => {
                       backgroundColor: "#fff",
                     }}
                   >
-                    <CustomBtn
-                      title="Cancel"
-                      containerStyle={{
-                        flex: 1,
-                      }}
-                      onPress={async () => {
-                        await hitCreateCallLog();
-                        setShowLeadModal(false);
-                        formik.resetForm();
-                        setTdForFUT({
-                          date: null,
-                          time: null,
-                        });
-                        setLeadType("interested");
-                        // goBack();
-                      }}
-                    />
+                    {canShowCancelBtn && (
+                      <CustomBtn
+                        title="Cancel"
+                        containerStyle={{
+                          flex: 1,
+                        }}
+                        onPress={async () => {
+                          await hitCreateCallLog();
+                          setShowLeadModal(false);
+                          formik.resetForm();
+                          setTdForFUT({
+                            date: null,
+                            time: null,
+                          });
+                          setLeadType("interested");
+                          // goBack();
+                        }}
+                      />
+                    )}
 
                     <CustomBtn
                       title="Submit"
@@ -1432,6 +1484,19 @@ const CallListing = () => {
             >
               Confirm Call Duration
             </Text>
+
+            {!!(pendingResumeRef.current?.number || calledNumber) && (
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: color.mainTxtColor,
+                  marginBottom: 4,
+                }}
+              >
+                📞 {pendingResumeRef.current?.number || calledNumber}
+              </Text>
+            )}
             <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 16 }}>
               We couldn't accurately track this call's duration. Please enter it
               manually.
@@ -1446,7 +1511,10 @@ const CallListing = () => {
                 </Text>
                 <TextInput
                   value={editMinutes}
-                  onChangeText={setEditMinutes}
+                  onChangeText={(v) => {
+                    const num = parseInt(v || "0", 10);
+                    if (num <= maxAllowedMinutes) setEditMinutes(v);
+                  }}
                   keyboardType="number-pad"
                   placeholder="0"
                   style={{
@@ -1466,7 +1534,14 @@ const CallListing = () => {
                 </Text>
                 <TextInput
                   value={editSeconds}
-                  onChangeText={setEditSeconds}
+                  onChangeText={(v) => {
+                    const num = parseInt(v || "0", 10);
+                    const mins = parseInt(editMinutes || "0", 10);
+                    // ✅ if minutes == max, seconds cant exceed maxAllowedSeconds
+                    const secMax =
+                      mins >= maxAllowedMinutes ? maxAllowedSeconds : 59;
+                    if (num <= secMax) setEditSeconds(v);
+                  }}
                   keyboardType="number-pad"
                   placeholder="0"
                   style={{

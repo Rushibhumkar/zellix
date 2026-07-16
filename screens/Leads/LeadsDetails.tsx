@@ -859,9 +859,9 @@ const LeadsDetails = () => {
   const totalNotes = detail?.notes?.length || 0;
   const totalStatusChanges = detail?.statusHistory?.length || 0;
 
-  const filteredLeadStatus = inLeadStatus.filter(
-    (s) => s._id !== "assign" && s._id !== "re_assigned",
-  );
+  const filteredLeadStatus = inLeadStatus
+    .filter((s) => s._id !== "assign" && s._id !== "re_assigned")
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const unActionableStatuses = ["claimed", "assign", "re_assigned", "new"];
 

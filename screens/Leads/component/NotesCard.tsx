@@ -79,10 +79,9 @@ const NotesCard = ({
                   </View>
                 </View>
 
-                {/* Date */}
                 <CustomText style={styles.dateText}>
                   {item?.createdAt
-                    ? moment(item?.createdAt).format("MMM DD, YYYY")
+                    ? moment(item?.createdAt).format("MMM DD, YYYY, hh:mm A")
                     : "N/A"}
                 </CustomText>
               </View>

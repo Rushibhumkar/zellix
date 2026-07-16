@@ -125,8 +125,8 @@ const dateFilterOptions = [
 let advanceStatus = {
   meeting: inMeetingStatus,
   booking: inBookingStatus,
-  lead: inLeadStatus,
-  callingData: inLeadStatus,
+  lead: inLeadStatus.sort((a, b) => a.name.localeCompare(b.name)),
+  callingData: inLeadStatus.sort((a, b) => a.name.localeCompare(b.name)),
 };
 
 const AdvanceSearch = () => {

@@ -110,6 +110,7 @@ const LeadStatusScroller = () => {
         params: {
           tabType: "lead",
           filterMyLeads: true,
+          fromDashboard: true,
         },
       });
     } else if (status === "my_calling_data") {
@@ -120,6 +121,7 @@ const LeadStatusScroller = () => {
         params: {
           tabType: "calling_data",
           filterMyLeads: true,
+          fromDashboard: true,
         },
       });
     } else if (
