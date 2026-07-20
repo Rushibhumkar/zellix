@@ -3,7 +3,7 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import * as MailComposer from "expo-mail-composer";
 import moment from "moment";
@@ -20,6 +20,7 @@ import {
   AppState,
   TouchableWithoutFeedback,
   Platform,
+  Modal,
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
@@ -80,6 +81,13 @@ import { useFormik } from "formik";
 import { changeStatusSchema } from "../../utils/validation";
 import { createCallLog } from "../../services/rootApi/callLogsApi";
 import CelebrationModal from "./component/CelebrationModal";
+import {
+  getDataJson,
+  removeItemValue,
+  storeDataJson,
+} from "../../hooks/useAsyncStorage";
+import { PENDING_CALL_KEY_LEAD } from "../../utils/pendingCallStorage";
+import { getAppSettings } from "../../services/rootApi/api";
 
 const extractStringObj = (input: any) => {
   try {
@@ -180,6 +188,19 @@ const LeadsDetails = () => {
 
   const callStartTimeRef = useRef<number | null>(null);
 
+  // const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
+  const DURATION_THRESHOLD_SEC = 10; // 10 sec
+  const [showDurationEditor, setShowDurationEditor] = useState(false);
+  const [editMinutes, setEditMinutes] = useState("");
+  const [editSeconds, setEditSeconds] = useState("");
+  const [maxAllowedMinutes, setMaxAllowedMinutes] = useState(0);
+  const [maxAllowedSeconds, setMaxAllowedSeconds] = useState(0);
+  const pendingResumeRef = useRef<{
+    initiatedAt: number;
+    endTime: number;
+  } | null>(null);
+  const isResumingRef = useRef(false);
+
   const isSubSupSrMng =
     user?.role === roleEnum?.sub_admin ||
     user?.role === roleEnum?.sup_admin ||
@@ -208,6 +229,19 @@ const LeadsDetails = () => {
     refetch: refetchLeadDetail,
   } = useGetLeadById(params?.item?._id);
 
+  const { data: appSettingsData } = useQuery({
+    queryKey: ["getAppSettings"],
+    queryFn: () => getAppSettings().then((res) => res?.data),
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const canShowCancelBtn =
+    appSettingsData?.data?.calling?.canDismissStatusModalAfterCall ?? true;
+
   const useLatest = useLatestMeetings(params?.item?._id);
 
   const dispatch = useDispatch();
@@ -227,6 +261,7 @@ const LeadsDetails = () => {
   const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
   const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [isStatusPopupFromCall, setIsStatusPopupFromCall] = useState(false);
 
   useEffect(() => {
     setFields({
@@ -361,8 +396,6 @@ const LeadsDetails = () => {
 
   const navToCall = async () => {
     try {
-      //console.log("1. Call Icon Clicked");
-
       await dispatch(
         setCallDetect({
           isCall: true,
@@ -370,24 +403,96 @@ const LeadsDetails = () => {
         }),
       );
 
-      console.log("2. setCallDetect completed");
-
       setIsDialerOpened(true);
-
       isDialerOpenedRef.current = true;
 
-      // console.log("3. isDialerOpened set to TRUE");
+      // ✅ ADD: persist before opening dialer
+      await storeDataJson(PENDING_CALL_KEY_LEAD, {
+        leadId: detail?._id,
+        initiatedAt: Date.now(),
+      });
 
-      //console.log("4. Opening Dialer...");
-
-      // await Linking.openURL(`tel:+${917972755589}`);
       await Linking.openURL(`tel:+${detail?.clientMobile}`);
-      // await Linking.openURL(`tel:+${918097097583}`);
-
-      //console.log("5. Linking.openURL executed");
     } catch (err) {
       console.log("❌ Call error", err);
     }
+  };
+
+  const handleCallEnd = (initiatedAt: number, endTime: number) => {
+    const diffSec = Math.floor((endTime - initiatedAt) / 1000);
+
+    if (diffSec > DURATION_THRESHOLD_SEC) {
+      pendingResumeRef.current = { initiatedAt, endTime };
+
+      const calcMinutes = Math.floor(diffSec / 60);
+      const calcSeconds = diffSec % 60;
+      setEditMinutes(String(calcMinutes));
+      setEditSeconds(String(calcSeconds));
+      setMaxAllowedMinutes(calcMinutes);
+      setMaxAllowedSeconds(calcSeconds);
+
+      setShowDurationEditor(true);
+      return;
+    }
+
+    // normal flow — set callMeta and show change status popup
+    setIsStatusPopupFromCall(true);
+    setCallMeta({ initiatedAt, finishedAt: endTime });
+    setShowChangeStatusPopup(true);
+  };
+
+  const confirmEditedDuration = () => {
+    if (!pendingResumeRef.current) return;
+
+    const mins = parseInt(editMinutes || "0", 10);
+    const secs = parseInt(editSeconds || "0", 10);
+    const { initiatedAt } = pendingResumeRef.current;
+    const adjustedFinishedAt = initiatedAt + (mins * 60 + secs) * 1000;
+
+    setShowDurationEditor(false);
+    pendingResumeRef.current = null;
+    setIsStatusPopupFromCall(true);
+    setCallMeta({ initiatedAt, finishedAt: adjustedFinishedAt });
+    setShowChangeStatusPopup(true);
+  };
+
+  const resumePendingCallIfAny = async () => {
+    if (isResumingRef.current) return;
+
+    const pending = await getDataJson(PENDING_CALL_KEY_LEAD);
+    if (!pending?.initiatedAt) return;
+
+    // only resume if this is the right lead
+    if (pending?.leadId && pending.leadId !== detail?._id) return;
+
+    isResumingRef.current = true;
+    const endTime = Date.now();
+
+    await removeItemValue(PENDING_CALL_KEY_LEAD);
+
+    const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
+
+    if (diffSec > DURATION_THRESHOLD_SEC) {
+      pendingResumeRef.current = {
+        initiatedAt: pending.initiatedAt,
+        endTime,
+      };
+
+      const calcMinutes = Math.floor(diffSec / 60);
+      const calcSeconds = diffSec % 60;
+      setEditMinutes(String(calcMinutes));
+      setEditSeconds(String(calcSeconds));
+      setMaxAllowedMinutes(calcMinutes);
+      setMaxAllowedSeconds(calcSeconds);
+
+      setShowDurationEditor(true);
+      isResumingRef.current = false;
+      return;
+    }
+    setIsStatusPopupFromCall(true);
+    setCallMeta({ initiatedAt: pending.initiatedAt, finishedAt: endTime });
+    setShowChangeStatusPopup(true);
+    isResumingRef.current = false;
   };
 
   useEffect(() => {
@@ -434,43 +539,24 @@ const LeadsDetails = () => {
       }
 
       // User returned to app
+      // User returned to app
       if (appState.current === "background" && nextAppState === "active") {
         console.log("🟡 APP RETURNED TO FOREGROUND");
-        console.log("CURRENT APP STATE =>", nextAppState);
         if (callStartTimeRef.current && isCallTrackingRef.current) {
           const endTime = Date.now();
 
           setCallMeta((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  finishedAt: endTime,
-                }
-              : null,
+            prev ? { ...prev, finishedAt: endTime } : null,
           );
 
-          console.log("⏱️ Timer Ended At =>", endTime);
+          removeItemValue(PENDING_CALL_KEY_LEAD); // ✅ clear pending
 
-          const durationInSeconds = Math.floor(
-            (endTime - callStartTimeRef.current) / 1000,
-          );
-
-          // console.log(
-          //   "🔥 Actual Call Duration In Seconds =>",
-          //   durationInSeconds,
-          // );
-
-          // console.log("✅ Opening Change Status Popup");
-
-          setShowChangeStatusPopup(true);
+          handleCallEnd(callStartTimeRef.current!, endTime); // ✅ use handleCallEnd
 
           setCallStartTime(null);
-
           setIsCallTracking(false);
-
-          // console.log("✅ Timer Reset Done");
-        } else {
-          console.log("❌ No active call tracking found");
+          isCallTrackingRef.current = false;
+          callStartTimeRef.current = null;
         }
       }
 
@@ -489,6 +575,12 @@ const LeadsDetails = () => {
       navToCall();
     }
   }, [shouldTriggerCall, detail?._id]);
+
+  useEffect(() => {
+    if (detail?._id) {
+      resumePendingCallIfAny();
+    }
+  }, [detail?._id]);
 
   const deleteNotes = async (notesId: any) => {
     try {
@@ -777,6 +869,7 @@ const LeadsDetails = () => {
       FUTModal.closeModal();
       setShowActionsMenu(false);
       setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
       setStatusLoading(false);
       setTdForFUT({ date: null, time: null });
       formik.resetForm();
@@ -943,7 +1036,7 @@ const LeadsDetails = () => {
   // myConsole("detail?", detail);
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
   // myConsole("additionalQuestionsv2 =>", detail?.additionalQuestionsV2);
-
+  myConsole("canShowCancelBtnnn", canShowCancelBtn);
   return (
     <>
       {activeTab === 1 && (
@@ -1036,6 +1129,7 @@ const LeadsDetails = () => {
                         onPress={() => {
                           setShowActionsMenu(false);
                           setTdForFUT({ date: null, time: null }); // reset
+                          setIsStatusPopupFromCall(false);
                           setShowChangeStatusPopup(true);
                         }}
                       >
@@ -1111,12 +1205,16 @@ const LeadsDetails = () => {
           {/* <---------------- Change Status popup -------------> */}
           <ModalWithBlur
             visible={showChangeStatusPopup}
-            onClose={() => {
-              setShowChangeStatusPopup(false);
-              hitCreateCallLog();
-
-              FUTModal.closeModal();
-            }}
+            onClose={
+              // ✅ canShowCancelBtn sirf call ke baad apply hoga
+              isStatusPopupFromCall && !canShowCancelBtn
+                ? undefined
+                : () => {
+                    setShowChangeStatusPopup(false);
+                    hitCreateCallLog();
+                    FUTModal.closeModal();
+                  }
+            }
             minHeight={"55%"}
           >
             <View style={styles.modalContent}>
@@ -1885,6 +1983,110 @@ const LeadsDetails = () => {
         onCreateMeeting={handleCelebrationCreateMeeting}
         onClose={() => setShowCelebration(false)}
       />
+
+      <Modal visible={showDurationEditor} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 30,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              width: "100%",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#0F172A",
+                marginBottom: 6,
+              }}
+            >
+              Confirm Call Duration
+            </Text>
+
+            {!!detail?.clientMobile && (
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: color.mainTxtColor,
+                  marginBottom: 4,
+                }}
+              >
+                📞 {detail?.clientMobile}
+              </Text>
+            )}
+
+            <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 16 }}>
+              We couldn't accurately track this call's duration. Please enter it
+              manually.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                >
+                  Minutes
+                </Text>
+                <TextInput
+                  value={editMinutes}
+                  onChangeText={(v) => {
+                    const num = parseInt(v || "0", 10);
+                    if (num <= maxAllowedMinutes) setEditMinutes(v);
+                  }}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#E2E8F0",
+                    borderRadius: 10,
+                    padding: 10,
+                    fontSize: 16,
+                  }}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                >
+                  Seconds
+                </Text>
+                <TextInput
+                  value={editSeconds}
+                  onChangeText={(v) => {
+                    const num = parseInt(v || "0", 10);
+                    const mins = parseInt(editMinutes || "0", 10);
+                    const secMax =
+                      mins >= maxAllowedMinutes ? maxAllowedSeconds : 59;
+                    if (num <= secMax) setEditSeconds(v);
+                  }}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#E2E8F0",
+                    borderRadius: 10,
+                    padding: 10,
+                    fontSize: 16,
+                  }}
+                />
+              </View>
+            </View>
+
+            <CustomBtn title="Confirm" onPress={confirmEditedDuration} />
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
