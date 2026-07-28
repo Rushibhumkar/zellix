@@ -35,6 +35,17 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
 
   const clientMobile =
     leadDetails?.clientMobile?.trim() || item?.phoneNumber || "-";
+  const callTimestamp = item?.initiatedAt || item?.createdAt;
+  const callDateTime = callTimestamp
+    ? new Date(callTimestamp).toLocaleString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "-";
 
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.card} onPress={onPress}>
@@ -86,10 +97,6 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
               </TouchableOpacity>
             )}
           </View>
-
-          <Text style={styles.date}>
-            {new Date(item?.createdAt).toLocaleDateString()}
-          </Text>
         </View>
 
         <View
@@ -106,14 +113,22 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <View style={styles.row}>
-          <Feather name="phone-call" size={14} color="#64748B" />
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <View style={styles.row}>
+            <Feather name="phone-call" size={14} color="#64748B" />
 
-          <Text style={styles.infoText}>{clientMobile}</Text>
+            <Text style={styles.infoText}>{clientMobile}</Text>
+          </View>
+
+          <View style={styles.row}>
+            <Feather name="calendar" size={14} color="#64748B" />
+
+            <Text style={styles.infoText}>{callDateTime}</Text>
+          </View>
         </View>
 
-        <View style={styles.row}>
+        <View style={[styles.row, { alignSelf: "flex-end" }]}>
           <Feather name="clock" size={14} color="#64748B" />
 
           <Text style={styles.infoText}>

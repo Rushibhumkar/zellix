@@ -21,6 +21,7 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Modal,
+  Alert,
 } from "react-native";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import { useDispatch, useSelector } from "react-redux";
@@ -188,9 +189,13 @@ const LeadsDetails = () => {
 
   const callStartTimeRef = useRef<number | null>(null);
 
-  // const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
-  const DURATION_THRESHOLD_SEC = 10; // 10 sec
+  const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
+  // const DURATION_THRESHOLD_SEC = 20; // 20 sec
+  // Temporary development-only offset to test the Hours field in the duration modal.
+  // const TEST_CALL_INITIATED_AT_OFFSET_MS = __DEV__ ? 61 * 60 * 1000 : 0;
+  const TEST_CALL_INITIATED_AT_OFFSET_MS = 0;
   const [showDurationEditor, setShowDurationEditor] = useState(false);
+  const [editHours, setEditHours] = useState("");
   const [editMinutes, setEditMinutes] = useState("");
   const [editSeconds, setEditSeconds] = useState("");
   const [maxAllowedMinutes, setMaxAllowedMinutes] = useState(0);
@@ -409,7 +414,7 @@ const LeadsDetails = () => {
       // ✅ ADD: persist before opening dialer
       await storeDataJson(PENDING_CALL_KEY_LEAD, {
         leadId: detail?._id,
-        initiatedAt: Date.now(),
+        initiatedAt: Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS,
       });
 
       await Linking.openURL(`tel:+${detail?.clientMobile}`);
@@ -426,7 +431,8 @@ const LeadsDetails = () => {
 
       const calcMinutes = Math.floor(diffSec / 60);
       const calcSeconds = diffSec % 60;
-      setEditMinutes(String(calcMinutes));
+      setEditHours(String(Math.floor(calcMinutes / 60)));
+      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
       setEditSeconds(String(calcSeconds));
       setMaxAllowedMinutes(calcMinutes);
       setMaxAllowedSeconds(calcSeconds);
@@ -444,16 +450,38 @@ const LeadsDetails = () => {
   const confirmEditedDuration = () => {
     if (!pendingResumeRef.current) return;
 
+    const hours = maxAllowedMinutes > 60 ? parseInt(editHours || "0", 10) : 0;
     const mins = parseInt(editMinutes || "0", 10);
     const secs = parseInt(editSeconds || "0", 10);
     const { initiatedAt } = pendingResumeRef.current;
-    const adjustedFinishedAt = initiatedAt + (mins * 60 + secs) * 1000;
+    const adjustedFinishedAt =
+      initiatedAt + (hours * 60 * 60 + mins * 60 + secs) * 1000;
 
     setShowDurationEditor(false);
     pendingResumeRef.current = null;
     setIsStatusPopupFromCall(true);
     setCallMeta({ initiatedAt, finishedAt: adjustedFinishedAt });
     setShowChangeStatusPopup(true);
+  };
+
+  const formatCallInitiatedAt = (timestamp?: number | null) => {
+    if (!timestamp) return "";
+
+    const initiatedDate = new Date(timestamp);
+    const isToday = new Date().toDateString() === initiatedDate.toDateString();
+    const time = initiatedDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    return isToday
+      ? time
+      : `${initiatedDate.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}, ${time}`;
   };
 
   const resumePendingCallIfAny = async () => {
@@ -480,7 +508,8 @@ const LeadsDetails = () => {
 
       const calcMinutes = Math.floor(diffSec / 60);
       const calcSeconds = diffSec % 60;
-      setEditMinutes(String(calcMinutes));
+      setEditHours(String(Math.floor(calcMinutes / 60)));
+      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
       setEditSeconds(String(calcSeconds));
       setMaxAllowedMinutes(calcMinutes);
       setMaxAllowedSeconds(calcSeconds);
@@ -489,10 +518,42 @@ const LeadsDetails = () => {
       isResumingRef.current = false;
       return;
     }
-    setIsStatusPopupFromCall(true);
-    setCallMeta({ initiatedAt: pending.initiatedAt, finishedAt: endTime });
-    setShowChangeStatusPopup(true);
-    isResumingRef.current = false;
+    const initiatedDate = new Date(pending.initiatedAt);
+    const isToday = new Date().toDateString() === initiatedDate.toDateString();
+    const formattedTime = initiatedDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const formattedDateTime = isToday
+      ? formattedTime
+      : `${initiatedDate.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}, ${formattedTime}`;
+    const leadName = detail?.clientName || "N/A";
+    const leadMobile = detail?.clientMobile || "N/A";
+
+    Alert.alert(
+      "Missed Call Log",
+      `Lead: ${leadName}\nMobile: ${leadMobile}\n\nA call was initiated at ${formattedDateTime}.\n\nPlease log this call to update your call records.`,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            setIsStatusPopupFromCall(true);
+            setCallMeta({
+              initiatedAt: pending.initiatedAt,
+              finishedAt: endTime,
+            });
+            setShowChangeStatusPopup(true);
+            isResumingRef.current = false;
+          },
+        },
+      ],
+      { cancelable: false },
+    );
   };
 
   useEffect(() => {
@@ -513,7 +574,7 @@ const LeadsDetails = () => {
 
         isCallLogSentRef.current = false;
 
-        const startTime = Date.now();
+        const startTime = Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS;
 
         setCallStartTime(startTime);
 
@@ -732,6 +793,19 @@ const LeadsDetails = () => {
   const [showNotiPopup, setShowNotiPopup] = useState(false);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
 
+  const closeAllModalsSafely = () => {
+    // ✅ Pehle inner modal close karo
+    FUTModal.closeModal();
+
+    // ✅ Thodi delay dekar outer modal close karo — taaki dono
+    // native Modals ek saath dismiss na ho (Android freeze fix)
+    setTimeout(() => {
+      setShowActionsMenu(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+    }, 150);
+  };
+
   const handleSubmit = async () => {
     try {
       if (!notiMsg.trim()) {
@@ -848,16 +922,12 @@ const LeadsDetails = () => {
 
       await queryClient.refetchQueries({ queryKey: ["all-reminders"] });
 
-      FUTModal.closeModal();
-      setShowActionsMenu(false);
-      setShowChangeStatusPopup(false);
+      closeAllModalsSafely();
       setStatusLoading(false);
     } catch (err: any) {
       myConsole("errrrrr", err);
       toast.error(err?.response?.data?.message || "Failed to update status");
-      FUTModal.closeModal();
-      setShowActionsMenu(false);
-      setShowChangeStatusPopup(false);
+      closeAllModalsSafely();
       setStatusLoading(false);
       setTdForFUT({ date: null, time: null });
       formik.resetForm();
@@ -866,11 +936,9 @@ const LeadsDetails = () => {
         statusInfo: "",
       }));
     } finally {
-      FUTModal.closeModal();
-      setShowActionsMenu(false);
-      setShowChangeStatusPopup(false);
-      setIsStatusPopupFromCall(false);
+      closeAllModalsSafely();
       setStatusLoading(false);
+      setIsStatusPopupFromCall(false);
       setTdForFUT({ date: null, time: null });
       formik.resetForm();
       setFields((prev) => ({
@@ -1005,13 +1073,6 @@ const LeadsDetails = () => {
       }
     };
   }, [callMeta]);
-
-  useEffect(() => {
-    if (!showChangeStatusPopup) {
-      FUTModal.closeModal(); // ✅ ensure closed
-    }
-  }, [showChangeStatusPopup]);
-
   const hasValidAdditionalQuestionsV2 =
     Array.isArray(detail?.additionalQuestionsV2) &&
     detail.additionalQuestionsV2.some(
@@ -1036,7 +1097,7 @@ const LeadsDetails = () => {
   // myConsole("detail?", detail);
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
   // myConsole("additionalQuestionsv2 =>", detail?.additionalQuestionsV2);
-  myConsole("canShowCancelBtnnn", canShowCancelBtn);
+  // myConsole("canShowCancelBtnnn", canShowCancelBtn);
   return (
     <>
       {activeTab === 1 && (
@@ -1666,7 +1727,9 @@ const LeadsDetails = () => {
                 <AssignmentRow
                   icon="user"
                   label="Assigned To"
-                  value={detail?.assign?.name}
+                  value={[detail?.assign?.name, detail?.assign?.lastName]
+                    .filter(Boolean)
+                    .join(" ")}
                 />
                 <AssignmentRow
                   icon="user"
@@ -1685,6 +1748,20 @@ const LeadsDetails = () => {
                   icon="briefcase"
                   label="Role"
                   value={formatRoleName(detail?.assign?.role)}
+                />
+                <AssignmentRow
+                  icon="clock"
+                  label="Reminder"
+                  value={
+                    detail?.reminder?.reminderTime
+                      ? `${formatDate(
+                          detail?.reminder?.reminderTime,
+                          "dd/mm/yyyy hh:MM",
+                        )} (${detail?.reminder?.status
+                          ?.replace(/_/g, " ")
+                          ?.replace(/\b\w/g, (c) => c.toUpperCase())})`
+                      : "-"
+                  }
                 />
               </View>
 
@@ -2013,16 +2090,24 @@ const LeadsDetails = () => {
               Confirm Call Duration
             </Text>
 
-            {!!detail?.clientMobile && (
+            {(detail?.clientName || detail?.clientMobile) && (
               <Text
                 style={{
                   fontSize: 14,
                   fontWeight: "600",
                   color: color.mainTxtColor,
-                  marginBottom: 4,
+                  marginBottom: 8,
                 }}
               >
-                📞 {detail?.clientMobile}
+                {`Name: ${detail?.clientName || "N/A"}\nMobile: ${detail?.clientMobile || "N/A"}`}
+              </Text>
+            )}
+
+            {!!pendingResumeRef.current?.initiatedAt && (
+              <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 8 }}>
+                {`Call initiated: ${formatCallInitiatedAt(
+                  pendingResumeRef.current.initiatedAt,
+                )}`}
               </Text>
             )}
 
@@ -2032,6 +2117,33 @@ const LeadsDetails = () => {
             </Text>
 
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+              {maxAllowedMinutes > 60 && (
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                  >
+                    Hours
+                  </Text>
+                  <TextInput
+                    value={editHours}
+                    onChangeText={(v) => {
+                      const num = parseInt(v || "0", 10);
+                      if (num <= Math.floor(maxAllowedMinutes / 60)) {
+                        setEditHours(v);
+                      }
+                    }}
+                    keyboardType="number-pad"
+                    placeholder="0"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#E2E8F0",
+                      borderRadius: 10,
+                      padding: 10,
+                      fontSize: 16,
+                    }}
+                  />
+                </View>
+              )}
               <View style={{ flex: 1 }}>
                 <Text
                   style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
@@ -2042,7 +2154,18 @@ const LeadsDetails = () => {
                   value={editMinutes}
                   onChangeText={(v) => {
                     const num = parseInt(v || "0", 10);
-                    if (num <= maxAllowedMinutes) setEditMinutes(v);
+                    const hours =
+                      maxAllowedMinutes > 60
+                        ? parseInt(editHours || "0", 10)
+                        : 0;
+                    const maxMinutes =
+                      maxAllowedMinutes > 60 &&
+                      hours >= Math.floor(maxAllowedMinutes / 60)
+                        ? maxAllowedMinutes % 60
+                        : maxAllowedMinutes > 60
+                          ? 59
+                          : maxAllowedMinutes;
+                    if (num <= maxMinutes) setEditMinutes(v);
                   }}
                   keyboardType="number-pad"
                   placeholder="0"
@@ -2065,9 +2188,16 @@ const LeadsDetails = () => {
                   value={editSeconds}
                   onChangeText={(v) => {
                     const num = parseInt(v || "0", 10);
+                    const hours =
+                      maxAllowedMinutes > 60
+                        ? parseInt(editHours || "0", 10)
+                        : 0;
                     const mins = parseInt(editMinutes || "0", 10);
+                    const totalMinutes = hours * 60 + mins;
                     const secMax =
-                      mins >= maxAllowedMinutes ? maxAllowedSeconds : 59;
+                      totalMinutes >= maxAllowedMinutes
+                        ? maxAllowedSeconds
+                        : 59;
                     if (num <= secMax) setEditSeconds(v);
                   }}
                   keyboardType="number-pad"

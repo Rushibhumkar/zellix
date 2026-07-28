@@ -80,8 +80,12 @@ const CallListing = () => {
 
   // ✅ NEW
   const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
-  // const DURATION_THRESHOLD_SEC = 10;
+  // const DURATION_THRESHOLD_SEC = 20;
+  // Temporary development-only offset to test the Hours field in the duration modal.
+  // const TEST_CALL_INITIATED_AT_OFFSET_MS = __DEV__ ? 61 * 60 * 1000 : 0;
+  const TEST_CALL_INITIATED_AT_OFFSET_MS = 0;
   const [showDurationEditor, setShowDurationEditor] = useState(false);
+  const [editHours, setEditHours] = useState("");
   const [editMinutes, setEditMinutes] = useState("");
   const [editSeconds, setEditSeconds] = useState("");
   const pendingResumeRef = useRef<{
@@ -100,6 +104,7 @@ const CallListing = () => {
   const [maxAllowedMinutes, setMaxAllowedMinutes] = useState(0);
   const [maxAllowedSeconds, setMaxAllowedSeconds] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
   const appState = useRef(AppState.currentState);
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [calledNumber, setCalledNumber] = useState("");
@@ -182,12 +187,30 @@ const CallListing = () => {
   const handlePress = (digit: string) => {
     setPhoneNumber((prev) => {
       if (prev.length >= 15) return prev; // max 15 digits
-      return prev + digit;
+
+      const cursorPos = selection.start ?? prev.length;
+      const updated = prev.slice(0, cursorPos) + digit + prev.slice(cursorPos);
+
+      console.log("PHONE NUMBER TYPED =>", updated);
+
+      // ✅ cursor ko naye digit ke turant baad move karo
+      setSelection({ start: cursorPos + 1, end: cursorPos + 1 });
+
+      return updated;
     });
   };
 
   const handleDelete = () => {
-    setPhoneNumber((prev) => prev.slice(0, -1));
+    setPhoneNumber((prev) => {
+      const cursorPos = selection.start ?? prev.length;
+      if (cursorPos === 0) return prev;
+
+      const updated = prev.slice(0, cursorPos - 1) + prev.slice(cursorPos);
+
+      setSelection({ start: cursorPos - 1, end: cursorPos - 1 });
+
+      return updated;
+    });
   };
 
   const handleCall = async (mobile?: string) => {
@@ -207,7 +230,7 @@ const CallListing = () => {
       // ✅ NEW: persist BEFORE opening dialer, so it survives app being killed
       await storeDataJson(PENDING_CALL_KEY, {
         number: String(numberToCall),
-        initiatedAt: Date.now(),
+        initiatedAt: Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS,
       });
 
       await Linking.openURL(`tel:${numberToCall}`);
@@ -237,7 +260,8 @@ const CallListing = () => {
     await removeItemValue(PENDING_CALL_KEY);
 
     const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
-
+    const calcMinutes = Math.floor(diffSec / 60);
+    const calcSeconds = diffSec % 60;
     if (diffSec > DURATION_THRESHOLD_SEC) {
       setPhoneNumber("");
       setCallStartTime(null);
@@ -253,9 +277,9 @@ const CallListing = () => {
       };
 
       // ✅ pre-fill with the calculated (unreliable) duration
-      const calcMinutes = Math.floor(diffSec / 60);
-      const calcSeconds = diffSec % 60;
-      setEditMinutes(String(calcMinutes));
+
+      setEditHours(String(Math.floor(calcMinutes / 60)));
+      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
       setEditSeconds(String(calcSeconds));
 
       setMaxAllowedMinutes(calcMinutes);
@@ -266,10 +290,29 @@ const CallListing = () => {
       return;
     }
 
-    // duration looks reasonable — normal flow
+    // format initiated time
+    const initiatedDate = new Date(pending.initiatedAt);
+    const isToday = new Date().toDateString() === initiatedDate.toDateString();
+
+    const formattedTime = initiatedDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const formattedDateTime = isToday
+      ? formattedTime
+      : initiatedDate.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }) +
+        ", " +
+        formattedTime;
+
     Alert.alert(
-      "Call Detected",
-      `We noticed your call to ${pending.number} was interrupted. Please add the lead details now.`,
+      "Missed Call Log",
+      `Called number: ${pending.number}\n\nA call was initiated at ${formattedDateTime}.\n\nPlease log this call to update your call records.`,
       [
         {
           text: "OK",
@@ -342,7 +385,8 @@ const CallListing = () => {
       // ✅ pre-fill with the calculated (unreliable) duration so user can adjust instead of typing from scratch
       const calcMinutes = Math.floor(diffSec / 60);
       const calcSeconds = diffSec % 60;
-      setEditMinutes(String(calcMinutes));
+      setEditHours(String(Math.floor(calcMinutes / 60)));
+      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
       setEditSeconds(String(calcSeconds));
 
       setMaxAllowedMinutes(calcMinutes);
@@ -359,16 +403,38 @@ const CallListing = () => {
   const confirmEditedDuration = () => {
     if (!pendingResumeRef.current) return;
 
+    const hours = maxAllowedMinutes > 60 ? parseInt(editHours || "0", 10) : 0;
     const mins = parseInt(editMinutes || "0", 10);
     const secs = parseInt(editSeconds || "0", 10);
     const { number, initiatedAt } = pendingResumeRef.current;
 
-    const adjustedFinishedAt = initiatedAt + (mins * 60 + secs) * 1000;
+    const adjustedFinishedAt =
+      initiatedAt + (hours * 60 * 60 + mins * 60 + secs) * 1000;
 
     setShowDurationEditor(false);
     pendingResumeRef.current = null;
 
     finalizeCallAndOpenLead(number, initiatedAt, adjustedFinishedAt);
+  };
+
+  const formatCallInitiatedAt = (timestamp?: number | null) => {
+    if (!timestamp) return "";
+
+    const initiatedDate = new Date(timestamp);
+    const isToday = new Date().toDateString() === initiatedDate.toDateString();
+    const time = initiatedDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    return isToday
+      ? time
+      : `${initiatedDate.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}, ${time}`;
   };
 
   useEffect(() => {
@@ -386,7 +452,7 @@ const CallListing = () => {
 
       // Call started
       if (isCallingRef.current && nextAppState === "background") {
-        const startTime = Date.now();
+        const startTime = Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS;
 
         setCallStartTime(startTime);
         callStartTimeRef.current = startTime;
@@ -452,15 +518,17 @@ const CallListing = () => {
       );
       console.log("CALL DURATION (SEC) =>", durationInSec);
 
+      // ✅ ye statuses hamesha "not_connected" force karenge, chahe duration/status kuch bhi ho
+      const FORCE_NOT_CONNECTED_STATUSES = [
+        "no_response",
+        "not_able_to_connect",
+        "wrong_details",
+      ];
+
       let callType: "not_connected" | "positive" | "negative" | "connected" =
         "connected";
 
-      // ❌ very short call
-      if (durationInSec < 12) {
-        callType = "not_connected";
-      }
-
-      // ✅ status based
+      // ✅ status based (pehle set karo, phir override rules apply karenge)
       if (statusAfterCall) {
         if (addManualLeadPositiveStatuses.includes(statusAfterCall)) {
           callType = "positive";
@@ -471,9 +539,27 @@ const CallListing = () => {
         }
       }
 
-      // ❌ cancel case
-      if (!statusAfterCall && durationInSec >= 12) {
+      // ❌ cancel case (no status selected)
+      if (!statusAfterCall && durationInSec >= 15) {
         callType = "connected";
+      }
+      // ❌ FORCE RULE 1: duration <= 15 sec => not_connected,
+      // LEKIN positive status ho to duration check skip karo
+      const isPositiveStatus =
+        statusAfterCall &&
+        addManualLeadPositiveStatuses.includes(statusAfterCall);
+
+      if (durationInSec <= 15 && !isPositiveStatus) {
+        callType = "not_connected";
+      }
+
+      // ❌ FORCE RULE 2: specific statuses => hamesha not_connected,
+      // chahe duration kuch bhi ho
+      if (
+        statusAfterCall &&
+        FORCE_NOT_CONNECTED_STATUSES.includes(statusAfterCall)
+      ) {
+        callType = "not_connected";
       }
 
       isCallLogSentRef.current = true; // ✅ lock
@@ -731,7 +817,7 @@ const CallListing = () => {
     console.log("CLIENT MOBILE CHANGED =>", formik.values.clientMobile);
   }, [formik.values.clientMobile]);
 
-  // myConsole("callLogsssss", callLogs);
+  myConsole("callLogsssss", callLogs);
 
   if (isError) {
     return (
@@ -928,7 +1014,12 @@ const CallListing = () => {
             <View style={styles.numberContainer}>
               <TextInput
                 value={phoneNumber}
-                onChangeText={setPhoneNumber}
+                onChangeText={(v) => {
+                  console.log("PHONE NUMBER TYPED =>", v);
+                  setPhoneNumber(v);
+                }}
+                selection={selection}
+                onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
                 placeholder="Enter Number"
                 placeholderTextColor={color.placeholderGrey}
                 style={styles.numberInput}
@@ -965,7 +1056,12 @@ const CallListing = () => {
                   }}
                   onLongPress={() => {
                     if (item[0] === "0") {
-                      setPhoneNumber((prev) => prev + "+");
+                      setPhoneNumber((prev) => {
+                        if (prev.startsWith("+")) return prev;
+                        const updated = "+" + prev;
+                        setSelection({ start: 1, end: 1 }); // ✅ cursor + ke turant baad
+                        return updated;
+                      });
                     }
                   }}
                   delayLongPress={300}
@@ -1497,12 +1593,48 @@ const CallListing = () => {
                 📞 {pendingResumeRef.current?.number || calledNumber}
               </Text>
             )}
+
+            {!!pendingResumeRef.current?.initiatedAt && (
+              <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 8 }}>
+                {`Call initiated: ${formatCallInitiatedAt(
+                  pendingResumeRef.current.initiatedAt,
+                )}`}
+              </Text>
+            )}
+
             <Text style={{ fontSize: 13, color: "#64748B", marginBottom: 16 }}>
               We couldn't accurately track this call's duration. Please enter it
               manually.
             </Text>
 
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+              {maxAllowedMinutes > 60 && (
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
+                  >
+                    Hours
+                  </Text>
+                  <TextInput
+                    value={editHours}
+                    onChangeText={(v) => {
+                      const num = parseInt(v || "0", 10);
+                      if (num <= Math.floor(maxAllowedMinutes / 60)) {
+                        setEditHours(v);
+                      }
+                    }}
+                    keyboardType="number-pad"
+                    placeholder="0"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#E2E8F0",
+                      borderRadius: 10,
+                      padding: 10,
+                      fontSize: 16,
+                    }}
+                  />
+                </View>
+              )}
               <View style={{ flex: 1 }}>
                 <Text
                   style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}
@@ -1513,7 +1645,18 @@ const CallListing = () => {
                   value={editMinutes}
                   onChangeText={(v) => {
                     const num = parseInt(v || "0", 10);
-                    if (num <= maxAllowedMinutes) setEditMinutes(v);
+                    const hours =
+                      maxAllowedMinutes > 60
+                        ? parseInt(editHours || "0", 10)
+                        : 0;
+                    const maxMinutes =
+                      maxAllowedMinutes > 60 &&
+                      hours >= Math.floor(maxAllowedMinutes / 60)
+                        ? maxAllowedMinutes % 60
+                        : maxAllowedMinutes > 60
+                          ? 59
+                          : maxAllowedMinutes;
+                    if (num <= maxMinutes) setEditMinutes(v);
                   }}
                   keyboardType="number-pad"
                   placeholder="0"
@@ -1536,10 +1679,16 @@ const CallListing = () => {
                   value={editSeconds}
                   onChangeText={(v) => {
                     const num = parseInt(v || "0", 10);
+                    const hours =
+                      maxAllowedMinutes > 60
+                        ? parseInt(editHours || "0", 10)
+                        : 0;
                     const mins = parseInt(editMinutes || "0", 10);
-                    // ✅ if minutes == max, seconds cant exceed maxAllowedSeconds
+                    const totalMinutes = hours * 60 + mins;
                     const secMax =
-                      mins >= maxAllowedMinutes ? maxAllowedSeconds : 59;
+                      totalMinutes >= maxAllowedMinutes
+                        ? maxAllowedSeconds
+                        : 59;
                     if (num <= secMax) setEditSeconds(v);
                   }}
                   keyboardType="number-pad"
