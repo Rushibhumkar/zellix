@@ -51,69 +51,54 @@ const NotesCard = ({
         noteArr.map((item: any, i: number) => {
           return (
             <View key={i} style={styles.card}>
-              {/* Top Row */}
+              {/* Top Row: Avatar + Name + Date */}
               <View style={styles.topRow}>
-                <View style={styles.leftSection}>
-                  {/* Avatar */}
-                  {(isSubSupManagerTeamLead ||
-                    item?.createdBy === user?._id) && (
-                    <View style={styles.avatar}>
-                      <CustomText style={styles.avatarText}>
-                        {getInitials(item?.createdByName || "")}
-                      </CustomText>
-                    </View>
-                  )}
+                {(isSubSupManagerTeamLead || item?.createdBy === user?._id) && (
+                  <View style={styles.avatar}>
+                    <CustomText style={styles.avatarText}>
+                      {getInitials(item?.createdByName || "")}
+                    </CustomText>
+                  </View>
+                )}
 
-                  {/* Name + Note */}
-                  <View style={{ flex: 1, paddingHorizontal: 8 }}>
+                <View style={{ flex: 1, paddingHorizontal: 8 }}>
+                  <View style={styles.nameDateRow}>
                     {(isSubSupManagerTeamLead ||
                       item?.createdBy === user?._id) && (
                       <CustomText style={styles.nameText}>
                         {item?.createdByName || "N/A"}
                       </CustomText>
                     )}
-
-                    <CustomText style={styles.noteText}>
-                      {item?.note || "N/A"}
+                    <CustomText style={styles.dateText}>
+                      {item?.createdAt
+                        ? moment(item?.createdAt).format(
+                            "MMM DD, YYYY, hh:mm A",
+                          )
+                        : "N/A"}
                     </CustomText>
                   </View>
-                </View>
 
-                <CustomText style={styles.dateText}>
-                  {item?.createdAt
-                    ? moment(item?.createdAt).format("MMM DD, YYYY, hh:mm A")
-                    : "N/A"}
-                </CustomText>
+                  <CustomText style={styles.noteText}>
+                    {item?.note || "N/A"}
+                  </CustomText>
+                </View>
               </View>
 
+              {/* Action Buttons */}
               {(isSubSup || item?.createdBy === user?._id) && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    alignSelf: "flex-end",
-                  }}
-                >
+                <View style={styles.actionRow}>
                   <TouchableOpacity
-                    style={{
-                      ...iconWrapperStyle,
-                    }}
-                    onPress={() => {
-                      console.log("Delete button pressed", item?._id);
-                      onDelete(item?.notesId || item?._id);
-                    }}
+                    style={styles.iconBtn}
+                    onPress={() => onDelete(item?.notesId || item?._id)}
                   >
                     <MaterialIcons
                       name="delete-outline"
-                      size={18}
+                      size={16}
                       color={color.mainTxtColor}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{
-                      ...iconWrapperStyle,
-                    }}
+                    style={styles.iconBtn}
                     onPress={() =>
                       onEdit({
                         note: item?.note || "",
@@ -123,7 +108,7 @@ const NotesCard = ({
                   >
                     <Feather
                       name="edit-2"
-                      size={18}
+                      size={16}
                       color={color.mainTxtColor}
                     />
                   </TouchableOpacity>
@@ -142,9 +127,9 @@ export default NotesCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
     ...shadowPrimaryColor,
   },
 
@@ -156,48 +141,62 @@ const styles = StyleSheet.create({
 
   topRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
   },
 
-  leftSection: {
+  nameDateRow: {
     flexDirection: "row",
-    flex: 1,
-    gap: 12,
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
   },
 
   avatar: {
-    height: 42,
-    width: 42,
-    borderRadius: 21,
+    height: 36,
+    width: 36,
+    borderRadius: 18,
     backgroundColor: "#E0E7FF",
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
 
   avatarText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "700",
     color: "#2563EB",
   },
 
   nameText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "600",
     color: "#2563EB",
-    marginBottom: 4,
   },
 
   dateText: {
-    fontSize: 14,
+    fontSize: 11,
     color: "#6B7280",
-    fontWeight: "500",
+    fontWeight: "400",
   },
 
   noteText: {
+    fontSize: 13,
     color: "#4B5563",
-    lineHeight: 22,
-    marginTop: 2,
+    lineHeight: 20,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    alignSelf: "flex-end",
+    marginTop: 10,
+  },
+
+  iconBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
   },
 
   editWrapper: {

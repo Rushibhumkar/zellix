@@ -239,8 +239,13 @@ const AdvanceSearch = () => {
     onSubmit: async (value) => {
       setIsLoading(true);
       try {
+        const bookingStatus =
+          category === "booking" && Array.isArray(values.status)
+            ? values.status[0] || ""
+            : values.status;
         const sendData = {
           ...values,
+          status: bookingStatus,
           individual: teamOption === "myLead",
           startDate: values.startDate
             ? new Date(values.startDate).toISOString()
@@ -400,11 +405,14 @@ const AdvanceSearch = () => {
               label="Status"
               placeholder="Status"
               // arrOfObj={inMeetingStatus}
-              isMultiSelect
+              isMultiSelect={category !== "booking"}
               arrOfObj={advanceStatus[category] || inLeadStatus}
               containerStyle={{ marginBottom: 15 }}
               onChange={(v) =>
-                setFieldValue("status", Array.isArray(v) ? v : [v])
+                setFieldValue(
+                  "status",
+                  category === "booking" ? v : Array.isArray(v) ? v : [v],
+                )
               }
               isAdvanceSearch
               initialValue={values?.status}

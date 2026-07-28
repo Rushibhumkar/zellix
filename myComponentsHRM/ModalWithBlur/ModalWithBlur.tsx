@@ -54,7 +54,7 @@ const ModalWithBlur = ({
               flex: 1,
               justifyContent: "flex-end",
             }}
-            onPress={onClose}
+            onPress={onClose ?? undefined}
           >
             <Pressable
               style={{
@@ -71,21 +71,27 @@ const ModalWithBlur = ({
               }}
               onPress={() => Keyboard.dismiss()}
             >
-              <Pressable
-                onPress={onClose}
-                style={{
-                  position: "absolute",
-                  top: 16,
-                  right: 16,
-                  zIndex: 999,
-                  width: 32,
-                  height: 32,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <AntDesign name="close" size={22} color={color.mainTxtColor} />
-              </Pressable>
+              {!!onClose && (
+                <Pressable
+                  onPress={onClose}
+                  style={{
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                    zIndex: 999,
+                    width: 32,
+                    height: 32,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <AntDesign
+                    name="close"
+                    size={22}
+                    color={color.mainTxtColor}
+                  />
+                </Pressable>
+              )}
               {/* <View
                 style={{
                   width: 55,

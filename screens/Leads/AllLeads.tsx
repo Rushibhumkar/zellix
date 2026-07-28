@@ -844,9 +844,12 @@ const LeadRowItem = React.memo(
                     fontWeight: "300",
                     textTransform: "capitalize",
                     marginTop: 2,
+                    fontSize: 13,
                   }}
                 >
-                  {item?.assign?.name}
+                  {[item?.assign?.name?.trim(), item?.assign?.lastName?.trim()]
+                    .filter(Boolean)
+                    .join(" ")}
                 </CustomText>
               )}
             </View>

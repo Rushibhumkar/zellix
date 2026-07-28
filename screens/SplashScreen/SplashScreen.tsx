@@ -4,7 +4,10 @@ import { View } from "react-native";
 import { getData, getDataJson } from "../../hooks/useAsyncStorage";
 import AppLogo from "../../assets/svg/AppLogo";
 import { navigationRef } from "../../navigation/navigationRef";
-import { PENDING_CALL_KEY } from "../../utils/pendingCallStorage";
+import {
+  PENDING_CALL_KEY,
+  PENDING_CALL_KEY_LEAD,
+} from "../../utils/pendingCallStorage";
 
 const SplashScreen = () => {
   const { dispatch } = useNavigation();
@@ -43,6 +46,46 @@ const SplashScreen = () => {
     }
   };
 
+  const navigateToLeadsDetailsWithRetry = (
+    leadId: string,
+    retriesLeft = 15,
+  ) => {
+    console.log(
+      "🔁 Attempting LeadsDetails redirect, retries left:",
+      retriesLeft,
+    );
+
+    if (!navigationRef.isReady()) {
+      if (retriesLeft <= 0) {
+        console.log("❌ navigationRef never became ready, giving up");
+        return;
+      }
+      setTimeout(
+        () => navigateToLeadsDetailsWithRetry(leadId, retriesLeft - 1),
+        200,
+      );
+      return;
+    }
+
+    try {
+      navigationRef.navigate("allLead2", {
+        screen: "LeadsDetails",
+        params: {
+          item: { _id: leadId },
+        },
+      });
+      console.log("✅ Navigated to LeadsDetails");
+    } catch (e) {
+      console.log("❌ Navigate threw error:", e);
+      if (retriesLeft > 0) {
+        setTimeout(
+          () => navigateToLeadsDetailsWithRetry(leadId, retriesLeft - 1),
+          200,
+        );
+      }
+    }
+  };
+
   const handleGetToken = async () => {
     console.log("🚀 SplashScreen handleGetToken started");
 
@@ -61,6 +104,7 @@ const SplashScreen = () => {
 
     // ✅ check for a pending (interrupted) call before deciding where to land
     const pending = await getDataJson(PENDING_CALL_KEY);
+    const pendingLead = await getDataJson(PENDING_CALL_KEY_LEAD);
     console.log("📞 pending call check on splash:", pending);
 
     dispatch(
@@ -75,10 +119,17 @@ const SplashScreen = () => {
         "🔄 Pending call found on splash — will redirect to CallListing",
         pending,
       );
-
-      // give the reset a brief head start, then begin retry-polling
       setTimeout(() => {
         navigateToCallListingWithRetry();
+      }, 300);
+    } else if (pendingLead?.leadId) {
+      // ✅ ADD
+      console.log(
+        "🔄 Pending lead call found on splash — will redirect to LeadsDetails",
+        pendingLead,
+      );
+      setTimeout(() => {
+        navigateToLeadsDetailsWithRetry(pendingLead.leadId);
       }, 300);
     }
   };
