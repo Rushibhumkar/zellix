@@ -139,14 +139,13 @@ const AllLeads = () => {
     dashboardMyLeads;
 
   const handleSelect = (id) => {
-    let temp = [...selected];
-    let index = temp.indexOf(id);
-    if (index !== -1) {
-      temp.splice(index, 1);
-    } else {
-      temp.push(id);
-    }
-    setSelected(temp);
+    if (!id) return;
+
+    setSelected((previousSelected) =>
+      previousSelected.includes(id)
+        ? previousSelected.filter((selectedId) => selectedId !== id)
+        : [...previousSelected, id],
+    );
   };
 
   const goBackToDashboard = () => {
@@ -185,7 +184,7 @@ const AllLeads = () => {
   };
 
   const toggleModalAssignLead = () => {
-    setAssignLeadModal(!assignLeadModal);
+    setAssignLeadModal((previousVisible) => !previousVisible);
   };
 
   const toggleModalClose = () => {
@@ -301,10 +300,8 @@ const AllLeads = () => {
   // const isAgent = true;
   const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
 
-  const isSubSupSrMng =
-    user?.role === roleEnum?.sub_admin ||
-    user?.role === roleEnum?.sup_admin ||
-    user?.role === roleEnum?.sr_manager;
+  const canManageLeadSelection =
+    !isAgent && (canAssignLead || canDeleteLead);
 
   const handleTab = (tab: any) => {
     setSelectLeadType(tab);
@@ -344,6 +341,17 @@ const AllLeads = () => {
       setDebouncedSearch("");
     }
   }, [showSearch]);
+
+  useEffect(() => {
+    setSelected([]);
+    setAssignLeadModal(false);
+  }, [
+    selectLeadType,
+    debouncedSearch,
+    dashboardFilterStatus,
+    dashboardDateKey,
+    dashboardMyLeads,
+  ]);
 
   // console.log("selectleadtypeseb4useeffecrt", selectLeadType);
 
@@ -470,9 +478,9 @@ const AllLeads = () => {
                   : false
               }
               onPressToAssignLead={
-                canAssignLead && user?.role === "agent"
-                  ? false
-                  : () => toggleModalAssignLead()
+                canAssignLead && !isAgent
+                  ? () => toggleModalAssignLead()
+                  : false
               }
             />
           )}
@@ -502,6 +510,7 @@ const AllLeads = () => {
                 isAgent={isAgent}
                 user={user}
                 selected={selected.indexOf(item?._id) !== -1}
+                isSelectionMode={selected.length > 0}
                 bgColor={bgByStatus[item?.status]}
                 onPress={() =>
                   selected?.length === 0
@@ -512,7 +521,9 @@ const AllLeads = () => {
                     : handleSelect(item?._id)
                 }
                 onLongPress={
-                  isSubSupSrMng ? () => handleSelect(item?._id) : undefined
+                  canManageLeadSelection
+                    ? () => handleSelect(item?._id)
+                    : undefined
                 }
                 onCallPress={() =>
                   navigation.navigate("LeadsDetails", {
@@ -733,6 +744,7 @@ const LeadRowItem = React.memo(
     onPress,
     onLongPress,
     selected,
+    isSelectionMode,
     bgColor,
     onCallPress,
     onWhatsappIconPress,
@@ -964,6 +976,7 @@ const LeadRowItem = React.memo(
   },
   (prev, next) =>
     prev.selected === next.selected &&
+    prev.isSelectionMode === next.isSelectionMode &&
     prev.item?._id === next.item?._id &&
     prev.item?.status === next.item?.status,
 );

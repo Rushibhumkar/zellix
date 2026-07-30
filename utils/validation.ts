@@ -1,7 +1,17 @@
 import * as Yup from "yup";
 import { parsePhoneNumber } from "libphonenumber-js";
+import { isLive } from "../services/authApi/axiosInstance";
 
 const whatsappRegex = /^(\+?\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s-]?)?\d{6,12}$/;
+
+// export const LoginSchema = Yup.object().shape({
+//   email: Yup.string()
+//     .required("Email is required")
+//     .email("Invalid Email Address"),
+//   password: isLive
+//     ? Yup.string().required("Password is required")
+//     : Yup.string().notRequired(),
+// });
 
 export const LoginSchema = Yup.object().shape({
   email: Yup.string()

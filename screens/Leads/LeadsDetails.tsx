@@ -219,9 +219,9 @@ const LeadsDetails = () => {
   const [activeTab, setActiveTab] = useState(1);
   // let detail = params?.item;
   // let detail = {};
-  let details = params?.item;
+  const details = params?.item;
 
-  let selectLeadType = params?.selectLeadType ?? detail?.type ?? details?.type;
+  const selectLeadType = params?.selectLeadType ?? details?.type;
 
   const from = params?.from;
   const remindersActiveTab = params?.remindersActiveTab;
@@ -231,6 +231,8 @@ const LeadsDetails = () => {
     data: detail,
     isLoading: isLoadingQuery,
     isFetching,
+    isError: isLeadDetailError,
+    error: leadDetailError,
     refetch: refetchLeadDetail,
   } = useGetLeadById(params?.item?._id);
 
@@ -1093,6 +1095,68 @@ const LeadsDetails = () => {
     user?.role === roleEnum?.sup_admin ||
     user?.role === roleEnum?.sub_admin;
 
+  const handleLeadDetailsBack = () => {
+    if (from === "reminders") {
+      navigation.navigate("Reminders", { remindersActiveTab });
+    } else if (from === "callLogs") {
+      navigation.goBack();
+    } else {
+      navigate(routeLead.allLead, { tabType: selectLeadType ?? detail?.type });
+    }
+  };
+
+  const leadDetailErrorStatus = (leadDetailError as any)?.response?.status;
+  const leadDetailUnavailable =
+    !isLoadingQuery && (isLeadDetailError || !detail?._id);
+
+  if (leadDetailUnavailable) {
+    const unavailableMessage =
+      leadDetailErrorStatus === 403
+        ? "You do not have permission to view this lead."
+        : leadDetailErrorStatus === 404 || !detail?._id
+          ? "Lead details were not found."
+          : "Unable to load lead details. Please try again.";
+
+    return (
+      <Container>
+        <Header title="Lead Details" onBack={handleLeadDetailsBack} />
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 28,
+          }}
+        >
+          <MaterialIcons name="info-outline" size={42} color={color.mainTxtColor} />
+          <CustomText
+            style={{
+              color: color.mainTxtColor,
+              fontSize: 16,
+              textAlign: "center",
+              marginTop: 12,
+              marginBottom: 20,
+            }}
+          >
+            {unavailableMessage}
+          </CustomText>
+          {leadDetailErrorStatus !== 403 && leadDetailErrorStatus !== 404 && (
+            <CustomBtn
+              title="Try Again"
+              onPress={() => refetchLeadDetail()}
+              containerStyle={{ width: "100%", marginBottom: 12 }}
+            />
+          )}
+          <CustomBtn
+            title="Go Back"
+            onPress={handleLeadDetailsBack}
+            containerStyle={{ width: "100%" }}
+          />
+        </View>
+      </Container>
+    );
+  }
+
   // myConsole("tdForFUTtt", tdForFUT);
   // myConsole("detail?", detail);
   // myConsole("additionalQuestions =>", detail?.additionalQuestions);
@@ -1118,19 +1182,7 @@ const LeadsDetails = () => {
                 ? "Calling Data Info"
                 : "Lead Details"
             }
-            onBack={() => {
-              if (from === "reminders") {
-                navigation.navigate("Reminders", {
-                  remindersActiveTab,
-                });
-              } else if (from === "callLogs") {
-                navigation.goBack();
-              } else {
-                navigate(routeLead.allLead, {
-                  tabType: selectLeadType ?? detail?.type ?? details?.type,
-                });
-              }
-            }}
+            onBack={handleLeadDetailsBack}
             rightSide={
               <>
                 {isLeadEdit && canEditLead && (

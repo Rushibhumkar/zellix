@@ -43,11 +43,15 @@ const LoginScreen = () => {
 
     // dev : agent
     // email: "dev1@swavishtek.com",
-    // password: "123456789",
+    // password: "",
+
+    // dev : agent
+    // email: "abhishek@swavishsoftware.com",
+    // password: "",
 
     // call karna hai iss wale se
     // email: "test1@swavishtek.com",
-    // password: "123456789",
+    // password: "",
 
     // dev : super admin
     // email: "test@test.com",

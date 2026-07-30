@@ -12,9 +12,9 @@ import { color } from "../../const/color";
 import { useGetMyAllTeamMembers } from "../../services/rootApi/api";
 
 interface TMultipleLeadAssign {
-  selected: [string];
+  selected: string[];
   visible: boolean;
-  setSelected: (a: []) => void;
+  setSelected: (selectedLeadIds: string[]) => void;
   toggleModal: () => void;
   setSnackBar: any;
   toast: any;
@@ -125,6 +125,8 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
   };
 
   const handleSubmit = async () => {
+    if (selected.length === 0 || !assign) return;
+
     try {
       setIsLoading(true);
       const sendData = {
@@ -137,18 +139,25 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
         queryKey: [queryKeyCRM.getLead],
       });
 
+      const message =
+        resAssignLead?.data?.message || "Lead(s) assigned successfully";
       setSnackBar({
         visible: true,
-        text: resAssignLead?.data,
+        text: message,
         error: false,
       });
       setSelected([]);
+      onModalClose();
     } catch (err) {
       myConsole("errorAssignLead", err);
-      toast.error(err?.message || "Error assigning lead");
+      toast.error(
+        err?.response?.data?.message ||
+          err?.response?.data ||
+          err?.message ||
+          "Error assigning lead",
+      );
     } finally {
       setIsLoading(false);
-      onModalClose();
     }
   };
 
