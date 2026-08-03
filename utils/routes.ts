@@ -72,6 +72,10 @@ export const routeInvoice = {
   InvoiceDetail: "InvoiceDetail",
 };
 
+export const routeLeaderboard = {
+  Leaderboard: "Leaderboard",
+};
+
 export const routeRSVP = {
   RSVPNavigator: "RSVPNavigator",
   RSVPInvitationList: "RSVPInvitationList",

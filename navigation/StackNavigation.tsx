@@ -103,6 +103,7 @@ import { myConsole } from "../hooks/useConsole";
 import CallListing from "../screens/Leads/CallListing";
 import { useGetUserPermission } from "../services/rootApi/permissionApi";
 import { checkPermission } from "../utils/commonFunctions";
+import Leaderboard from "../screens/Leaderboard/Leaderboard";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -680,6 +681,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="Reminders"
           component={Reminders}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Leaderboard"
+          component={Leaderboard}
           options={{ headerShown: false }}
         />
         <Stack.Screen
