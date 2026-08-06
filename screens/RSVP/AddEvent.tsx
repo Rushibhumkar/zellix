@@ -31,7 +31,19 @@ const validationSchema = Yup.object().shape({
   startDate: Yup.date().required("Start date is required"),
   endDate: Yup.date()
     .required("End date is required")
-    .min(Yup.ref("startDate"), "End date must be after start date"),
+    .test(
+      "after-start-date",
+      "End date and time must be after start date and time",
+      function (endDate) {
+        const { startDate } = this.parent;
+
+        return (
+          !startDate ||
+          !endDate ||
+          new Date(endDate).getTime() > new Date(startDate).getTime()
+        );
+      },
+    ),
   description: Yup.string().optional(),
 });
 
@@ -158,15 +170,19 @@ const AddEvent = ({ route }: any) => {
                       // ✅ auto-fix endDate
                       if (
                         values?.endDate &&
-                        moment(selectedDate).isAfter(values?.endDate)
+                        !moment(values.endDate).isAfter(selectedDate)
                       ) {
-                        setFieldValue("endDate", selectedDate);
+                        setFieldValue(
+                          "endDate",
+                          moment(selectedDate).add(1, "minute").toDate(),
+                        );
                       }
                     }}
                     initialValue={values.startDate}
                     title="Start Date & Time"
                     mode="datetime"
-                    maximumDate={new Date()}
+                    iosDisplay="inline"
+                    minimumDate={new Date()}
                   />
                   {touched.startDate && errors.startDate && (
                     <CustomText style={styles.errorText}>
@@ -186,8 +202,12 @@ const AddEvent = ({ route }: any) => {
                     initialValue={values.endDate}
                     title="End Date & Time"
                     mode="datetime"
-                    minimumDate={values?.startDate || undefined}
-                    maximumDate={new Date()}
+                    iosDisplay="inline"
+                    minimumDate={
+                      values?.startDate
+                        ? moment(values.startDate).add(1, "minute").toDate()
+                        : new Date()
+                    }
                   />
                   {touched.endDate && errors.endDate && (
                     <CustomText style={styles.errorText}>

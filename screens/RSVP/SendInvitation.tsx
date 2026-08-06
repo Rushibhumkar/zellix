@@ -398,6 +398,7 @@ const SendInvitation = () => {
                     initialValue={values.scheduleDate}
                     title="Date & Time"
                     mode="datetime"
+                    iosDisplay="inline"
                   />
 
                   {touched.scheduleDate && errors.scheduleDate && (
@@ -453,7 +454,7 @@ const SendInvitation = () => {
                     }}
                   >
                     <CustomBtn
-                      title="Create Event"
+                      title="Send Invitation"
                       onPress={handleSubmit}
                       isLoading={submitting}
                       disabled={submitting}

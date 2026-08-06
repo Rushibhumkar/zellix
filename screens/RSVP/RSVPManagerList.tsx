@@ -70,6 +70,7 @@ const RSVPManagerList = () => {
   });
 
   const events = data?.pages?.flatMap((page) => page?.data) || [];
+  const totalEvents = data?.pages?.[0]?.pagination?.totalItem ?? 0;
 
   // SEARCH DEBOUNCE
   const debounceSearch = React.useCallback(
@@ -132,7 +133,7 @@ const RSVPManagerList = () => {
   );
 
   const handleDeleteEvent = async () => {
-    if (isLoading) return;
+    if (!canDeleteEvent || isLoading || selected.length === 0) return;
     setIsLoading(true);
 
     try {
@@ -170,6 +171,7 @@ const RSVPManagerList = () => {
       <Header
         title="RSVP Manager"
         isWithAnimation
+        totalCount={totalEvents}
         showBackIcon={false}
         showActions={true}
         moduleName="rsvp"
@@ -225,16 +227,7 @@ const RSVPManagerList = () => {
             //       ]
             //     : []),
             // ]}
-            onPressToDelete={
-              canDeleteEvent
-                ? toggleModal
-                : () =>
-                    setSnackBar({
-                      visible: true,
-                      text: "You don't have permission to delete events",
-                      error: true,
-                    })
-            }
+            onPressToDelete={canDeleteEvent ? toggleModal : undefined}
           />
         )}
         {canViewEventsList ? (
@@ -335,13 +328,15 @@ const RSVPManagerList = () => {
         )}
       </View>
 
-      <DeleteModel
-        modalVisible={modalVisible}
-        toggleModal={toggleModal}
-        selectedUser={"events"}
-        isLoading={isLoading}
-        handleDeleteUser={canDeleteEvent ? handleDeleteEvent : () => null}
-      />
+      {canDeleteEvent && (
+        <DeleteModel
+          modalVisible={modalVisible}
+          toggleModal={toggleModal}
+          selectedUser={"events"}
+          isLoading={isLoading}
+          handleDeleteUser={handleDeleteEvent}
+        />
+      )}
     </Container>
   );
 };

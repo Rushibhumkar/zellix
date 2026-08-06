@@ -74,6 +74,7 @@ const RSVPInvitationList = () => {
   });
 
   const invitations = data?.pages?.flatMap((page) => page?.data) || [];
+  const totalInvitations = data?.pages?.[0]?.pagination?.totalItem ?? 0;
 
   // SEARCH DEBOUNCE
   const debounceSearch = React.useCallback(
@@ -202,6 +203,7 @@ const RSVPInvitationList = () => {
       <Header
         title="RSVP Invitations"
         isWithAnimation
+        totalCount={totalInvitations}
         showBackIcon={false}
         showActions={true}
         onPressSearch={() => {

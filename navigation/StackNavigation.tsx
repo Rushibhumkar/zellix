@@ -127,6 +127,12 @@ const BottomTabs = () => {
     "sidebar",
     user?.role,
   );
+  const canViewRSVP = checkPermission(
+    permission,
+    "Event",
+    "sidebar",
+    user?.role,
+  );
 
   return (
     <Tab.Navigator
@@ -223,22 +229,24 @@ const BottomTabs = () => {
         />
       )}
 
-      <Tab.Screen
-        name="RSVPNavigator"
-        component={RSVPNavigator}
-        options={{
-          tabBarLabel: "",
-          tableBarShowLable: false,
-          tabBarLabelStyle: false,
-          headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            focused ? (
-              <RsvpFocus style={styles.iconPosition} />
-            ) : (
-              <RsvpInfocus style={styles.iconPosition} />
-            ),
-        }}
-      />
+      {canViewRSVP && (
+        <Tab.Screen
+          name="RSVPNavigator"
+          component={RSVPNavigator}
+          options={{
+            tabBarLabel: "",
+            tableBarShowLable: false,
+            tabBarLabelStyle: false,
+            headerShown: false,
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <RsvpFocus style={styles.iconPosition} />
+              ) : (
+                <RsvpInfocus style={styles.iconPosition} />
+              ),
+          }}
+        />
+      )}
 
       <Tab.Screen
         name="ReportsNavigator"

@@ -38,7 +38,7 @@ interface TTitleWithAddDelete {
   arrLength: number;
   showAddBtn?: any;
   onPressToNavigate: () => void;
-  onPressToDelete: () => void;
+  onPressToDelete?: () => void;
   title: string;
   onPressToEdit: () => void;
   onPressToAssignLead: () => void;

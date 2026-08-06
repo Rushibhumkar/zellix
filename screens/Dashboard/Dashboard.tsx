@@ -4,8 +4,11 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
+  TouchableOpacity,
   View,
 } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import Card from "../../components/Dashboard/Card";
 import DashbordHeader from "../../components/Dashboard/DashbordHeader";
@@ -73,6 +76,7 @@ const Dashboard = () => {
   const reduxUser = useSelector(selectUser);
   const { navigate, dispatch: dispatchNav } = useNavigation();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -562,6 +566,15 @@ const Dashboard = () => {
     "callingDataQuality",
     user?.role,
   );
+  const canViewLeaderboard = [
+    "sup_admin",
+    "sub_admin",
+    "sr_manager",
+    "manager",
+    "assistant_manager",
+    "team_lead",
+    "agent",
+  ].includes(user?.role);
 
   return (
     <Container>
@@ -643,6 +656,31 @@ const Dashboard = () => {
           </>
         </View>
       </ScrollView>
+      {/* {canViewLeaderboard && ( */}
+      {false && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => navigate("Leaderboard")}
+          style={{
+            position: "absolute",
+            right: 20,
+            bottom: insets.bottom + 84,
+            width: 54,
+            height: 54,
+            borderRadius: 27,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#2E67BE",
+            elevation: 6,
+            shadowColor: "#2E67BE",
+            shadowOpacity: 0.35,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 4 },
+          }}
+        >
+          <Feather name="bar-chart-2" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
     </Container>
   );
 };

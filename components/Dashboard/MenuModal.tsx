@@ -166,20 +166,6 @@ const MenuModal: React.FC<MenuModalProps> = ({
               visible: true,
             },
             {
-              label: "Leaderboard",
-              icon: "bar-chart-2",
-              route: "Leaderboard",
-              visible: [
-                "sup_admin",
-                "sub_admin",
-                "sr_manager",
-                "manager",
-                "assistant_manager",
-                "team_lead",
-                "agent",
-              ].includes(user?.role),
-            },
-            {
               label: "Referrals",
               icon: "user-plus",
               route: "ReferralNavigator",

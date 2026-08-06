@@ -25,6 +25,7 @@ interface TDatePickerExpo {
   maximumDate?: any;
   minimumDate?: any;
   minuteInterval?: number;
+  iosDisplay?: "default" | "spinner" | "compact" | "inline";
 }
 
 const DatePickerExpo = ({
@@ -36,6 +37,7 @@ const DatePickerExpo = ({
   maximumDate,
   minimumDate,
   minuteInterval,
+  iosDisplay = "spinner",
 }: TDatePickerExpo) => {
   const [date, setDate] = useState(new Date());
   const [getDate, setGetDate] = useState(null);
@@ -232,7 +234,7 @@ const DatePickerExpo = ({
             <View style={styles.pickerContainer}>
               <DateTimePicker
                 mode={mode}
-                display="spinner"
+                display={iosDisplay}
                 value={date || new Date()}
                 onChange={(event, selectedDate) => {
                   const current =
@@ -244,6 +246,7 @@ const DatePickerExpo = ({
                 minimumDate={minimumDate}
                 textColor={color.mainTxtColor}
                 accentColor={color.mainTxtColor}
+                themeVariant="light"
                 minuteInterval={minuteInterval}
               />
             </View>
