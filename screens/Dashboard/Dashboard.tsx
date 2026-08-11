@@ -53,6 +53,7 @@ import CallingDataQuality from "../../components/Dashboard/CallingDataQuality";
 import LeadStatusScroller from "../../components/Dashboard/LeadStatusScroller";
 import MeetingStatusScroller from "../../components/Dashboard/MeetingStatusScroller";
 import BookingStatusScroller from "../../components/Dashboard/BookingStatusScroller";
+import FollowUpsCard from "../../components/Dashboard/FollowUpsCard";
 import { myConsole } from "../../hooks/useConsole";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
@@ -600,6 +601,8 @@ const Dashboard = () => {
               <Card item={dashboardCount} loading={loadingDashboardCount} />
             </View>
 
+            <FollowUpsCard onRefresh={refreshing} />
+
             <LeadStatusScroller />
             {canViewMeetings && <MeetingStatusScroller />}
             {canViewBookings && <BookingStatusScroller />}
@@ -657,7 +660,7 @@ const Dashboard = () => {
         </View>
       </ScrollView>
       {/* {canViewLeaderboard && ( */}
-      {false && (
+      {canViewLeaderboard && (
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => navigate("Leaderboard")}

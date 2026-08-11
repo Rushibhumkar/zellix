@@ -34,6 +34,7 @@ import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import { color } from "../../const/color";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
+import QuickStatusSheet from "./component/QuickStatusSheet";
 import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
@@ -67,6 +68,7 @@ const AllLeads = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [statusChangeLoad, setStatusChangeLoad] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [quickActionLead, setQuickActionLead] = useState<any>(null);
 
   const [dashboardFilterStatus, setDashboardFilterStatus] = useState<
     string | null
@@ -523,7 +525,7 @@ const AllLeads = () => {
                 onLongPress={
                   canManageLeadSelection
                     ? () => handleSelect(item?._id)
-                    : undefined
+                    : () => setQuickActionLead(item)
                 }
                 onCallPress={() =>
                   navigation.navigate("LeadsDetails", {
@@ -718,6 +720,13 @@ const AllLeads = () => {
         toggleModal={toggleModalAssignLead}
         setSnackBar={setSnackBar}
         toast={toast}
+      />
+      <QuickStatusSheet
+        visible={!!quickActionLead}
+        leadId={quickActionLead?._id}
+        initialStatus={quickActionLead?.status}
+        selectLeadType={selectLeadType}
+        onClose={() => setQuickActionLead(null)}
       />
       {/* <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
         <View style={{ gap: 20 }}>
