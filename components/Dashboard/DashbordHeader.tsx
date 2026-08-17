@@ -96,24 +96,17 @@ const DashbordHeader = () => {
         >
           {/* Left Side — User Info */}
           <SlideFadeIn style={styles.leftContainer}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                overflow: "hidden",
-              }}
-            >
+            <View style={styles.nameRoleRow}>
               {isLoading ? (
                 <SkeletonView
                   wrapperStyle={{ width: 90, height: 18, borderRadius: 6 }}
                 />
               ) : (
-                <CustomText style={styles.userName}>
+                <CustomText style={styles.userName} numberOfLines={1}>
                   {(() => {
                     const fullName =
                       `${user?.name || ""} ${user?.lastName || ""}`.trim();
-                    return fullName.length <= 8 ? fullName : user?.name || "";
+                    return fullName.length <= 16 ? fullName : user?.name || "";
                   })()}
                 </CustomText>
               )}
@@ -127,11 +120,17 @@ const DashbordHeader = () => {
                   }}
                 />
               ) : user?.role === "sup_admin" ? (
-                <CustomText style={styles.userRole}>Super Admin</CustomText>
+                <CustomText style={styles.userRole} numberOfLines={1}>
+                  Super Admin
+                </CustomText>
               ) : user?.role === "sub_admin" ? (
-                <CustomText style={styles.userRole}>Sub Admin</CustomText>
+                <CustomText style={styles.userRole} numberOfLines={1}>
+                  Sub Admin
+                </CustomText>
               ) : user?.role === "admin" ? (
-                <CustomText style={styles.userRole}>Admin</CustomText>
+                <CustomText style={styles.userRole} numberOfLines={1}>
+                  Admin
+                </CustomText>
               ) : null}
             </View>
             {/* USER EMAIL */}
@@ -145,7 +144,7 @@ const DashbordHeader = () => {
                 }}
               />
             ) : (
-              <CustomText style={styles.userEmail}>
+              <CustomText style={styles.userEmail} numberOfLines={1}>
                 {user?.email || ""}
               </CustomText>
             )}
@@ -154,9 +153,6 @@ const DashbordHeader = () => {
           {/* Right Side — Icons */}
           <SlideFadeIn from={-10}>
             <View style={styles.iconWrapper}>
-              {/* <Pressable onPress={() => null} style={styles.iconBtn}>
-                <Feather name="search" size={18} color="#fff" />
-              </Pressable> */}
               {user?.name && (
                 <TouchableOpacity
                   onPress={() => navigate("ProfileScreen")}
@@ -221,14 +217,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 14,
     paddingTop: Platform.OS === "ios" ? 2 : 8,
+    gap: 10,
   },
   leftContainer: {
     flex: 1,
+    minWidth: 0,
+  },
+  nameRoleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   userName: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+    flexShrink: 1,
   },
   userRole: {
     color: "rgba(235, 243, 255, 0.9)",
@@ -238,6 +242,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
+    flexShrink: 0,
   },
   userEmail: {
     color: "#E0E8FF",
@@ -247,7 +252,8 @@ const styles = StyleSheet.create({
   iconWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
+    flexShrink: 0,
   },
   iconBtn: {
     position: "relative",

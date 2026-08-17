@@ -94,6 +94,7 @@ import RsvpInfocus from "../assets/svg/RsvpInfocus";
 import { navigationRef } from "./navigationRef";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
 import Reminders from "../screens/Auth/Reminders";
+import UnifiedSearch from "../screens/Search/UnifiedSearch";
 import ReportsListing from "../screens/Reports/ReportsListing";
 import ReportsFilter from "../screens/Reports/ReportsFilter";
 import { Feather } from "@expo/vector-icons";
@@ -689,6 +690,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="Reminders"
           component={Reminders}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="UnifiedSearch"
+          component={UnifiedSearch}
           options={{ headerShown: false }}
         />
         <Stack.Screen

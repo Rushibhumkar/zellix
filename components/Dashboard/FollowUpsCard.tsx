@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import {
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -14,43 +15,6 @@ import { shadowPrimaryColor } from "../../const/globalStyle";
 import { useGetAllReminders } from "../../services/rootApi/remaindersApi";
 import { statusObj } from "../../utils/data";
 import { truncateText } from "../../utils/commonFunctions";
-
-// TEMPORARY: no real reminders exist yet to test against — remove once real data is available.
-const DUMMY_FOLLOW_UPS = [
-  {
-    _id: "dummy-1",
-    reminderTime: moment().hour(11).minute(30).toISOString(),
-    leadId: {
-      _id: "dummy-lead-1",
-      clientName: "Rohan Mehta",
-      name: "Rohan Mehta",
-      status: "call_back",
-      type: "lead",
-    },
-  },
-  {
-    _id: "dummy-2",
-    reminderTime: moment().hour(14).minute(0).toISOString(),
-    leadId: {
-      _id: "dummy-lead-2",
-      clientName: "Priya Sharma",
-      name: "Priya Sharma",
-      status: "followUp_required",
-      type: "lead",
-    },
-  },
-  {
-    _id: "dummy-3",
-    reminderTime: moment().subtract(2, "hours").toISOString(),
-    leadId: {
-      _id: "dummy-lead-3",
-      clientName: "Amit Verma",
-      name: "Amit Verma",
-      status: "no_response",
-      type: "calling_data",
-    },
-  },
-];
 
 const FollowUpsCard = ({ onRefresh }: any) => {
   const navigation = useNavigation();
@@ -68,7 +32,7 @@ const FollowUpsCard = ({ onRefresh }: any) => {
 
   const reminders = data?.pages?.flatMap((page: any) => page?.data || []) || [];
 
-  const fetchedDueToday = reminders
+  const dueTodayReminders = reminders
     .filter((item: any) =>
       moment(item?.reminderTime).isSameOrBefore(moment().endOf("day")),
     )
@@ -77,16 +41,9 @@ const FollowUpsCard = ({ onRefresh }: any) => {
         moment(a?.reminderTime).valueOf() - moment(b?.reminderTime).valueOf(),
     );
 
-  // TEMPORARY: fall back to dummy data when there are no real follow-ups yet — remove alongside DUMMY_FOLLOW_UPS above.
-  const dueTodayReminders =
-    !isLoading && fetchedDueToday.length === 0
-      ? DUMMY_FOLLOW_UPS
-      : fetchedDueToday;
-
-  const visibleReminders = dueTodayReminders.slice(0, 5);
+  const visibleReminders = dueTodayReminders.slice(0, 3);
 
   const handlePressReminder = (item: any) => {
-    if (item?._id?.startsWith?.("dummy-")) return;
     if (!item?.leadId?._id) return;
     navigation.navigate("allLead2", {
       screen: "LeadsDetails",
@@ -97,6 +54,11 @@ const FollowUpsCard = ({ onRefresh }: any) => {
       },
     });
   };
+
+  // Nothing due today — don't take up dashboard space at all.
+  if (!isLoading && dueTodayReminders.length === 0) {
+    return null;
+  }
 
   return (
     <View style={styles.cardWrapper}>
@@ -112,7 +74,9 @@ const FollowUpsCard = ({ onRefresh }: any) => {
           )}
         </View>
 
-        <TouchableOpacity onPress={() => navigation.navigate("Reminders" as never)}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Reminders" as never)}
+        >
           <CustomText style={styles.viewAllText}>View All</CustomText>
         </TouchableOpacity>
       </View>
@@ -123,28 +87,28 @@ const FollowUpsCard = ({ onRefresh }: any) => {
           color={color.mainTxtColor}
           style={{ marginVertical: 20 }}
         />
-      ) : visibleReminders.length === 0 ? (
-        <CustomText style={styles.emptyText}>
-          No follow-ups due today
-        </CustomText>
       ) : (
-        visibleReminders.map((item: any) => (
-          <TouchableOpacity
-            key={item?._id}
-            style={styles.row}
-            activeOpacity={0.7}
-            onPress={() => handlePressReminder(item)}
-          >
-            <View style={styles.rowLeft}>
-              <CustomText style={styles.time}>
-                {moment(item?.reminderTime).format("hh:mm A")}
-              </CustomText>
-              <CustomText style={styles.date}>
-                {moment(item?.reminderTime).format("DD MMM")}
-              </CustomText>
-            </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 6 }}
+        >
+          {visibleReminders.map((item: any) => (
+            <TouchableOpacity
+              key={item?._id}
+              style={styles.hCard}
+              activeOpacity={0.7}
+              onPress={() => handlePressReminder(item)}
+            >
+              <View style={styles.hCardTopRow}>
+                <CustomText style={styles.time}>
+                  {moment(item?.reminderTime).format("hh:mm A")}
+                </CustomText>
+                <CustomText style={styles.date}>
+                  {moment(item?.reminderTime).format("DD MMM")}
+                </CustomText>
+              </View>
 
-            <View style={styles.rowRight}>
               <CustomText style={styles.name} numberOfLines={1}>
                 {item?.leadId?.clientName || "N/A"}
               </CustomText>
@@ -173,9 +137,9 @@ const FollowUpsCard = ({ onRefresh }: any) => {
                   </View>
                 )}
               </View>
-            </View>
-          </TouchableOpacity>
-        ))
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       )}
     </View>
   );
@@ -189,7 +153,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 18,
     marginHorizontal: 16,
-    marginTop: 16,
     marginBottom: 12,
     ...shadowPrimaryColor,
     borderLeftWidth: 4,
@@ -230,23 +193,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: color.mainTxtColor,
   },
-  emptyText: {
-    fontSize: 13,
-    color: "#94A3B8",
-    textAlign: "center",
-    marginVertical: 16,
-  },
-  row: {
-    flexDirection: "row",
+  hCard: {
+    width: 210,
     backgroundColor: "#F9FAFB",
     borderRadius: 14,
-    padding: 10,
-    marginBottom: 8,
+    padding: 12,
+    marginRight: 10,
   },
-  rowLeft: {
-    width: 70,
+  hCardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 8,
   },
   time: {
     fontWeight: "700",
@@ -256,17 +214,12 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 11,
     color: "#6B7280",
-    marginTop: 2,
-  },
-  rowRight: {
-    flex: 1,
-    paddingLeft: 8,
-    justifyContent: "center",
   },
   name: {
     fontSize: 14,
     fontWeight: "700",
     color: color.mainTxtColor,
+    marginBottom: 6,
   },
   rowRightBottom: {
     flexDirection: "row",

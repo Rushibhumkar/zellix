@@ -587,7 +587,7 @@ const Dashboard = () => {
         }
         contentContainerStyle={{ paddingBottom: 80 }}
       >
-        <View style={{ paddingBottom: 100 }}>
+        <View style={{ paddingBottom: 160 }}>
           <>
             <View
               style={{
@@ -659,6 +659,28 @@ const Dashboard = () => {
           </>
         </View>
       </ScrollView>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => navigate("UnifiedSearch")}
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: insets.bottom + 152,
+          width: 54,
+          height: 54,
+          borderRadius: 27,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#2E67BE",
+          elevation: 6,
+          shadowColor: "#2E67BE",
+          shadowOpacity: 0.35,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+        }}
+      >
+        <Feather name="search" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
       {/* {canViewLeaderboard && ( */}
       {canViewLeaderboard && (
         <TouchableOpacity
