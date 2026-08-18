@@ -39,6 +39,7 @@ interface TTitleWithAddDelete {
   showAddBtn?: any;
   onPressToNavigate: () => void;
   onPressToDelete?: () => void;
+  onPressToPin?: () => void;
   title: string;
   onPressToEdit: () => void;
   onPressToAssignLead: () => void;
@@ -60,6 +61,7 @@ const TitleWithAddDelete = ({
   showAddBtn = true,
   onPressToNavigate,
   onPressToDelete,
+  onPressToPin,
   onPressToEdit,
   onPressToAssignLead,
   onPressToFilter,
@@ -302,6 +304,24 @@ const TitleWithAddDelete = ({
                 onPress={!!onPressToDelete ? onPressToDelete : undefined}
               >
                 <MaterialIcons name="delete-outline" size={20} color={"#fff"} />
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onPressToPin && (
+              <AnimatedTouchableOpacity
+                entering={
+                  isWithAnimation
+                    ? BounceIn.duration(400).delay(175)
+                    : undefined
+                }
+                exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
+                style={{
+                  ...iconWrapperStyle,
+                  padding: 6,
+                }}
+                onPress={onPressToPin}
+              >
+                <Feather name="bookmark" size={20} color="#fff" />
               </AnimatedTouchableOpacity>
             )}
 

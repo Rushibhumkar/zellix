@@ -35,10 +35,13 @@ import { color } from "../../const/color";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
 import QuickStatusSheet from "./component/QuickStatusSheet";
+import PinnedRow from "../../components/Pinned/PinnedRow";
+import usePinnedItems from "../../hooks/usePinnedItems";
 import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
+import { PINNED_LIMIT } from "../../utils/pinnedItemsStorage";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
 import { checkPermission, getTimeAgo } from "../../utils/commonFunctions";
@@ -65,6 +68,7 @@ let bgByStatus = {
 const AllLeads = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
+  const { pinnedItems, isPinned, togglePin, unpin } = usePinnedItems("lead");
   const [showSearch, setShowSearch] = useState(false);
   const [statusChangeLoad, setStatusChangeLoad] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -305,6 +309,39 @@ const AllLeads = () => {
   const canManageLeadSelection =
     !isAgent && (canAssignLead || canDeleteLead);
 
+  const handlePinResult = (res: any) => {
+    if (res.ok) {
+      toast.success(res.action === "pinned" ? "Lead pinned" : "Lead unpinned");
+    } else if (res.reason === "limit") {
+      toast.error(
+        `You can pin up to ${PINNED_LIMIT} leads only. Unpin one first.`,
+      );
+    }
+  };
+
+  const handleTogglePinSelectedLead = async () => {
+    const leadId = selected?.[0];
+    const lead = filteredLeadData?.find((l: any) => l?._id === leadId);
+    if (!lead) return;
+    const res = await togglePin({
+      id: lead._id,
+      title: lead?.clientName || "Lead",
+      subtitle: statusObj[lead?.status] || lead?.status,
+    });
+    handlePinResult(res);
+    setSelected([]);
+  };
+
+  const handleToggleQuickActionPin = async () => {
+    if (!quickActionLead) return;
+    const res = await togglePin({
+      id: quickActionLead._id,
+      title: quickActionLead?.clientName || "Lead",
+      subtitle: statusObj[quickActionLead?.status] || quickActionLead?.status,
+    });
+    handlePinResult(res);
+  };
+
   const handleTab = (tab: any) => {
     setSelectLeadType(tab);
   };
@@ -484,6 +521,11 @@ const AllLeads = () => {
                   ? () => toggleModalAssignLead()
                   : false
               }
+              onPressToPin={
+                selected?.length === 1
+                  ? handleTogglePinSelectedLead
+                  : undefined
+              }
             />
           )}
 
@@ -603,6 +645,17 @@ const AllLeads = () => {
                     </CustomText>
                   </TouchableOpacity>
                 </View>
+
+                <PinnedRow
+                  items={pinnedItems}
+                  onPressItem={(id) =>
+                    navigation.navigate("LeadsDetails", {
+                      item: { _id: id },
+                      selectLeadType,
+                    })
+                  }
+                  onUnpin={(id) => unpin(id)}
+                />
                 {/* <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -727,6 +780,8 @@ const AllLeads = () => {
         initialStatus={quickActionLead?.status}
         selectLeadType={selectLeadType}
         onClose={() => setQuickActionLead(null)}
+        isPinned={quickActionLead ? isPinned(quickActionLead._id) : false}
+        onTogglePin={handleToggleQuickActionPin}
       />
       {/* <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
         <View style={{ gap: 20 }}>

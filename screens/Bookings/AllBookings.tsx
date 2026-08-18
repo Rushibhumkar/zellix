@@ -37,6 +37,10 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { sizes } from "../../const";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { useAppToast } from "../../components/AppToast";
+import PinnedRow from "../../components/Pinned/PinnedRow";
+import usePinnedItems from "../../hooks/usePinnedItems";
+import { PINNED_LIMIT } from "../../utils/pinnedItemsStorage";
 
 let bookingStatus = [
   { value: "", label: "All" },
@@ -51,6 +55,8 @@ const AllBookings = () => {
   const { navigate } = useNavigation();
   const { user, bookingQueryKey } = useSelector(selectUser);
   const dispatch = useDispatch();
+  const toast = useAppToast();
+  const { pinnedItems, isPinned, togglePin, unpin } = usePinnedItems("booking");
   const [searchValue, setSearchValue] = useState("");
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
@@ -92,6 +98,31 @@ const AllBookings = () => {
       temp.push(id);
     }
     setSelectedBookings(temp);
+  };
+
+  const handlePinResult = (res: any) => {
+    if (res.ok) {
+      toast.success(
+        res.action === "pinned" ? "Booking pinned" : "Booking unpinned",
+      );
+    } else if (res.reason === "limit") {
+      toast.error(
+        `You can pin up to ${PINNED_LIMIT} bookings only. Unpin one first.`,
+      );
+    }
+  };
+
+  const handleTogglePinSelectedBooking = async () => {
+    const bookingId = selectedBookings?.[0];
+    const booking = bookingData?.find((b: any) => b?._id === bookingId);
+    if (!booking) return;
+    const res = await togglePin({
+      id: booking._id,
+      title: booking?.projectName || "Booking",
+      subtitle: booking?.lead?.clientName || "",
+    });
+    handlePinResult(res);
+    setSelectedBookings([]);
   };
 
   const handleDeleteBooking = async () => {
@@ -282,6 +313,11 @@ const AllBookings = () => {
                 ? toggleModal
                 : undefined
             }
+            onPressToPin={
+              selectedBookings?.length === 1
+                ? handleTogglePinSelectedBooking
+                : undefined
+            }
             // onPressToFilter={() =>
             //   navigate("AdvanceSearch", { type: "booking" })
             // }
@@ -315,11 +351,7 @@ const AllBookings = () => {
                         })
                     : handleSelect(item?._id)
                 }
-                onLongPress={
-                  user?.role === roleEnum?.sup_admin
-                    ? () => handleSelect(item?._id)
-                    : undefined
-                }
+                onLongPress={() => handleSelect(item?._id)}
                 selected={selectedBookings.indexOf(item?._id) !== -1}
               />
             );
@@ -346,6 +378,20 @@ const AllBookings = () => {
                   autoFocus={focusSearch}
                 />
               </Animated.View>
+
+              <PinnedRow
+                items={pinnedItems}
+                onPressItem={(id) =>
+                  canViewBookingDetail
+                    ? navigate("BookingDetail", { item: { _id: id } })
+                    : setSnackBar({
+                        visible: true,
+                        text: "You are not authorized to view booking details.",
+                        error: true,
+                      })
+                }
+                onUnpin={(id) => unpin(id)}
+              />
               {/* <BookingListHeading /> */}
             </>
           }

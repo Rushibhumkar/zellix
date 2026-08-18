@@ -34,6 +34,10 @@ import CustomText from "../../myComponents/CustomText/CustomText";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather } from "@expo/vector-icons";
 import { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { useAppToast } from "../../components/AppToast";
+import PinnedRow from "../../components/Pinned/PinnedRow";
+import usePinnedItems from "../../hooks/usePinnedItems";
+import { PINNED_LIMIT } from "../../utils/pinnedItemsStorage";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -45,6 +49,8 @@ const AllMeetings = () => {
   const queryClient = useQueryClient();
   const { navigate } = useNavigation();
   // const isFocused = useIsFocused();
+  const toast = useAppToast();
+  const { pinnedItems, isPinned, togglePin, unpin } = usePinnedItems("meeting");
 
   const { user, meetingQueryKey } = useSelector(selectUser);
 
@@ -92,6 +98,34 @@ const AllMeetings = () => {
       temp.push(id);
     }
     setSelected(temp);
+  };
+
+  const handlePinResult = (res: any) => {
+    if (res.ok) {
+      toast.success(
+        res.action === "pinned" ? "Meeting pinned" : "Meeting unpinned",
+      );
+    } else if (res.reason === "limit") {
+      toast.error(
+        `You can pin up to ${PINNED_LIMIT} meetings only. Unpin one first.`,
+      );
+    }
+  };
+
+  const handleTogglePinSelectedMeeting = async () => {
+    const meetingId = selected?.[0];
+    const meeting = meetingData?.find((m: any) => m?._id === meetingId);
+    if (!meeting) return;
+    const latestMeeting = meeting?.meetings?.[meeting?.meetings?.length - 1];
+    const res = await togglePin({
+      id: meeting._id,
+      title: meeting?.lead?.clientName || "Meeting",
+      subtitle: latestMeeting?.scheduleDate
+        ? moment(latestMeeting.scheduleDate).format("DD MMM, hh:mm A")
+        : "",
+    });
+    handlePinResult(res);
+    setSelected([]);
   };
 
   const handleDeleteMeeting = async () => {
@@ -234,6 +268,11 @@ const AllMeetings = () => {
               onPressToDelete={
                 user?.role === roleEnum?.sup_admin ? toggleModal : false
               }
+              onPressToPin={
+                selected?.length === 1
+                  ? handleTogglePinSelectedMeeting
+                  : undefined
+              }
               // onPressToFilter={() =>
               //   navigate("AdvanceSearch", { type: "meeting" })
               // }
@@ -261,11 +300,7 @@ const AllMeetings = () => {
                       : navigate("MeetingDetails", { item })
                   }
                   selected={selected.indexOf(item?._id) !== -1}
-                  onLongPress={
-                    user?.role === roleEnum?.sup_admin
-                      ? () => handleSelect(item?._id)
-                      : undefined
-                  }
+                  onLongPress={() => handleSelect(item?._id)}
                   bgColor={bgByStatus[status]}
                 />
               );
@@ -295,6 +330,14 @@ const AllMeetings = () => {
                     />
                   </Animated.View>
                 )}
+
+                <PinnedRow
+                  items={pinnedItems}
+                  onPressItem={(id) =>
+                    navigate("MeetingDetails", { item: { _id: id } })
+                  }
+                  onUnpin={(id) => unpin(id)}
+                />
 
                 {/* <MeetingListHeading /> */}
               </>

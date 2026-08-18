@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import moment from "moment";
 import { useQueryClient } from "@tanstack/react-query";
 import ModalWithBlur from "../../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
@@ -27,6 +28,8 @@ interface TQuickStatusSheet {
   initialStatus?: string;
   selectLeadType: string;
   onClose: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
 }
 
 const filteredLeadStatus = inLeadStatus
@@ -69,6 +72,8 @@ const QuickStatusSheet = ({
   initialStatus,
   selectLeadType,
   onClose,
+  isPinned,
+  onTogglePin,
 }: TQuickStatusSheet) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
@@ -147,11 +152,33 @@ const QuickStatusSheet = ({
   return (
     <ModalWithBlur visible={visible} onClose={handleClose} minHeight="55%">
       <View style={{ paddingBottom: 10 }}>
-        <CustomText
-          style={{ fontSize: 18, fontWeight: "600", color: color.mainTxtColor }}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          Change Status
-        </CustomText>
+          <CustomText
+            style={{ fontSize: 18, fontWeight: "600", color: color.mainTxtColor }}
+          >
+            Change Status
+          </CustomText>
+
+          {!!onTogglePin && (
+            <TouchableOpacity
+              onPress={onTogglePin}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={{ padding: 4 }}
+            >
+              <Feather
+                name="bookmark"
+                size={20}
+                color={isPinned ? "#F2A93B" : color.borderColor}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
 
         <View style={{ marginTop: 16 }}>
           <DropdownRNE
