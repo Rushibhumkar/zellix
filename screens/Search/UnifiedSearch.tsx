@@ -67,11 +67,20 @@ const UnifiedSearch = () => {
   const results = activeResult?.data || [];
   const isLoading = activeResult?.isLoading || activeResult?.isFetching;
 
+  // `initial: false` on each of these keeps the target nested stack's own
+  // list screen underneath the detail screen. Without it, navigating into a
+  // not-yet-visited nested navigator with a specific `screen` makes that
+  // screen the stack's ONLY entry — so the back button has nothing to pop
+  // to within that stack and instead pops back out to this Search screen,
+  // and the module's tab is later left showing the stale detail screen
+  // instead of its list. This makes the resulting stack identical to what
+  // normally navigating list -> detail within that module produces.
   const handlePressLead = (item: any) => {
     if (!item?._id) return;
     navigation.navigate("allLead2", {
       screen: "LeadsDetails",
       params: { item: { _id: item._id } },
+      initial: false,
     });
   };
 
@@ -80,6 +89,7 @@ const UnifiedSearch = () => {
     navigation.navigate("MeetingsNavigator", {
       screen: "MeetingDetails",
       params: { item: { _id: item._id } },
+      initial: false,
     });
   };
 
@@ -88,6 +98,7 @@ const UnifiedSearch = () => {
     navigation.navigate("BookingNavigator", {
       screen: "BookingDetail",
       params: { item: { _id: item._id } },
+      initial: false,
     });
   };
 
