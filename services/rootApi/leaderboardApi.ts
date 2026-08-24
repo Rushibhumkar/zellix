@@ -8,6 +8,7 @@ export interface LeaderboardFilters {
   role: string;
   startDate?: string;
   endDate?: string;
+  teamId?: string;
 }
 
 export const getLeaderboard = async (filters: LeaderboardFilters) => {
@@ -29,6 +30,7 @@ export const useGetLeaderboard = (filters: LeaderboardFilters) =>
       filters.role,
       filters.startDate || "",
       filters.endDate || "",
+      filters.teamId || "",
     ],
     queryFn: () => getLeaderboard(filters),
     enabled:

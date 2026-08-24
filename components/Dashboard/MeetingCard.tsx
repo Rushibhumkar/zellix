@@ -6,7 +6,7 @@ import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
-const MeetingCard = ({ item, isLoading }) => {
+const MeetingCard = ({ item, isLoading }: any) => {
   const [meetingCount, setMeetingCount] = useState({
     schedule: 0,
     conducted: 0,
@@ -20,13 +20,13 @@ const MeetingCard = ({ item, isLoading }) => {
       reschedule: 0,
     };
     temp.schedule = item?.[interval]?.data?.find(
-      (el) => el.status === "schedule"
+      (el) => el.status === "schedule",
     )?.fraction;
     temp.conducted = item?.[interval]?.data?.find(
-      (el) => el.status === "conducted"
+      (el) => el.status === "conducted",
     )?.fraction;
     temp.reschedule = item?.[interval]?.data?.find(
-      (el) => el.status === "reschedule"
+      (el) => el.status === "reschedule",
     )?.fraction;
     setMeetingCount(temp);
   };
@@ -39,13 +39,13 @@ const MeetingCard = ({ item, isLoading }) => {
         reschedule: 0,
       };
       temp.schedule = item?.["weekly"]?.data?.find(
-        (el) => el.status === "schedule"
+        (el) => el.status === "schedule",
       )?.fraction;
       temp.conducted = item?.["weekly"]?.data?.find(
-        (el) => el.status === "conducted"
+        (el) => el.status === "conducted",
       )?.fraction;
       temp.reschedule = item?.["weekly"]?.data?.find(
-        (el) => el.status === "reschedule"
+        (el) => el.status === "reschedule",
       )?.fraction;
       setMeetingCount(temp);
     }

@@ -24,7 +24,6 @@ import {
   onLogOutEmpty,
 } from "../../redux/action";
 import { selectUser, setUserInfo } from "../../redux/userSlice";
-import BookingCard from "../../components/Dashboard/BookingCard";
 import MeetingCard from "../../components/Dashboard/MeetingCard";
 import io from "socket.io-client";
 import CommissionGraph from "../../components/Dashboard/CommissionGraph";
@@ -55,6 +54,7 @@ import MeetingStatusScroller from "../../components/Dashboard/MeetingStatusScrol
 import BookingStatusScroller from "../../components/Dashboard/BookingStatusScroller";
 import FollowUpsCard from "../../components/Dashboard/FollowUpsCard";
 import { myConsole } from "../../hooks/useConsole";
+import BookingCard from "../../components/Dashboard/BookingCard";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export const socket = io(baseURL, {

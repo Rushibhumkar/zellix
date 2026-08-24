@@ -40,6 +40,7 @@ interface TTitleWithAddDelete {
   onPressToNavigate: () => void;
   onPressToDelete?: () => void;
   onPressToPin?: () => void;
+  isPinned?: boolean;
   title: string;
   onPressToEdit: () => void;
   onPressToAssignLead: () => void;
@@ -62,6 +63,7 @@ const TitleWithAddDelete = ({
   onPressToNavigate,
   onPressToDelete,
   onPressToPin,
+  isPinned,
   onPressToEdit,
   onPressToAssignLead,
   onPressToFilter,
@@ -321,7 +323,11 @@ const TitleWithAddDelete = ({
                 }}
                 onPress={onPressToPin}
               >
-                <Feather name="bookmark" size={20} color="#fff" />
+                <MaterialIcons
+                  name={isPinned ? "bookmark" : "bookmark-border"}
+                  size={20}
+                  color={isPinned ? "#F2A93B" : "#fff"}
+                />
               </AnimatedTouchableOpacity>
             )}
 

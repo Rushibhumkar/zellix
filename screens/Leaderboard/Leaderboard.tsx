@@ -9,11 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { color } from "../../const/color";
 import Container from "../../myComponents/Container/Container";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
+import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
+import { selectUser } from "../../redux/userSlice";
+import { roleEnum } from "../../utils/data";
 import {
   LeaderboardPeriod,
   useGetLeaderboard,
@@ -89,17 +93,78 @@ const Avatar = ({ entry, size = 48 }: { entry: Entry; size?: number }) => (
   </View>
 );
 
+// Hierarchy tier — higher number = higher up. A non-admin can only see
+// leaderboard tiers at or below their own level (e.g. a team_lead must not
+// see the Managers chip at all).
+const ROLE_TIER: Record<string, number> = {
+  sr_manager: 3,
+  manager: 3,
+  assistant_manager: 3,
+  team_lead: 2,
+  agent: 1,
+};
+
+const getVisibleRoleChips = (userRole?: string) => {
+  if (userRole === roleEnum.sup_admin || userRole === roleEnum.sub_admin) {
+    return roles;
+  }
+  const requesterTier = ROLE_TIER[userRole || ""] || 0;
+  return roles.filter((item) => {
+    const chipTier = Math.max(
+      ...item.value.split(",").map((r) => ROLE_TIER[r] || 0),
+    );
+    return chipTier <= requesterTier;
+  });
+};
+
+const defaultRoleForUser = (userRole?: string) => {
+  if (userRole === roleEnum.agent) return "agent";
+  if (userRole === roleEnum.team_lead) return "team_lead";
+  if (
+    userRole === roleEnum.manager ||
+    userRole === roleEnum.assistant_manager ||
+    userRole === roleEnum.sr_manager
+  ) {
+    return "sr_manager,manager,assistant_manager";
+  }
+  return "agent";
+};
+
 const Leaderboard = () => {
+  const { user, team } = useSelector(selectUser);
   const [period, setPeriod] = useState<LeaderboardPeriod>("week");
-  const [role, setRole] = useState("agent");
+  const [role, setRole] = useState(() => defaultRoleForUser(user?.role));
+  const [teamId, setTeamId] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+
+  const isAdminUser =
+    user?.role === roleEnum.sup_admin || user?.role === roleEnum.sub_admin;
+  const visibleRoles = getVisibleRoleChips(user?.role);
+
+  // `team` from redux is already scoped server-side to teams the logged-in
+  // user is actually part of (as srManager/manager/assistantManager/
+  // teamLead/agent) — so for a non-admin it IS "my team(s)".
+  const myTeamIds = (team || [])
+    .map((el: any) => el?._id)
+    .filter(Boolean);
+
+  const scopeOptions = [
+    { name: "Overall", _id: "" },
+    { name: "My Team", _id: myTeamIds.join(",") },
+  ];
+
+  const teamOptions = (team || []).map((el: any) => ({
+    name: el?.name,
+    _id: el?._id,
+  }));
 
   const filters = useMemo(
     () => ({
       period,
       role,
+      ...(teamId ? { teamId } : {}),
       ...(period === "custom" && startDate && endDate
         ? {
             startDate: startDate.toISOString(),
@@ -107,7 +172,7 @@ const Leaderboard = () => {
           }
         : {}),
     }),
-    [period, role, startDate, endDate],
+    [period, role, teamId, startDate, endDate],
   );
 
   const customRangeIncomplete = period === "custom" && (!startDate || !endDate);
@@ -191,7 +256,7 @@ const Leaderboard = () => {
 
         <CustomText style={styles.sectionLabel}>Show rankings for</CustomText>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          {roles.map((item) => (
+          {visibleRoles.map((item) => (
             <TouchableOpacity
               key={item.value}
               onPress={() => setRole(item.value)}
@@ -203,6 +268,39 @@ const Leaderboard = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+
+        {!isAdminUser && myTeamIds.length > 0 && (
+          <>
+            <CustomText style={styles.sectionLabel}>Scope</CustomText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+              {scopeOptions.map((item) => (
+                <TouchableOpacity
+                  key={item._id}
+                  onPress={() => setTeamId(item._id)}
+                  style={[styles.chip, teamId === item._id && styles.chipActive]}
+                >
+                  <CustomText style={[styles.chipText, teamId === item._id && styles.chipTextActive]}>
+                    {item.name}
+                  </CustomText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </>
+        )}
+
+        {isAdminUser && teamOptions.length > 0 && (
+          <>
+            <CustomText style={styles.sectionLabel}>Team</CustomText>
+            <DropdownRNE
+              label="All teams"
+              arrOfObj={teamOptions}
+              initialValue={teamId}
+              onChange={(v: any) => setTeamId(v)}
+              isSearch
+              mode="modal"
+            />
+          </>
+        )}
 
         {customRangeIncomplete ? (
           <View style={styles.messageCard}>

@@ -90,6 +90,15 @@ const AllBookings = () => {
   });
 
   const handleSelect = (id) => {
+    if (selectedBookings.length === 0) {
+      // Entering selection mode via long-press deep in the list — the action
+      // bar (delete/pin) only renders when showHeaderActions is false, so
+      // force it visible immediately without moving the list (the onScroll
+      // handler below keeps it visible for the rest of the selection, so
+      // no scroll-to-top is needed here).
+      setShowHeaderActions(false);
+    }
+
     let temp = [...selectedBookings];
     let index = temp.indexOf(id);
     if (index !== -1) {
@@ -318,6 +327,11 @@ const AllBookings = () => {
                 ? handleTogglePinSelectedBooking
                 : undefined
             }
+            isPinned={
+              selectedBookings?.length === 1
+                ? isPinned(selectedBookings[0])
+                : false
+            }
             // onPressToFilter={() =>
             //   navigate("AdvanceSearch", { type: "booking" })
             // }
@@ -418,6 +432,10 @@ const AllBookings = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           onScroll={(e) => {
+            // Don't let scroll auto-hide the action bar while a selection
+            // is active — it needs to stay reachable (pin/delete) no
+            // matter how far down the list the user has scrolled.
+            if (selectedBookings.length > 0) return;
             const offsetY = e.nativeEvent.contentOffset.y;
             const show = offsetY > 180;
             if (show !== showHeaderActions) {

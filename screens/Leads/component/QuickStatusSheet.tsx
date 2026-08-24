@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
 import { useQueryClient } from "@tanstack/react-query";
 import ModalWithBlur from "../../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
@@ -171,8 +171,8 @@ const QuickStatusSheet = ({
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={{ padding: 4 }}
             >
-              <Feather
-                name="bookmark"
+              <MaterialIcons
+                name={isPinned ? "bookmark" : "bookmark-border"}
                 size={20}
                 color={isPinned ? "#F2A93B" : color.borderColor}
               />

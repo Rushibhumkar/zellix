@@ -115,18 +115,23 @@ const FollowUpsCard = ({ onRefresh }: any) => {
 
               <View style={styles.rowRightBottom}>
                 {item?.leadId?.name && (
-                  <View style={styles.pill}>
+                  <View style={[styles.pill, { maxWidth: "52%" }]}>
                     <Feather name="user" size={11} color="#7A869A" />
                     <CustomText style={styles.pillText}>
-                      {truncateText(item?.leadId?.name || "-", 16)}
+                      {truncateText(item?.leadId?.name || "-", 10)}
                     </CustomText>
                   </View>
                 )}
 
                 {item?.leadId?.status && (
-                  <View style={[styles.pill, { backgroundColor: "#c8e9c7" }]}>
+                  <View
+                    style={[
+                      styles.pill,
+                      { backgroundColor: "#c8e9c7", maxWidth: "52%" },
+                    ]}
+                  >
                     <Feather name="tag" size={11} color="#7a9a8c" />
-                    <CustomText style={styles.pillText}>
+                    <CustomText style={styles.pillText} numberOfLines={1}>
                       {truncateText(
                         statusObj[item?.leadId?.status] ||
                           item?.leadId?.status ||

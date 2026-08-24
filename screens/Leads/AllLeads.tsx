@@ -147,6 +147,15 @@ const AllLeads = () => {
   const handleSelect = (id) => {
     if (!id) return;
 
+    if (selected.length === 0) {
+      // Entering selection mode via long-press deep in the list — the action
+      // bar (assign/delete/pin) only renders when showHeaderActions is
+      // false, so force it visible immediately without moving the list
+      // (the onScroll handler below keeps it visible for the rest of the
+      // selection, so no scroll-to-top is needed here).
+      setShowHeaderActions(false);
+    }
+
     setSelected((previousSelected) =>
       previousSelected.includes(id)
         ? previousSelected.filter((selectedId) => selectedId !== id)
@@ -306,8 +315,7 @@ const AllLeads = () => {
   // const isAgent = true;
   const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
 
-  const canManageLeadSelection =
-    !isAgent && (canAssignLead || canDeleteLead);
+  const canManageLeadSelection = !isAgent && (canAssignLead || canDeleteLead);
 
   const handlePinResult = (res: any) => {
     if (res.ok) {
@@ -522,10 +530,9 @@ const AllLeads = () => {
                   : false
               }
               onPressToPin={
-                selected?.length === 1
-                  ? handleTogglePinSelectedLead
-                  : undefined
+                selected?.length === 1 ? handleTogglePinSelectedLead : undefined
               }
+              isPinned={selected?.length === 1 ? isPinned(selected[0]) : false}
             />
           )}
 
@@ -588,7 +595,7 @@ const AllLeads = () => {
             keyExtractor={(item) => item?._id}
             showsVerticalScrollIndicator={true}
             contentContainerStyle={{
-              paddingBottom: 100,
+              paddingBottom: 280,
             }}
             ListHeaderComponent={
               <View>
@@ -738,6 +745,10 @@ const AllLeads = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             onScroll={(e) => {
+              // Don't let scroll auto-hide the action bar while a selection
+              // is active — it needs to stay reachable (pin/delete/assign)
+              // no matter how far down the list the user has scrolled.
+              if (selected.length > 0) return;
               const offsetY = e.nativeEvent.contentOffset.y;
               const show = offsetY > 180;
               if (show !== showHeaderActions) {

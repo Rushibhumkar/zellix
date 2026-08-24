@@ -90,6 +90,15 @@ const AllMeetings = () => {
   });
 
   const handleSelect = (id) => {
+    if (selected.length === 0) {
+      // Entering selection mode via long-press deep in the list — the action
+      // bar (delete/pin) only renders when showHeaderActions is false, so
+      // force it visible immediately without moving the list (the onScroll
+      // handler below keeps it visible for the rest of the selection, so
+      // no scroll-to-top is needed here).
+      setShowHeaderActions(false);
+    }
+
     let temp = [...selected];
     let index = temp.indexOf(id);
     if (index !== -1) {
@@ -273,6 +282,7 @@ const AllMeetings = () => {
                   ? handleTogglePinSelectedMeeting
                   : undefined
               }
+              isPinned={selected?.length === 1 ? isPinned(selected[0]) : false}
               // onPressToFilter={() =>
               //   navigate("AdvanceSearch", { type: "meeting" })
               // }
@@ -365,6 +375,10 @@ const AllMeetings = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             onScroll={(e) => {
+              // Don't let scroll auto-hide the action bar while a selection
+              // is active — it needs to stay reachable (pin/delete) no
+              // matter how far down the list the user has scrolled.
+              if (selected.length > 0) return;
               const offsetY = e.nativeEvent.contentOffset.y;
               const show = offsetY > 180;
               if (show !== showHeaderActions) {
