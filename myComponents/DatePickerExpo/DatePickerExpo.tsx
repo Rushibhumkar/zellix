@@ -44,6 +44,12 @@ const DatePickerExpo = ({
   const [showPicker, setShowPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  const clampToRange = (value: Date) => {
+    if (minimumDate && value < new Date(minimumDate)) return new Date(minimumDate);
+    if (maximumDate && value > new Date(maximumDate)) return new Date(maximumDate);
+    return value;
+  };
+
   const toggleDatePicker = () => {
     if (Platform.OS === "ios") {
       setShowPicker(true); // always use modal for iOS
@@ -80,15 +86,17 @@ const DatePickerExpo = ({
           const finalDate = new Date(date);
           finalDate.setHours(selectedDate.getHours());
           finalDate.setMinutes(selectedDate.getMinutes());
+          const validDate = clampToRange(finalDate);
           setShowTimePicker(false);
-          setGetDate(finalDate);
-          onSelect && onSelect(finalDate); // pass to formik
+          setGetDate(validDate);
+          onSelect && onSelect(validDate); // pass to formik
         }
       } else {
         setShowPicker(false);
         setShowTimePicker(false); // ✅ close modal after OK
-        setGetDate(selectedDate);
-        onSelect && onSelect(selectedDate);
+        const validDate = clampToRange(selectedDate);
+        setGetDate(validDate);
+        onSelect && onSelect(validDate);
       }
     } else {
       setShowPicker(false);
@@ -215,7 +223,7 @@ const DatePickerExpo = ({
               <TouchableOpacity
                 onPress={() => {
                   if (date) {
-                    const finalDate = new Date(date);
+                    const finalDate = clampToRange(new Date(date));
 
                     setGetDate(finalDate);
 

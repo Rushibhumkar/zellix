@@ -30,6 +30,8 @@ interface IEventItem {
   _id: string;
   title?: string;
   label?: string;
+  startDateTime?: string;
+  endDateTime?: string;
 }
 
 interface ILeadItem {
@@ -56,11 +58,19 @@ const validationSchema = Yup.object().shape({
 
   clientEmail: Yup.string()
     .email("Invalid email")
-    .required("Email is required"),
+    .test("contact", "Enter email, mobile number, or WhatsApp number", function (value) {
+      return Boolean(value || this.parent.mobile || this.parent.whatsapp);
+    }),
+
+  mobile: Yup.string().test("contact", "Enter email, mobile number, or WhatsApp number", function (value) {
+    return Boolean(value || this.parent.clientEmail || this.parent.whatsapp);
+  }),
 
   whatsapp: Yup.string()
-    .required("WhatsApp number is required")
-    .matches(/^\+?\d+$/, "WhatsApp must contain only digits and optional +"),
+    .matches(/^\+?\d+$/, { message: "WhatsApp must contain only digits and optional +", excludeEmptyString: true })
+    .test("contact", "Enter email, mobile number, or WhatsApp number", function (value) {
+      return Boolean(value || this.parent.clientEmail || this.parent.mobile);
+    }),
 
   scheduleDate: Yup.mixed().required("Date & time is required"),
 });
@@ -145,6 +155,12 @@ const SendInvitation = () => {
     setSubmitting(true);
 
     try {
+      const event = events.find((item) => item._id === values.eventId);
+      const selectedDate = values.scheduleDate ? new Date(values.scheduleDate) : null;
+      if (!selectedDate || Number.isNaN(selectedDate.getTime()) || !event?.startDateTime || !event?.endDateTime || selectedDate < new Date(event.startDateTime) || selectedDate > new Date(event.endDateTime)) {
+        toast.error("Attending date and time must be within the selected event duration");
+        return;
+      }
       let code = "";
       let mobile = "";
       let clientMobile = "";
@@ -169,10 +185,7 @@ const SendInvitation = () => {
 
         whatsappNum: values.whatsapp,
 
-        dateTime:
-          values.scheduleDate instanceof Date
-            ? values.scheduleDate.toISOString()
-            : values.scheduleDate,
+        dateTime: new Date(values.scheduleDate as any).toISOString(),
 
         company: values.company,
         source: values.mode === "auto" ? undefined : values.leadSource, // auto = lead.source
@@ -185,9 +198,9 @@ const SendInvitation = () => {
       myConsole("ressss", res);
 
       toast.success("Invitation created successfully");
-      navigation.navigate("RSVPInvitationList");
-      await queryClient.invalidateQueries(["rsvpInvitations"]);
-      await queryClient.invalidateQueries(["rsvpEventsList"]);
+      navigation.navigate("RSVPManagerList");
+      await queryClient.invalidateQueries({ queryKey: ["rsvpInvitations"] });
+      await queryClient.invalidateQueries({ queryKey: ["rsvpEventsList"] });
     } catch (e: any) {
       const msg =
         e?.response?.data?.message ||
@@ -234,7 +247,10 @@ const SendInvitation = () => {
                     keyValueGetOnSelect="_id"
                     placeholder="Select Event"
                     containerStyle={{ marginHorizontal: 20 }}
-                    onChange={(val: string) => setFieldValue("eventId", val)}
+                    onChange={(val: string) => {
+                      setFieldValue("eventId", val);
+                      setFieldValue("scheduleDate", null);
+                    }}
                     initialValue={values.eventId}
                     mode="modal"
                     isLoading={eventsLoading}
@@ -399,6 +415,18 @@ const SendInvitation = () => {
                     title="Date & Time"
                     mode="datetime"
                     iosDisplay="inline"
+                    minimumDate={
+                      events.find((event) => event._id === values.eventId)
+                        ?.startDateTime
+                        ? new Date(events.find((event) => event._id === values.eventId)?.startDateTime as string)
+                        : undefined
+                    }
+                    maximumDate={
+                      events.find((event) => event._id === values.eventId)
+                        ?.endDateTime
+                        ? new Date(events.find((event) => event._id === values.eventId)?.endDateTime as string)
+                        : undefined
+                    }
                   />
 
                   {touched.scheduleDate && errors.scheduleDate && (

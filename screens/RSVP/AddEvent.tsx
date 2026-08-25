@@ -96,8 +96,13 @@ const AddEvent = ({ route }: any) => {
         toast.success("Event added successfully");
       }
 
+      await queryClient.invalidateQueries({ queryKey: ["rsvpEventsList"] });
+      if (eventData?._id) {
+        await queryClient.invalidateQueries({
+          queryKey: ["rsvpEventDetails", eventData._id],
+        });
+      }
       navigation.goBack();
-      queryClient.invalidateQueries(["rsvpEventsList"]);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||

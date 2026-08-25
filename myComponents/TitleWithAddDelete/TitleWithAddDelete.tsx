@@ -44,6 +44,7 @@ interface TTitleWithAddDelete {
   title: string;
   onPressToEdit: () => void;
   onPressToAssignLead: () => void;
+  onPressToInvite?: () => void;
   onPressToFilter: () => void;
   onCloseSearch: () => void;
   onSelectLeadType: () => void;
@@ -66,6 +67,7 @@ const TitleWithAddDelete = ({
   isPinned,
   onPressToEdit,
   onPressToAssignLead,
+  onPressToInvite,
   onPressToFilter,
   onCloseSearch,
   onSelectLeadType,
@@ -368,6 +370,15 @@ const TitleWithAddDelete = ({
                   size={24}
                   color={color.mainTxtColor}
                 />
+              </AnimatedTouchableOpacity>
+            )}
+
+            {!!onPressToInvite && (
+              <AnimatedTouchableOpacity
+                style={{ ...iconWrapperStyle, padding: 7 }}
+                onPress={onPressToInvite}
+              >
+                <Feather name="user-plus" size={19} color="#fff" />
               </AnimatedTouchableOpacity>
             )}
           </AnimatedView>

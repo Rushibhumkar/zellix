@@ -84,6 +84,92 @@ export const useRSVPEventsList = ({ search = "" }) => {
   });
 };
 
+export const useRSVPEventOptions = () => {
+  return useQuery({
+    queryKey: ["rsvpEventOptions"],
+    queryFn: () => getRSVPEventsList({ pageParam: 1, limit: 1000 }),
+  });
+};
+
+export const getRSVPEventAgents = async ({
+  eventId,
+  pageParam = 1,
+  limit = 20,
+  search = "",
+}: any) => {
+  const response = await axiosInstance.get(`/api/event/${eventId}/agents`, {
+    params: { page: pageParam, limit, search },
+  });
+  return response.data;
+};
+
+export const useRSVPEventAgents = ({ eventId, search = "" }: any) => {
+  return useInfiniteQuery({
+    queryKey: ["rsvpEventAgents", eventId, search],
+    initialPageParam: 1,
+    queryFn: ({ pageParam = 1 }) =>
+      getRSVPEventAgents({ eventId, pageParam, search }),
+    enabled: Boolean(eventId),
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage?.pagination || {};
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+  });
+};
+
+export const getRSVPEventClients = async ({
+  eventId,
+  agentId,
+  pageParam = 1,
+  limit = 20,
+  search = "",
+}: any) => {
+  const response = await axiosInstance.get(`/api/event/${eventId}/clients`, {
+    params: { page: pageParam, limit, search, ...(agentId ? { agentId } : {}) },
+  });
+  return response.data;
+};
+
+export const useRSVPEventClients = ({ eventId, agentId, search = "" }: any) => {
+  return useInfiniteQuery({
+    queryKey: ["rsvpEventClients", eventId, agentId, search],
+    initialPageParam: 1,
+    queryFn: ({ pageParam = 1 }) =>
+      getRSVPEventClients({ eventId, agentId, pageParam, search }),
+    enabled: Boolean(eventId),
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage?.pagination || {};
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+  });
+};
+
+export const sendRSVPForEventLead = async ({ eventId, eventLeadId }: any) => {
+  const response = await axiosInstance.post(
+    `/api/event/${eventId}/leads/${eventLeadId}/rsvp`,
+  );
+  return response.data;
+};
+
+export const checkInRSVPEventLead = async ({ eventId, eventLeadId }: any) => {
+  const response = await axiosInstance.patch(
+    `/api/event/${eventId}/leads/${eventLeadId}/check-in`,
+  );
+  return response.data;
+};
+
+export const updateRSVPEventLeadStatus = async ({
+  eventId,
+  eventLeadId,
+  ...status
+}: any) => {
+  const response = await axiosInstance.patch(
+    `/api/event/${eventId}/leads/${eventLeadId}/status`,
+    status,
+  );
+  return response.data;
+};
+
 export const getRSVPInvitationDetails = async (id: string) => {
   try {
     const res = await axiosInstance.get(`/api/invitation/details/${id}`);

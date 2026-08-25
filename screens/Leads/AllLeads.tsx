@@ -7,6 +7,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
   FlatList,
   Linking,
@@ -316,6 +317,11 @@ const AllLeads = () => {
   const isAgent = user?.role === roleEnum.agent || user?.role === roleEnum.seo;
 
   const canManageLeadSelection = !isAgent && (canAssignLead || canDeleteLead);
+  // Agents and Team Leads need selection mode so they can send RSVP
+  // invitations for their directly assigned leads. Assignment and delete
+  // actions remain permission-gated.
+  const canSelectLeads =
+    isAgent || user?.role === roleEnum.team_lead || canManageLeadSelection;
 
   const handlePinResult = (res: any) => {
     if (res.ok) {
@@ -444,6 +450,32 @@ const AllLeads = () => {
       ? leadData
       : leadData?.filter((item) => item?.status === selectedStatus);
 
+  const openLeadRSVPInvitation = () => {
+    const isAdmin = [roleEnum.sup_admin, roleEnum.sub_admin].includes(user?.role);
+    const selectedLeads = (filteredLeadData || []).filter((lead: any) => selected.includes(lead?._id));
+    const eligibleLeads = isAdmin
+      ? selectedLeads
+      : selectedLeads.filter((lead: any) => String(lead?.assign?._id || lead?.assign) === String(user?._id));
+    const skippedLeadCount = selectedLeads.length - eligibleLeads.length;
+    if (!eligibleLeads.length) {
+      toast.error("You can send RSVP invitations only for leads assigned to you.");
+      return;
+    }
+    const proceed = () => navigation.navigate("SendLeadRSVPInvitation", {
+      leadIds: eligibleLeads.map((lead: any) => lead._id),
+      skippedLeadCount,
+    });
+    if (skippedLeadCount) {
+      Alert.alert(
+        "Some leads cannot receive an RSVP",
+        `${skippedLeadCount} selected lead(s) are assigned to another user. Invitations will be sent only for the ${eligibleLeads.length} lead(s) assigned to you.`,
+        [{ text: "Cancel", style: "cancel" }, { text: "Continue", onPress: proceed }],
+      );
+      return;
+    }
+    proceed();
+  };
+
   // myConsole("filteredLeadDataaa", filteredLeadData);
 
   // myConsole("alllesad", leadData);
@@ -529,6 +561,7 @@ const AllLeads = () => {
                   ? () => toggleModalAssignLead()
                   : false
               }
+              onPressToInvite={selected?.length ? openLeadRSVPInvitation : undefined}
               onPressToPin={
                 selected?.length === 1 ? handleTogglePinSelectedLead : undefined
               }
@@ -572,7 +605,7 @@ const AllLeads = () => {
                     : handleSelect(item?._id)
                 }
                 onLongPress={
-                  canManageLeadSelection
+                  canSelectLeads
                     ? () => handleSelect(item?._id)
                     : () => setQuickActionLead(item)
                 }

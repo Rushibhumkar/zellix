@@ -33,6 +33,7 @@ import AddLeads from "../screens/Leads/AddLeads";
 import AllLeads from "../screens/Leads/AllLeads";
 import LeadsDetails from "../screens/Leads/LeadsDetails";
 import LeadsEdit from "../screens/Leads/LeadsEdit";
+import SendLeadRSVPInvitation from "../screens/Leads/SendLeadRSVPInvitation";
 
 /*****Meatings ******************************/
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -89,6 +90,8 @@ import RSVPManagerList from "../screens/RSVP/RSVPManagerList";
 import SendInvitation from "../screens/RSVP/SendInvitation";
 import AddEvent from "../screens/RSVP/AddEvent";
 import RSVPEventDetail from "../screens/RSVP/RSVPEventDetail";
+import RSVPAgentsList from "../screens/RSVP/RSVPAgentsList";
+import BulkSendInvitation from "../screens/RSVP/BulkSendInvitation";
 import RsvpFocus from "../assets/svg/RsvpFocus";
 import RsvpInfocus from "../assets/svg/RsvpInfocus";
 import { navigationRef } from "./navigationRef";
@@ -105,6 +108,7 @@ import CallListing from "../screens/Leads/CallListing";
 import { useGetUserPermission } from "../services/rootApi/permissionApi";
 import { checkPermission } from "../utils/commonFunctions";
 import Leaderboard from "../screens/Leaderboard/Leaderboard";
+import RSVPClientsList from "../screens/RSVP/RSVPClientsList";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -362,6 +366,11 @@ const LeadsNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="SendLeadRSVPInvitation"
+        component={SendLeadRSVPInvitation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="AddMeetingFromLead"
         component={AddMeeting}
         options={{ headerShown: false }}
@@ -456,7 +465,7 @@ const UsersNavigator = () => {
 
 const RSVPNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName="RSVPManagerList">
       <Stack.Screen
         name="RSVPInvitationList"
         component={RSVPInvitationList}
@@ -479,6 +488,11 @@ const RSVPNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="BulkSendInvitation"
+        component={BulkSendInvitation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="AddEvent"
         component={AddEvent}
         options={{ headerShown: false }}
@@ -487,6 +501,16 @@ const RSVPNavigator = () => {
       <Stack.Screen
         name="RSVPEventDetail"
         component={RSVPEventDetail}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RSVPAgentsList"
+        component={RSVPAgentsList}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RSVPClientsList"
+        component={RSVPClientsList}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -82,6 +82,9 @@ export const routeRSVP = {
   RSVPInvitationDetail: "RSVPInvitationDetail",
   RSVPManagerDetails: "RSVPManagerDetails",
   RSVPManagerList: "RSVPManagerList",
+  RSVPAgentsList: "RSVPAgentsList",
+  RSVPClientsList: "RSVPClientsList",
+  BulkSendInvitation: "BulkSendInvitation",
   SendInvitation: "SendInvitation",
   AddEvent: "AddEvent",
 };

@@ -131,6 +131,13 @@ const RSVPManagerList = () => {
     "viewDetails",
     user?.role,
   );
+  const canSendInvitation = checkPermission(
+    permission,
+    "Invitation",
+    "add",
+    user?.role,
+  );
+  const isAgent = user?.role === "agent";
 
   const handleDeleteEvent = async () => {
     if (!canDeleteEvent || isLoading || selected.length === 0) return;
@@ -169,7 +176,7 @@ const RSVPManagerList = () => {
   return (
     <Container>
       <Header
-        title="RSVP Manager"
+        title="Events"
         isWithAnimation
         totalCount={totalEvents}
         showBackIcon={false}
@@ -182,10 +189,6 @@ const RSVPManagerList = () => {
         }}
         showSearch={showSearch}
         buttons={[
-          {
-            title: "Invitations",
-            onPress: () => navigation.navigate(routeRSVP.RSVPInvitationList),
-          },
           ...(canAddEvent
             ? [
                 {
@@ -195,6 +198,26 @@ const RSVPManagerList = () => {
                   ),
                   onPress: () => navigation.navigate(routeRSVP.AddEvent),
                   style: { backgroundColor: "#fff" },
+                },
+              ]
+            : []),
+          ...(canSendInvitation
+            ? [
+                {
+                  icon: (
+                    <Feather
+                      name="user-plus"
+                      color={color.mainTxtColor}
+                      size={19}
+                    />
+                  ),
+                  onPress: () => navigation.navigate(routeRSVP.SendInvitation),
+                  style: { backgroundColor: "#fff" },
+                },
+                {
+                  title: "Bulk Send",
+                  onPress: () =>
+                    navigation.navigate(routeRSVP.BulkSendInvitation),
                 },
               ]
             : []),
@@ -246,13 +269,26 @@ const RSVPManagerList = () => {
                 onPress={() =>
                   selected.length > 0
                     ? handleSelect(item?._id)
-                    : canViewEventDetails
-                      ? navigation.navigate("RSVPEventDetail", {
-                          id: item?._id,
+                    : isAgent
+                      ? navigation.navigate("RSVPClientsList", {
+                          eventId: item?._id,
+                          agentId: user?._id,
+                          event: item,
+                          isOwnAgentView: true,
+                        })
+                      : canViewEventDetails
+                      ? navigation.navigate("RSVPAgentsList", {
+                          eventId: item?._id,
+                          event: item,
                         })
                       : null
                 }
                 onLongPress={() => handleSelect(item?._id)}
+                onDetails={
+                  canViewEventDetails && selected.length === 0
+                    ? () => navigation.navigate("RSVPEventDetail", { id: item?._id })
+                    : undefined
+                }
               />
             )}
             ListHeaderComponent={
@@ -347,6 +383,7 @@ const EventsRowItem = ({
   selected,
   onPress,
   onLongPress,
+  onDetails,
   index,
 }: any) => {
   return (
@@ -363,29 +400,58 @@ const EventsRowItem = ({
           },
         ]}
       >
-        <View style={styles.leftContainer}>
-          <View style={styles.avatar}>
-            <Feather name="calendar" size={20} color="#fff" />
+        <View style={styles.eventHeader}>
+          <View style={styles.leftContainer}>
+            <View style={styles.avatar}>
+              <Feather name="calendar" size={20} color="#fff" />
+            </View>
+            <View style={styles.eventInfo}>
+              <CustomText style={styles.title}>{item?.title}</CustomText>
+              <CustomText style={styles.eventType}>{item?.eventType}</CustomText>
+            </View>
           </View>
-          <View style={styles.eventInfo}>
-            <CustomText style={styles.title}>{item?.title}</CustomText>
-            <CustomText style={styles.eventType}>{item?.eventType}</CustomText>
+
+          <View style={styles.rightContainer}>
+            {!!onDetails && (
+              <TouchableOpacity
+                onPress={(event) => {
+                  event.stopPropagation();
+                  onDetails();
+                }}
+                style={styles.detailsButton}
+              >
+                <Feather name="info" size={16} color={color.mainTxtColor} />
+              </TouchableOpacity>
+            )}
+            <View style={styles.dateTimeContainer}>
+              <Feather name="clock" size={12} color={color.mainTxtColor} />
+              <CustomText style={styles.dateTimeText}>
+                {moment(item?.startDateTime).format("DD MMM YYYY • hh:mm A")}
+              </CustomText>
+            </View>
+            <View style={styles.dateTimeContainer}>
+              <Feather name="clock" size={12} color={color.mainTxtColor} />
+              <CustomText style={styles.dateTimeText}>
+                {moment(item?.endDateTime).format("DD MMM YYYY • hh:mm A")}
+              </CustomText>
+            </View>
           </View>
         </View>
 
-        <View style={styles.rightContainer}>
-          <View style={styles.dateTimeContainer}>
-            <Feather name="clock" size={12} color={color.mainTxtColor} />
-            <CustomText style={styles.dateTimeText}>
-              {moment(item?.startDateTime).format("DD MMM YYYY • hh:mm A")}
-            </CustomText>
-          </View>
-          <View style={styles.dateTimeContainer}>
-            <Feather name="clock" size={12} color={color.mainTxtColor} />
-            <CustomText style={styles.dateTimeText}>
-              {moment(item?.endDateTime).format("DD MMM YYYY • hh:mm A")}
-            </CustomText>
-          </View>
+        <View style={styles.metricsRow}>
+          {[
+            ["Leads", item?.assignedLeadCount],
+            ["Sent", item?.totalInvited],
+            ["Accepted", item?.acceptedInvitations],
+            ["Pending", item?.pendingInvitations],
+            ["Declined", item?.declinedInvitations],
+            ["Attended", item?.attendedCount],
+          ].map(([label, value]) => (
+            <View key={label} style={styles.metric}>
+              <CustomText style={styles.metricValue}>{value || 0}</CustomText>
+              <CustomText style={styles.metricLabel}>{label}</CustomText>
+            </View>
+          ))}
         </View>
       </TouchableOpacity>
     </SlideFadeIn>
@@ -402,8 +468,6 @@ const styles = StyleSheet.create({
     borderColor: "#E3E8EF",
     padding: 12,
     borderRadius: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
     marginHorizontal: 12,
     ...shadowPrimaryColor,
   },
@@ -411,6 +475,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+  },
+  eventHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   avatar: {
     width: 40,
@@ -431,6 +499,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
   },
+  detailsButton: {
+    alignSelf: "flex-end",
+    padding: 5,
+    marginBottom: 3,
+    borderRadius: 12,
+    backgroundColor: "#E8F1FF",
+  },
   dateTimeContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -440,6 +515,27 @@ const styles = StyleSheet.create({
     color: color.mainTxtColor,
     marginLeft: 4,
     fontWeight: "500",
+  },
+  metricsRow: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: "#E3E8EF",
+    marginTop: 10,
+    paddingTop: 8,
+  },
+  metric: {
+    flex: 1,
+    alignItems: "center",
+  },
+  metricValue: {
+    color: color.primaryColor,
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  metricLabel: {
+    color: color.mainTxtColor,
+    fontSize: 8,
+    marginTop: 1,
   },
 });
 
