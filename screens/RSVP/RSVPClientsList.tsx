@@ -3,13 +3,15 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Linking,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import Header from "../../components/Header";
@@ -111,6 +113,72 @@ const RSVPClientsList = ({ route }: any) => {
     [],
   );
 
+  const copyRsvpLink = async (rsvpLink: string) => {
+    if (!rsvpLink) return;
+
+    try {
+      await Clipboard.setStringAsync(rsvpLink);
+      toast.success("RSVP link copied");
+    } catch {
+      toast.error("Unable to copy RSVP link");
+    }
+  };
+
+  const sendRsvpOnWhatsApp = async (client: any) => {
+    if (!client?.rsvpLink) return;
+
+    const phoneNumber = String(
+      client?.whatsappNum || client?.clientMobile || "",
+    ).replace(/\D/g, "");
+    if (!phoneNumber) {
+      toast.error("WhatsApp or mobile number is not available");
+      return;
+    }
+
+    const eventName = selectedEvent?.title || "the event";
+    const startDateTime = selectedEvent?.startDateTime
+      ? moment(selectedEvent.startDateTime)
+      : null;
+    const endDateTime = selectedEvent?.endDateTime
+      ? moment(selectedEvent.endDateTime)
+      : null;
+    const eventDate = startDateTime
+      ? endDateTime && !startDateTime.isSame(endDateTime, "day")
+        ? `${startDateTime.format("DD MMM YYYY")} – ${endDateTime.format("DD MMM YYYY")}`
+        : startDateTime.format("DD MMM YYYY")
+      : "To be confirmed";
+    const eventTime = startDateTime
+      ? `${startDateTime.format("hh:mm A")}${endDateTime ? ` – ${endDateTime.format("hh:mm A")}` : ""}`
+      : "To be confirmed";
+    const eventVenue = selectedEvent?.location || "To be confirmed";
+    const message = `Dear ${client.clientName || "Valued Guest"},
+
+Thank you for registering for our ${eventName}.
+
+We are pleased to confirm your RSVP and look forward to welcoming you to an exclusive event hosted by SKG Estates in collaboration with Damac Properties.
+
+Event Details
+📅 Date: ${eventDate}
+🕐 Time: ${eventTime}
+📍 Venue: ${eventVenue}
+
+Join us to explore the latest developments and discover exceptional investment opportunities in Dubai. Meet with our property experts, gain valuable Dubai market insights, and receive personalized guidance to help you make informed investment decisions.
+
+Our team will be available throughout the event to answer your questions and assist you in finding the opportunity that best matches your goals.
+
+We look forward to welcoming you.
+
+RSVP Link: ${client.rsvpLink}`;
+
+    try {
+      await Linking.openURL(
+        `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
+      );
+    } catch {
+      toast.error("Unable to open WhatsApp");
+    }
+  };
+
   const runAction = async (id: string, action: () => Promise<any>) => {
     try {
       setLoadingId(id);
@@ -164,6 +232,13 @@ const RSVPClientsList = ({ route }: any) => {
     const attendance = attendanceAvailable
       ? item.attendStatus || "Not Attended"
       : "-";
+    const hasActiveRsvpLink =
+      Boolean(item.rsvpLink) &&
+      (!item.rsvpExpiresAt || moment(item.rsvpExpiresAt).isAfter(moment()));
+    const attendingDateTime =
+      responseStatus === "Accepted" && item.attendingDateTime
+        ? moment(item.attendingDateTime)
+        : null;
 
     return (
       <View style={styles.card}>
@@ -182,6 +257,15 @@ const RSVPClientsList = ({ route }: any) => {
             </CustomText>
             <CustomText style={styles.subText}>
               {item.clientMobile || "-"}
+            </CustomText>
+          </View>
+          <View style={styles.dateTimeColumn}>
+            <Feather name="calendar" size={14} color="#2E67BE" />
+            <CustomText style={styles.dateText}>
+              {attendingDateTime ? attendingDateTime.format("DD MMM YYYY") : "-"}
+            </CustomText>
+            <CustomText style={styles.timeText}>
+              {attendingDateTime ? attendingDateTime.format("hh:mm A") : ""}
             </CustomText>
           </View>
         </View>
@@ -211,28 +295,44 @@ const RSVPClientsList = ({ route }: any) => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.slotRow}>
-          <Feather name="calendar" size={14} color="#2E67BE" />
-          <CustomText style={styles.slotText}>
-            {responseStatus === "Accepted" && item.attendingDateTime
-              ? moment(item.attendingDateTime).format("DD MMM YYYY, hh:mm A")
-              : "-"}
-          </CustomText>
-        </View>
         <View style={styles.actions}>
           {(!item.responseStatus || item.responseStatus === "Pending") &&
             canManage && (
               <TouchableOpacity
+                accessibilityLabel={
+                  item.responseStatus
+                    ? "Resend RSVP on email"
+                    : "Send RSVP on email"
+                }
                 disabled={loadingId === item._id}
                 onPress={() =>
                   runAction(item._id, () =>
                     sendRSVPForEventLead({ eventId, eventLeadId: item._id }),
                   )
                 }
+                style={styles.actionIcon}
               >
-                <CustomText style={styles.primaryAction}>
-                  {item.responseStatus ? "Resend RSVP" : "Send RSVP"}
-                </CustomText>
+                <Feather name="mail" size={18} color="#2E67BE" />
+              </TouchableOpacity>
+            )}
+          {canManage && hasActiveRsvpLink && (
+            <TouchableOpacity
+              accessibilityLabel="Copy RSVP link"
+              onPress={() => copyRsvpLink(item.rsvpLink)}
+              style={styles.actionIcon}
+            >
+              <Feather name="copy" size={17} color="#2E67BE" />
+            </TouchableOpacity>
+          )}
+          {canManage &&
+            hasActiveRsvpLink &&
+            (item.whatsappNum || item.clientMobile) && (
+              <TouchableOpacity
+                accessibilityLabel="Send RSVP on WhatsApp"
+                onPress={() => sendRsvpOnWhatsApp(item)}
+                style={styles.actionIcon}
+              >
+                <FontAwesome name="whatsapp" size={19} color="#128C42" />
               </TouchableOpacity>
             )}
           {canCheckIn && (
@@ -243,7 +343,9 @@ const RSVPClientsList = ({ route }: any) => {
                   checkInRSVPEventLead({ eventId, eventLeadId: item._id }),
                 )
               }
+              style={styles.checkInButton}
             >
+              <Feather name="check-circle" size={15} color="#FFF" />
               <CustomText style={styles.checkIn}>Check in</CustomText>
             </TouchableOpacity>
           )}
@@ -383,16 +485,40 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   badgeText: { fontWeight: "700", fontSize: 12 },
-  slotRow: {
-    flexDirection: "row",
-    gap: 7,
-    alignItems: "center",
-    marginTop: 14,
+  dateTimeColumn: {
+    alignItems: "flex-end",
+    marginLeft: 10,
+    minWidth: 88,
   },
-  slotText: { color: "#43526A", fontSize: 13 },
-  actions: { flexDirection: "row", gap: 18, marginTop: 14 },
-  primaryAction: { color: "#2E67BE", fontWeight: "700" },
-  checkIn: { color: "#14803D", fontWeight: "700" },
+  dateText: { color: "#43526A", fontSize: 11, marginTop: 3 },
+  timeText: { color: "#788497", fontSize: 11, marginTop: 1 },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 14,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E7EDF5",
+  },
+  actionIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F1F6FE",
+  },
+  checkInButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: "#14803D",
+  },
+  checkIn: { color: "#FFF", fontWeight: "700", fontSize: 12 },
   loader: { marginTop: 60 },
 });
 

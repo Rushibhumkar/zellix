@@ -190,7 +190,7 @@ const LeadsDetails = () => {
   const callStartTimeRef = useRef<number | null>(null);
 
   const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
-  // const DURATION_THRESHOLD_SEC = 20; // 20 sec
+  // const DURATION_THRESHOLD_SEC = 30; // 20 sec
   // Temporary development-only offset to test the Hours field in the duration modal.
   // const TEST_CALL_INITIATED_AT_OFFSET_MS = __DEV__ ? 61 * 60 * 1000 : 0;
   const TEST_CALL_INITIATED_AT_OFFSET_MS = 0;
@@ -429,17 +429,13 @@ const LeadsDetails = () => {
     const diffSec = Math.floor((endTime - initiatedAt) / 1000);
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
-      pendingResumeRef.current = { initiatedAt, endTime };
-
-      const calcMinutes = Math.floor(diffSec / 60);
-      const calcSeconds = diffSec % 60;
-      setEditHours(String(Math.floor(calcMinutes / 60)));
-      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
-      setEditSeconds(String(calcSeconds));
-      setMaxAllowedMinutes(calcMinutes);
-      setMaxAllowedSeconds(calcSeconds);
-
-      setShowDurationEditor(true);
+      // Calls longer than 20 minutes are not reliable enough to log. Do not
+      // show a status/duration modal or create a call log for them.
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+      setCallMeta(null);
       return;
     }
 
@@ -503,20 +499,11 @@ const LeadsDetails = () => {
     const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
-      pendingResumeRef.current = {
-        initiatedAt: pending.initiatedAt,
-        endTime,
-      };
-
-      const calcMinutes = Math.floor(diffSec / 60);
-      const calcSeconds = diffSec % 60;
-      setEditHours(String(Math.floor(calcMinutes / 60)));
-      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
-      setEditSeconds(String(calcSeconds));
-      setMaxAllowedMinutes(calcMinutes);
-      setMaxAllowedSeconds(calcSeconds);
-
-      setShowDurationEditor(true);
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+      setCallMeta(null);
       isResumingRef.current = false;
       return;
     }
@@ -676,6 +663,11 @@ const LeadsDetails = () => {
       const durationInSec = Math.floor(
         (callMeta.finishedAt - callMeta.initiatedAt) / 1000,
       );
+
+      if (durationInSec > DURATION_THRESHOLD_SEC) {
+        setCallMeta(null);
+        return;
+      }
 
       let callType: "not_connected" | "positive" | "negative" | "connected" =
         "connected";
@@ -1128,7 +1120,11 @@ const LeadsDetails = () => {
             paddingHorizontal: 28,
           }}
         >
-          <MaterialIcons name="info-outline" size={42} color={color.mainTxtColor} />
+          <MaterialIcons
+            name="info-outline"
+            size={42}
+            color={color.mainTxtColor}
+          />
           <CustomText
             style={{
               color: color.mainTxtColor,

@@ -80,7 +80,7 @@ const CallListing = () => {
 
   // ✅ NEW
   const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
-  // const DURATION_THRESHOLD_SEC = 20;
+  // const DURATION_THRESHOLD_SEC = 30;
   // Temporary development-only offset to test the Hours field in the duration modal.
   // const TEST_CALL_INITIATED_AT_OFFSET_MS = __DEV__ ? 61 * 60 * 1000 : 0;
   const TEST_CALL_INITIATED_AT_OFFSET_MS = 0;
@@ -260,8 +260,6 @@ const CallListing = () => {
     await removeItemValue(PENDING_CALL_KEY);
 
     const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
-    const calcMinutes = Math.floor(diffSec / 60);
-    const calcSeconds = diffSec % 60;
     if (diffSec > DURATION_THRESHOLD_SEC) {
       setPhoneNumber("");
       setCallStartTime(null);
@@ -269,23 +267,9 @@ const CallListing = () => {
       isCallTrackingRef.current = false;
       callStartTimeRef.current = null;
       setShowDialPad(false);
-
-      pendingResumeRef.current = {
-        number: pending.number,
-        initiatedAt: pending.initiatedAt,
-        endTime,
-      };
-
-      // ✅ pre-fill with the calculated (unreliable) duration
-
-      setEditHours(String(Math.floor(calcMinutes / 60)));
-      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
-      setEditSeconds(String(calcSeconds));
-
-      setMaxAllowedMinutes(calcMinutes);
-      setMaxAllowedSeconds(calcSeconds);
-
-      setShowDurationEditor(true);
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setCallMeta(null);
       isResumingRef.current = false;
       return;
     }
@@ -380,19 +364,16 @@ const CallListing = () => {
     const diffSec = Math.floor((endTime - initiatedAt) / 1000);
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
-      pendingResumeRef.current = { number, initiatedAt, endTime };
-
-      // ✅ pre-fill with the calculated (unreliable) duration so user can adjust instead of typing from scratch
-      const calcMinutes = Math.floor(diffSec / 60);
-      const calcSeconds = diffSec % 60;
-      setEditHours(String(Math.floor(calcMinutes / 60)));
-      setEditMinutes(String(calcMinutes > 60 ? calcMinutes % 60 : calcMinutes));
-      setEditSeconds(String(calcSeconds));
-
-      setMaxAllowedMinutes(calcMinutes);
-      setMaxAllowedSeconds(calcSeconds);
-
-      setShowDurationEditor(true);
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowLeadModal(false);
+      setCallMeta(null);
+      setPhoneNumber("");
+      setCallStartTime(null);
+      isCallingRef.current = false;
+      isCallTrackingRef.current = false;
+      callStartTimeRef.current = null;
+      setShowDialPad(false);
       return;
     }
 
@@ -513,10 +494,17 @@ const CallListing = () => {
     if (isCallLogSentRef.current) return;
 
     try {
+      if (!callMeta?.initiatedAt || !callMeta?.finishedAt) return;
+
       const durationInSec = Math.floor(
         (callMeta.finishedAt - callMeta.initiatedAt) / 1000,
       );
       console.log("CALL DURATION (SEC) =>", durationInSec);
+
+      if (durationInSec > DURATION_THRESHOLD_SEC) {
+        setCallMeta(null);
+        return;
+      }
 
       // ✅ ye statuses hamesha "not_connected" force karenge, chahe duration/status kuch bhi ho
       const FORCE_NOT_CONNECTED_STATUSES = [
