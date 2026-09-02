@@ -8,12 +8,12 @@ import { myConsole } from "../../hooks/useConsole";
 
 //  ipconfig getifaddr en0
 
-let testURL = "http://192.168.0.115:5001";
+let testURL = "http://192.168.0.118:5001";
 // let testURL =
 //   "https://b65c-2409-40c2-314f-6b09-c1d2-6929-f244-49b8.ngrok-free.app";
 // let testURL = "https://zellix-backend-1.onrender.com";
 
-export const isLive = false;
+export const isLive = true;
 
 export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 

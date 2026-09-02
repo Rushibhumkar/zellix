@@ -36,13 +36,10 @@ import { color } from "../../const/color";
 import SkeletonLoadingLead from "../../components/Leads/SkeletonLoadingLead/SkeletonLoadingLead";
 import MultipleLeadAssign from "./MultipleLeadAssign";
 import QuickStatusSheet from "./component/QuickStatusSheet";
-import PinnedRow from "../../components/Pinned/PinnedRow";
-import usePinnedItems from "../../hooks/usePinnedItems";
 import { roleEnum, statusColorObj, statusObj } from "../../utils/data";
 import { useGetLead } from "../../hooks/useCRMgetQuerry";
 import { useQueryClient } from "@tanstack/react-query";
 import { debounce } from "../../utils/debounce";
-import { PINNED_LIMIT } from "../../utils/pinnedItemsStorage";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import LeadPoolIcon from "../../assets/svg/LeadPoolIcon";
 import { checkPermission, getTimeAgo } from "../../utils/commonFunctions";
@@ -58,6 +55,7 @@ import Animated, {
   FadeOutUp,
   runOnJS,
 } from "react-native-reanimated";
+import { LeadFolderBar, LeadFoldersModal, useLeadFolders } from "./component/LeadFolders";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -69,7 +67,6 @@ let bgByStatus = {
 const AllLeads = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
-  const { pinnedItems, isPinned, togglePin, unpin } = usePinnedItems("lead");
   const [showSearch, setShowSearch] = useState(false);
   const [statusChangeLoad, setStatusChangeLoad] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -93,7 +90,7 @@ const AllLeads = () => {
 
   const navigation = useNavigation();
   const route = useRoute();
-  const params = route?.params;
+  const params: any = route?.params;
 
   const isFocused = useIsFocused();
 
@@ -121,6 +118,21 @@ const AllLeads = () => {
   const [openLeadTypeModal, setOpenLeadTypeModal] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedFolderId, setSelectedFolderId] = useState("");
+  const [folderModalVisible, setFolderModalVisible] = useState(false);
+  const { data: leadFolders = [] } = useLeadFolders();
+  const selectedFolder = leadFolders.find((folder: any) => folder._id === selectedFolderId);
+
+  useEffect(() => {
+    if (!params?.clearRSVPSelection) return;
+
+    setSelected([]);
+    (navigation as any).setParams({ clearRSVPSelection: undefined });
+  }, [navigation, params?.clearRSVPSelection]);
+
+  useEffect(() => {
+    if (selectedFolderId && !selectedFolder) setSelectedFolderId("");
+  }, [selectedFolder, selectedFolderId]);
   //get Query
   const {
     data: leadData,
@@ -133,6 +145,7 @@ const AllLeads = () => {
     search: debouncedSearch,
     ...leadQueryKey,
     type: selectLeadType,
+    folderId: selectedFolderId,
     // ✅ dashboard filters
     ...(dashboardFilterStatus && { status: [dashboardFilterStatus] }),
     ...(dashboardDateKey && { dateKey: dashboardDateKey }),
@@ -150,7 +163,7 @@ const AllLeads = () => {
 
     if (selected.length === 0) {
       // Entering selection mode via long-press deep in the list — the action
-      // bar (assign/delete/pin) only renders when showHeaderActions is
+      // bar (assign/delete/folder) only renders when showHeaderActions is
       // false, so force it visible immediately without moving the list
       // (the onScroll handler below keeps it visible for the rest of the
       // selection, so no scroll-to-top is needed here).
@@ -323,41 +336,13 @@ const AllLeads = () => {
   const canSelectLeads =
     isAgent || user?.role === roleEnum.team_lead || canManageLeadSelection;
 
-  const handlePinResult = (res: any) => {
-    if (res.ok) {
-      toast.success(res.action === "pinned" ? "Lead pinned" : "Lead unpinned");
-    } else if (res.reason === "limit") {
-      toast.error(
-        `You can pin up to ${PINNED_LIMIT} leads only. Unpin one first.`,
-      );
-    }
-  };
-
-  const handleTogglePinSelectedLead = async () => {
-    const leadId = selected?.[0];
-    const lead = filteredLeadData?.find((l: any) => l?._id === leadId);
-    if (!lead) return;
-    const res = await togglePin({
-      id: lead._id,
-      title: lead?.clientName || "Lead",
-      subtitle: statusObj[lead?.status] || lead?.status,
-    });
-    handlePinResult(res);
-    setSelected([]);
-  };
-
-  const handleToggleQuickActionPin = async () => {
-    if (!quickActionLead) return;
-    const res = await togglePin({
-      id: quickActionLead._id,
-      title: quickActionLead?.clientName || "Lead",
-      subtitle: statusObj[quickActionLead?.status] || quickActionLead?.status,
-    });
-    handlePinResult(res);
-  };
-
   const handleTab = (tab: any) => {
     setSelectLeadType(tab);
+  };
+
+  const handleFolderChange = (folderId: string) => {
+    setSelectedFolderId(folderId);
+    setSelected([]);
   };
 
   const handleChangeStatusSubmit = async (id: any) => {
@@ -404,6 +389,7 @@ const AllLeads = () => {
     dashboardFilterStatus,
     dashboardDateKey,
     dashboardMyLeads,
+    selectedFolderId,
   ]);
 
   // console.log("selectleadtypeseb4useeffecrt", selectLeadType);
@@ -562,10 +548,7 @@ const AllLeads = () => {
                   : false
               }
               onPressToInvite={selected?.length ? openLeadRSVPInvitation : undefined}
-              onPressToPin={
-                selected?.length === 1 ? handleTogglePinSelectedLead : undefined
-              }
-              isPinned={selected?.length === 1 ? isPinned(selected[0]) : false}
+              onPressToFolder={selected?.length ? () => setFolderModalVisible(true) : undefined}
             />
           )}
 
@@ -686,16 +669,18 @@ const AllLeads = () => {
                   </TouchableOpacity>
                 </View>
 
-                <PinnedRow
-                  items={pinnedItems}
-                  onPressItem={(id) =>
-                    navigation.navigate("LeadsDetails", {
-                      item: { _id: id },
-                      selectLeadType,
-                    })
-                  }
-                  onUnpin={(id) => unpin(id)}
+                <LeadFolderBar
+                  selectedFolderId={selectedFolderId}
+                  onChangeFolder={handleFolderChange}
+                  onManage={() => setFolderModalVisible(true)}
                 />
+                {!!selectedFolder && (
+                  <View style={[styles.activeFolderNotice, { borderLeftColor: selectedFolder.color, backgroundColor: `${selectedFolder.color}14` }]}>
+                    <View style={[styles.activeFolderDot, { backgroundColor: selectedFolder.color }]} />
+                    <CustomText style={styles.activeFolderText}>{selectedFolder.name} folder</CustomText>
+                  </View>
+                )}
+
                 {/* <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -779,7 +764,7 @@ const AllLeads = () => {
             }
             onScroll={(e) => {
               // Don't let scroll auto-hide the action bar while a selection
-              // is active — it needs to stay reachable (pin/delete/assign)
+              // is active — it needs to stay reachable (folder/delete/assign)
               // no matter how far down the list the user has scrolled.
               if (selected.length > 0) return;
               const offsetY = e.nativeEvent.contentOffset.y;
@@ -798,6 +783,13 @@ const AllLeads = () => {
               index,
             })}
             scrollEventThrottle={16}
+          />
+          <LeadFoldersModal
+            visible={folderModalVisible}
+            onClose={() => setFolderModalVisible(false)}
+            leadIds={selected}
+            selectedFolderId={selectedFolderId}
+            onCompleted={() => setSelected([])}
           />
         </Container>
       ) : (
@@ -824,8 +816,6 @@ const AllLeads = () => {
         initialStatus={quickActionLead?.status}
         selectLeadType={selectLeadType}
         onClose={() => setQuickActionLead(null)}
-        isPinned={quickActionLead ? isPinned(quickActionLead._id) : false}
-        onTogglePin={handleToggleQuickActionPin}
       />
       {/* <ModalWithBlur visible={openLeadTypeModal} onClose={toggleLeadTypeModal}>
         <View style={{ gap: 20 }}>
@@ -1121,6 +1111,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 10,
   },
+  activeFolderNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    marginHorizontal: 14,
+    marginBottom: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderLeftWidth: 4,
+    borderRadius: 8,
+  },
+  activeFolderDot: { width: 8, height: 8, borderRadius: 4 },
+  activeFolderText: { color: "#334155", fontSize: 12, fontWeight: "700" },
 
   tab: {
     flex: 1,

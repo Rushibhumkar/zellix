@@ -106,6 +106,26 @@ export const getLeadDetailById = (id: string) => {
     .then((res) => res?.data);
 };
 
+export const getLeadFolders = () =>
+  axiosInstance.get("/api/lead/folders").then((res) => res?.data?.data || []);
+
+export const createLeadFolder = (data: { name: string; color: string }) =>
+  axiosInstance.post("/api/lead/folders", data).then((res) => res?.data);
+
+export const updateLeadFolder = (
+  folderId: string,
+  data: { name?: string; color?: string },
+) => axiosInstance.patch(`/api/lead/folders/${folderId}`, data).then((res) => res?.data);
+
+export const deleteLeadFolder = (folderId: string) =>
+  axiosInstance.delete(`/api/lead/folders/${folderId}`).then((res) => res?.data);
+
+export const addLeadsToFolder = (folderId: string, leadIds: string[]) =>
+  axiosInstance.post(`/api/lead/folders/${folderId}/leads`, { leadIds }).then((res) => res?.data);
+
+export const removeLeadsFromFolder = (folderId: string, leadIds: string[]) =>
+  axiosInstance.delete(`/api/lead/folders/${folderId}/leads`, { data: { leadIds } }).then((res) => res?.data);
+
 export const getLead = async ({
   search = null,
   pageParam = 1,
@@ -126,6 +146,7 @@ export const getLead = async ({
   source,
   projectId,
   teamId,
+  folderId,
 }) => {
   try {
     const response = await axiosInstance.get("api/lead", {
@@ -149,6 +170,7 @@ export const getLead = async ({
         ...(source && { source }),
         ...(projectId && { projectId }),
         ...(teamId && { teamId }),
+        ...(folderId && { folderId }),
       },
     });
     // console.log("🟢 getLead RAW response.data:", response.data);

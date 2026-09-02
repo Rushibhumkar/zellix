@@ -37,48 +37,47 @@ const LoginScreen = () => {
     // password: "Application@2025*!",
     // email: "suurajkummargupta@gmail.com",
     // password: "123456789",
-
     // email: "kashif22@mailinator.com",
     // password: "123456789",
-
     // dev : agent
     // email: "dev1@swavishtek.com",
     // password: "",
-
     // dev : agent
     // email: "abhishek@swavishsoftware.com",
     // password: "",
-
-    // call karna hai iss wale se
+    // dev : agent ( Rushikesh Bhumkar )
     // email: "test1@swavishtek.com",
     // password: "",
-
-    // dev : super admin
+    // dev :
     // email: "test@test.com",
     // password: "123456789",
-
     // dev : super admin
-    email: "mohdkashif1008@gmail.com",
-    password: "123456789",
-
+    // email: "mohdkashif1008@gmail.com",
+    // password: "",
     // dev  : sr manager ( Rohit Barate )
     // email: "dev20@swavishtek.com",
-    // password: "123456789",
-
+    // password: "",
     // dev  : team lead( pradeep shukla )
     // email: "pradeep@swavishsoftware.com",
-    // password: "123456789",
-
+    // password: "",
+    // <=========== LIVE =============>
     // live : seo
     // email: "marketing@skgestates.com",
     // password: "1234567890",
-
+    // live : sr manager
+    // email: "amit.singh@skgestates.com",
+    // password: "",
+    // live : Team lead
+    // email: "shivam.sourabh@skgestates.com",
+    // password: "",
+    // live : Agent
+    // email: "farakhuddin.khan@skgestatesmail.com",
+    // password: "",
     // live : super admin
     // email: "tech@skgestates.com",
     // password: "Rohit@311001",
-
-    // email: "",
-    // password: "",
+    email: "",
+    password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({

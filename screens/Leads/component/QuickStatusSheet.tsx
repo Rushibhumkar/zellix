@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, ActivityIndicator } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
 import { useQueryClient } from "@tanstack/react-query";
 import ModalWithBlur from "../../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
@@ -28,8 +27,6 @@ interface TQuickStatusSheet {
   initialStatus?: string;
   selectLeadType: string;
   onClose: () => void;
-  isPinned?: boolean;
-  onTogglePin?: () => void;
 }
 
 const filteredLeadStatus = inLeadStatus
@@ -72,8 +69,6 @@ const QuickStatusSheet = ({
   initialStatus,
   selectLeadType,
   onClose,
-  isPinned,
-  onTogglePin,
 }: TQuickStatusSheet) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
@@ -165,19 +160,6 @@ const QuickStatusSheet = ({
             Change Status
           </CustomText>
 
-          {!!onTogglePin && (
-            <TouchableOpacity
-              onPress={onTogglePin}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={{ padding: 4 }}
-            >
-              <MaterialIcons
-                name={isPinned ? "bookmark" : "bookmark-border"}
-                size={20}
-                color={isPinned ? "#F2A93B" : color.borderColor}
-              />
-            </TouchableOpacity>
-          )}
         </View>
 
         <View style={{ marginTop: 16 }}>

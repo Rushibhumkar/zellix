@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
-import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import Container from "../../myComponents/Container/Container";
@@ -20,7 +19,6 @@ const SendLeadRSVPInvitation = () => {
   const skippedLeadCount = route.params?.skippedLeadCount || 0;
   const [events, setEvents] = useState<any[]>([]);
   const [eventId, setEventId] = useState("");
-  const [dateTime, setDateTime] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
 
   const loadEvents = useCallback(async () => {
@@ -32,26 +30,27 @@ const SendLeadRSVPInvitation = () => {
   useEffect(() => { loadEvents(); }, [loadEvents]);
 
   const send = async () => {
-    const event = events.find((item) => item._id === eventId);
-    if (!eventId || !dateTime) return toast.error("Select an event and attending date/time");
-    if (!event?.startDateTime || !event?.endDateTime || dateTime < new Date(event.startDateTime) || dateTime > new Date(event.endDateTime)) {
-      return toast.error("Attending date and time must be within the selected event duration");
-    }
+    if (!eventId) return toast.error("Select an upcoming event");
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/api/invitation/from-leads", { eventId, leadIds, dateTime: dateTime.toISOString() });
+      const response = await axiosInstance.post("/api/invitation/from-leads", { eventId, leadIds });
       const failures = response?.data?.failures || [];
       const blocked = failures.filter((item: any) => item.message?.includes("directly assigned"));
+      const returnToLeadList = () =>
+        navigation.navigate("allLead", {
+          clearRSVPSelection: Date.now(),
+        });
+
       if (failures.length) {
         const reasons = [...new Set(failures.map((item: any) => item.message).filter(Boolean))];
         Alert.alert(
           "Some invitations were not sent",
           `${response?.data?.createdCount || 0} invitation(s) sent.\n${blocked.length || failures.length} selected lead(s) could not be sent an invitation.\n\n${reasons.join("\n")}`,
-          [{ text: "OK", onPress: () => navigation.goBack() }],
+          [{ text: "OK", onPress: returnToLeadList }],
         );
       } else {
         toast.success(response?.data?.message || "RSVP invitations sent successfully");
-        navigation.goBack();
+        returnToLeadList();
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Unable to send RSVP invitations");
@@ -61,16 +60,7 @@ const SendLeadRSVPInvitation = () => {
   return <Container><Header title="Send RSVP Invitations" /><View style={styles.content}>
     {skippedLeadCount > 0 && <View style={styles.warning}><CustomText style={styles.warningText}>You cannot send RSVP invitations for {skippedLeadCount} selected lead(s) assigned to another user. Invitations will be sent only for your assigned leads.</CustomText></View>}
     <CustomText style={styles.count}>{leadIds.length} eligible lead(s) selected</CustomText>
-    <AnyDropdownRNE arrOfObj={events} keyValueShowInBox="label" keyValueGetOnSelect="_id" placeholder="Select upcoming event" containerStyle={styles.field} onChange={(value: any) => { setEventId(String(value)); setDateTime(null); }} initialValue={eventId} mode="modal" />
-    <DatePickerExpo
-      title="Attending Date & Time"
-      mode="datetime"
-      initialValue={dateTime?.toISOString() || ""}
-      onSelect={(value: any) => setDateTime(value instanceof Date ? value : new Date(value))}
-      boxContainerStyle={styles.field}
-      minimumDate={events.find((event) => event._id === eventId)?.startDateTime ? new Date(events.find((event) => event._id === eventId)?.startDateTime) : undefined}
-      maximumDate={events.find((event) => event._id === eventId)?.endDateTime ? new Date(events.find((event) => event._id === eventId)?.endDateTime) : undefined}
-    />
+    <AnyDropdownRNE arrOfObj={events} keyValueShowInBox="label" keyValueGetOnSelect="_id" placeholder="Select upcoming event" containerStyle={styles.field} onChange={(value: any) => setEventId(String(value))} initialValue={eventId} mode="modal" />
     <CustomBtn title="Send RSVP" onPress={send} isLoading={loading} disabled={!leadIds.length} containerStyle={styles.button} />
   </View></Container>;
 };

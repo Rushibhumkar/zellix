@@ -69,6 +69,7 @@ export const useGetLead = ({
   projectId,
   source,
   teamId,
+  folderId,
 }) => {
   // return useQuery({
   //     queryKey: ['getLead'],
@@ -97,6 +98,7 @@ export const useGetLead = ({
       source,
       projectId,
       teamId,
+      folderId,
     ],
     queryFn: async ({ pageParam = 1 }) =>
       getLead({
@@ -119,6 +121,7 @@ export const useGetLead = ({
         source,
         projectId,
         teamId,
+        folderId,
       }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext

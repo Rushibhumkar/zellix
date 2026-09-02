@@ -15,7 +15,6 @@ import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import CustomRadioButton from "../../components/CustomRadioButton";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import MobileInput from "../../myComponents/MobileInput/MobileInput";
-import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { color } from "../../const/color";
 import Container from "../../myComponents/Container/Container";
@@ -72,7 +71,6 @@ const validationSchema = Yup.object().shape({
       return Boolean(value || this.parent.clientEmail || this.parent.mobile);
     }),
 
-  scheduleDate: Yup.mixed().required("Date & time is required"),
 });
 
 const SendInvitation = () => {
@@ -142,7 +140,6 @@ const SendInvitation = () => {
     clientEmail: "",
     mobile: "",
     whatsapp: "",
-    scheduleDate: null,
     company: "",
     leadSource: "",
     comment: "",
@@ -155,12 +152,6 @@ const SendInvitation = () => {
     setSubmitting(true);
 
     try {
-      const event = events.find((item) => item._id === values.eventId);
-      const selectedDate = values.scheduleDate ? new Date(values.scheduleDate) : null;
-      if (!selectedDate || Number.isNaN(selectedDate.getTime()) || !event?.startDateTime || !event?.endDateTime || selectedDate < new Date(event.startDateTime) || selectedDate > new Date(event.endDateTime)) {
-        toast.error("Attending date and time must be within the selected event duration");
-        return;
-      }
       let code = "";
       let mobile = "";
       let clientMobile = "";
@@ -184,8 +175,6 @@ const SendInvitation = () => {
         clientMobile,
 
         whatsappNum: values.whatsapp,
-
-        dateTime: new Date(values.scheduleDate as any).toISOString(),
 
         company: values.company,
         source: values.mode === "auto" ? undefined : values.leadSource, // auto = lead.source
@@ -249,7 +238,6 @@ const SendInvitation = () => {
                     containerStyle={{ marginHorizontal: 20 }}
                     onChange={(val: string) => {
                       setFieldValue("eventId", val);
-                      setFieldValue("scheduleDate", null);
                     }}
                     initialValue={values.eventId}
                     mode="modal"
@@ -401,39 +389,6 @@ const SendInvitation = () => {
                     containerStyle={{ marginHorizontal: 20 }}
                     keyboardType="number-pad"
                   />
-
-                  {/* DATE & TIME */}
-                  <DatePickerExpo
-                    boxContainerStyle={{ marginHorizontal: 20, marginTop: 8 }}
-                    onSelect={(d: any) =>
-                      setFieldValue(
-                        "scheduleDate",
-                        d instanceof Date ? d : new Date(d),
-                      )
-                    }
-                    initialValue={values.scheduleDate}
-                    title="Date & Time"
-                    mode="datetime"
-                    iosDisplay="inline"
-                    minimumDate={
-                      events.find((event) => event._id === values.eventId)
-                        ?.startDateTime
-                        ? new Date(events.find((event) => event._id === values.eventId)?.startDateTime as string)
-                        : undefined
-                    }
-                    maximumDate={
-                      events.find((event) => event._id === values.eventId)
-                        ?.endDateTime
-                        ? new Date(events.find((event) => event._id === values.eventId)?.endDateTime as string)
-                        : undefined
-                    }
-                  />
-
-                  {touched.scheduleDate && errors.scheduleDate && (
-                    <CustomText style={styles.errorText}>
-                      {errors.scheduleDate as any}
-                    </CustomText>
-                  )}
 
                   {/* COMPANY */}
                   <CustomInput

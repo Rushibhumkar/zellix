@@ -39,12 +39,11 @@ interface TTitleWithAddDelete {
   showAddBtn?: any;
   onPressToNavigate: () => void;
   onPressToDelete?: () => void;
-  onPressToPin?: () => void;
-  isPinned?: boolean;
   title: string;
   onPressToEdit: () => void;
   onPressToAssignLead: () => void;
   onPressToInvite?: () => void;
+  onPressToFolder?: () => void;
   onPressToFilter: () => void;
   onCloseSearch: () => void;
   onSelectLeadType: () => void;
@@ -63,11 +62,10 @@ const TitleWithAddDelete = ({
   showAddBtn = true,
   onPressToNavigate,
   onPressToDelete,
-  onPressToPin,
-  isPinned,
   onPressToEdit,
   onPressToAssignLead,
   onPressToInvite,
+  onPressToFolder,
   onPressToFilter,
   onCloseSearch,
   onSelectLeadType,
@@ -311,28 +309,6 @@ const TitleWithAddDelete = ({
               </AnimatedTouchableOpacity>
             )}
 
-            {!!onPressToPin && (
-              <AnimatedTouchableOpacity
-                entering={
-                  isWithAnimation
-                    ? BounceIn.duration(400).delay(175)
-                    : undefined
-                }
-                exiting={isWithAnimation ? BounceOut.duration(300) : undefined}
-                style={{
-                  ...iconWrapperStyle,
-                  padding: 6,
-                }}
-                onPress={onPressToPin}
-              >
-                <MaterialIcons
-                  name={isPinned ? "bookmark" : "bookmark-border"}
-                  size={20}
-                  color={isPinned ? "#F2A93B" : "#fff"}
-                />
-              </AnimatedTouchableOpacity>
-            )}
-
             {!!onPressToEdit && (
               <AnimatedTouchableOpacity
                 entering={
@@ -379,6 +355,14 @@ const TitleWithAddDelete = ({
                 onPress={onPressToInvite}
               >
                 <Feather name="user-plus" size={19} color="#fff" />
+              </AnimatedTouchableOpacity>
+            )}
+            {!!onPressToFolder && (
+              <AnimatedTouchableOpacity
+                style={{ ...iconWrapperStyle, padding: 7 }}
+                onPress={onPressToFolder}
+              >
+                <Feather name="folder-plus" size={19} color="#fff" />
               </AnimatedTouchableOpacity>
             )}
           </AnimatedView>

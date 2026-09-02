@@ -89,6 +89,7 @@ import {
 } from "../../hooks/useAsyncStorage";
 import { PENDING_CALL_KEY_LEAD } from "../../utils/pendingCallStorage";
 import { getAppSettings } from "../../services/rootApi/api";
+import { LeadFoldersModal } from "./component/LeadFolders";
 
 const extractStringObj = (input: any) => {
   try {
@@ -256,6 +257,7 @@ const LeadsDetails = () => {
   const [message, setMessage] = useState(false);
   const [timePickerKey, setTimePickerKey] = useState(0);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [showFolderModal, setShowFolderModal] = useState(false);
 
   const [callMeta, setCallMeta] = useState<{
     initiatedAt: number | null;
@@ -897,13 +899,10 @@ const LeadsDetails = () => {
 
       toast.success(res?.data?.message || "Status updated successfully");
 
-      if (
-        fields.status === "meeting_scheduled" ||
-        fields.status === "meeting_done"
-      ) {
-        setCelebrationStatus(fields.status);
-        setShowCelebration(true);
-      }
+      const celebrationStatusAfterUpdate =
+        fields.status === "meeting_scheduled" || fields.status === "meeting_done"
+          ? fields.status
+          : null;
 
       await hitCreateCallLog(fields.status);
       queryClient.invalidateQueries({
@@ -917,6 +916,15 @@ const LeadsDetails = () => {
       await queryClient.refetchQueries({ queryKey: ["all-reminders"] });
 
       closeAllModalsSafely();
+
+      // The celebration modal is a native Modal too. Open it only after the
+      // status modal has completely dismissed, otherwise Android can freeze.
+      if (celebrationStatusAfterUpdate) {
+        setTimeout(() => {
+          setCelebrationStatus(celebrationStatusAfterUpdate);
+          setShowCelebration(true);
+        }, 250);
+      }
       setStatusLoading(false);
     } catch (err: any) {
       myConsole("errrrrr", err);
@@ -1199,6 +1207,29 @@ const LeadsDetails = () => {
             }
           />
           <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
+          {Array.isArray(detail?.folders) && detail.folders.length > 0 && (
+            <View style={styles.folderSection}>
+              <CustomText style={styles.folderSectionTitle}>Folders</CustomText>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.folderScrollContent}>
+                {detail.folders.map((folder: any) => {
+                  const folderColor = folder?.color || "#2E67BE";
+                  const folderName = String(folder?.name || "Untitled folder").trim() || "Untitled folder";
+                  return (
+                    <View key={folder?._id || folderName} style={[styles.folderChip, { borderColor: `${folderColor}66` }]}>
+                      <View style={[styles.folderChipDot, { backgroundColor: folderColor }]} />
+                      <CustomText numberOfLines={1} style={styles.folderChipText}>{folderName}</CustomText>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+          <LeadFoldersModal
+            visible={showFolderModal}
+            onClose={() => setShowFolderModal(false)}
+            leadIds={detail?._id ? [detail._id] : []}
+            onCompleted={() => refetchLeadDetail()}
+          />
 
           {/* 🔥 Three Dot Action Modal */}
           {showActionsMenu && !showChangeStatusPopup && !FUTModal.visible && (
@@ -1230,6 +1261,18 @@ const LeadsDetails = () => {
                         </CustomText>
                       </TouchableOpacity>
                     )}
+
+                    <TouchableOpacity
+                      style={styles.actionItem}
+                      onPress={() => {
+                        setShowActionsMenu(false);
+                        setShowFolderModal(true);
+                      }}
+                    >
+                      <CustomText style={styles.actionTextItem}>
+                        Add to Folder
+                      </CustomText>
+                    </TouchableOpacity>
 
                     {/* Change Status */}
                     {isAdminOrAssigne && (
@@ -2454,6 +2497,49 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     color: "#2F3A4A",
+  },
+
+  folderSection: {
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
+
+  folderSectionTitle: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    paddingHorizontal: 16,
+    marginBottom: 7,
+  },
+
+  folderScrollContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+
+  folderChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: 190,
+    borderWidth: 1,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    gap: 7,
+  },
+
+  folderChipDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+  },
+
+  folderChipText: {
+    flexShrink: 1,
+    color: "#1E293B",
+    fontSize: 13,
+    fontWeight: "700",
   },
 
   actionsOverlay: {

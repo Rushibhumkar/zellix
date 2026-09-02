@@ -12,6 +12,10 @@ import {
 import { Dropdown } from "react-native-element-dropdown";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import * as XLSX from "xlsx";
+import { Buffer } from "buffer";
 import { useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import Header from "../../components/Header";
@@ -25,6 +29,7 @@ import { debounce } from "../../utils/debounce";
 import { useAppToast } from "../../components/AppToast";
 import {
   checkInRSVPEventLead,
+  getRSVPEventClients,
   sendRSVPForEventLead,
   updateRSVPEventLeadStatus,
   useRSVPEventAgents,
@@ -53,6 +58,37 @@ const hasAttendingTimeArrived = (dateTime: any) =>
   moment(dateTime).isValid() &&
   Date.now() >= moment(dateTime).valueOf();
 
+const formatSelectedDateAndSlot = (client: any) => {
+  if (client?.responseStatus !== "Accepted" || !client?.selectedDate) {
+    return { date: "-", slot: "" };
+  }
+
+  const selectedDate = moment(client.selectedDate, "YYYY-MM-DD", true);
+  const slotLabels: Record<string, string> = {
+    "9am-12pm": "9 AM – 12 PM",
+    "12pm-4pm": "12 PM – 4 PM",
+    "4pm-8pm": "4 PM – 8 PM",
+  };
+
+  return {
+    date: selectedDate.isValid() ? selectedDate.format("DD MMM YYYY") : "-",
+    slot: slotLabels[client.timeSlot] || client.timeSlot || "",
+  };
+};
+
+const formatExportDateTime = (value: any) =>
+  value && moment(value).isValid()
+    ? moment(value).format("DD MMM YYYY, hh:mm A")
+    : "";
+
+const getWhatsAppLink = (client: any) => {
+  const phoneNumber = String(
+    client?.whatsappNum || client?.clientMobile || "",
+  ).replace(/\D/g, "");
+
+  return phoneNumber ? `https://wa.me/${phoneNumber}` : "";
+};
+
 const StatusBadge = ({ value }: any) => {
   const [backgroundColor, color] = badgeColors[value] || badgeColors["-"];
   return (
@@ -75,6 +111,7 @@ const RSVPClientsList = ({ route }: any) => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loadingId, setLoadingId] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
   const { data: eventsData } = useRSVPEventOptions();
   const events = eventsData?.data || [];
   const { data: agentsData } = useRSVPEventAgents({ eventId, search: "" });
@@ -121,6 +158,101 @@ const RSVPClientsList = ({ route }: any) => {
       toast.success("RSVP link copied");
     } catch {
       toast.error("Unable to copy RSVP link");
+    }
+  };
+
+  const exportClients = async () => {
+    if (isExporting) return;
+    if (!eventId) {
+      toast.error("Select an event before exporting clients");
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const exportRows: any[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      do {
+        const response = await getRSVPEventClients({
+          eventId,
+          agentId,
+          pageParam: page,
+          limit: 500,
+          search: debouncedSearch,
+        });
+        exportRows.push(...(response?.data || []));
+        totalPages = response?.pagination?.totalPages || 1;
+        page += 1;
+      } while (page <= totalPages);
+
+      if (!exportRows.length) {
+        toast.error("No clients available to export");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(
+        exportRows.map((client: any) => {
+          const assignedAgent = [
+            client?.agent?.name,
+            client?.agent?.lastName,
+          ]
+            .filter(Boolean)
+            .join(" ");
+          const comments = Array.isArray(client.comments)
+            ? client.comments.join(" | ")
+            : client.comments || "";
+          const { date: selectedDate, slot: selectedTimeSlot } =
+            formatSelectedDateAndSlot(client);
+
+          return {
+            "Client Name": client.clientName || "",
+            Email: client.clientEmail || "",
+            Mobile: client.clientMobile || "",
+            WhatsApp: getWhatsAppLink(client),
+            Event: selectedEvent?.title || "",
+            "Assigned Agent":
+              assignedAgent ||
+              client.assignedUserName ||
+              client.initialAssigneeName ||
+              "",
+            Source: client.source || "",
+            "RSVP Status": client.responseStatus || "Not sent",
+            "Selected Date": selectedDate === "-" ? "" : selectedDate,
+            "Selected Time Slot": selectedTimeSlot,
+            Guests: client.guests ?? "",
+            "Attendance Status": client.attendStatus || "Not Attended",
+            "Client Notes": client.clientNotes || "",
+            Comments: comments,
+            "Lead Received At": formatExportDateTime(client.receivedAt),
+            "Assigned At": formatExportDateTime(client.assignedAt),
+            "Invitation Sent At": formatExportDateTime(client.invitationSentAt),
+            "RSVP Response At": formatExportDateTime(client.responseTime),
+            "RSVP Expires At": formatExportDateTime(client.rsvpExpiresAt),
+            "RSVP Link": client.rsvpLink || "",
+          };
+        }),
+      );
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "RSVP Clients");
+      const binary = XLSX.write(workbook, { type: "binary", bookType: "xlsx" });
+      const fileUri = `${FileSystem.documentDirectory}rsvp-clients-${Date.now()}.xlsx`;
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        Buffer.from(binary, "binary").toString("base64"),
+        { encoding: "base64" },
+      );
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      } else {
+        toast.success("RSVP client export created");
+      }
+    } catch (error) {
+      toast.error("Unable to export RSVP clients");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -235,10 +367,7 @@ RSVP Link: ${client.rsvpLink}`;
     const hasActiveRsvpLink =
       Boolean(item.rsvpLink) &&
       (!item.rsvpExpiresAt || moment(item.rsvpExpiresAt).isAfter(moment()));
-    const attendingDateTime =
-      responseStatus === "Accepted" && item.attendingDateTime
-        ? moment(item.attendingDateTime)
-        : null;
+    const selectedDateAndSlot = formatSelectedDateAndSlot(item);
 
     return (
       <View style={styles.card}>
@@ -260,12 +389,15 @@ RSVP Link: ${client.rsvpLink}`;
             </CustomText>
           </View>
           <View style={styles.dateTimeColumn}>
-            <Feather name="calendar" size={14} color="#2E67BE" />
+            {/* <Feather name="calendar" size={14} color="#2E67BE" /> */}
+            <CustomText style={styles.dateLabel}>
+              Selected Date & Slot
+            </CustomText>
             <CustomText style={styles.dateText}>
-              {attendingDateTime ? attendingDateTime.format("DD MMM YYYY") : "-"}
+              {selectedDateAndSlot.date}
             </CustomText>
             <CustomText style={styles.timeText}>
-              {attendingDateTime ? attendingDateTime.format("hh:mm A") : ""}
+              {selectedDateAndSlot.slot}
             </CustomText>
           </View>
         </View>
@@ -356,7 +488,18 @@ RSVP Link: ${client.rsvpLink}`;
 
   return (
     <Container>
-      <Header title="Clients" totalCount={totalClients} />
+      <Header
+        title="Clients"
+        totalCount={totalClients}
+        showActions
+        buttons={[
+          {
+            title: isExporting ? "Exporting" : "Export",
+            onPress: exportClients,
+            icon: <Feather name="download" size={18} color="#FFF" />,
+          },
+        ]}
+      />
       <FlatList
         data={clients}
         keyExtractor={(item: any) => item._id}
@@ -488,7 +631,13 @@ const styles = StyleSheet.create({
   dateTimeColumn: {
     alignItems: "flex-end",
     marginLeft: 10,
-    minWidth: 88,
+    minWidth: 104,
+  },
+  dateLabel: {
+    color: "#788497",
+    fontSize: 10,
+    marginTop: 3,
+    textAlign: "right",
   },
   dateText: { color: "#43526A", fontSize: 11, marginTop: 3 },
   timeText: { color: "#788497", fontSize: 11, marginTop: 1 },
