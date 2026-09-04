@@ -16,7 +16,7 @@ import { ModalPortal } from "react-native-modals";
 import { BackHandler } from "react-native";
 import { myConsole } from "./hooks/useConsole";
 import * as Updates from "expo-updates";
-import { Alert, Linking } from "react-native";
+import { Linking } from "react-native";
 import GlobalPopupManager from "./myComponents/GlobalPopup/GlobalPopupManager";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -125,13 +125,6 @@ export default function App() {
   // console.log("OTA channel:", Updates.channel);
   // console.log("OTA runtime:", Updates.runtimeVersion);
   console.log("🔥 OTA VERSION 2");
-
-  useEffect(() => {
-    setTimeout(async () => {
-      const update = await Updates.checkForUpdateAsync();
-      Alert.alert("OTA DEBUG", JSON.stringify(update));
-    }, 3000);
-  }, []);
 
   useEffect(() => {
     const check = async () => {

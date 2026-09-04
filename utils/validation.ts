@@ -133,17 +133,27 @@ export const addMeetingSchema = Yup.object().shape({
   clientAddress: Yup.string(),
   clientCity: Yup.string(),
   clientCountry: Yup.string(),
-  location: Yup.string(),
+  meetingMode: Yup.string()
+    .oneOf(["physical", "virtual"])
+    .required("Meeting type is required"),
+  location: Yup.string().when("meetingMode", {
+    is: "physical",
+    then: (schema) => schema.trim().required("Location is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  virtualMeetingLink: Yup.string().when("meetingMode", {
+    is: "virtual",
+    then: (schema) =>
+      schema.trim().required("Virtual meeting platform or link is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   productPitch: Yup.string(),
   remarks: Yup.string(),
-  // scheduleDate: Yup.string().required("Field required"),
+  scheduleDate: Yup.date().required("Meeting date and time is required"),
   // self: Yup.string().required("Field required"),
   status: Yup.string().required("Field required"),
   lead: Yup.string().required("Field required"),
-  agents: Yup.array()
-    .of(Yup.string())
-    .min(1, "At least one agent is required")
-    .required("At least one agent is required"),
+  agents: Yup.array().of(Yup.string()),
 });
 export const addExpenseSchema = Yup.object().shape({
   expenseCategory: Yup.string().required("Expense Category required"),

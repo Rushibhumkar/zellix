@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   StyleSheet,
   View,
@@ -34,14 +35,8 @@ import { color } from "../../const/color";
 import moment from "moment";
 import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
-import { roleEnum } from "../../utils/data";
 import { Feather } from "@expo/vector-icons";
 import { useAppToast } from "../../components/AppToast";
-
-const agents = [
-  { label: "Ahmed", value: "Ahmed" },
-  { label: "Soud", value: "Soud" },
-];
 
 const AddMeeting = () => {
   const queryClient = useQueryClient();
@@ -50,14 +45,13 @@ const AddMeeting = () => {
   // const dispatch = useDispatch();
   const { navigate, goBack } = useNavigation();
   const { params } = useRoute();
-  const { user } = useSelector(selectUser);
+  const { user, allUsers } = useSelector(selectUser);
 
   let data = params?.detail;
 
   const incomingStatus = params?.detail?.status;
-  const incomingUserId = params?.detail?.userId;
 
-  const isUpdate = !!data?.productPitch;
+  const isUpdate = Boolean(data?._id && Array.isArray(data?.meetings));
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -67,9 +61,10 @@ const AddMeeting = () => {
   // let leadNameToClientName = lead?.map((el) => { return { ...el, name: el?.clientName } }).sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1)
   // const textInput2 = useRef(null);
   const [tempDate, setTempDate] = useState({
-    date: "",
-    time: "",
+    date: new Date(),
+    time: new Date(),
   });
+  const [dateTimeError, setDateTimeError] = useState("");
 
   const isTodaySelected = moment(tempDate.date).isSame(moment(), "day");
 
@@ -101,14 +96,15 @@ const AddMeeting = () => {
           ? data?.meetings[0]?.status
           : "";
 
-  // Default agents: if not sup/sub admin → pre-select self
-  const isAdmin =
-    user?.role === roleEnum?.sup_admin || user?.role === roleEnum?.sub_admin;
-
-  const defaultAgents =
-    !isAdmin && (incomingUserId || user?._id)
-      ? [incomingUserId || user?._id]
-      : (data?.agents ?? "");
+  const defaultAgents = Array.isArray(data?.agents)
+    ? data.agents.filter((memberId) => String(memberId) !== String(user?._id))
+    : [];
+  const memberOptions = (allUsers || [])
+    .filter((member) => String(member?._id) !== String(user?._id))
+    .map((member) => ({
+      ...member,
+      name: `${member?.name || ""} ${member?.lastName || ""}`.trim(),
+    }));
 
   useEffect(() => {
     setTempDate({
@@ -135,7 +131,14 @@ const AddMeeting = () => {
       clientAddress: data?.clientAddress ?? "",
       clientCity: data?.clientCity ?? "",
       clientCountry: data?.clientCountry ?? "",
+      meetingMode:
+        data?.meetings?.[0]?.meetingMode ||
+        (data?.meetings?.[0]?.virtualMeetingLink ? "virtual" : "physical"),
       location: data?.meetings?.length > 0 ? data?.meetings[0]?.location : "",
+      virtualMeetingLink:
+        data?.meetings?.length > 0
+          ? data?.meetings[0]?.virtualMeetingLink ?? ""
+          : "",
       remarks: data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : "",
       status: mappedMeetingStatus,
       agents: defaultAgents,
@@ -146,6 +149,12 @@ const AddMeeting = () => {
           : { lat: null, lng: null },
     },
     onSubmit: async (value) => {
+      if (!tempDate?.date || !tempDate?.time) {
+        setDateTimeError("Meeting date and time is required");
+        return;
+      }
+
+      setDateTimeError("");
       setLoading(true);
       let tempDa = `${tempDate?.date.toString().slice(0, 13)}${tempDate?.time
         .toString()
@@ -275,7 +284,7 @@ const AddMeeting = () => {
                 }
                 keyValueGetOnSelect="_id"
                 keyValueShowInBox="name"
-                label="Choose Lead"
+                label="Choose Lead *"
                 placeholder="Lead..."
                 onChange={(a) => setFieldValue("lead", a)}
                 containerStyle={{ marginBottom: 15 }}
@@ -314,7 +323,7 @@ const AddMeeting = () => {
             )}
 
             <DropdownRNE
-              label="Status"
+              label="Status *"
               placeholder="Status"
               containerStyle={{ marginBottom: 15 }}
               arrOfObj={[
@@ -390,6 +399,43 @@ const AddMeeting = () => {
                 {errors.clientCountry}
               </CustomText>
             )}
+            <View style={styles.meetingTypeContainer}>
+              <CustomText style={styles.requiredLabel}>Meeting Type *</CustomText>
+              <View style={styles.radioRow}>
+                {["physical", "virtual"].map((meetingMode) => (
+                  <Pressable
+                    key={meetingMode}
+                    accessibilityRole="radio"
+                    accessibilityState={{
+                      selected: values.meetingMode === meetingMode,
+                    }}
+                    style={styles.radioOption}
+                    onPress={() => {
+                      setFieldValue("meetingMode", meetingMode);
+                      if (meetingMode === "physical") {
+                        setFieldValue("virtualMeetingLink", "");
+                      } else {
+                        setFieldValue("location", "");
+                        setFieldValue("coordinates", { lat: null, lng: null });
+                      }
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        values.meetingMode === meetingMode && styles.radioOuterSelected,
+                      ]}
+                    >
+                      {values.meetingMode === meetingMode && <View style={styles.radioInner} />}
+                    </View>
+                    <CustomText style={styles.radioLabel}>
+                      {meetingMode === "physical" ? "Physical" : "Virtual"}
+                    </CustomText>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+            {values.meetingMode === "physical" ? (
             <View>
               <View
                 style={{
@@ -404,7 +450,7 @@ const AddMeeting = () => {
                   fontWeight="500"
                   style={{ color: color.mainTxtColor }}
                 >
-                  Meeting Location
+                  Meeting Location *
                 </CustomText>
                 {values?.coordinates?.lng && (
                   <Feather
@@ -428,11 +474,28 @@ const AddMeeting = () => {
                 }}
                 defaultValue={values?.location}
               />
+              {errors.location && touched.location && (
+                <CustomText style={styles.errorText}>
+                  {errors.location}
+                </CustomText>
+              )}
             </View>
-            {errors.location && touched.location && (
-              <CustomText style={styles.errorText}>
-                {errors.location}
-              </CustomText>
+            ) : (
+              <>
+                <CustomInput
+                  label="Virtual Meeting Platform / Link *"
+                  placeholder="Meet, Teams, etc."
+                  containerStyle={{ marginBottom: 15 }}
+                  onChangeText={handleChange("virtualMeetingLink")}
+                  onBlur={handleBlur("virtualMeetingLink")}
+                  value={values?.virtualMeetingLink}
+                />
+                {errors.virtualMeetingLink && touched.virtualMeetingLink && (
+                  <CustomText style={styles.errorText}>
+                    {errors.virtualMeetingLink}
+                  </CustomText>
+                )}
+              </>
             )}
 
             <CustomInput
@@ -447,6 +510,9 @@ const AddMeeting = () => {
               <CustomText style={styles.errorText}>{errors.remarks}</CustomText>
             )}
 
+            <CustomText style={styles.requiredLabel}>
+              Meeting Date & Time *
+            </CustomText>
             <View
               style={{
                 flexDirection: "row",
@@ -455,7 +521,7 @@ const AddMeeting = () => {
               }}
             >
               <DatePickerExpo
-                title={"Date"}
+                title={"Date *"}
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
                 onSelect={(date) =>
                   setTempDate((prev) => ({
@@ -469,7 +535,7 @@ const AddMeeting = () => {
               />
 
               <DatePickerExpo
-                title={"Time"}
+                title={"Time *"}
                 boxContainerStyle={{ marginBottom: 20, width: "47%" }}
                 onSelect={(time) => setTempDate((prev) => ({ ...prev, time }))}
                 initialValue={tempDate?.time}
@@ -477,22 +543,26 @@ const AddMeeting = () => {
                 minimumDate={isTodaySelected ? new Date() : undefined} // ⛔ past time blocked
               />
             </View>
+            {dateTimeError ? (
+              <CustomText style={styles.dateTimeError}>
+                {dateTimeError}
+              </CustomText>
+            ) : null}
             <DropdownRNE
+              arrOfObj={memberOptions}
               isMultiSelect={true}
               keyValueShowInBox="name"
               keyValueGetOnSelect="_id"
-              label={"Agents"}
+              label={"Members"}
               keyName="agent"
-              placeholder={"Select agent"}
+              placeholder={"Select members"}
               containerStyle={{ marginBottom: 15 }}
               onChange={(a) => setFieldValue("agents", a)}
               initialValue={values?.agents}
               isSearch
               mode="modal"
+              excludedItems={user?._id ? [user._id] : []}
             />
-            {errors.agents && touched.agents && (
-              <CustomText style={styles.errorText}>{errors.agents}</CustomText>
-            )}
             <CustomBtn
               title="Submit"
               onPress={handleSubmit}
@@ -518,6 +588,46 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontWeight: "500",
   },
+  meetingTypeContainer: {
+    marginBottom: 15,
+  },
+  requiredLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: color.mainTxtColor,
+    marginBottom: 10,
+  },
+  radioRow: {
+    flexDirection: "row",
+    gap: 24,
+  },
+  radioOption: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#8994A6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+  radioOuterSelected: {
+    borderColor: color.primaryColor,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: color.primaryColor,
+  },
+  radioLabel: {
+    fontSize: 15,
+    color: color.mainTxtColor,
+  },
   input: {
     marginTop: 10,
     height: 37.5,
@@ -529,6 +639,12 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   errorText: {
+    color: "red",
+    marginTop: -15,
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  dateTimeError: {
     color: "red",
     marginTop: -15,
     marginBottom: 10,

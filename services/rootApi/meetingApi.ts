@@ -3,13 +3,15 @@ import { axiosInstance } from "../authApi/axiosInstance"
 
 interface TAddMeeting {
     agents: [string];
-    clientAddress: string;
-    clientCity: string;
+    clientAddress?: string;
+    clientCity?: string;
     clientCountry: string;
     lead: string;
-    location: string;
-    productPitch: string;
-    remarks: string;
+    meetingMode: 'physical' | 'virtual';
+    location?: string;
+    virtualMeetingLink?: string;
+    productPitch?: string;
+    remarks?: string;
     scheduleDate: string;
     self: boolean;
     status: 'conducted' | 'schedule';
@@ -135,5 +137,4 @@ export const getMeetingForBooking = async ({
         console.log('getMeetingForBookingErrPag', err)
     }
 }
-
 
