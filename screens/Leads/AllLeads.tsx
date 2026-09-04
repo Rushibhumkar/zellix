@@ -55,7 +55,11 @@ import Animated, {
   FadeOutUp,
   runOnJS,
 } from "react-native-reanimated";
-import { LeadFolderBar, LeadFoldersModal, useLeadFolders } from "./component/LeadFolders";
+import {
+  LeadFolderBar,
+  LeadFoldersModal,
+  useLeadFolders,
+} from "./component/LeadFolders";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -121,7 +125,9 @@ const AllLeads = () => {
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const { data: leadFolders = [] } = useLeadFolders();
-  const selectedFolder = leadFolders.find((folder: any) => folder._id === selectedFolderId);
+  const selectedFolder = leadFolders.find(
+    (folder: any) => folder._id === selectedFolderId,
+  );
 
   useEffect(() => {
     if (!params?.clearRSVPSelection) return;
@@ -437,25 +443,38 @@ const AllLeads = () => {
       : leadData?.filter((item) => item?.status === selectedStatus);
 
   const openLeadRSVPInvitation = () => {
-    const isAdmin = [roleEnum.sup_admin, roleEnum.sub_admin].includes(user?.role);
-    const selectedLeads = (filteredLeadData || []).filter((lead: any) => selected.includes(lead?._id));
+    const isAdmin = [roleEnum.sup_admin, roleEnum.sub_admin].includes(
+      user?.role,
+    );
+    const selectedLeads = (filteredLeadData || []).filter((lead: any) =>
+      selected.includes(lead?._id),
+    );
     const eligibleLeads = isAdmin
       ? selectedLeads
-      : selectedLeads.filter((lead: any) => String(lead?.assign?._id || lead?.assign) === String(user?._id));
+      : selectedLeads.filter(
+          (lead: any) =>
+            String(lead?.assign?._id || lead?.assign) === String(user?._id),
+        );
     const skippedLeadCount = selectedLeads.length - eligibleLeads.length;
     if (!eligibleLeads.length) {
-      toast.error("You can send RSVP invitations only for leads assigned to you.");
+      toast.error(
+        "You can send RSVP invitations only for leads assigned to you.",
+      );
       return;
     }
-    const proceed = () => navigation.navigate("SendLeadRSVPInvitation", {
-      leadIds: eligibleLeads.map((lead: any) => lead._id),
-      skippedLeadCount,
-    });
+    const proceed = () =>
+      navigation.navigate("SendLeadRSVPInvitation", {
+        leadIds: eligibleLeads.map((lead: any) => lead._id),
+        skippedLeadCount,
+      });
     if (skippedLeadCount) {
       Alert.alert(
         "Some leads cannot receive an RSVP",
         `${skippedLeadCount} selected lead(s) are assigned to another user. Invitations will be sent only for the ${eligibleLeads.length} lead(s) assigned to you.`,
-        [{ text: "Cancel", style: "cancel" }, { text: "Continue", onPress: proceed }],
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Continue", onPress: proceed },
+        ],
       );
       return;
     }
@@ -547,8 +566,12 @@ const AllLeads = () => {
                   ? () => toggleModalAssignLead()
                   : false
               }
-              onPressToInvite={selected?.length ? openLeadRSVPInvitation : undefined}
-              onPressToFolder={selected?.length ? () => setFolderModalVisible(true) : undefined}
+              onPressToInvite={
+                selected?.length ? openLeadRSVPInvitation : undefined
+              }
+              onPressToFolder={
+                selected?.length ? () => setFolderModalVisible(true) : undefined
+              }
             />
           )}
 
@@ -671,15 +694,31 @@ const AllLeads = () => {
 
                 <LeadFolderBar
                   selectedFolderId={selectedFolderId}
+                  selectedFolderLeadCount={totalCount}
                   onChangeFolder={handleFolderChange}
                   onManage={() => setFolderModalVisible(true)}
                 />
-                {!!selectedFolder && (
-                  <View style={[styles.activeFolderNotice, { borderLeftColor: selectedFolder.color, backgroundColor: `${selectedFolder.color}14` }]}>
-                    <View style={[styles.activeFolderDot, { backgroundColor: selectedFolder.color }]} />
-                    <CustomText style={styles.activeFolderText}>{selectedFolder.name} folder</CustomText>
+                {/* {!!selectedFolder && (
+                  <View
+                    style={[
+                      styles.activeFolderNotice,
+                      {
+                        borderLeftColor: selectedFolder.color,
+                        backgroundColor: `${selectedFolder.color}14`,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.activeFolderDot,
+                        { backgroundColor: selectedFolder.color },
+                      ]}
+                    />
+                    <CustomText style={styles.activeFolderText}>
+                      {selectedFolder.name} folder
+                    </CustomText>
                   </View>
-                )}
+                )} */}
 
                 {/* <ScrollView
                   horizontal

@@ -91,6 +91,7 @@ interface TDropdownRNE {
   isCountryPicker?: boolean;
   disabled?: boolean;
   disabledItems?: string[];
+  excludedItems?: string[];
   showSelectedMembers?: boolean;
 }
 
@@ -123,6 +124,7 @@ const DropdownRNE = ({
   isCountryPicker,
   disabled = false,
   disabledItems = [],
+  excludedItems = [],
   onSelect,
   showSelectedMembers = true,
 }: TDropdownRNE) => {
@@ -179,7 +181,9 @@ const DropdownRNE = ({
   const sourceData = arrOfObj?.length ? arrOfObj : data;
 
   const validData = sourceData?.filter(
-    (item) => typeof item?.[keyValueShowInBox] === "string",
+    (item) =>
+      typeof item?.[keyValueShowInBox] === "string" &&
+      !excludedItems.includes(item?.[keyValueGetOnSelect]),
   );
 
   return (

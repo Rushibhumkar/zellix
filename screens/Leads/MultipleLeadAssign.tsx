@@ -138,6 +138,9 @@ const MultipleLeadAssign: FC<TMultipleLeadAssign> = ({
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getLead],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["leadFolders"],
+      });
 
       const message =
         resAssignLead?.data?.message || "Lead(s) assigned successfully";

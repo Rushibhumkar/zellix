@@ -248,6 +248,16 @@ const MeetingDetails = () => {
     await Clipboard.setStringAsync(text);
     toast.success(`${label} copied to clipboard`);
   };
+  const latestMeeting = detail?.meetings?.[detail?.meetings?.length - 1];
+  const memberNames = (detail?.agents || [])
+    .map((memberId: any) => {
+      const member = allUsers?.find((item) => item._id === memberId);
+      return member
+        ? `${member.name || ""} ${member.lastName || ""}`.trim()
+        : null;
+    })
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <>
@@ -340,16 +350,14 @@ const MeetingDetails = () => {
                     styles.statusBadge,
                     {
                       backgroundColor:
-                        detail?.meetings?.[detail?.meetings?.length - 1]
-                          ?.status === "conducted"
+                        latestMeeting?.status === "conducted"
                           ? "#DFF5E7"
                           : "#E3ECFB",
                     },
                   ]}
                 >
                   <CustomText style={styles.statusText}>
-                    {detail?.meetings?.[detail?.meetings?.length - 1]
-                      ?.status === "conducted"
+                    {latestMeeting?.status === "conducted"
                       ? "Conducted"
                       : "Scheduled"}
                   </CustomText>
@@ -368,10 +376,9 @@ const MeetingDetails = () => {
                 </View>
 
                 <CustomText style={styles.infoText}>
-                  {moment(
-                    detail?.meetings?.[detail?.meetings?.length - 1]
-                      ?.scheduleDate,
-                  ).format("DD MMMM YYYY • hh:mm A")}
+                  {moment(latestMeeting?.scheduleDate).format(
+                    "DD MMMM YYYY • hh:mm A",
+                  )}
                 </CustomText>
               </View>
 
@@ -382,8 +389,9 @@ const MeetingDetails = () => {
                 </View>
 
                 <CustomText style={styles.infoText}>
-                  {detail?.meetings?.[detail?.meetings?.length - 1]?.location ||
-                    "Not specified"}
+                  {latestMeeting?.meetingMode === "virtual"
+                    ? latestMeeting?.virtualMeetingLink || "Not specified"
+                    : latestMeeting?.location || "Not specified"}
                 </CustomText>
               </View>
 
@@ -394,9 +402,9 @@ const MeetingDetails = () => {
                 </View>
 
                 <CustomText style={styles.infoText}>
-                  {detail?.meetings?.[detail?.meetings?.length - 1]?.isMobile
-                    ? "Video Call"
-                    : "In-Person Meeting"}
+                  {latestMeeting?.meetingMode === "virtual"
+                    ? "Virtual Meeting"
+                    : "Physical Meeting"}
                 </CustomText>
               </View>
 
@@ -466,27 +474,51 @@ const MeetingDetails = () => {
                   Product Pitch
                 </CustomText>
                 <CustomText style={styles.meetingValue}>
-                  {detail?.productPitch}
+                  {detail?.productPitch || "-"}
+                </CustomText>
+              </View>
+
+              <View style={styles.meetingInfoRow}>
+                <CustomText style={styles.meetingLabel}>
+                  Client Address
+                </CustomText>
+                <CustomText style={styles.meetingValue}>
+                  {detail?.clientAddress || "-"}
+                </CustomText>
+              </View>
+
+              <View style={styles.meetingInfoRow}>
+                <CustomText style={styles.meetingLabel}>Client City</CustomText>
+                <CustomText style={styles.meetingValue}>
+                  {detail?.clientCity || "-"}
+                </CustomText>
+              </View>
+
+              <View style={styles.meetingInfoRow}>
+                <CustomText style={styles.meetingLabel}>
+                  Client Country
+                </CustomText>
+                <CustomText style={styles.meetingValue}>
+                  {detail?.clientCountry || "-"}
                 </CustomText>
               </View>
 
               <View style={styles.meetingInfoRow}>
                 <CustomText style={styles.meetingLabel}>Created By</CustomText>
                 <CustomText style={styles.meetingValue}>
-                  {detail?.createdBy?.name} ({detail?.createdBy?.role})
+                  {`${detail?.createdBy?.name || ""} ${detail?.createdBy?.lastName || ""}`.trim() ||
+                    "-"}
+                  {detail?.createdBy?.role ? ` (${detail.createdBy.role})` : ""}
                 </CustomText>
               </View>
 
-              <View style={styles.meetingInfoRow}>
-                <CustomText style={styles.meetingLabel}>Agent</CustomText>
-                <CustomText style={styles.meetingValue}>
-                  {detail?.agents
-                    ?.map((agentId: any) => {
-                      const agent = allUsers?.find((u) => u._id === agentId);
-                      return agent?.name || "Unknown";
-                    })
-                    .join(", ")}
-                </CustomText>
+              <View style={[styles.meetingInfoRow, styles.membersInfoRow]}>
+                <CustomText style={styles.meetingLabel}>Members</CustomText>
+                <View style={styles.membersValueContainer}>
+                  <CustomText style={styles.membersValue}>
+                    {memberNames || "-"}
+                  </CustomText>
+                </View>
               </View>
 
               <View style={styles.meetingInfoRow}>
@@ -580,8 +612,8 @@ const MeetingDetails = () => {
                 //     )}
                 //   </View>
                 // </View>
-                <>
-                  <View style={styles.meetingCard} key={index}>
+                <React.Fragment key={el?._id || index}>
+                  <View style={styles.meetingCard}>
                     <View style={styles.meetingCardHeader}>
                       <View
                         style={{
@@ -608,27 +640,39 @@ const MeetingDetails = () => {
 
                     <View style={styles.meetingLocationRow}>
                       <Ionicons
-                        name="location-outline"
+                        name={
+                          el?.meetingMode === "virtual"
+                            ? "videocam-outline"
+                            : "location-outline"
+                        }
                         size={18}
                         color="#2D67C6"
                       />
 
                       <CustomText style={styles.meetingLocationText}>
-                        {el?.location || "Not specified"}
+                        {el?.meetingMode === "virtual"
+                          ? el?.virtualMeetingLink || "Not specified"
+                          : el?.location || "Not specified"}
                       </CustomText>
 
-                      {el?.coordinates?.lat && (
-                        <TouchableOpacity
-                          onPress={() => navigateToMapApp(el?.coordinates)}
-                        >
-                          <Ionicons
-                            name="navigate-circle"
-                            size={22}
-                            color="#2D67C6"
-                          />
-                        </TouchableOpacity>
-                      )}
+                      {el?.meetingMode !== "virtual" &&
+                        el?.coordinates?.lat && (
+                          <TouchableOpacity
+                            onPress={() => navigateToMapApp(el?.coordinates)}
+                          >
+                            <Ionicons
+                              name="navigate-circle"
+                              size={22}
+                              color="#2D67C6"
+                            />
+                          </TouchableOpacity>
+                        )}
                     </View>
+
+                    <CustomText style={styles.meetingRemarks}>
+                      Meeting Type:{" "}
+                      {el?.meetingMode === "virtual" ? "Virtual" : "Physical"}
+                    </CustomText>
 
                     {el?.remarks && (
                       <CustomText style={styles.meetingRemarks}>
@@ -715,7 +759,7 @@ const MeetingDetails = () => {
                         )}
                       </View>
                     )}
-                </>
+                </React.Fragment>
               );
             })}
           </View>
@@ -1077,17 +1121,41 @@ const styles = StyleSheet.create({
   meetingInfoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 10,
   },
 
   meetingLabel: {
     fontSize: 14,
     color: "#6B7280",
+    width: "36%",
+    flexShrink: 0,
   },
 
   meetingValue: {
     fontSize: 14,
     color: "#374151",
+    flex: 1,
+    flexShrink: 1,
+    textAlign: "right",
+  },
+
+  membersInfoRow: {
+    marginBottom: 10,
+  },
+
+  membersValueContainer: {
+    width: "64%",
+    alignItems: "flex-end",
+  },
+
+  membersValue: {
+    width: "100%",
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#374151",
+    textAlign: "right",
+    flexShrink: 1,
   },
 
   meetingCard: {
