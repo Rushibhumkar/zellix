@@ -1,3 +1,4 @@
+import { ROLE_VALUES } from "./roles";
 import * as Yup from "yup";
 import { parsePhoneNumber } from "libphonenumber-js";
 import { isLive } from "../services/authApi/axiosInstance";
@@ -52,7 +53,7 @@ export const AddUsersSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email address")
     .required("Email Address is required"),
-  role: Yup.string().required("Role is required"),
+  role: Yup.string().oneOf([...ROLE_VALUES], "Invalid role").required("Role is required"),
 });
 
 export const teamLeadSchema = Yup.object().shape({
@@ -153,7 +154,14 @@ export const addMeetingSchema = Yup.object().shape({
   // self: Yup.string().required("Field required"),
   status: Yup.string().required("Field required"),
   lead: Yup.string().required("Field required"),
-  agents: Yup.array().of(Yup.string()),
+  self: Yup.boolean().required(),
+  agents: Yup.array()
+    .of(Yup.string())
+    .when("self", {
+      is: false,
+      then: (schema) => schema.min(1, "At least one member is required when Self is off"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 });
 export const addExpenseSchema = Yup.object().shape({
   expenseCategory: Yup.string().required("Expense Category required"),

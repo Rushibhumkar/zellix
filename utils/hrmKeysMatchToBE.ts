@@ -1,3 +1,4 @@
+import { ROLE_LABELS } from "./roles";
 import { color } from "../const/color"
 //user Form Status
 export const statusHRM = {
@@ -27,6 +28,26 @@ export const statusColor = {
     cancel: color.dullRed
 }
 
+export type UserStatusKey = 'active' | 'resigned' | 'terminated' | 'inactive';
+
+export const userStatusHRM: Record<UserStatusKey, string> = {
+    active: 'Active',
+    resigned: 'Resigned',
+    terminated: 'Terminated',
+    inactive: 'Inactive'
+}
+
+export const getUserStatusHRM = (user: {
+    activeStatus?: string;
+    accountStatus?: string;
+    inactiveReason?: string;
+}): UserStatusKey => {
+    if (user?.inactiveReason === 'resigned' || user?.activeStatus === 'resign') return 'resigned';
+    if (user?.inactiveReason === 'terminated' || user?.activeStatus === 'terminated') return 'terminated';
+    if (user?.accountStatus === 'inactive') return 'inactive';
+    return 'active';
+}
+
 //attendance
 export const statusColorAttend = {
     absent: color.red,
@@ -54,14 +75,4 @@ export const attendanceStatus = [
     { _id: 'leave', name: 'Leave' },
 ]
 //
-export const roleHRM = {
-    sr_manager: 'Sr Manager',
-    manager: 'Manager',
-    assistant_manager: 'Assistant Manager',
-    team_lead: 'Team Lead',
-    agent: 'Agent',
-    sup_admin: 'Sup Admin',
-    sub_admin: 'Sub Admin',
-    'Super Admin': 'Super Admin WR'
-}
-
+export const roleHRM = { ...ROLE_LABELS, "Super Admin": "Super Admin WR" };

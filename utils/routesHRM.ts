@@ -1,6 +1,7 @@
 export const routeUser = {
     AllUSersHRM: 'AllUSersHRM',
     AddUserHRM: 'AddUserHRM',
+    RolePermissionSetsHRM: 'RolePermissionSetsHRM',
     SendToUpdate: 'SendToUpdate',
     UserDetailHRM: 'UserDetailHRM',
     AllUsersHRMStack: 'AllUsersHRMStack',

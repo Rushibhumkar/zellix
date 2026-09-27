@@ -6,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
+  Switch,
   View,
 } from "react-native";
 import Header from "../../components/Header";
@@ -137,10 +138,11 @@ const AddMeeting = () => {
       location: data?.meetings?.length > 0 ? data?.meetings[0]?.location : "",
       virtualMeetingLink:
         data?.meetings?.length > 0
-          ? data?.meetings[0]?.virtualMeetingLink ?? ""
+          ? (data?.meetings[0]?.virtualMeetingLink ?? "")
           : "",
       remarks: data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : "",
       status: mappedMeetingStatus,
+      self: data?.self ?? true,
       agents: defaultAgents,
       scheduleDate: data?.scheduleDate ?? new Date(),
       coordinates:
@@ -163,7 +165,6 @@ const AddMeeting = () => {
         let sendData = {
           ...values,
           scheduleDate: tempDa,
-          self: false,
         };
         if (isUpdate) {
           let res = await updateMeeting({
@@ -286,7 +287,11 @@ const AddMeeting = () => {
                 keyValueShowInBox="name"
                 label="Choose Lead *"
                 placeholder="Lead..."
-                onChange={(a) => setFieldValue("lead", a)}
+                onChange={(a) => {
+                  setFieldValue("lead", a);
+                  setFieldValue("self", true);
+                  setFieldValue("agents", []);
+                }}
                 containerStyle={{ marginBottom: 15 }}
                 onBlur={handleBlur("lead")}
                 initialValue={values?.lead}
@@ -400,7 +405,9 @@ const AddMeeting = () => {
               </CustomText>
             )}
             <View style={styles.meetingTypeContainer}>
-              <CustomText style={styles.requiredLabel}>Meeting Type *</CustomText>
+              <CustomText style={styles.requiredLabel}>
+                Meeting Type *
+              </CustomText>
               <View style={styles.radioRow}>
                 {["physical", "virtual"].map((meetingMode) => (
                   <Pressable
@@ -423,10 +430,13 @@ const AddMeeting = () => {
                     <View
                       style={[
                         styles.radioOuter,
-                        values.meetingMode === meetingMode && styles.radioOuterSelected,
+                        values.meetingMode === meetingMode &&
+                          styles.radioOuterSelected,
                       ]}
                     >
-                      {values.meetingMode === meetingMode && <View style={styles.radioInner} />}
+                      {values.meetingMode === meetingMode && (
+                        <View style={styles.radioInner} />
+                      )}
                     </View>
                     <CustomText style={styles.radioLabel}>
                       {meetingMode === "physical" ? "Physical" : "Virtual"}
@@ -436,50 +446,50 @@ const AddMeeting = () => {
               </View>
             </View>
             {values.meetingMode === "physical" ? (
-            <View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <CustomText
-                  marginBottom={10}
-                  fontSize={16}
-                  fontWeight="500"
-                  style={{ color: color.mainTxtColor }}
+              <View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  Meeting Location *
-                </CustomText>
-                {values?.coordinates?.lng && (
-                  <Feather
-                    name="map-pin"
-                    size={20}
-                    color="#2D67C6"
-                    style={{ padding: 5 }}
-                    onPress={() => navigateToMapApp(values?.coordinates)}
-                    // onPress={toggleMapViewModal}
-                  />
+                  <CustomText
+                    marginBottom={10}
+                    fontSize={16}
+                    fontWeight="500"
+                    style={{ color: color.mainTxtColor }}
+                  >
+                    Meeting Location *
+                  </CustomText>
+                  {values?.coordinates?.lng && (
+                    <Feather
+                      name="map-pin"
+                      size={20}
+                      color="#2D67C6"
+                      style={{ padding: 5 }}
+                      onPress={() => navigateToMapApp(values?.coordinates)}
+                      // onPress={toggleMapViewModal}
+                    />
+                  )}
+                </View>
+                <CustomGooglePlacesSearch
+                  handleBlur={() => handleBlur("location")}
+                  onPress={(data, details) => {
+                    setFieldValue("location", data.description);
+                    setFieldValue("coordinates", {
+                      lat: details?.geometry?.location?.lat,
+                      lng: details?.geometry?.location?.lng,
+                    });
+                  }}
+                  defaultValue={values?.location}
+                />
+                {errors.location && touched.location && (
+                  <CustomText style={styles.errorText}>
+                    {errors.location}
+                  </CustomText>
                 )}
               </View>
-              <CustomGooglePlacesSearch
-                handleBlur={() => handleBlur("location")}
-                onPress={(data, details) => {
-                  setFieldValue("location", data.description);
-                  setFieldValue("coordinates", {
-                    lat: details?.geometry?.location?.lat,
-                    lng: details?.geometry?.location?.lng,
-                  });
-                }}
-                defaultValue={values?.location}
-              />
-              {errors.location && touched.location && (
-                <CustomText style={styles.errorText}>
-                  {errors.location}
-                </CustomText>
-              )}
-            </View>
             ) : (
               <>
                 <CustomInput
@@ -548,12 +558,28 @@ const AddMeeting = () => {
                 {dateTimeError}
               </CustomText>
             ) : null}
+            <View style={styles.selfRow}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <CustomText style={styles.requiredLabel}>
+                  Self meeting
+                </CustomText>
+                {/* <CustomText style={styles.selfHint}>
+                  Members are optional when Self is on.
+                </CustomText> */}
+              </View>
+              <Switch
+                value={Boolean(values.self)}
+                onValueChange={(value) => setFieldValue("self", value)}
+                trackColor={{ false: "#CBD5E1", true: "#93B9F8" }}
+                thumbColor={values.self ? "#2E67BE" : "#FFFFFF"}
+              />
+            </View>
             <DropdownRNE
               arrOfObj={memberOptions}
               isMultiSelect={true}
               keyValueShowInBox="name"
               keyValueGetOnSelect="_id"
-              label={"Members"}
+              label={`Members${values.self ? " (Optional)" : " *"}`}
               keyName="agent"
               placeholder={"Select members"}
               containerStyle={{ marginBottom: 15 }}
@@ -563,6 +589,9 @@ const AddMeeting = () => {
               mode="modal"
               excludedItems={user?._id ? [user._id] : []}
             />
+            {errors.agents && touched.agents && (
+              <CustomText style={styles.errorText}>{errors.agents}</CustomText>
+            )}
             <CustomBtn
               title="Submit"
               onPress={handleSubmit}
@@ -650,6 +679,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginLeft: 4,
   },
+  selfRow: {
+    minHeight: 62,
+    marginBottom: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#D7E0EC",
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  selfHint: { color: "#64748B", fontSize: 12, marginTop: 3 },
 });
 
 export default AddMeeting;
