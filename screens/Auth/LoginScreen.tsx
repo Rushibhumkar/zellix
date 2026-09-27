@@ -46,17 +46,19 @@ const LoginScreen = () => {
     // email: "abhishek@swavishsoftware.com",
     // password: "",
     // dev : agent ( Rushikesh Bhumkar )
-    email: "test1@swavishtek.com",
-    password: "",
+    // email: "test1@swavishtek.com",
+    // password: "",
+    // email: "shubhangi@swavishsoftware.com",
+    // password: "",
     // dev :
     // email: "test@test.com",
     // password: "123456789",
     // dev : super admin
-    // email: "mohdkashif1008@gmail.com",
+    // email: "rushibhumkar11@gmail.com",
     // password: "",
     // dev  : sr manager ( Rohit Barate )
-    // email: "dev20@swavishtek.com",
-    // password: "",
+    email: "dev20@swavishtek.com",
+    password: "",
     // dev  : team lead( pradeep shukla )
     // email: "pradeep@swavishsoftware.com",
     // password: "",

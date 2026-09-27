@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
+import TopMenuModal from "../../components/TopMenuModal";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { color } from "../../const/color";
 import { sizes } from "../../const";
@@ -68,34 +68,11 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
   ].filter(Boolean);
 
   return (
-    <Modal
+    <TopMenuModal
       visible={visible}
-      modalAnimation={new SlideAnimation({ slideFrom: "top" })}
-      onTouchOutside={onClose}
-      width={1}
-      height={0.5}
-      rounded
-      overlayOpacity={0.3}
-      modalStyle={{
-        marginTop: 0,
-        paddingTop: 80,
-        backgroundColor: "#fff",
-        position: "relative",
-        top: -260,
-        borderTopRightRadius: 0,
-        borderTopLeftRadius: 0,
-        borderBottomLeftRadius: 22,
-        borderBottomRightRadius: 22,
-      }}
+      onClose={onClose}
+      heightRatio={0.5}
     >
-      <ModalContent
-        style={{
-          backgroundColor: "#fff",
-          paddingTop: 20,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
-        }}
-      >
         {/* Header */}
         <View
           style={{
@@ -234,8 +211,7 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
             App Version: {appVersion}
           </Text>
         </View>
-      </ModalContent>
-    </Modal>
+    </TopMenuModal>
   );
 };
 

@@ -1,17 +1,8 @@
-export const roleList = [
-  { label: "Sr Manager", value: "sr_manager" },
-  { label: "Manager", value: "manager" },
-  { label: "Team Lead", value: "team_lead" },
-  { label: "Agent", value: "agent" },
-];
+import { UserRole, ROLE_LABELS, ASSIGNABLE_ROLE_OPTIONS } from "./roles";
+export { UserRole, USER_ROLES, ROLE_VALUES, ROLE_OPTIONS } from "./roles";
+export const roleList = [...ASSIGNABLE_ROLE_OPTIONS];
 
-export const roleListArr = [
-  { name: "Sr Manager", _id: "sr_manager" },
-  { name: "Manager", _id: "manager" },
-  { name: "Assistant Manager", _id: "assistant_manager" },
-  { name: "Team Lead", _id: "team_lead" },
-  { name: "Agent", _id: "agent" },
-];
+export const roleListArr = roleList.map(({ value, label }) => ({ _id: value, name: label }));
 
 export const bookingEntryStatusObj = {
   reject_timeout: "Rejected Time Out",
@@ -29,27 +20,9 @@ export const meetingStatus = {
   reschedule: "Meeting Rescheduled",
 };
 
-export const userTypes = {
-  sup_admin: "Super Admin",
-  sub_admin: "Sub Admin",
-  sr_manager: "Sr Manager",
-  manager: "Manager",
-  team_lead: "Team Lead",
-  agent: "Agent",
-  assistant_manager: "Assistant Manager",
-};
+export const userTypes = ROLE_LABELS;
 
-export const roleEnum = {
-  sr_manager: "sr_manager",
-  pnl: "pnl",
-  manager: "manager",
-  team_lead: "team_lead",
-  agent: "agent",
-  sup_admin: "sup_admin",
-  sub_admin: "sub_admin",
-  assistant_manager: "assistant_manager",
-  seo: "seo",
-};
+export const roleEnum = UserRole;
 
 export const statusEnum = {
   pending: "pending",

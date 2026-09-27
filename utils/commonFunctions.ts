@@ -1,7 +1,11 @@
 import { useAppToast } from "../components/AppToast";
 
 export const checkPermission = (perm, module, task, userRole) => {
-  return userRole === "sup_admin" || perm[module]?.[task]?.value === true;
+  return (
+    userRole === "sup_admin" ||
+    userRole === "developer" ||
+    perm[module]?.[task]?.value === true
+  );
 };
 
 export const formatCount = (value?: number | string): string => {

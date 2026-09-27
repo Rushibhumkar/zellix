@@ -39,7 +39,7 @@ export const useGetExpenseCategoryDetail = ({ id }) => {
 export const useGetApprovedUsers = ({ search }) => {
     return useMyInfinite({
         url: 'api/hrms/user',
-        pramsObj: { search, status: 'approved' },
+        pramsObj: { search, status: 'approved', dropdown: true },
         queryKeyName: 'getApprovedUser'
     })
 }

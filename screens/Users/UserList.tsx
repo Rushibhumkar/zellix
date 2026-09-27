@@ -1,6 +1,7 @@
+import { isValidRole, ROLE_LABELS } from "../../utils/roles";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
-import { Animated, FlatList, Platform, View } from "react-native";
+import { FlatList, Platform, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
@@ -17,27 +18,31 @@ import SearchBar from "../../myComponents/SearchBar/SearchBar";
 import UserListHeading from "../../components/User/UserListHeading";
 import SkeletonLoadingUser from "../../components/User/SkeletonLoadingUser";
 import { myConsole } from "../../hooks/useConsole";
-import { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 
-const roleType = {
-  sr_manager: "Sr manager",
-  manager: "Manager",
-  team_lead: "Team Lead",
-  agent: "Agent",
-  sup_admin: "Sup Admin",
-  assistant_manager: "Assistant Manager",
-  sub_admin: "Sub Admin",
+type UserListItem = {
+  _id: string;
+  name?: string;
+  email?: string;
+  role?: string;
 };
+
+const roleType = ROLE_LABELS;
 
 const UserList = () => {
   const isFocused = useIsFocused();
-  const { allUsers, loading, user } = useSelector(selectUser);
-  const { navigate } = useNavigation();
-  const dispatch = useDispatch();
-  const [filteredUser, setFilteredUser] = useState(allUsers);
+  const { allUsers: storedUsers, loading, user } = useSelector(selectUser) as {
+    allUsers: UserListItem[];
+    loading: { allUsers?: boolean };
+    user: UserListItem;
+  };
+  const allUsers = Array.isArray(storedUsers) ? storedUsers : [];
+  const { navigate } = useNavigation<any>();
+  const dispatch = useDispatch<any>();
+  const [filteredUser, setFilteredUser] = useState<UserListItem[]>(allUsers);
   //
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState();
+  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [showSearch, setShowSearch] = useState(false);
@@ -53,14 +58,13 @@ const UserList = () => {
     error: false,
   });
 
-  const toggleModal = () => {
+  const toggleModal = (visible?: boolean) => {
     // setSelectedUser({ name: item?.name, id: item?._id })
-    setModalVisible(!modalVisible);
+    setModalVisible(typeof visible === "boolean" ? visible : !modalVisible);
   };
-  const handleSelect = (item) => {
-    let temp = { ...selectedUser };
-    if (temp?._id === item?._id) {
-      setSelectedUser({});
+  const handleSelect = (item: UserListItem) => {
+    if (selectedUser?._id === item._id) {
+      setSelectedUser(null);
     } else {
       setSelectedUser({ ...item });
     }
@@ -68,11 +72,11 @@ const UserList = () => {
 
   useEffect(() => {
     if (!!searchValue) {
-      let temp = allUsers?.filter((item) => {
+      const temp = allUsers.filter((item) => {
         return (
-          item?.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
           item?.email?.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item?.role.toLowerCase().includes(searchValue.toLowerCase())
+          item?.role?.toLowerCase().includes(searchValue.toLowerCase())
         );
       });
 
@@ -80,7 +84,7 @@ const UserList = () => {
     }
   }, [searchValue]);
 
-  const handleFilterTextOnChange = (value) => {
+  const handleFilterTextOnChange = (value: string) => {
     if (value) {
       setSearchValue(value);
     } else {
@@ -90,6 +94,7 @@ const UserList = () => {
   };
 
   const handleDeleteUser = async () => {
+    if (!selectedUser?._id) return;
     setIsLoading(true);
     try {
       let res = await deleteUser(selectedUser?._id);
@@ -99,11 +104,11 @@ const UserList = () => {
         text: res.data,
         error: false,
       });
-      setSelectedUser("");
-    } catch (err) {
+      setSelectedUser(null);
+    } catch (err: any) {
       setSnackBar({
         visible: true,
-        text: error?.response?.data,
+        text: err?.response?.data?.message || err?.response?.data || "Unable to delete user",
         error: true,
       });
     } finally {
@@ -121,7 +126,7 @@ const UserList = () => {
       <Header
         title={"Users"}
         showActions={true}
-        onPressAdd={() => navigate("addUsers")}
+        // onPressAdd={() => navigate("addUsers")}
         showSearch={showSearch}
         moduleName={"userCRM"}
         isWithAnimation
@@ -144,11 +149,11 @@ const UserList = () => {
               showAddBtn={false}
               onPressToEdit={() => {
                 navigate("addUsers", { data: { ...selectedUser } });
-                setSelectedUser({});
+                setSelectedUser(null);
               }}
               onPressToDelete={
                 user?.role === "agent" || user?.role === "sr_manager"
-                  ? false
+                  ? undefined
                   : toggleModal
               }
             />
@@ -159,9 +164,10 @@ const UserList = () => {
               return (
                 <UserRowItem
                   serialNo={index}
-                  email={item?.email}
-                  userName={item?.name}
-                  role={roleType[item?.role]}
+                  email={item.email || "N/A"}
+                  userName={item.name || "N/A"}
+                  role={item.role && isValidRole(item.role) ? roleType[item.role] : item.role || "N/A"}
+                  bgColor="#FFFFFF"
                   onLongPress={
                     user?.role === "sr_manager"
                       ? undefined

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { myConsole } from "../../hooks/useConsole";
-import { Modal, ModalContent, SlideAnimation } from "react-native-modals";
+import TopMenuModal from "../TopMenuModal";
 import Entypo from "react-native-vector-icons/Entypo";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { color } from "../../const/color";
@@ -78,34 +78,11 @@ const MenuModal: React.FC<MenuModalProps> = ({
   );
 
   return (
-    <Modal
+    <TopMenuModal
       visible={visible}
-      modalAnimation={new SlideAnimation({ slideFrom: "top" })}
-      onTouchOutside={onClose}
-      width={1}
-      height={Platform.OS === "ios" ? 0.71 : 0.73}
-      rounded
-      overlayOpacity={0.3}
-      modalStyle={{
-        marginTop: -20,
-        backgroundColor: "#fff",
-        position: "relative",
-        top: Platform.OS === "ios" ? -140 : -120,
-        borderTopRightRadius: 0,
-        borderTopLeftRadius: 0,
-        borderBottomLeftRadius: 22,
-        borderBottomRightRadius: 22,
-        paddingTop: 16,
-      }}
+      onClose={onClose}
+      heightRatio={Platform.OS === "ios" ? 0.71 : 0.73}
     >
-      <ModalContent
-        style={{
-          backgroundColor: "#fff",
-          paddingTop: Platform.OS === "ios" ? 70 : 28,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
-        }}
-      >
         <StatusBar backgroundColor={color.white} style="dark" />
         {/* Header with Cross */}
         <View
@@ -333,8 +310,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
         >
           App Version: {appVersion}
         </Text>
-      </ModalContent>
-    </Modal>
+    </TopMenuModal>
   );
 };
 

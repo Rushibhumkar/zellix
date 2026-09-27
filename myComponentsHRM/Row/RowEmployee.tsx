@@ -9,8 +9,11 @@ import React from "react";
 import { Feather } from "@expo/vector-icons";
 
 import CustomText from "../../myComponents/CustomText/CustomText";
-import { color } from "../../const/color";
-import { roleHRM, statusColor, statusHRM } from "../../utils/hrmKeysMatchToBE";
+import {
+  getUserStatusHRM,
+  roleHRM,
+  userStatusHRM,
+} from "../../utils/hrmKeysMatchToBE";
 
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
@@ -24,11 +27,22 @@ interface TRowEmployee {
     name: string;
     role: string;
     status: string;
+    activeStatus?: string;
+    accountStatus?: string;
+    inactiveReason?: string;
     customId: string;
   };
 }
 
 const RowEmployee = ({ containerStyle, onPress, item }: TRowEmployee) => {
+  const userStatus = getUserStatusHRM(item);
+  const statusTheme: Record<string, { background: string; text: string }> = {
+    active: { background: "#DCFCE7", text: "#15803D" },
+    resigned: { background: "#FEF3C7", text: "#B45309" },
+    terminated: { background: "#FEE2E2", text: "#B91C1C" },
+    inactive: { background: "#F1F5F9", text: "#475569" },
+  }[userStatus];
+
   return (
     <SlideFadeIn>
       <TouchableOpacity
@@ -75,14 +89,7 @@ const RowEmployee = ({ containerStyle, onPress, item }: TRowEmployee) => {
             style={[
               styles.statusBadge,
               {
-                backgroundColor:
-                  item?.status === "approved"
-                    ? "#DCFCE7"
-                    : item?.status === "rejected"
-                      ? "#FEE2E2"
-                      : item?.status === "pending"
-                        ? "#FEF3C7"
-                        : "#EEF4FF",
+                backgroundColor: statusTheme.background,
               },
             ]}
           >
@@ -90,11 +97,11 @@ const RowEmployee = ({ containerStyle, onPress, item }: TRowEmployee) => {
               style={[
                 styles.statusText,
                 {
-                  color: statusColor[item?.status] || color.mainTxtColor,
+                  color: statusTheme.text,
                 },
               ]}
             >
-              {statusHRM[item?.status] || "N/A"}
+              {userStatusHRM[userStatus]}
             </CustomText>
           </View>
         </View>

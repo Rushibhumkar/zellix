@@ -40,8 +40,9 @@ import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 const LeadPool = () => {
   const queryClient = useQueryClient();
   const { user, leadQueryKey } = useSelector(selectUser);
-  const isSubSup =
-    user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+  const isSubSup = [roleEnum.sub_admin, roleEnum.sup_admin, roleEnum.developer].includes(
+    user?.role,
+  );
   const { navigate } = useNavigation();
   const [selected, setSelected] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -204,8 +205,9 @@ const LeadPoolRowItem = ({
 }: any) => {
   const { user } = useSelector(selectUser);
 
-  const isSubSup =
-    user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+  const isSubSup = [roleEnum.sub_admin, roleEnum.sup_admin, roleEnum.developer].includes(
+    user?.role,
+  );
 
   return (
     <TouchableOpacity

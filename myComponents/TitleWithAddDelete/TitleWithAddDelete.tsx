@@ -37,16 +37,16 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 interface TTitleWithAddDelete {
   arrLength: number;
   showAddBtn?: any;
-  onPressToNavigate: () => void;
+  onPressToNavigate?: () => void;
   onPressToDelete?: () => void;
   title: string;
   onPressToEdit: () => void;
-  onPressToAssignLead: () => void;
+  onPressToAssignLead?: () => void;
   onPressToInvite?: () => void;
   onPressToFolder?: () => void;
-  onPressToFilter: () => void;
-  onCloseSearch: () => void;
-  onSelectLeadType: () => void;
+  onPressToFilter?: () => void;
+  onCloseSearch?: () => void;
+  onSelectLeadType?: () => void;
   isWithAnimation?: boolean;
   buttons?: {
     title: string;

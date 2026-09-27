@@ -1,4 +1,5 @@
 import {
+  Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -20,6 +21,7 @@ import { useUserDetailHRM } from "../../hooks/useGetQuerryHRM";
 import {
   deleteDeviceId,
   leadPoolRestriction,
+  updateUserAccountStatus,
   userApproved,
 } from "../../services/hrmApi/userHrmApi";
 import * as Linking from "expo-linking";
@@ -35,6 +37,8 @@ import DeleteIcon from "../../assets/svg/DeleteIcon";
 import { popupModal2 } from "../../utils/toastFunction";
 import { useAppToast } from "../../components/AppToast";
 import moment from "moment";
+import { getUserStatusHRM, userStatusHRM } from "../../utils/hrmKeysMatchToBE";
+import { queryKeyHRM } from "../../utils/queryKeys";
 
 const UserDetailHRM = () => {
   const navigation = useNavigation();
@@ -48,11 +52,19 @@ const UserDetailHRM = () => {
     params?.item?.isPoolRestrict,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isSubSup =
-    user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+  const isSubSup = [
+    roleEnum.sub_admin,
+    roleEnum.sup_admin,
+    roleEnum.developer,
+  ].includes(user?.role);
   const { data, isLoading, refetch } = useUserDetailHRM({
     id: params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id,
   });
+  const targetUserId = data?._id || (params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id);
+  const canManageAccount = [roleEnum.sup_admin, roleEnum.developer].includes(user?.role) &&
+    Boolean(data?._id) && String(user?._id) !== String(targetUserId);
+  const accountInactive = data?.accountStatus === "inactive" || ["resign", "terminated"].includes(data?.activeStatus);
+  const [accountStatusSaving, setAccountStatusSaving] = useState(false);
 
   const [useDetail, setUseDetail] = useState(dummyUserDetail);
   const [isLoadingApprove, setIsLoadingApprove] = useState(false);
@@ -81,6 +93,12 @@ const UserDetailHRM = () => {
             return {
               ...el,
               value: `${data?.name} ${data?.lastName}`,
+            };
+          }
+          if (el?.key === "activeStatus") {
+            return {
+              ...el,
+              value: userStatusHRM[getUserStatusHRM(data)],
             };
           }
           return { ...el, value: data[el?.key] };
@@ -135,6 +153,36 @@ const UserDetailHRM = () => {
   };
 
   const toast = useAppToast();
+
+  const confirmAccountStatus = (isActive: boolean, reason?: "resigned" | "terminated") => {
+    const title = isActive ? "Activate employee account?" : `Mark employee ${reason}?`;
+    const message = isActive
+      ? "This employee can sign in again. Previously reassigned leads stay with their current owners."
+      : "This blocks login, clears device access, disconnects active sessions, and reassigns active leads.";
+    Alert.alert(title, message, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: isActive ? "Activate" : "Confirm",
+        style: isActive ? "default" : "destructive",
+        onPress: async () => {
+          if (!targetUserId || accountStatusSaving) return;
+          setAccountStatusSaving(true);
+          try {
+            const result = await updateUserAccountStatus(String(targetUserId), { isActive, ...(reason ? { reason } : {}) });
+            await Promise.all([
+              refetch(),
+              queryClient.invalidateQueries({ queryKey: [queryKeyHRM.getAllUserHRM] }),
+            ]);
+            toast.success(result?.message || "Account status updated");
+          } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Unable to update account status");
+          } finally {
+            setAccountStatusSaving(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const sendValue = async (value: boolean) => {
     try {
@@ -220,6 +268,35 @@ const UserDetailHRM = () => {
       <View style={styles.container}>
         {/* TOP ACTION CARD */}
         <View style={styles.topCard}>
+          {canManageAccount && (
+            <View style={styles.accountSection}>
+              <View style={styles.accountHeader}>
+                <View>
+                  <CustomText style={styles.accountLabel}>Account status</CustomText>
+                  <CustomText style={styles.accountHint}>Manage this employee's access</CustomText>
+                </View>
+                <View style={[styles.accountBadge, accountInactive && styles.accountBadgeInactive]}>
+                  <CustomText style={[styles.accountBadgeText, accountInactive && styles.accountBadgeTextInactive]}>
+                    {userStatusHRM[getUserStatusHRM(data)]}
+                  </CustomText>
+                </View>
+              </View>
+              {accountInactive ? (
+                <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(true)} style={[styles.accountAction, styles.accountActionActive]}>
+                  <CustomText style={styles.accountActionText}>Activate Account</CustomText>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.accountActions}>
+                  <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(false, "resigned")} style={[styles.accountAction, styles.accountActionResigned]}>
+                    <CustomText style={styles.accountActionText}>Mark Resigned</CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(false, "terminated")} style={[styles.accountAction, styles.accountActionTerminated]}>
+                    <CustomText style={styles.accountActionText}>Terminate</CustomText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
           <View style={styles.switchRow}>
             <View>
               <CustomText style={styles.switchTitle}>
@@ -347,8 +424,10 @@ const UserDetailHRM = () => {
                       <View style={styles.valueRow}>
                         <CustomText style={styles.value}>
                           {item?.isDate
-                            ? moment(item?.value).isValid()
-                              ? moment(item?.value).format("DD MMM YYYY")
+                            ? (typeof item?.value === "string" && item.value !== "-" ||
+                                typeof item?.value === "number" || item?.value instanceof Date) &&
+                              moment(item.value).isValid()
+                              ? moment(item.value).format("DD MMM YYYY")
                               : "N/A"
                             : item?.value || "-"}
                         </CustomText>
@@ -413,6 +492,42 @@ const UserDetailHRM = () => {
 export default UserDetailHRM;
 
 const styles = StyleSheet.create({
+  accountSection: {
+    paddingBottom: 18,
+    marginBottom: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E6ECF5",
+  },
+  accountHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 14,
+  },
+  accountLabel: { color: "#1E293B", fontSize: 15, fontWeight: "700" },
+  accountHint: { color: "#64748B", fontSize: 12, marginTop: 3 },
+  accountBadge: {
+    backgroundColor: "#EAF6ED",
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  accountBadgeInactive: { backgroundColor: "#FFF1E9" },
+  accountBadgeText: { color: "#217A3A", fontSize: 12, fontWeight: "700" },
+  accountBadgeTextInactive: { color: "#A64B20" },
+  accountActions: { flexDirection: "row", gap: 10 },
+  accountAction: {
+    height: 44,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  accountActionActive: { backgroundColor: "#26754A", alignSelf: "stretch" },
+  accountActionResigned: { flex: 1, backgroundColor: "#A86218" },
+  accountActionTerminated: { flex: 1, backgroundColor: "#B63B3B" },
+  accountActionText: { color: "#fff", fontSize: 13, fontWeight: "700", textAlign: "center" },
   container: {
     flex: 1,
   },

@@ -189,19 +189,22 @@ const AdvanceSearch = () => {
   const onlyBooking = category === "booking";
   const onlyLead = category === "lead";
   const inBookingMeeting = category === "booking" || category === "meeting";
-  const isAdmin = user?.role === "sup_admin" || user?.role === "sub_admin";
+  const isAdmin = ["sup_admin", "sub_admin", "developer"].includes(user?.role);
   const isAdminSrManager =
     user?.role === "sup_admin" ||
     user?.role === "sub_admin" ||
+    user?.role === "developer" ||
     user?.role === "sr_manager";
   const isAdminSrManagerManager =
     user?.role === "sup_admin" ||
     user?.role === "sub_admin" ||
+    user?.role === "developer" ||
     user?.role === "sr_manager" ||
     user?.role === "manager";
   const isAdminSrMngMngAssistantMng =
     user?.role === "sup_admin" ||
     user?.role === "sub_admin" ||
+    user?.role === "developer" ||
     user?.role === "sr_manager" ||
     user?.role === "manager" ||
     user?.role === "assistant_manager";

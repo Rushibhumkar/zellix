@@ -66,7 +66,7 @@ export let dummyUserDetail = [
     },
     {
         heading: false,
-        title: 'Active Status',
+        title: 'User Status',
         value: '-',
         mb: 25,
         key: 'activeStatus'
@@ -529,4 +529,3 @@ export let dummyAttendanceDetails = [
         // subKey: 'role'
     }
 ]
-

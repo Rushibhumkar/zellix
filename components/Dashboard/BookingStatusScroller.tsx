@@ -48,23 +48,27 @@ const BookingStatusScroller = () => {
 
   const { user } = useSelector(selectUser);
 
-  const isAdmin =
-    user?.role === roleEnum.sup_admin || user?.role === roleEnum.sub_admin;
+  const isAdmin = [roleEnum.sup_admin, roleEnum.sub_admin, roleEnum.developer].includes(
+    user?.role,
+  );
 
   const isAdminSrManager =
     user?.role === roleEnum.sup_admin ||
     user?.role === roleEnum.sub_admin ||
+    user?.role === roleEnum.developer ||
     user?.role === roleEnum.sr_manager;
 
   const isAdminSrManagerManager =
     user?.role === roleEnum.sup_admin ||
     user?.role === roleEnum.sub_admin ||
+    user?.role === roleEnum.developer ||
     user?.role === roleEnum.sr_manager ||
     user?.role === roleEnum.manager;
 
   const isAdminSrMngMngAssistantMng =
     user?.role === roleEnum.sup_admin ||
     user?.role === roleEnum.sub_admin ||
+    user?.role === roleEnum.developer ||
     user?.role === roleEnum.sr_manager ||
     user?.role === roleEnum.manager ||
     user?.role === roleEnum.assistant_manager;

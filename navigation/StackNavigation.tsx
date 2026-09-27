@@ -332,6 +332,7 @@ const MeetingsNavigator = () => {
 };
 
 const LeadsNavigator = () => {
+  const { user } = useSelector(selectUser);
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -375,11 +376,11 @@ const LeadsNavigator = () => {
         component={AddMeeting}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
+      {["sup_admin", "sub_admin", "office_admin", "developer"].includes(user?.role) && <Stack.Screen
         name="LeadPool"
         component={LeadPool}
         options={{ headerShown: false }}
-      />
+      />}
     </Stack.Navigator>
   );
 };

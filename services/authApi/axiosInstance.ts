@@ -1,6 +1,7 @@
 import axios from "axios";
+import Constants from "expo-constants";
 import { getData, removeItemValue } from "../../hooks/useAsyncStorage";
-import { onLogOutEmpty } from "../../redux/action";
+import { clearSessionData } from "../../redux/userSlice";
 import store from "../../redux/store";
 import { CommonActions } from "@react-navigation/native";
 import { navigationRef } from "../../navigation/navigationRef";
@@ -8,12 +9,16 @@ import { myConsole } from "../../hooks/useConsole";
 
 //  ipconfig getifaddr en0
 
-let testURL = "http://192.168.1.107:5001";
+const metroHost =
+  Constants.expoConfig?.hostUri?.replace(/^https?:\/\//, "").split(":")[0] ||
+  "localhost";
+let testURL = process.env.EXPO_PUBLIC_API_URL || `http://${metroHost}:8000`;
 // let testURL =
 //   "https://b65c-2409-40c2-314f-6b09-c1d2-6929-f244-49b8.ngrok-free.app";
 // let testURL = "https://zellix-backend-1.onrender.com";
 
-export const isLive = false;
+export const isLive = !__DEV__;
+// export const isLive = true;
 
 export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 
@@ -64,7 +69,7 @@ axiosInstance.interceptors.response.use(
       await removeItemValue("token");
       await removeItemValue("userDetail");
 
-      store.dispatch(onLogOutEmpty());
+      store.dispatch(clearSessionData());
 
       // if (navigationRef.isReady()) {
       //   navigationRef.dispatch(

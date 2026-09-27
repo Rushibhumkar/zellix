@@ -37,8 +37,12 @@ const AllUSersHRM = () => {
   const { navigate } = useNavigation();
   const queryClient = useQueryClient();
   const { user } = useSelector(selectUser);
-  const isSubSup =
-    user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+  const isSubSup = [
+    roleEnum.sub_admin,
+    roleEnum.sup_admin,
+    roleEnum.developer,
+  ].includes(user?.role);
+  const canManageRolePermissions = isSubSup || user?.role === roleEnum.office_admin;
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
     startDate: "",
@@ -86,6 +90,12 @@ const AllUSersHRM = () => {
         </TouchableOpacity>
       )}
       <View style={styles.container}>
+        {canManageRolePermissions && (
+          <TouchableOpacity onPress={() => navigate(routeUser.RolePermissionSetsHRM)} style={styles.rolePermissionsButton}>
+            <Feather name="shield" size={18} color="#2E67BE" />
+            <Text style={styles.rolePermissionsText}>Role Permission Sets</Text>
+          </TouchableOpacity>
+        )}
         <FlatList
           data={allUsers ?? []}
           renderItem={({ item }) => {
@@ -164,6 +174,20 @@ const AllUSersHRM = () => {
 export default AllUSersHRM;
 
 const styles = StyleSheet.create({
+  rolePermissionsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    backgroundColor: "#fff",
+    borderColor: "#BFD4F3",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  rolePermissionsText: { color: "#2E67BE", fontSize: 14, fontWeight: "700" },
   container: {
     minHeight: 600,
   },

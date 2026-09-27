@@ -15,6 +15,7 @@ import LeaveActiveIcon from "../assets/svgHRM/LeaveActiveIcon";
 import UserDetailHRM from "../screensHRM/UsersHRM/UserDetailHRM";
 import SendToUpdate from "../screensHRM/UsersHRM/SendToUpdate";
 import AddUserHRM from "../screensHRM/UsersHRM/AddUserHRM";
+import RolePermissionSetsHRM from "../screensHRM/UsersHRM/RolePermissionSetsHRM";
 import LeaveDetail from "../screensHRM/LeaveHRM/LeaveDetail";
 import LeaveApplication from "../screensHRM/LeaveHRM/LeaveApplication";
 import PostIntProcess from "../screensHRM/Interview/PostIntProcess";
@@ -41,7 +42,7 @@ const Tab = createBottomTabNavigator();
 export const HRManagementStack = () => {
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === roleEnum.agent;
-  const isAdmin = user?.role === "sup_admin" || user?.role === "sub_admin";
+  const isAdmin = ["sup_admin", "sub_admin", "developer"].includes(user?.role);
   const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
@@ -135,6 +136,11 @@ const AllUsersHRMStack = () => {
         options={{
           headerShown: false,
         }}
+      />
+      <Stack.Screen
+        name="RolePermissionSetsHRM"
+        component={RolePermissionSetsHRM}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="SendToUpdate"

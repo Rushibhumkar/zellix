@@ -102,7 +102,7 @@ const Header: React.FC<HeaderProps> = ({
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      let a = await logOut(user?._id);
+      void logOut(user?._id).catch(() => {});
       await queryClient.clear();
       await removeItemValue("token");
       await removeItemValue("userDetail");

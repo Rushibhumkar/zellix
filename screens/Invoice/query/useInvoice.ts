@@ -26,11 +26,10 @@ export const useGetInvoiceDetail = ({ id }) => {
 export const usePersonNameList = ({ search }) => {
     return useMyInfinite({
         url: 'api/hrms/user',
-        pramsObj: { search },
+        pramsObj: { search, dropdown: true },
         queryKeyName: 'getReceivedCategoryList'
     })
 }
-
 
 
 

@@ -33,8 +33,11 @@ const AttendanceDetail = () => {
   const { params } = useRoute();
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === roleEnum.agent;
-  const isSubSup =
-    user?.role === roleEnum.sub_admin || user?.role === roleEnum.sup_admin;
+  const isSubSup = [
+    roleEnum.sub_admin,
+    roleEnum.sup_admin,
+    roleEnum.developer,
+  ].includes(user?.role);
   const attendanceId = params?.item?._id;
   const queryClient = useQueryClient();
   //

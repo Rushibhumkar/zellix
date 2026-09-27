@@ -2,6 +2,17 @@ import { myConsole } from "../../hooks/useConsole";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { axiosInstance } from "../authApi/axiosInstance";
 
+export const updateUserAccountStatus = async (
+  id: string,
+  payload: { isActive: boolean; reason?: "resigned" | "terminated" | "other" },
+) => (await axiosInstance.patch(`/api/hrms/user/account-status/${id}`, payload)).data;
+
+export const getRolePermissionSet = async (role: string) =>
+  (await axiosInstance.get(`/api/permission/roles/${role}`)).data?.data;
+
+export const updateRolePermissionSet = async (role: string, permissions: object) =>
+  (await axiosInstance.put(`/api/permission/roles/${role}`, { permissions })).data;
+
 export const getAllUserHRM = ({ search = null, pageParam = 1 }) =>
   axiosInstance
     .get("/api/hrms/user", {
@@ -21,7 +32,8 @@ export const userDetailHRM = ({ id }) =>
       return res.data;
     })
     .catch((err) => {
-      console.log(err.response.data);
+      console.log(err?.response?.data ?? err?.message);
+      throw err;
     });
 
 export const sendInvitation = ({ id }) =>
@@ -38,6 +50,7 @@ export const addUserHRM = ({ data }) =>
     })
     .catch((err) => {
       popUpConfToast.errorMessage(err?.response?.data ?? "---");
+      throw err;
     });
 //name,lastName,email,team,teamName,srManager,role
 
@@ -54,6 +67,7 @@ export const updateUserHRM = ({ id, data }) =>
     })
     .catch((err) => {
       popUpConfToast.errorMessage(err?.response?.data);
+      throw err;
     });
 
 export const getSrManagers = () =>

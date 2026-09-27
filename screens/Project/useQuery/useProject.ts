@@ -55,6 +55,7 @@ export const useGetApproveUser = ({ search = "" }) => {
             page: pageParam,
             search,
             status: "approved",
+            dropdown: true,
           },
         });
         return resTemp?.data;

@@ -88,7 +88,6 @@ const AllLeads = () => {
   // let loading = false;
   let advanceLead = [];
   const { user, leadQueryKey } = useSelector(selectUser);
-  const isPoolRestricted = user.isPoolRestrict;
   // let copyLead = [];
   const [copyLead, setCopyLead] = useState([]);
 
@@ -286,12 +285,12 @@ const AllLeads = () => {
     "assign",
     user?.role,
   );
-  // const canLeadPoolManagement = checkPermission(
-  //   permission,
-  //   "Leads",
-  //   "leadPoolManagement",
-  //   user?.role
-  // );
+  const canLeadPoolManagement = checkPermission(
+    permission,
+    "Leads",
+    "leadPoolManagement",
+    user?.role,
+  );
   const canViewProjects = checkPermission(
     permission,
     "Leads",
@@ -575,7 +574,7 @@ const AllLeads = () => {
             />
           )}
 
-          {selectLeadType === "lead" && isPoolRestricted === false && (
+          {selectLeadType === "lead" && canLeadPoolManagement && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
               activeOpacity={0.5}

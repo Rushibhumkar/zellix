@@ -19,7 +19,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.1.8</string>
+    <string>2.2.2</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -33,7 +33,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>173</string>
+    <string>176</string>
     <key>LSApplicationQueriesSchemes</key>
     <array>
       <string>airmail</string>
@@ -74,6 +74,8 @@
     <string>$(PRODUCT_NAME) requires access to the Camera allows you to take photo to upload the documents</string>
     <key>NSFaceIDUsageDescription</key>
     <string>Use Face ID to login</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Zellix uses motion data to support activity-related app features.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to use your location for conduct meeting.</string>
     <key>NSLocationAlwaysUsageDescription</key>

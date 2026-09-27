@@ -31,6 +31,14 @@ export const userSlice = createSlice({
         bookingQueryKey: null,
     },
     reducers: {
+        clearSessionData: (state) => {
+            state.user = {};
+            state.meeting = [];
+            state.team = [];
+            state.bookings = [];
+            state.lead = [];
+            state.allUsers = [];
+        },
         setUserInfo: (state, action) => {
             state.user = action.payload;
         },
@@ -92,7 +100,7 @@ export const userSlice = createSlice({
     },
 })
 
-export const { setUserInfo,
+export const { clearSessionData, setUserInfo,
     setMeeting,
     setTeam,
     setBookings,

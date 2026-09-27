@@ -202,12 +202,10 @@ const CallListing = () => {
 
   const handleDelete = () => {
     setPhoneNumber((prev) => {
-      const cursorPos = selection.start ?? prev.length;
-      if (cursorPos === 0) return prev;
+      if (!prev.length) return prev;
 
-      const updated = prev.slice(0, cursorPos - 1) + prev.slice(cursorPos);
-
-      setSelection({ start: cursorPos - 1, end: cursorPos - 1 });
+      const updated = prev.slice(0, -1);
+      setSelection({ start: updated.length, end: updated.length });
 
       return updated;
     });

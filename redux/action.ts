@@ -105,6 +105,7 @@ export const getAllDeveloperFunc = () => {
 export const onLogOutEmpty = () => {
   return async (dispatch) => {
     try {
+      dispatch(setUserInfo({}));
       dispatch(setMeeting([]));
       dispatch(setTeam([]));
       dispatch(setBookings([]));

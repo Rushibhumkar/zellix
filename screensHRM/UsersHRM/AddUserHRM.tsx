@@ -9,7 +9,6 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
-  useGetAvailableRoles,
   useGetSrManagers,
   useGetTeamsBySrManager,
 } from "../../hooks/useGetQuerryHRM";
@@ -24,6 +23,7 @@ import { queryKeyHRM } from "../../utils/queryKeys";
 import parsePhoneNumber from "libphonenumber-js";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { color } from "../../const/color";
+import { ASSIGNABLE_ROLE_OPTIONS } from "../../utils/roles";
 
 const AddUserHRM = () => {
   const queryClient = useQueryClient();
@@ -48,11 +48,10 @@ const AddUserHRM = () => {
       empCode: update?.empCode ?? "",
       salary: update?.salary ?? "",
       dateOfJoining: update?.dateOfJoining ?? "",
-      activeStatus: update?.activeStatus ?? "onboard",
-      // team: update?.team ?? '',
-      // teamName: update?.teamName ?? '',
-      // srManager: update?.srManager ?? '',
-      // role: update?.role ?? ''
+      role: update?.role ?? "",
+      team: update?.team ?? "",
+      teamName: update?.teamName ?? "",
+      srManager: update?.srManager ?? "",
     },
     validationSchema: validationSchema,
     onSubmit: async (value) => {
@@ -95,7 +94,7 @@ const AddUserHRM = () => {
   const { data: teamBySrMn } = useGetTeamsBySrManager({
     id: values?.srManager,
   });
-  const { data: roleList } = useGetAvailableRoles({ id: values?.team });
+  const roleList = ASSIGNABLE_ROLE_OPTIONS.map(({ value, label }) => ({ _id: value, name: label }));
   return (
     <ContainerHRM
       isBAck={{
@@ -181,19 +180,6 @@ const AddUserHRM = () => {
                 values?.dateOfJoining ? values.dateOfJoining : undefined
               }
             />
-            <DropdownRNE
-              label="Active Status"
-              arrOfObj={[
-                { _id: "onboard", name: "Onboard" },
-                { _id: "resign", name: "Resigned" },
-                { _id: "terminated", name: "Terminated" },
-              ]}
-              mode="modal"
-              isSearch
-              onChange={(v) => setFieldValue("activeStatus", v)}
-              initialValue={values?.activeStatus}
-              containerStyle={{ marginBottom: 15 }}
-            />
             {!update?.name && (
               <>
                 <DropdownRNE
@@ -234,8 +220,9 @@ const AddUserHRM = () => {
                   containerStyle={{
                     marginBottom: 25,
                   }}
-                  arrOfObj={roleList ?? []}
+                  arrOfObj={roleList as any}
                   onChange={(id) => setFieldValue("role", id)}
+                  initialValue={values?.role}
                   mode="modal"
                   isSearch
                 />
@@ -259,14 +246,13 @@ export default AddUserHRM;
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("First name is required"),
   email: Yup.string()
-    .required("First name is required")
+    .required("Email is required")
     .email("Invalid Email Address"),
+  role: Yup.string().required("Role is required"),
   mobile: Yup.string()
-    .required("Phone number is required")
     .test("phone-number", "Invalid phone number", (value) => {
-      if (!value || value.length < 5) {
-        return false;
-      }
+      if (!value) return true;
+      if (value.length < 5) return false;
       console.log("MOBILE VALUE =>", value);
       console.log(
         "PHONE FOR VALIDATION =>",
