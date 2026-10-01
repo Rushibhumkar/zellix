@@ -673,8 +673,24 @@ const InvoiceNavigator = () => {
 
 //
 const StackNavigation = () => {
+  const linking = {
+    prefixes: ["zellix://"],
+    config: {
+      screens: {
+        Dashboard: {
+          screens: {
+            allLead2: {
+              screens: {
+                CallListing: "calls",
+              },
+            },
+          },
+        },
+      },
+    },
+  };
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
         screenOptions={{
           contentStyle: { backgroundColor: "white" },

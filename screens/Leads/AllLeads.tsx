@@ -60,6 +60,7 @@ import {
   LeadFoldersModal,
   useLeadFolders,
 } from "./component/LeadFolders";
+import { openWhatsApp } from "../../utils/openWhatsApp";
 
 let bgByStatus = {
   assign: "#dfe9faff", // soft blue tint for assigned
@@ -440,6 +441,15 @@ const AllLeads = () => {
     selectedStatus === "all"
       ? leadData
       : leadData?.filter((item) => item?.status === selectedStatus);
+  const selectedHasDealBookedLead = selected.some((leadId) =>
+    (leadData || []).some(
+      (lead: any) =>
+        String(lead?._id) === String(leadId) &&
+        lead?.status === "deal_booked",
+    ),
+  );
+  const canAssignSelectedLeads =
+    user?.role === roleEnum.sup_admin || !selectedHasDealBookedLead;
 
   const openLeadRSVPInvitation = () => {
     const isAdmin = [roleEnum.sup_admin, roleEnum.sub_admin].includes(
@@ -561,7 +571,7 @@ const AllLeads = () => {
                   : false
               }
               onPressToAssignLead={
-                canAssignLead && !isAgent
+                canAssignLead && !isAgent && canAssignSelectedLeads
                   ? () => toggleModalAssignLead()
                   : false
               }
@@ -621,10 +631,7 @@ const AllLeads = () => {
                     triggerCall: true, // 👈 important flag
                   })
                 }
-                onWhatsappIconPress={() => {
-                  if (!item?.whatsapp) return;
-                  Linking.openURL(item?.whatsapp);
-                }}
+                onWhatsappIconPress={() => openWhatsApp(item?.whatsapp)}
                 onEmailPress={() => onEmailPress(item?.clientEmail)}
                 handleChangeStatus={handleChangeStatusSubmit}
                 statusChangeLoad={statusChangeLoad}
@@ -890,12 +897,28 @@ const LeadRowItem = React.memo(
     handleChangeStatus,
     statusChangeLoad,
   }: any) => {
+    const hasDisplayValue = (value: unknown) => {
+      if (value === null || value === undefined || value === false || value === 0)
+        return false;
+      const normalized = String(value).trim().toLowerCase();
+      return ![
+        "",
+        "restricted",
+        "n/a",
+        "null",
+        "undefined",
+        "—",
+        "-",
+      ].includes(normalized);
+    };
+    const displayValue = (value: unknown) =>
+      hasDisplayValue(value) ? String(value).trim() : "-";
     const statusKey = item?.status ?? "";
     const missingCount = [
       item?.clientMobile,
       item?.whatsapp,
       item?.clientEmail,
-    ].filter((v) => !v).length;
+    ].filter((value) => !hasDisplayValue(value)).length;
 
     const showClaimBtn = missingCount >= 2;
     return (
@@ -968,7 +991,7 @@ const LeadRowItem = React.memo(
                   textTransform: "capitalize",
                 }}
               >
-                {item?.clientName}
+                {displayValue(item?.clientName)}
               </CustomText>
 
               {isAgent ? (
@@ -982,7 +1005,7 @@ const LeadRowItem = React.memo(
                     marginTop: 2,
                   }}
                 >
-                  {item?.clientMobile}
+                  {displayValue(item?.clientMobile)}
                 </CustomText>
               ) : (
                 <CustomText
@@ -995,9 +1018,11 @@ const LeadRowItem = React.memo(
                     fontSize: 13,
                   }}
                 >
-                  {[item?.assign?.name?.trim(), item?.assign?.lastName?.trim()]
-                    .filter(Boolean)
-                    .join(" ")}
+                  {displayValue(
+                    [item?.assign?.name?.trim(), item?.assign?.lastName?.trim()]
+                      .filter(Boolean)
+                      .join(" "),
+                  )}
                 </CustomText>
               )}
             </View>
@@ -1022,7 +1047,7 @@ const LeadRowItem = React.memo(
                   alignSelf: "flex-start",
                 }}
               >
-                {statusObj[item?.status]}
+                {displayValue(statusObj[item?.status] || item?.status)}
               </CustomText>
               <CustomText
                 numberOfLines={1}
@@ -1077,7 +1102,7 @@ const LeadRowItem = React.memo(
                   marginRight: 8,
                 }}
               >
-                {item?.clientMobile && (
+                {hasDisplayValue(item?.clientMobile) && (
                   <TouchableOpacity
                     onPress={onCallPress}
                     style={styles.iconBtn}
@@ -1086,7 +1111,7 @@ const LeadRowItem = React.memo(
                   </TouchableOpacity>
                 )}
 
-                {item?.whatsapp && (
+                {hasDisplayValue(item?.whatsapp) && (
                   <TouchableOpacity
                     onPress={onWhatsappIconPress}
                     style={[styles.iconBtn, { backgroundColor: "#49f26529" }]}
@@ -1095,7 +1120,7 @@ const LeadRowItem = React.memo(
                   </TouchableOpacity>
                 )}
 
-                {!isAgent && item?.clientEmail && (
+                {!isAgent && hasDisplayValue(item?.clientEmail) && (
                   <TouchableOpacity
                     onPress={onEmailPress}
                     style={[styles.iconBtn, { backgroundColor: "#ff6b6b14" }]}

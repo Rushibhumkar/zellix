@@ -137,15 +137,20 @@ const LeadPool = () => {
                   }
                 }}
                 // onLongPress={isSubSup ? () => handleSelect(item._id) : undefined}
-                onPressClaim={() => {
-                  popupModal2.wantDelete({
-                    onConfirm: async () => {
-                      !!item?._id && (await claimLead(item?._id));
-                      refetch();
-                    },
-                    title: "Do you want to claim!",
-                  });
-                }}
+                onPressClaim={
+                  item?.status !== "deal_booked" ||
+                  user?.role === roleEnum.sup_admin
+                    ? () => {
+                        popupModal2.wantDelete({
+                          onConfirm: async () => {
+                            !!item?._id && (await claimLead(item?._id));
+                            refetch();
+                          },
+                          title: "Do you want to claim!",
+                        });
+                      }
+                    : undefined
+                }
               />
             );
           }}
@@ -228,13 +233,13 @@ const LeadPoolRowItem = ({
         <View style={styles.leftContent}>
           <SlideFadeIn>
             <CustomText numberOfLines={1} style={styles.projectName}>
-              {item?.name || "N/A"}
+              {item?.name || "-"}
             </CustomText>
           </SlideFadeIn>
 
           <SlideFadeIn>
             <CustomText numberOfLines={1} style={styles.clientName}>
-              {item?.clientName || "N/A"}
+              {item?.clientName || "-"}
             </CustomText>
           </SlideFadeIn>
         </View>
@@ -242,12 +247,12 @@ const LeadPoolRowItem = ({
         <View style={styles.rightContent}>
           <View style={styles.typeBadge}>
             <CustomText numberOfLines={1} style={styles.typeText}>
-              {leadTypeObj?.[item?.type] || "N/A"}
+              {leadTypeObj?.[item?.type] || "-"}
             </CustomText>
           </View>
 
           <CustomText numberOfLines={1} style={styles.sourceText}>
-            {item?.source || "N/A"}
+            {item?.source || "-"}
           </CustomText>
         </View>
       </View>

@@ -8,9 +8,14 @@ interface Props {
   item: any;
   onPress?: () => void;
   onCallPress?: (mobile: string) => void;
+  onLongPress?: () => void;
+  selected?: boolean;
+  reviewMode?: boolean;
+  onApprove?: () => void;
+  onReject?: () => void;
 }
 
-const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
+const CallLogCard = ({ item, onPress, onCallPress, onLongPress, selected, reviewMode, onApprove, onReject }: Props) => {
   const getStatusColor = (type: string) => {
     switch (type) {
       case "positive":
@@ -48,7 +53,12 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
     : "-";
 
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.card} onPress={onPress}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={[styles.card, selected && styles.selectedCard]}
+      onPress={onPress}
+      onLongPress={onLongPress}
+    >
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -137,6 +147,15 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
         </View>
       </View>
 
+      {reviewMode && item?.userId && typeof item.userId === "object" && (
+        <View style={styles.row}>
+          <Feather name="user" size={14} color="#64748B" />
+          <Text style={styles.infoText}>
+            {[item.userId.name, item.userId.lastName].filter(Boolean).join(" ") || "-"}
+          </Text>
+        </View>
+      )}
+
       {!!item?.leadStatusAfterCall && (
         <View style={styles.tag}>
           <Text style={styles.tagText}>
@@ -149,6 +168,17 @@ const CallLogCard = ({ item, onPress, onCallPress }: Props) => {
         <Text numberOfLines={2} style={styles.comment}>
           {item.comment}
         </Text>
+      )}
+      {reviewMode && (
+        <View style={styles.reviewFooter}>
+          <View style={[styles.reviewStatus, { backgroundColor: item.reviewStatus === "approved" ? "#DCFCE7" : item.reviewStatus === "rejected" ? "#FEE2E2" : "#FEF3C7" }]}>
+            <Text style={styles.reviewStatusText}>{item.reviewStatus || "pending"}</Text>
+          </View>
+          {!selected && <View style={styles.reviewActions}>
+            {item.reviewStatus !== "approved" && <TouchableOpacity style={[styles.reviewButton, styles.approveButton]} onPress={onApprove}><Text style={styles.reviewButtonText}>Approve</Text></TouchableOpacity>}
+            {item.reviewStatus !== "rejected" && <TouchableOpacity style={[styles.reviewButton, styles.rejectButton]} onPress={onReject}><Text style={styles.reviewButtonText}>Reject</Text></TouchableOpacity>}
+          </View>}
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -167,6 +197,15 @@ const styles = StyleSheet.create({
     borderColor: "#E3E8EF",
     ...shadowPrimaryColor,
   },
+  selectedCard: { borderColor: "#2563EB", backgroundColor: "#EFF6FF" },
+  reviewFooter: { marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  reviewStatus: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 10 },
+  reviewStatusText: { fontSize: 11, fontWeight: "700", textTransform: "capitalize", color: "#334155" },
+  reviewActions: { flexDirection: "row", gap: 8 },
+  reviewButton: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8 },
+  approveButton: { backgroundColor: "#16A34A" },
+  rejectButton: { backgroundColor: "#DC2626" },
+  reviewButtonText: { color: "white", fontWeight: "700", fontSize: 12 },
 
   header: {
     flexDirection: "row",

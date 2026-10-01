@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../authApi/axiosInstance";
 import { myConsole } from "../../hooks/useConsole";
 
@@ -131,3 +131,33 @@ export const useCallLogsByUserId = (userId: string) => {
     refetchOnWindowFocus: false,
   });
 };
+
+export type ReviewStatus = "pending" | "approved" | "rejected";
+
+export const getLongCallReviews = async ({ pageParam = 1, status = "pending", pnlId = "" }) => {
+  const response = await axiosInstance.get("/api/call-logs/reviews/long", {
+    params: { page: pageParam, limit: 20, status, ...(pnlId ? { pnlId } : {}) },
+  });
+  return response.data;
+};
+
+export const useLongCallReviews = (enabled: boolean, status: ReviewStatus, pnlId = "") =>
+  useInfiniteQuery({
+    queryKey: ["longCallReviews", status, pnlId],
+    queryFn: ({ pageParam = 1 }) => getLongCallReviews({ pageParam, status, pnlId }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage?.pagination?.hasNextPage
+      ? lastPage.pagination.page + 1
+      : undefined,
+    enabled,
+  });
+
+export const useReviewPnls = (enabled: boolean) => useQuery({
+  queryKey: ["longCallReviewPnls"],
+  queryFn: () => axiosInstance.get("/api/call-logs/reviews/pnls").then((res) => res.data?.data || []),
+  enabled,
+  staleTime: 5 * 60 * 1000,
+});
+
+export const updateLongCallReviewStatus = (ids: string[], status: "approved" | "rejected") =>
+  axiosInstance.patch("/api/call-logs/reviews/status", { ids, status }).then((res) => res.data);

@@ -3,6 +3,7 @@ import {
   assigningUser,
   getLead,
   getLeadDetailById,
+  searchLeadOptions,
   getLeadPool,
   getLogsInfoLeadDeatil,
   getUserInfoLeadDeatil,
@@ -142,8 +143,7 @@ export const useGetLead = ({
 };
 export const useGetLeadInAddMeeting = ({
   search,
-  pagination = true,
-  skipType = true,
+  individual = false,
 }) => {
   // return useQuery({
   //     queryKey: ['getLead'],
@@ -152,24 +152,27 @@ export const useGetLeadInAddMeeting = ({
   //     // enabled: !!type
   // })
   let res = useInfiniteQuery({
-    queryKey: ["getLeadInAddMeeting", search, pagination, skipType],
-    queryFn: ({ pageParam = 1 }) =>
-      getLead({
+    queryKey: ["getLeadInAddMeeting", search, individual],
+    queryFn: ({ pageParam = 1, signal }) =>
+      searchLeadOptions({
         search,
-        pagination,
-        skipType,
         pageParam,
+        limit: 20,
+        individual,
+        signal,
       }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext
         ? parseInt(lastPage?.pagination?.currentPage) + 1
         : undefined;
     },
+    initialPageParam: 1,
+    staleTime: 30 * 1000,
   });
-  let data = [];
-  if (res) {
-    data = res?.data?.pages?.map((page) => page?.data).flat();
-  }
+  const flattened = res?.data?.pages?.flatMap((page) => page?.data || []) || [];
+  const data = Array.from(
+    new Map(flattened.map((lead) => [lead?._id, lead])).values(),
+  );
   return { ...res, data };
 };
 

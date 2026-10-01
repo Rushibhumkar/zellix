@@ -96,35 +96,54 @@ export const addBookingSchema = Yup.object().shape({
   //  paymentProof2:  Yup.string().required("Field is required"),
 });
 
-export const addSingleLeadSchema = Yup.object().shape({
-  //srManager: Yup.string().required("Name is Required"),
+const singleLeadFields = {
   type: Yup.string().required("Type is required"),
-  name: Yup.string().required("Name is Required"),
-  clientName: Yup.string().required("Client Name is Required"),
-  clientMobile: Yup.string().required("Mobile is Required"),
-  clientEmail: Yup.string()
-    .email("Invalid email format")
-    .required(" Field required"),
+  name: Yup.string().trim().notRequired(),
+  clientName: Yup.string().trim().required("Client Name is Required"),
+  clientMobile: Yup.string()
+    .trim()
+    .test("valid-mobile", "Enter a valid mobile number", (value) => {
+      if (!value) return true;
+      return String(value).replace(/\D/g, "").length >= 5;
+    })
+    .notRequired(),
+  clientEmail: Yup.string().trim().email("Invalid email format").notRequired(),
   whatsapp: Yup.string()
     .trim()
-    .matches(whatsappRegex, "Enter a valid WhatsApp number")
-    .required("WhatsApp number is required"),
-});
-export const addSingleLeadWithSrManagerSchema = Yup.object().shape({
-  //srManager: Yup.string().required("Name is Required"),
-  type: Yup.string().required("Type is required"),
-  name: Yup.string().required("Name is Required"),
-  clientName: Yup.string().required("Client Name is Required"),
-  clientMobile: Yup.string().required("Mobile is Required"),
-  srManager: Yup.string().required("Sr Manager is Required"),
-  clientEmail: Yup.string()
-    .email("Invalid email format")
-    .required(" Field required"),
-  whatsapp: Yup.string()
-    .trim()
-    .matches(whatsappRegex, "Enter a valid WhatsApp number")
-    .required("WhatsApp number is required"),
-});
+    .matches(whatsappRegex, {
+      message: "Enter a valid WhatsApp number",
+      excludeEmptyString: true,
+    })
+    .notRequired(),
+};
+
+const requireOneLeadContact = (schema: Yup.AnyObjectSchema) =>
+  schema.test("lead-contact", function (values) {
+    const hasMobile =
+      String(values?.clientMobile || "").replace(/\D/g, "").length > 0;
+    const hasWhatsapp =
+      String(values?.whatsapp || "").replace(/\D/g, "").length > 0;
+    const hasEmail = String(values?.clientEmail || "").trim().length > 0;
+    const hasContact = hasMobile || hasWhatsapp || hasEmail;
+
+    return hasContact
+      ? true
+      : this.createError({
+          path: "contact",
+          message:
+            "Enter at least one: mobile number, WhatsApp number, or email address",
+        });
+  });
+
+export const addSingleLeadSchema = requireOneLeadContact(
+  Yup.object().shape(singleLeadFields),
+);
+export const addSingleLeadWithSrManagerSchema = requireOneLeadContact(
+  Yup.object().shape({
+    ...singleLeadFields,
+    srManager: Yup.string().required("Sr Manager is Required"),
+  }),
+);
 
 export const addLeadInBulk = Yup.object().shape({
   srManager: Yup.string().required("Field required"),

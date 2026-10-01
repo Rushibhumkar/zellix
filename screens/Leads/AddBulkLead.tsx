@@ -25,6 +25,97 @@ const leadType = [
   { value: "calling_data", label: "Calling Data" },
 ];
 
+const getCellValue = (row: any, keys: string[]) => {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null) return String(value).trim();
+  }
+  return "";
+};
+
+const normalizeBulkLead = (row: any) => {
+  const source = getCellValue(row, ["source", "Source", "name", "Name"]);
+  const clientName = getCellValue(row, [
+    "clientName",
+    "Client Name",
+    "ClientName",
+  ]);
+  const clientMobile = getCellValue(row, [
+    "clientMobile",
+    "Client Mobile",
+    "Mobile Number",
+    "Mobile",
+  ]);
+  const clientEmail = getCellValue(row, [
+    "clientEmail",
+    "Client Email",
+    "Email Address",
+    "Email",
+  ]);
+  const whatsappNumber = getCellValue(row, [
+    "whatsapp",
+    "WhatsApp Number",
+    "Whatsapp Number",
+    "WhatsApp",
+    "Whatsapp",
+  ]);
+  const whatsappDigits = whatsappNumber.replace(/\D/g, "");
+  const typeValue = getCellValue(row, ["type", "Type"]);
+  const statusValue = getCellValue(row, ["status", "Status"]);
+
+  return {
+    ...row,
+    name: source,
+    clientName,
+    clientMobile,
+    clientEmail,
+    comments: getCellValue(row, ["comments", "Comments"]),
+    type:
+      leadType.find(
+        (item) =>
+          item.value === typeValue ||
+          item.label.toLowerCase() === typeValue.toLowerCase(),
+      )?.value || typeValue,
+    status:
+      status.find(
+        (item) =>
+          item.value === statusValue ||
+          item.label?.toLowerCase() === statusValue.toLowerCase(),
+      )?.value || statusValue,
+    whatsapp: whatsappDigits ? `https://wa.me/${whatsappDigits}` : "",
+  };
+};
+
+const validateBulkLeadRows = (rows: any[]) => {
+  const emailPattern = /^\S+@\S+\.\S+$/;
+
+  return rows.flatMap((row, index) => {
+    const rowNumber = index + 2;
+    const mobileDigits = String(row.clientMobile || "").replace(/\D/g, "");
+    const whatsappDigits = String(row.whatsapp || "").replace(/\D/g, "");
+    const email = String(row.clientEmail || "").trim();
+
+    if (!String(row.clientName || "").trim()) {
+      return [`Row ${rowNumber}: Client Name is required`];
+    }
+    if (!mobileDigits && !whatsappDigits && !email) {
+      return [
+        `Row ${rowNumber}: Enter at least one mobile number, WhatsApp number, or email address`,
+      ];
+    }
+    if (email && !emailPattern.test(email)) {
+      return [`Row ${rowNumber}: Enter a valid email address`];
+    }
+    if (row.clientMobile && mobileDigits.length < 5) {
+      return [`Row ${rowNumber}: Enter a valid mobile number`];
+    }
+    if (row.whatsapp && whatsappDigits.length < 5) {
+      return [`Row ${rowNumber}: Enter a valid WhatsApp number`];
+    }
+    return [];
+  });
+};
+
 const AddBulkLead = () => {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
@@ -78,20 +169,20 @@ const AddBulkLead = () => {
 
   //excel
   const handlePicker = async () => {
-    let a = await excelPicker();
-    if (a.length > 0) {
-      const temp = await a?.map((el) => {
-        return {
-          ...el,
-          comments: el?.Comments,
-          type: leadType?.filter((type) => type?.label === el?.Type)?.[0]
-            ?.value,
-          status: status?.filter((st) => st?.label === el?.Status)?.[0]?.value,
-          whatsapp: ` https://wa.me/${el.clientMobile.replace("-", "")}`,
-        };
-      });
-      setBulkLead(temp);
+    const selectedRows = await excelPicker();
+    if (!selectedRows?.length) return;
+
+    const normalizedRows = selectedRows.map(normalizeBulkLead);
+    const rowErrors = validateBulkLeadRows(normalizedRows);
+    if (rowErrors.length) {
+      setBulkLead([]);
+      setFieldValue("fileSelectionError", rowErrors[0]);
+      toast.error(rowErrors[0]);
+      return;
     }
+
+    setFieldValue("fileSelectionError", "");
+    setBulkLead(normalizedRows);
   };
 
   const validateFileSelection = () => {

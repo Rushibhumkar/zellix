@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
+import { isRunningInExpoGo } from "expo";
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { Provider } from "react-redux";
@@ -20,19 +20,25 @@ import GlobalPopupManager from "./myComponents/GlobalPopup/GlobalPopupManager";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AppInstructionPopup from "./myComponents/AppInstruction/AppInstructionPopup";
 
+type NotificationsModule = typeof import("expo-notifications");
+
+const isAndroidExpoGo = Platform.OS === "android" && isRunningInExpoGo();
+const Notifications: NotificationsModule | null = isAndroidExpoGo
+  ? null
+  : require("expo-notifications");
+
 if (!BackHandler.removeEventListener) {
   BackHandler.removeEventListener = (type, handler) => true;
 }
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => {
-    console.log("handleNotification triggered");
-    return {
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    };
-  },
+Notifications?.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
 });
 
 export const queryClient = new QueryClient();
@@ -53,6 +59,13 @@ export default function App() {
   const responseListener = useRef();
 
   useEffect(() => {
+    if (!Notifications) {
+      console.log(
+        "Push notifications are unavailable in Expo Go on Android; use a development build.",
+      );
+      return;
+    }
+
     console.log("App mounted - registering push notifications");
 
     registerForPushNotificationsAsync()
@@ -89,6 +102,11 @@ export default function App() {
               },
             },
           });
+        } else if (notData?.module === "long_call_reviews") {
+          navigate("allLead2", {
+            screen: "CallListing",
+            params: { tab: "long", status: notData?.status || "pending" },
+          });
         }
       });
 
@@ -112,6 +130,13 @@ export default function App() {
               },
             });
           }, 500); // important delay
+        } else if (notData?.module === "long_call_reviews") {
+          setTimeout(() => {
+            navigate("allLead2", {
+              screen: "CallListing",
+              params: { tab: "long", status: notData?.status || "pending" },
+            });
+          }, 500);
         }
       }
     })();
@@ -179,6 +204,8 @@ export async function schedulePushNotification({
   body = "body",
   data2 = "data2",
 }) {
+  if (!Notifications) return;
+
   console.log("schedulePushNotification called", { title, body, data2 });
   try {
     const res = await Notifications.scheduleNotificationAsync({
@@ -196,6 +223,8 @@ export async function schedulePushNotification({
 }
 
 async function registerForPushNotificationsAsync() {
+  if (!Notifications) return;
+
   console.log("🔍 registerForPushNotificationsAsync() called");
 
   let token;

@@ -93,6 +93,7 @@ interface TDropdownRNE {
   disabledItems?: string[];
   excludedItems?: string[];
   showSelectedMembers?: boolean;
+  serverSearch?: boolean;
 }
 
 const DropdownRNE = ({
@@ -127,6 +128,7 @@ const DropdownRNE = ({
   excludedItems = [],
   onSelect,
   showSelectedMembers = true,
+  serverSearch = false,
 }: TDropdownRNE) => {
   //
   const { allUsers, team } = useSelector(selectUser);
@@ -207,7 +209,7 @@ const DropdownRNE = ({
           ]}
           iconStyle={styles.iconStyle}
           data={
-            searchText.trim()
+            !serverSearch && searchText.trim()
               ? validData?.filter((item) =>
                   item[keyValueShowInBox]
                     .toLowerCase()
@@ -305,7 +307,7 @@ const DropdownRNE = ({
           iconStyle={styles.iconStyle}
           search={isSearch}
           data={
-            searchText.trim()
+            !serverSearch && searchText.trim()
               ? validData?.filter((item) =>
                   item[keyValueShowInBox]
                     .toLowerCase()

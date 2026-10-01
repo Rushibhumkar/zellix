@@ -106,6 +106,31 @@ export const getLeadDetailById = (id: string) => {
     .then((res) => res?.data);
 };
 
+export const searchLeadOptions = async ({
+  search = "",
+  pageParam = 1,
+  limit = 20,
+  individual,
+  signal,
+}: {
+  search?: string;
+  pageParam?: number;
+  limit?: number;
+  individual?: boolean;
+  signal?: AbortSignal;
+}) => {
+  const response = await axiosInstance.get("/api/lead/search-options", {
+    params: {
+      search,
+      page: pageParam,
+      limit,
+      ...(individual && { individual: true }),
+    },
+    signal,
+  });
+  return response.data;
+};
+
 export const getLeadFolders = () =>
   axiosInstance.get("/api/lead/folders").then((res) => res?.data?.data || []);
 

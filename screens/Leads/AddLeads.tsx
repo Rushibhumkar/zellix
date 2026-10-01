@@ -97,7 +97,12 @@ const AddLeads = () => {
                 onPress={() => handleOpenField("single")}
               />
               {openLeadField.single && (
-                <AddSingleLead data={data ?? null} tabType={params?.tabType} />
+                <AddSingleLead
+                  data={data ?? null}
+                  tabType={params?.tabType}
+                  returnToMeeting={params?.returnToMeeting}
+                  meetingDraft={params?.meetingDraft}
+                />
               )}
             </View>
           </ScrollView>

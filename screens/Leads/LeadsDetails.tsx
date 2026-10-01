@@ -52,6 +52,7 @@ import {
 } from "../../utils/data";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
+import { openWhatsApp } from "../../utils/openWhatsApp";
 import AddNote from "./component/AddNote";
 import NotesCard from "./component/NotesCard";
 import TabButton from "./component/TabButton";
@@ -1718,7 +1719,7 @@ const LeadsDetails = () => {
                         <ActionButton
                           label="WhatsApp"
                           icon="message-circle"
-                          onPress={() => Linking.openURL(detail?.whatsapp)}
+                          onPress={() => openWhatsApp(detail?.whatsapp)}
                         />
                       )}
 

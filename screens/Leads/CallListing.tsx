@@ -46,6 +46,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   createCallLog,
   useCallLogsByUserId,
+  useLongCallReviews,
+  useReviewPnls,
+  updateLongCallReviewStatus,
+  ReviewStatus,
 } from "../../services/rootApi/callLogsApi";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { myConsole } from "../../hooks/useConsole";
@@ -77,6 +81,29 @@ const CallListing = () => {
   const userName = route?.params?.userName;
   const from = route?.params?.from;
   const insets = useSafeAreaInsets();
+  const canReviewLongCalls = ["sup_admin", "sr_manager", "pnl"].includes(
+    user?.role,
+  );
+  const [activeTab, setActiveTab] = useState<"all" | "long">(
+    canReviewLongCalls && route?.params?.tab === "long" ? "long" : "all",
+  );
+  const [reviewStatus, setReviewStatus] = useState<ReviewStatus>(
+    route?.params?.status === "approved" || route?.params?.status === "rejected"
+      ? route.params.status
+      : "pending",
+  );
+  const [selectedReviewIds, setSelectedReviewIds] = useState<string[]>([]);
+  const [selectedPnlId, setSelectedPnlId] = useState("");
+  const [showPnlPicker, setShowPnlPicker] = useState(false);
+
+  useEffect(() => {
+    if (canReviewLongCalls && route?.params?.tab === "long") {
+      setActiveTab("long");
+      if (["pending", "approved", "rejected"].includes(route?.params?.status)) {
+        setReviewStatus(route.params.status);
+      }
+    }
+  }, [canReviewLongCalls, route?.params?.tab, route?.params?.status]);
 
   // ✅ NEW
   const DURATION_THRESHOLD_SEC = 20 * 60; // 20 min
@@ -113,8 +140,20 @@ const CallListing = () => {
     "interested",
   );
   const isResumingRef = useRef(false);
+  const isHandlingResumeAlertRef = useRef(false);
+  const resumeModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const myLogsQuery = useGetMyCallLogs(10);
+  const reviewLogsQuery = useLongCallReviews(
+    canReviewLongCalls && activeTab === "long",
+    reviewStatus,
+    selectedPnlId,
+  );
+  const pnlQuery = useReviewPnls(
+    user?.role === "sup_admin" && activeTab === "long",
+  );
 
   const { data: appSettingsData } = useQuery({
     queryKey: ["getAppSettings"],
@@ -131,7 +170,12 @@ const CallListing = () => {
 
   const userLogsQuery = useCallLogsByUserId(userId);
 
-  const activeQuery = userId ? userLogsQuery : myLogsQuery;
+  const activeQuery =
+    activeTab === "long"
+      ? reviewLogsQuery
+      : userId
+        ? userLogsQuery
+        : myLogsQuery;
 
   const {
     data,
@@ -175,6 +219,35 @@ const CallListing = () => {
       ) || []
     );
   }, [data]);
+
+  const changeReviewStatus = async (
+    ids: string[],
+    status: "approved" | "rejected",
+  ) => {
+    if (!ids.length) return;
+    try {
+      await updateLongCallReviewStatus(ids, status);
+      setSelectedReviewIds([]);
+      toast.success(`${ids.length} call(s) ${status}`);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["longCallReviews"] }),
+        queryClient.invalidateQueries({ queryKey: ["getMyCallLogs"] }),
+        queryClient.invalidateQueries({ queryKey: ["callLogsByUserId"] }),
+      ]);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Unable to update call review",
+      );
+    }
+  };
+
+  const toggleReviewSelection = (id: string) => {
+    setSelectedReviewIds((current) =>
+      current.includes(id)
+        ? current.filter((value) => value !== id)
+        : [...current, id],
+    );
+  };
 
   const formattedNumber = useMemo(() => {
     return phoneNumber;
@@ -239,7 +312,7 @@ const CallListing = () => {
   // ✅ NEW: resumes a call that was in-progress when the app got killed
 
   const resumePendingCallIfAny = async () => {
-    if (isResumingRef.current) return;
+    if (isResumingRef.current || isHandlingResumeAlertRef.current) return;
 
     const pending = await getDataJson(PENDING_CALL_KEY);
     if (!pending?.number || !pending?.initiatedAt) return;
@@ -249,11 +322,6 @@ const CallListing = () => {
     isResumingRef.current = true;
 
     const endTime = Date.now();
-
-    setCallMeta({
-      initiatedAt: pending.initiatedAt,
-      finishedAt: endTime,
-    });
 
     await removeItemValue(PENDING_CALL_KEY);
 
@@ -292,6 +360,14 @@ const CallListing = () => {
         ", " +
         formattedTime;
 
+    // A native Alert briefly changes AppState on some Android devices. Stop
+    // call tracking before showing it so the return-to-active event cannot
+    // start a second call-end flow behind the alert.
+    isCallingRef.current = false;
+    isCallTrackingRef.current = false;
+    callStartTimeRef.current = null;
+    isHandlingResumeAlertRef.current = true;
+
     Alert.alert(
       "Missed Call Log",
       `Called number: ${pending.number}\n\nA call was initiated at ${formattedDateTime}.\n\nPlease log this call to update your call records.`,
@@ -299,12 +375,24 @@ const CallListing = () => {
         {
           text: "OK",
           onPress: () => {
-            finalizeCallAndOpenLead(
-              pending.number,
-              pending.initiatedAt,
-              endTime,
-            );
             isResumingRef.current = false;
+            isHandlingResumeAlertRef.current = false;
+
+            // Wait for the native alert window to finish dismissing before
+            // mounting React Native's Modal. Opening both during the same
+            // native transition can leave an invisible modal backdrop that
+            // makes the call-list screen appear frozen.
+            if (resumeModalTimerRef.current) {
+              clearTimeout(resumeModalTimerRef.current);
+            }
+            resumeModalTimerRef.current = setTimeout(() => {
+              resumeModalTimerRef.current = null;
+              finalizeCallAndOpenLead(
+                pending.number,
+                pending.initiatedAt,
+                endTime,
+              );
+            }, 300);
           },
         },
       ],
@@ -328,10 +416,7 @@ const CallListing = () => {
     isCallTrackingRef.current = false;
     callStartTimeRef.current = null;
     setShowDialPad(false);
-
-    setTimeout(() => {
-      setShowLeadModal(true);
-    }, 500);
+    setShowLeadModal(true);
   };
 
   // ✅ NEW: decides whether duration looks reliable (<=25min) or needs manual edit
@@ -474,7 +559,13 @@ const CallListing = () => {
       appState.current = nextAppState;
     });
 
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      if (resumeModalTimerRef.current) {
+        clearTimeout(resumeModalTimerRef.current);
+        resumeModalTimerRef.current = null;
+      }
+    };
   }, []);
 
   const hitCreateCallLog = async (
@@ -866,13 +957,134 @@ const CallListing = () => {
         }}
       />
 
+      {canReviewLongCalls && !userId && (
+        <View style={styles.tabsRow}>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === "all" && styles.activeTab]}
+            onPress={() => {
+              setActiveTab("all");
+              setSelectedReviewIds([]);
+            }}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "all" && styles.activeTabText,
+              ]}
+            >
+              All Calls
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === "long" && styles.activeTab]}
+            onPress={() => setActiveTab("long")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "long" && styles.activeTabText,
+              ]}
+            >
+              Calls &gt; 5 Minutes
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {activeTab === "long" && (
+        <View style={styles.reviewFilters}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8 }}
+          >
+            {(["pending", "approved", "rejected"] as ReviewStatus[]).map(
+              (status) => (
+                <TouchableOpacity
+                  key={status}
+                  style={[
+                    styles.statusChip,
+                    reviewStatus === status && styles.activeStatusChip,
+                  ]}
+                  onPress={() => {
+                    setReviewStatus(status);
+                    setSelectedReviewIds([]);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.statusChipText,
+                      reviewStatus === status && styles.activeStatusChipText,
+                    ]}
+                  >
+                    {status}
+                  </Text>
+                </TouchableOpacity>
+              ),
+            )}
+          </ScrollView>
+          {user?.role === "sup_admin" && (
+            <TouchableOpacity
+              style={styles.pnlFilter}
+              onPress={() => setShowPnlPicker(true)}
+            >
+              <Text numberOfLines={1} style={styles.pnlFilterText}>
+                {selectedPnlId
+                  ? (pnlQuery.data || []).find(
+                      (pnl: any) => pnl._id === selectedPnlId,
+                    )?.name || "PNL"
+                  : "All PNLs"}
+              </Text>
+              <Feather name="chevron-down" size={16} color="#475569" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {activeTab === "long" && selectedReviewIds.length > 0 && (
+        <View style={styles.bulkBar}>
+          <Text style={styles.bulkCount}>
+            {selectedReviewIds.length} selected
+          </Text>
+          {reviewStatus !== "approved" && (
+            <TouchableOpacity
+              style={[styles.bulkButton, { backgroundColor: "#16A34A" }]}
+              onPress={() => changeReviewStatus(selectedReviewIds, "approved")}
+            >
+              <Text style={styles.bulkButtonText}>Approve</Text>
+            </TouchableOpacity>
+          )}
+          {reviewStatus !== "rejected" && (
+            <TouchableOpacity
+              style={[styles.bulkButton, { backgroundColor: "#DC2626" }]}
+              onPress={() => changeReviewStatus(selectedReviewIds, "rejected")}
+            >
+              <Text style={styles.bulkButtonText}>Reject</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
       <FlatList
         data={callLogs}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <CallLogCard
             item={item}
+            reviewMode={activeTab === "long"}
+            selected={selectedReviewIds.includes(item._id)}
+            onLongPress={
+              activeTab === "long"
+                ? () => toggleReviewSelection(item._id)
+                : undefined
+            }
+            onApprove={() => changeReviewStatus([item._id], "approved")}
+            onReject={() => changeReviewStatus([item._id], "rejected")}
             onPress={() => {
+              if (activeTab === "long" && selectedReviewIds.length) {
+                toggleReviewSelection(item._id);
+                return;
+              }
               if (!item?.leadId?._id) return;
               navigate("LeadsDetails", {
                 item: {
@@ -943,6 +1155,46 @@ const CallListing = () => {
           ) : null
         }
       />
+
+      <Modal
+        visible={showPnlPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPnlPicker(false)}
+      >
+        <Pressable
+          style={styles.pickerOverlay}
+          onPress={() => setShowPnlPicker(false)}
+        >
+          <View style={styles.pickerCard}>
+            <Text style={styles.pickerTitle}>Filter by PNL</Text>
+            <FlatList
+              style={styles.pickerList}
+              data={[{ _id: "", name: "All PNLs" }, ...(pnlQuery.data || [])]}
+              keyExtractor={(pnl: any) => pnl._id || "all"}
+              showsVerticalScrollIndicator
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item: pnl }: { item: any }) => (
+                <TouchableOpacity
+                  style={styles.pickerOption}
+                  onPress={() => {
+                    setSelectedPnlId(pnl._id);
+                    setSelectedReviewIds([]);
+                    setShowPnlPicker(false);
+                  }}
+                >
+                  <Text style={styles.pickerOptionText}>
+                    {[pnl.name, pnl.lastName].filter(Boolean).join(" ")}
+                  </Text>
+                  {selectedPnlId === pnl._id && (
+                    <Feather name="check" size={18} color="#2563EB" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Floating DialPad Button */}
       {!userId && (
@@ -1701,6 +1953,103 @@ const CallListing = () => {
 export default CallListing;
 
 const styles = StyleSheet.create({
+  tabsRow: {
+    flexDirection: "row",
+    marginHorizontal: 12,
+    marginTop: 10,
+    backgroundColor: "#E2E8F0",
+    padding: 4,
+    borderRadius: 12,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 9,
+    alignItems: "center",
+  },
+  activeTab: { backgroundColor: "#2563EB" },
+  tabText: { color: "#475569", fontWeight: "700", fontSize: 13 },
+  activeTabText: { color: "#FFFFFF" },
+  reviewFilters: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+  },
+  statusChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: "#E2E8F0",
+  },
+  activeStatusChip: { backgroundColor: "#DBEAFE" },
+  statusChipText: {
+    textTransform: "capitalize",
+    color: "#475569",
+    fontWeight: "600",
+  },
+  activeStatusChipText: { color: "#1D4ED8" },
+  pnlFilter: {
+    maxWidth: 130,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 9,
+  },
+  pnlFilterText: {
+    maxWidth: 95,
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  bulkBar: {
+    marginHorizontal: 12,
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#dfe9ff",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  bulkCount: { color: "black", fontWeight: "700", flex: 1 },
+  bulkButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  bulkButtonText: { color: "white", fontWeight: "700" },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15,23,42,0.45)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  pickerCard: {
+    height: 420,
+    maxHeight: "70%",
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+    marginBottom: 10,
+  },
+  pickerList: {
+    flex: 1,
+  },
+  pickerOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 13,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#E2E8F0",
+  },
+  pickerOptionText: { color: "#334155", fontSize: 15 },
   floatingDialPadBtn: {
     position: "absolute",
     right: 22,

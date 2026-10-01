@@ -112,6 +112,14 @@ const Notification = () => {
         return;
       }
 
+      if (item?.type === "LongCallReview") {
+        navigate("allLead2", {
+          screen: "CallListing",
+          params: { tab: "long", status: item?.dataId || "pending" },
+        });
+        return;
+      }
+
       if (item?.type === "Meeting") {
         if (!canViewMeetings) {
           Alert.alert(
@@ -167,6 +175,7 @@ const Notification = () => {
   const getTypeColor = (type) => {
     const colors = {
       Lead: "#FF6B6B",
+      LongCallReview: "#F59E0B",
       Meeting: "#4ECDC4",
       Booking: "#45B7D1",
       Default: "#95A5A6",
@@ -177,6 +186,7 @@ const Notification = () => {
   const getTypeIcon = (type) => {
     const icons = {
       Lead: "person",
+      LongCallReview: "phone-in-talk",
       Meeting: "event",
       Booking: "book",
       Default: "notifications",

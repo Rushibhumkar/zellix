@@ -29,7 +29,6 @@ import {
   useGetLeadById,
   useGetLeadInAddMeeting,
 } from "../../hooks/useCRMgetQuerry";
-import { debounce } from "../../utils/debounce";
 import IllusionBox from "../../myComponents/IllusionBoxForUpdate/IllusionBox";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { color } from "../../const/color";
@@ -49,6 +48,8 @@ const AddMeeting = () => {
   const { user, allUsers } = useSelector(selectUser);
 
   let data = params?.detail;
+  const returnedMeetingDraft = params?.meetingDraft;
+  const returnedLead = params?.createdLead;
 
   const incomingStatus = params?.detail?.status;
 
@@ -61,10 +62,14 @@ const AddMeeting = () => {
   // }).sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1);
   // let leadNameToClientName = lead?.map((el) => { return { ...el, name: el?.clientName } }).sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1)
   // const textInput2 = useRef(null);
-  const [tempDate, setTempDate] = useState({
-    date: new Date(),
-    time: new Date(),
-  });
+  const [tempDate, setTempDate] = useState(() => ({
+    date: returnedMeetingDraft?.date
+      ? new Date(returnedMeetingDraft.date)
+      : new Date(),
+    time: returnedMeetingDraft?.time
+      ? new Date(returnedMeetingDraft.time)
+      : new Date(),
+  }));
   const [dateTimeError, setDateTimeError] = useState("");
 
   const isTodaySelected = moment(tempDate.date).isSame(moment(), "day");
@@ -73,6 +78,11 @@ const AddMeeting = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [isUpdateFrom, setIsUpdateFrom] = useState(data?.lead?._id);
+  const searchOnlyAssignedLeads = ![
+    "sup_admin",
+    "sub_admin",
+    "developer",
+  ].includes(user?.role);
   //react query lead
   const {
     data: leadList,
@@ -82,6 +92,7 @@ const AddMeeting = () => {
     isFetchingNextPage,
   } = useGetLeadInAddMeeting({
     search: debouncedSearch,
+    individual: searchOnlyAssignedLeads,
   });
 
   const { data: leadDetail, isLoading: loadingLead } = useGetLeadById(
@@ -108,11 +119,12 @@ const AddMeeting = () => {
     }));
 
   useEffect(() => {
+    if (returnedMeetingDraft?.date || returnedMeetingDraft?.time) return;
     setTempDate({
       date: data?.scheduleDate?.date ?? new Date(),
       time: data?.scheduleDate?.time ?? new Date(),
     });
-  }, []);
+  }, [data?.scheduleDate, returnedMeetingDraft]);
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
@@ -127,28 +139,38 @@ const AddMeeting = () => {
   } = useFormik({
     validationSchema: addMeetingSchema,
     initialValues: {
-      lead: data?.lead?._id ?? "",
-      productPitch: data?.productPitch ?? "",
-      clientAddress: data?.clientAddress ?? "",
-      clientCity: data?.clientCity ?? "",
-      clientCountry: data?.clientCountry ?? "",
+      lead: returnedLead?._id ?? returnedMeetingDraft?.lead ?? data?.lead?._id ?? "",
+      productPitch:
+        returnedMeetingDraft?.productPitch ?? data?.productPitch ?? "",
+      clientAddress:
+        returnedMeetingDraft?.clientAddress ?? data?.clientAddress ?? "",
+      clientCity: returnedMeetingDraft?.clientCity ?? data?.clientCity ?? "",
+      clientCountry:
+        returnedMeetingDraft?.clientCountry ?? data?.clientCountry ?? "",
       meetingMode:
+        returnedMeetingDraft?.meetingMode ||
         data?.meetings?.[0]?.meetingMode ||
         (data?.meetings?.[0]?.virtualMeetingLink ? "virtual" : "physical"),
-      location: data?.meetings?.length > 0 ? data?.meetings[0]?.location : "",
+      location:
+        returnedMeetingDraft?.location ??
+        (data?.meetings?.length > 0 ? data?.meetings[0]?.location : ""),
       virtualMeetingLink:
-        data?.meetings?.length > 0
+        returnedMeetingDraft?.virtualMeetingLink ??
+        (data?.meetings?.length > 0
           ? (data?.meetings[0]?.virtualMeetingLink ?? "")
-          : "",
-      remarks: data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : "",
-      status: mappedMeetingStatus,
-      self: data?.self ?? true,
-      agents: defaultAgents,
+          : ""),
+      remarks:
+        returnedMeetingDraft?.remarks ??
+        (data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : ""),
+      status: returnedMeetingDraft?.status ?? mappedMeetingStatus,
+      self: returnedMeetingDraft?.self ?? data?.self ?? true,
+      agents: returnedMeetingDraft?.agents ?? defaultAgents,
       scheduleDate: data?.scheduleDate ?? new Date(),
       coordinates:
-        data?.meetings?.length > 0
+        returnedMeetingDraft?.coordinates ??
+        (data?.meetings?.length > 0
           ? data?.meetings[0]?.coordinates
-          : { lat: null, lng: null },
+          : { lat: null, lng: null }),
     },
     onSubmit: async (value) => {
       if (!tempDate?.date || !tempDate?.time) {
@@ -211,13 +233,24 @@ const AddMeeting = () => {
     },
   });
 
+  useEffect(() => {
+    if (!returnedLead?._id) return;
+    setFieldValue("lead", returnedLead._id);
+    setIsUpdateFrom(false);
+  }, [returnedLead?._id, setFieldValue]);
+
   const toggleMapViewModal = (v) => {
     setIsMapModalVisible(!isMapModalVisible);
     // setMapLatLng(v)
   };
 
   const onEndReach = () => {
-    if (hasNextPage && !loading && leadList?.length > 0) {
+    if (
+      hasNextPage &&
+      !loading &&
+      !isFetchingNextPage &&
+      leadList?.length > 0
+    ) {
       fetchNextPage && fetchNextPage();
     }
   };
@@ -235,14 +268,43 @@ const AddMeeting = () => {
     }
   };
 
-  const debounceSearch = React.useCallback(
-    debounce((value) => setDebouncedSearch(value), 500),
-    [],
-  );
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(searchValue.trim());
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchValue]);
 
   const handleSearchChange = (v) => {
     setSearchValue(v);
-    debounceSearch(v);
+  };
+
+  const leadOptions = [returnedLead, ...(leadList || [])]
+    .filter((lead) => lead?._id)
+    .filter(
+      (lead, index, list) =>
+        list.findIndex((item) => String(item?._id) === String(lead?._id)) ===
+        index,
+    )
+    .map((lead) => ({
+      name: lead?.clientName || lead?.name || "Unnamed Lead",
+      _id: lead?._id,
+    }));
+
+  const handleAddLeadFromMeeting = () => {
+    navigate("allLead2", {
+      screen: "AddLeads",
+      params: {
+        tabType: "lead",
+        returnToMeeting: true,
+        meetingDraft: {
+          ...values,
+          date: tempDate.date?.toISOString?.() || new Date().toISOString(),
+          time: tempDate.time?.toISOString?.() || new Date().toISOString(),
+        },
+      },
+    });
   };
 
   return (
@@ -274,15 +336,9 @@ const AddMeeting = () => {
             </CustomText>
 
             {!isUpdateFrom ? (
-              <DropdownRNE
-                arrOfObj={
-                  leadList?.map((el) => {
-                    return {
-                      name: el?.clientName || el?.name,
-                      _id: el?._id,
-                    };
-                  }) || []
-                }
+              <>
+                <DropdownRNE
+                arrOfObj={leadOptions}
                 keyValueGetOnSelect="_id"
                 keyValueShowInBox="name"
                 label="Choose Lead *"
@@ -314,7 +370,21 @@ const AddMeeting = () => {
                 }
                 onChangeText={(v) => handleSearchChange(v)}
                 isLoading={loading}
-              />
+                serverSearch
+                />
+                <Pressable
+                  onPress={handleAddLeadFromMeeting}
+                  style={({ pressed }) => [
+                    styles.addLeadLink,
+                    pressed && { opacity: 0.65 },
+                  ]}
+                >
+                  <Feather name="plus-circle" size={16} color="#2E67BE" />
+                  <CustomText style={styles.addLeadLinkText}>
+                    Lead not found? Add a new lead
+                  </CustomText>
+                </Pressable>
+              </>
             ) : (
               <IllusionBox
                 title="Lead"
@@ -612,6 +682,20 @@ const AddMeeting = () => {
 };
 
 const styles = StyleSheet.create({
+  addLeadLink: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: -7,
+    marginBottom: 15,
+  },
+  addLeadLinkText: {
+    color: "#2E67BE",
+    fontSize: 14,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
   inputlable: {
     fontSize: 16,
     color: "#000000",

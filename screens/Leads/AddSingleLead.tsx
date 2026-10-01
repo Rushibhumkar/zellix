@@ -23,7 +23,12 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { useAppToast } from "../../components/AppToast";
 import { useAssigningUser } from "../../hooks/useCRMgetQuerry";
 
-const AddSingleLead = ({ data, tabType }: any) => {
+const AddSingleLead = ({
+  data,
+  tabType,
+  returnToMeeting = false,
+  meetingDraft,
+}: any) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
   const dispatch = useDispatch();
@@ -37,6 +42,10 @@ const AddSingleLead = ({ data, tabType }: any) => {
     useState(false);
   const mobileDebounceRef = React.useRef<any>(null);
   const lastMobileRef = React.useRef({ countryCode: "", phone: "" }); // 👈 naya
+  const canChangeAssignee =
+    !data?._id ||
+    data?.status !== "deal_booked" ||
+    user?.role === "sup_admin";
 
   const { data: assignUsersData, isLoading: isAssignUsersLoading } =
     useAssigningUser({ srManager: undefined });
@@ -73,8 +82,9 @@ const AddSingleLead = ({ data, tabType }: any) => {
     errors,
     touched,
     setFieldValue,
+    submitCount,
   } = useFormik({
-    validationSchema: user?.isAdmin
+    validationSchema: user?.isAdmin && canChangeAssignee
       ? addSingleLeadWithSrManagerSchema
       : addSingleLeadSchema,
     initialValues: {
@@ -101,9 +111,15 @@ const AddSingleLead = ({ data, tabType }: any) => {
       setLoading(true);
       try {
         let { whatsapp, srManager, ...restData } = values;
+        const normalizedWhatsapp = String(whatsapp || "").trim();
         const sendData = {
           ...restData,
-          whatsapp: `https://wa.me/${whatsapp}`,
+          name: String(restData.name || "").trim(),
+          clientMobile: String(restData.clientMobile || "").trim(),
+          clientEmail: String(restData.clientEmail || "").trim(),
+          whatsapp: normalizedWhatsapp
+            ? `https://wa.me/${normalizedWhatsapp.replace(/\D/g, "")}`
+            : "",
         };
         if (isUpdate) {
           let updateLeadRes = await updateLead(
@@ -148,7 +164,24 @@ const AddSingleLead = ({ data, tabType }: any) => {
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
-          navigate("allLead");
+          if (returnToMeeting && addLeadRes?._id) {
+            queryClient.invalidateQueries({
+              queryKey: [queryKeyCRM.getLeadInAddMeeting],
+            });
+            navigate("MeetingsNavigator", {
+              screen: "AddMeeting",
+              params: {
+                meetingDraft,
+                createdLead: {
+                  _id: addLeadRes._id,
+                  clientName: addLeadRes.clientName,
+                  name: addLeadRes.name,
+                },
+              },
+            });
+          } else {
+            navigate("allLead");
+          }
         }
       } catch (err) {
         toast.error(err?.response?.data || err);
@@ -354,8 +387,13 @@ const AddSingleLead = ({ data, tabType }: any) => {
       {errors.whatsapp && touched.whatsapp && (
         <CustomText style={styles.errorText}>{errors.whatsapp}</CustomText>
       )}
+      {submitCount > 0 && errors.contact && (
+        <CustomText style={styles.contactErrorText}>
+          {String(errors.contact)}
+        </CustomText>
+      )}
 
-      {user?.isAdmin && (
+      {user?.isAdmin && canChangeAssignee && (
         <DropdownRNE
           arrOfObj={assignUsersData?.data || []}
           keyValueShowInBox="label"
@@ -370,9 +408,12 @@ const AddSingleLead = ({ data, tabType }: any) => {
           isSearch
         />
       )}
-      {user?.isAdmin && errors.srManager && touched.srManager && (
-        <CustomText style={styles.errorText}>{errors.srManager}</CustomText>
-      )}
+      {user?.isAdmin &&
+        canChangeAssignee &&
+        errors.srManager &&
+        touched.srManager && (
+          <CustomText style={styles.errorText}>{errors.srManager}</CustomText>
+        )}
 
       <CustomBtn
         title="Submit"
@@ -390,6 +431,10 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: -14,
+    marginBottom: 15,
+  },
+  contactErrorText: {
+    color: "red",
     marginBottom: 15,
   },
 });

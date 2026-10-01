@@ -57,10 +57,13 @@ const LoginScreen = () => {
     // email: "rushibhumkar11@gmail.com",
     // password: "",
     // dev  : sr manager ( Rohit Barate )
-    email: "dev20@swavishtek.com",
-    password: "",
-    // dev  : team lead( pradeep shukla )
-    // email: "pradeep@swavishsoftware.com",
+    // email: "dev20@swavishtek.com",
+    // password: "",
+    // dev  : team lead( Shubham Raut )
+    // email: "shubhamraut987654321@gmail.com",
+    // password: "",
+    // dev PNL
+    // email: "ramshelke987654321@gmail.com",
     // password: "",
     // <=========== LIVE =============>
     // live : seo
@@ -78,8 +81,8 @@ const LoginScreen = () => {
     // live : super admin
     // email: "tech@skgestates.com",
     // password: "Rohit@311001",
-    // email: "",
-    // password: "",
+    email: "",
+    password: "",
   };
   const [isLoading, setIsLoading] = useState(false);
   const [snackBar, setSnackBar] = useState({
