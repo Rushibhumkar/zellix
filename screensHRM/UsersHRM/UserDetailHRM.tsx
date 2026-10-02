@@ -61,8 +61,12 @@ const UserDetailHRM = () => {
     id: params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id,
   });
   const targetUserId = data?._id || (params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id);
-  const canManageAccount = [roleEnum.sup_admin, roleEnum.developer].includes(user?.role) &&
-    Boolean(data?._id) && String(user?._id) !== String(targetUserId);
+  const canManageAccount =
+    [roleEnum.sup_admin, roleEnum.hr, roleEnum.developer].includes(user?.role) &&
+    Boolean(data?._id) &&
+    String(user?._id) !== String(targetUserId) &&
+    (user?.role !== roleEnum.hr ||
+      ![roleEnum.sup_admin, roleEnum.developer].includes(data?.role));
   const accountInactive = data?.accountStatus === "inactive" || ["resign", "terminated"].includes(data?.activeStatus);
   const [accountStatusSaving, setAccountStatusSaving] = useState(false);
 

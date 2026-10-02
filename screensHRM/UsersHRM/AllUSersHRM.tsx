@@ -42,6 +42,7 @@ const AllUSersHRM = () => {
     roleEnum.sup_admin,
     roleEnum.developer,
   ].includes(user?.role);
+  const canOnboardUsers = isSubSup || user?.role === roleEnum.hr;
   const canManageRolePermissions = isSubSup || user?.role === roleEnum.office_admin;
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
@@ -80,7 +81,7 @@ const AllUSersHRM = () => {
 
   return (
     <ContainerHRM headingTitle="Users">
-      {isSubSup && (
+      {canOnboardUsers && (
         <TouchableOpacity
           onPress={() => navigate(routeUser.AddUserHRM)}
           activeOpacity={0.7}
