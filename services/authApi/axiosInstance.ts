@@ -17,8 +17,8 @@ let testURL = process.env.EXPO_PUBLIC_API_URL || `http://${metroHost}:8000`;
 //   "https://b65c-2409-40c2-314f-6b09-c1d2-6929-f244-49b8.ngrok-free.app";
 // let testURL = "https://zellix-backend-1.onrender.com";
 
-export const isLive = !__DEV__;
-// export const isLive = true;
+// export const isLive = !__DEV__;
+export const isLive = true;
 
 export let baseURL = isLive ? "https://api.zellix.io" : testURL;
 
