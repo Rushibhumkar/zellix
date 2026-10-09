@@ -49,6 +49,7 @@ import {
   useLongCallReviews,
   useReviewPnls,
   updateLongCallReviewStatus,
+  updateCallLogFlag,
   ReviewStatus,
 } from "../../services/rootApi/callLogsApi";
 import { queryKeyCRM } from "../../utils/queryKeys";
@@ -65,11 +66,25 @@ import { routeLead } from "../../utils/routes";
 import {
   getDataJson,
   removeItemValue,
-  storeDataJson,
+  storeData,
 } from "../../hooks/useAsyncStorage";
 import { getAppSettings } from "../../services/rootApi/api";
 import { useQuery } from "@tanstack/react-query";
-import { PENDING_CALL_KEY } from "../../utils/pendingCallStorage";
+import {
+  CONFIRMED_CALL_MARKER,
+  PENDING_CALL_KEY,
+  isConfirmedPendingCall,
+} from "../../utils/pendingCallStorage";
+import {
+  getTrackedCallDurationSeconds,
+  isShortCallDuration,
+} from "../../utils/callOutcome";
+
+const QUICK_NEGATIVE_STATUSES = [
+  { label: "Broker", value: "broker" },
+  { label: "No Response", value: "no_response" },
+  { label: "Not Interested", value: "not_interested" },
+] as const;
 
 const CallListing = () => {
   const queryClient = useQueryClient();
@@ -136,12 +151,17 @@ const CallListing = () => {
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [calledNumber, setCalledNumber] = useState("");
   const isCallingRef = useRef(false);
+  const dialRequestAcceptedRef = useRef(false);
   const [leadType, setLeadType] = useState<"interested" | "not_interested">(
-    "interested",
+    "not_interested",
   );
   const isResumingRef = useRef(false);
   const isHandlingResumeAlertRef = useRef(false);
   const resumeModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const callReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dialerCancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
 
@@ -206,8 +226,11 @@ const CallListing = () => {
 
   const isCallLogSentRef = useRef(false);
 
+  const callDurationInSeconds = getTrackedCallDurationSeconds(callMeta);
+  const isShortCall = isShortCallDuration(callDurationInSeconds);
+
   const filteredLeadStatus = inLeadStatus.filter((item) =>
-    leadType === "interested"
+    !isShortCall && leadType === "interested"
       ? addManualLeadPositiveStatuses.includes(item._id)
       : addManualLeadNegativeStatuses.includes(item._id),
   );
@@ -237,6 +260,25 @@ const CallListing = () => {
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message || "Unable to update call review",
+      );
+    }
+  };
+
+  const changeFlagState = async (ids: string[], isFlagged: boolean) => {
+    if (!ids.length) return;
+    try {
+      const response = await updateCallLogFlag(ids, isFlagged);
+      setSelectedReviewIds([]);
+      toast.success(response?.message || `${ids.length} call(s) updated`);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["longCallReviews"] }),
+        queryClient.invalidateQueries({ queryKey: ["getMyCallLogs"] }),
+        queryClient.invalidateQueries({ queryKey: ["callLogsByUserId"] }),
+      ]);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          "Only calls of 5 minutes or more can be flagged or unflagged",
       );
     }
   };
@@ -294,18 +336,29 @@ const CallListing = () => {
     }
     try {
       isCallingRef.current = true;
+      dialRequestAcceptedRef.current = false;
       isCallLogSentRef.current = false;
       console.log("TYPE OF NUMBER =>", typeof numberToCall, numberToCall);
       dialedNumberRef.current = String(numberToCall);
 
-      // ✅ NEW: persist BEFORE opening dialer, so it survives app being killed
-      await storeDataJson(PENDING_CALL_KEY, {
-        number: String(numberToCall),
-        initiatedAt: Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS,
-      });
-
       await Linking.openURL(`tel:${numberToCall}`);
+
+      dialRequestAcceptedRef.current = true;
+      if (callStartTimeRef.current) {
+        await storeData(
+          PENDING_CALL_KEY,
+          JSON.stringify({
+            number: dialedNumberRef.current,
+            initiatedAt: callStartTimeRef.current,
+            confirmation: CONFIRMED_CALL_MARKER,
+          }),
+        );
+      }
     } catch (err) {
+      isCallingRef.current = false;
+      dialRequestAcceptedRef.current = false;
+      dialedNumberRef.current = "";
+      await removeItemValue(PENDING_CALL_KEY);
       console.log("Call Error", err);
     }
   };
@@ -315,6 +368,11 @@ const CallListing = () => {
     if (isResumingRef.current || isHandlingResumeAlertRef.current) return;
 
     const pending = await getDataJson(PENDING_CALL_KEY);
+    if (!pending) return;
+    if (!isConfirmedPendingCall(pending)) {
+      await removeItemValue(PENDING_CALL_KEY);
+      return;
+    }
     if (!pending?.number || !pending?.initiatedAt) return;
 
     console.log("✅ RESUMING PENDING CALL =>", pending);
@@ -406,9 +464,20 @@ const CallListing = () => {
     initiatedAt: number,
     finishedAt: number,
   ) => {
+    const durationInSeconds = Math.max(
+      0,
+      Math.floor((finishedAt - initiatedAt) / 1000),
+    );
+
     setCallMeta({ initiatedAt, finishedAt });
     setCalledNumber(number);
     formik.setFieldValue("clientMobile", number);
+
+    if (isShortCallDuration(durationInSeconds)) {
+      setLeadType("not_interested");
+      formik.setFieldValue("leadType", "not_interested");
+      formik.setFieldValue("status", "");
+    }
 
     setPhoneNumber("");
     setCallStartTime(null);
@@ -514,6 +583,14 @@ const CallListing = () => {
         },
       );
 
+      // iOS briefly reports `active` between accepting the native Call prompt
+      // and transferring to the Phone app. Do not treat that transient active
+      // state as Cancel; the following background transition confirms a call.
+      if (nextAppState !== "active" && dialerCancelTimerRef.current) {
+        clearTimeout(dialerCancelTimerRef.current);
+        dialerCancelTimerRef.current = null;
+      }
+
       // Call started
       if (isCallingRef.current && nextAppState === "background") {
         const startTime = Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS;
@@ -527,6 +604,17 @@ const CallListing = () => {
         });
 
         isCallTrackingRef.current = true;
+        // A real phone call is the transition that sends the app to the
+        // background. Persist it here (rather than waiting for openURL's
+        // promise, which iOS may not resume before the app is terminated).
+        storeData(
+          PENDING_CALL_KEY,
+          JSON.stringify({
+            number: dialedNumberRef.current,
+            initiatedAt: startTime,
+            confirmation: CONFIRMED_CALL_MARKER,
+          }),
+        ).catch((error) => console.log("Pending call save error", error));
       }
 
       // Returned from call — app was only backgrounded, NOT killed (normal case)
@@ -550,8 +638,50 @@ const CallListing = () => {
 
         console.log("PHONE NUMBER =>", phoneNumber);
         console.log("FORMATTED MOBILE =>", mobile);
-        removeItemValue(PENDING_CALL_KEY);
-        handleCallEnd(mobile, callStartTimeRef.current!, endTime);
+        const initiatedAt = callStartTimeRef.current;
+        if (callReturnTimerRef.current)
+          clearTimeout(callReturnTimerRef.current);
+        callReturnTimerRef.current = setTimeout(() => {
+          callReturnTimerRef.current = null;
+          if (!dialRequestAcceptedRef.current) {
+            setCallMeta(null);
+            setCallStartTime(null);
+            isCallingRef.current = false;
+            isCallTrackingRef.current = false;
+            callStartTimeRef.current = null;
+            dialedNumberRef.current = "";
+            removeItemValue(PENDING_CALL_KEY);
+            return;
+          }
+
+          removeItemValue(PENDING_CALL_KEY);
+          handleCallEnd(mobile, initiatedAt, endTime);
+          dialRequestAcceptedRef.current = false;
+        }, 350);
+      }
+      if (
+        nextAppState === "active" &&
+        isCallingRef.current &&
+        !isCallTrackingRef.current
+      ) {
+        if (dialerCancelTimerRef.current) {
+          clearTimeout(dialerCancelTimerRef.current);
+        }
+        dialerCancelTimerRef.current = setTimeout(() => {
+          dialerCancelTimerRef.current = null;
+          if (
+            appState.current !== "active" ||
+            !isCallingRef.current ||
+            isCallTrackingRef.current
+          ) {
+            return;
+          }
+
+          isCallingRef.current = false;
+          dialRequestAcceptedRef.current = false;
+          dialedNumberRef.current = "";
+          removeItemValue(PENDING_CALL_KEY);
+        }, 750);
       }
       // ❌ REMOVED: the aggressive fallback that fired on every "active" transition
       // (it was misfiring on the brief "inactive" blip from iOS's tel: confirmation dialog)
@@ -564,6 +694,14 @@ const CallListing = () => {
       if (resumeModalTimerRef.current) {
         clearTimeout(resumeModalTimerRef.current);
         resumeModalTimerRef.current = null;
+      }
+      if (callReturnTimerRef.current) {
+        clearTimeout(callReturnTimerRef.current);
+        callReturnTimerRef.current = null;
+      }
+      if (dialerCancelTimerRef.current) {
+        clearTimeout(dialerCancelTimerRef.current);
+        dialerCancelTimerRef.current = null;
       }
     };
   }, []);
@@ -620,13 +758,8 @@ const CallListing = () => {
       if (!statusAfterCall && durationInSec >= 15) {
         callType = "connected";
       }
-      // ❌ FORCE RULE 1: duration <= 15 sec => not_connected,
-      // LEKIN positive status ho to duration check skip karo
-      const isPositiveStatus =
-        statusAfterCall &&
-        addManualLeadPositiveStatuses.includes(statusAfterCall);
-
-      if (durationInSec <= 15 && !isPositiveStatus) {
+      // Calls up to and including 60 seconds are always not connected.
+      if (isShortCallDuration(durationInSec)) {
         callType = "not_connected";
       }
 
@@ -704,7 +837,7 @@ const CallListing = () => {
 
   const formik = useFormik({
     initialValues: {
-      leadType: "interested",
+      leadType: "not_interested",
       clientName: "",
       clientMobile: "",
       clientEmail: "",
@@ -721,6 +854,17 @@ const CallListing = () => {
     validateOnBlur: true,
     validateOnChange: false,
     onSubmit: async (values) => {
+      if (
+        isShortCall &&
+        (leadType === "interested" ||
+          addManualLeadPositiveStatuses.includes(values.status))
+      ) {
+        toast.error(
+          "Calls of 60 seconds or less cannot be marked as Interested or Positive.",
+        );
+        return;
+      }
+
       const payload = {
         ...values,
         mobile: values.clientMobile?.replace("+", ""),
@@ -811,7 +955,7 @@ const CallListing = () => {
             date: null,
             time: null,
           });
-          setLeadType("interested");
+          setLeadType("not_interested");
 
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],
@@ -843,7 +987,7 @@ const CallListing = () => {
         date: null,
         time: null,
       });
-      setLeadType("interested");
+      setLeadType("not_interested");
       // goBack();
 
       return;
@@ -985,7 +1129,7 @@ const CallListing = () => {
                 activeTab === "long" && styles.activeTabText,
               ]}
             >
-              Calls &gt; 5 Minutes
+              Calls 5+ Minutes
             </Text>
           </TouchableOpacity>
         </View>
@@ -1046,6 +1190,18 @@ const CallListing = () => {
           <Text style={styles.bulkCount}>
             {selectedReviewIds.length} selected
           </Text>
+          <TouchableOpacity
+            style={[styles.bulkButton, { backgroundColor: "#D97706" }]}
+            onPress={() => changeFlagState(selectedReviewIds, true)}
+          >
+            <Text style={styles.bulkButtonText}>Flag</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.bulkButton, { backgroundColor: "#64748B" }]}
+            onPress={() => changeFlagState(selectedReviewIds, false)}
+          >
+            <Text style={styles.bulkButtonText}>Unflag</Text>
+          </TouchableOpacity>
           {reviewStatus !== "approved" && (
             <TouchableOpacity
               style={[styles.bulkButton, { backgroundColor: "#16A34A" }]}
@@ -1072,6 +1228,7 @@ const CallListing = () => {
           <CallLogCard
             item={item}
             reviewMode={activeTab === "long"}
+            showFlag={canReviewLongCalls}
             selected={selectedReviewIds.includes(item._id)}
             onLongPress={
               activeTab === "long"
@@ -1080,6 +1237,7 @@ const CallListing = () => {
             }
             onApprove={() => changeReviewStatus([item._id], "approved")}
             onReject={() => changeReviewStatus([item._id], "rejected")}
+            onFlagToggle={(isFlagged) => changeFlagState([item._id], isFlagged)}
             onPress={() => {
               if (activeTab === "long" && selectedReviewIds.length) {
                 toggleReviewSelection(item._id);
@@ -1374,56 +1532,57 @@ const CallListing = () => {
                     paddingBottom: 20,
                   }}
                 >
+                  <View
+                    style={{
+                      marginTop: 22,
+                      marginBottom: 20,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: "700",
+                        color: color.mainTxtColor,
+                      }}
+                    >
+                      Lead Details
+                    </Text>
+                    {canShowCancelBtn && (
+                      <TouchableOpacity
+                        onPress={async () => {
+                          await hitCreateCallLog();
+                          setShowLeadModal(false);
+                          formik.resetForm();
+                          setTdForFUT({
+                            date: null,
+                            time: null,
+                          });
+                          setLeadType("not_interested");
+                          // goBack();
+                        }}
+                      >
+                        <Feather
+                          name="x"
+                          size={24}
+                          color={color.mainTxtColor}
+                        />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <ScrollView
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                     keyboardDismissMode="interactive"
+                    style={{ flex: 1 }}
                     contentContainerStyle={{
-                      marginTop: 22,
                       paddingBottom: 40,
                     }}
                     nestedScrollEnabled
                   >
-                    <View
-                      style={{
-                        marginBottom: 20,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: "700",
-                          color: color.mainTxtColor,
-                        }}
-                      >
-                        Lead Details
-                      </Text>
-                      {canShowCancelBtn && (
-                        <TouchableOpacity
-                          onPress={async () => {
-                            await hitCreateCallLog();
-                            setShowLeadModal(false);
-                            formik.resetForm();
-                            setTdForFUT({
-                              date: null,
-                              time: null,
-                            });
-                            setLeadType("interested");
-                            // goBack();
-                          }}
-                        >
-                          <Feather
-                            name="x"
-                            size={24}
-                            color={color.mainTxtColor}
-                          />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-
                     {!canShowCancelBtn && (
                       <View
                         style={{
@@ -1459,95 +1618,209 @@ const CallListing = () => {
                         </Text>
                       </View>
                     )}
+                    <CustomText
+                      style={{
+                        marginBottom: 8,
+                        fontWeight: "600",
+                        color: color.mainTxtColor,
+                      }}
+                    >
+                      Call Outcome{" "}
+                      <CustomText style={{ color: "red" }}>*</CustomText>
+                    </CustomText>
                     <View
                       style={{
                         flexDirection: "row",
-                        marginBottom: 20,
-                        gap: 10,
+                        gap: 8,
+                        marginBottom: 8,
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => {
-                          setLeadType("interested");
-                          formik.setFieldValue("status", "");
-                          formik.setFieldValue("leadType", "interested");
-                        }}
-                        style={{
-                          flex: 1,
-                          height: 45,
-                          borderRadius: 12,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          backgroundColor:
-                            leadType === "interested"
-                              ? color.mainTxtColor
-                              : "#F1F5F9",
-                        }}
-                      >
-                        <CustomText
-                          color={
-                            leadType === "interested"
-                              ? "#fff"
-                              : color.mainTxtColor
-                          }
-                        >
-                          Interested
-                        </CustomText>
-                      </TouchableOpacity>
+                      {QUICK_NEGATIVE_STATUSES.map((option) => {
+                        const isSelected =
+                          leadType === "not_interested" &&
+                          formik.values.status === option.value;
 
-                      <TouchableOpacity
-                        onPress={() => {
-                          setLeadType("not_interested");
-                          formik.setFieldValue("status", "");
-                          formik.setFieldValue("leadType", "not_interested");
-                        }}
-                        style={{
-                          flex: 1,
-                          height: 45,
-                          borderRadius: 12,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          backgroundColor:
-                            leadType === "not_interested"
-                              ? color.mainTxtColor
-                              : "#F1F5F9",
-                        }}
-                      >
-                        <CustomText
-                          color={
-                            leadType === "not_interested"
-                              ? "#fff"
-                              : color.mainTxtColor
-                          }
-                        >
-                          Not Looking Right Now
-                        </CustomText>
-                      </TouchableOpacity>
+                        return (
+                          <TouchableOpacity
+                            key={option.value}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                              setLeadType("not_interested");
+                              setFollowUpError("");
+                              formik.setFieldValue(
+                                "leadType",
+                                "not_interested",
+                                false,
+                              );
+                              formik.setFieldValue(
+                                "status",
+                                option.value,
+                                false,
+                              );
+                              formik.setFieldTouched("status", false, false);
+                            }}
+                            style={{
+                              flex: 1,
+                              minHeight: 48,
+                              paddingHorizontal: 6,
+                              borderRadius: 12,
+                              borderWidth: 1,
+                              borderColor: isSelected
+                                ? color.mainTxtColor
+                                : "#CBD5E1",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              backgroundColor: isSelected
+                                ? color.mainTxtColor
+                                : "#F8FAFC",
+                            }}
+                          >
+                            <CustomText
+                              color={isSelected ? "#fff" : color.mainTxtColor}
+                              style={{
+                                textAlign: "center",
+                                fontSize: 13,
+                                fontWeight: "600",
+                              }}
+                            >
+                              {option.label}
+                            </CustomText>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
+                    {leadType === "not_interested" &&
+                      formik.touched.status &&
+                      !!formik.errors.status && (
+                        <CustomText
+                          style={{
+                            color: "red",
+                            fontSize: 12,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {formik.errors.status}
+                        </CustomText>
+                      )}
 
-                    <DropdownRNE
-                      label="Lead Status *"
-                      placeholder="Select Status"
-                      arrOfObj={filteredLeadStatus}
-                      keyValueGetOnSelect="_id"
-                      keyValueShowInBox="name"
-                      initialValue={formik.values.status}
-                      onChange={(v) => {
-                        console.log("STATUS SELECTED =>", v);
-                        setFollowUpError("");
-                        formik.setFieldValue("status", v, false);
-
-                        setTimeout(() => {
-                          formik.setFieldTouched("status", false);
-                        }, 100);
-                      }}
-                      mode="auto"
-                      error={formik.touched.status ? formik.errors.status : ""}
-                      dropdownStyle={{ height: 42 }}
-                      containerStyle={{
-                        marginBottom: 10,
+                    <CustomInput
+                      label="Comment"
+                      placeholder="Add comment"
+                      value={formik.values.comment}
+                      onChangeText={formik.handleChange("comment")}
+                      marginBottom={18}
+                      multiline
+                      numberOfLines={4}
+                      inputStyle={{
+                        minHeight: 90,
+                        textAlignVertical: "top",
+                        paddingTop: 10,
                       }}
                     />
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 12,
+                        marginBottom: 18,
+                      }}
+                    >
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          backgroundColor: "#CBD5E1",
+                        }}
+                      />
+                      <CustomText
+                        style={{
+                          color: "#64748B",
+                          fontSize: 12,
+                          fontWeight: "700",
+                        }}
+                      >
+                        OR
+                      </CustomText>
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          backgroundColor: "#CBD5E1",
+                        }}
+                      />
+                    </View>
+
+                    <TouchableOpacity
+                      disabled={isShortCall}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setLeadType("interested");
+                        setFollowUpError("");
+                        formik.setFieldValue("status", "", false);
+                        formik.setFieldValue("leadType", "interested", false);
+                        formik.setFieldTouched("status", false, false);
+                      }}
+                      style={{
+                        minHeight: 48,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor:
+                          !isShortCall && leadType === "interested"
+                            ? color.mainTxtColor
+                            : "#CBD5E1",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: isShortCall
+                          ? "#E5E7EB"
+                          : leadType === "interested"
+                            ? color.mainTxtColor
+                            : "#F8FAFC",
+                        opacity: isShortCall ? 0.55 : 1,
+                        marginBottom: 14,
+                      }}
+                    >
+                      <CustomText
+                        color={
+                          !isShortCall && leadType === "interested"
+                            ? "#fff"
+                            : isShortCall
+                              ? "#94A3B8"
+                              : color.mainTxtColor
+                        }
+                        style={{ fontWeight: "700" }}
+                      >
+                        Interested
+                      </CustomText>
+                    </TouchableOpacity>
+
+                    {leadType === "interested" && (
+                      <DropdownRNE
+                        label="Lead Status *"
+                        placeholder="Select Status"
+                        arrOfObj={filteredLeadStatus}
+                        keyValueGetOnSelect="_id"
+                        keyValueShowInBox="name"
+                        initialValue={formik.values.status}
+                        onChange={(v) => {
+                          console.log("STATUS SELECTED =>", v);
+                          setFollowUpError("");
+                          formik.setFieldValue("status", v, false);
+
+                          setTimeout(() => {
+                            formik.setFieldTouched("status", false);
+                          }, 100);
+                        }}
+                        mode="auto"
+                        error={
+                          formik.touched.status ? formik.errors.status : ""
+                        }
+                        dropdownStyle={{ height: 42 }}
+                        containerStyle={{
+                          marginBottom: 10,
+                        }}
+                      />
+                    )}
 
                     {shouldShowFollowUpField && (
                       <>
@@ -1713,20 +1986,6 @@ const CallListing = () => {
                         />
                       </>
                     )}
-                    <CustomInput
-                      label="Comment"
-                      placeholder="Add comment"
-                      value={formik.values.comment}
-                      onChangeText={formik.handleChange("comment")}
-                      marginBottom={20}
-                      multiline
-                      numberOfLines={4}
-                      inputStyle={{
-                        minHeight: 100,
-                        textAlignVertical: "top",
-                        paddingTop: 10,
-                      }}
-                    />
                   </ScrollView>
                   <View
                     style={{
@@ -1754,7 +2013,7 @@ const CallListing = () => {
                             date: null,
                             time: null,
                           });
-                          setLeadType("interested");
+                          setLeadType("not_interested");
                           // goBack();
                         }}
                       />
@@ -2015,8 +2274,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    flexWrap: "wrap",
   },
-  bulkCount: { color: "black", fontWeight: "700", flex: 1 },
+  bulkCount: { color: "black", fontWeight: "700", width: "100%" },
   bulkButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   bulkButtonText: { color: "white", fontWeight: "700" },
   pickerOverlay: {

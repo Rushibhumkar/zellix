@@ -39,6 +39,7 @@ import { useAppToast } from "../../components/AppToast";
 import moment from "moment";
 import { getUserStatusHRM, userStatusHRM } from "../../utils/hrmKeysMatchToBE";
 import { queryKeyHRM } from "../../utils/queryKeys";
+import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 
 const UserDetailHRM = () => {
   const navigation = useNavigation();
@@ -69,6 +70,8 @@ const UserDetailHRM = () => {
       ![roleEnum.sup_admin, roleEnum.developer].includes(data?.role));
   const accountInactive = data?.accountStatus === "inactive" || ["resign", "terminated"].includes(data?.activeStatus);
   const [accountStatusSaving, setAccountStatusSaving] = useState(false);
+  const [pendingInactiveReason, setPendingInactiveReason] = useState<"resigned" | "terminated" | null>(null);
+  const [lastWorkingDay, setLastWorkingDay] = useState<Date | null>(null);
 
   const [useDetail, setUseDetail] = useState(dummyUserDetail);
   const [isLoadingApprove, setIsLoadingApprove] = useState(false);
@@ -159,6 +162,11 @@ const UserDetailHRM = () => {
   const toast = useAppToast();
 
   const confirmAccountStatus = (isActive: boolean, reason?: "resigned" | "terminated") => {
+    if (!isActive && reason) {
+      setPendingInactiveReason(reason);
+      setLastWorkingDay(null);
+      return;
+    }
     const title = isActive ? "Activate employee account?" : `Mark employee ${reason}?`;
     const message = isActive
       ? "This employee can sign in again. Previously reassigned leads stay with their current owners."
@@ -186,6 +194,32 @@ const UserDetailHRM = () => {
         },
       },
     ]);
+  };
+
+  const submitInactiveStatus = async () => {
+    if (!targetUserId || !pendingInactiveReason || !lastWorkingDay || accountStatusSaving) {
+      if (!lastWorkingDay) toast.error("Last working day is required");
+      return;
+    }
+    setAccountStatusSaving(true);
+    try {
+      const result = await updateUserAccountStatus(String(targetUserId), {
+        isActive: false,
+        reason: pendingInactiveReason,
+        lastWorkingDay,
+      });
+      await Promise.all([
+        refetch(),
+        queryClient.invalidateQueries({ queryKey: [queryKeyHRM.getAllUserHRM] }),
+      ]);
+      setPendingInactiveReason(null);
+      setLastWorkingDay(null);
+      toast.success(result?.message || "Account status updated");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Unable to update account status");
+    } finally {
+      setAccountStatusSaving(false);
+    }
   };
 
   const sendValue = async (value: boolean) => {
@@ -488,6 +522,42 @@ const UserDetailHRM = () => {
             isLoading={isSubmitting}
           />
         </ModalWithBlur>
+        <ModalWithBlur visible={Boolean(pendingInactiveReason)}>
+          <View style={styles.lastWorkingModal}>
+            <CustomText style={styles.lastWorkingTitle}>
+              {pendingInactiveReason === "resigned" ? "Mark employee resigned" : "Terminate employee"}
+            </CustomText>
+            <CustomText style={styles.lastWorkingHint}>
+              Select the employee's last working day. This field is required.
+            </CustomText>
+            <DatePickerExpo
+              title="Last working day *"
+              initialValue={lastWorkingDay ? lastWorkingDay.toISOString() : undefined}
+              onSelect={(value: any) => setLastWorkingDay(value ? new Date(value) : null)}
+            />
+            <View style={styles.lastWorkingActions}>
+              <TouchableOpacity
+                disabled={accountStatusSaving}
+                style={[styles.lastWorkingButton, styles.lastWorkingCancel]}
+                onPress={() => {
+                  setPendingInactiveReason(null);
+                  setLastWorkingDay(null);
+                }}
+              >
+                <CustomText>Cancel</CustomText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={accountStatusSaving || !lastWorkingDay}
+                style={[styles.lastWorkingButton, styles.lastWorkingConfirm, !lastWorkingDay && { opacity: 0.5 }]}
+                onPress={submitInactiveStatus}
+              >
+                <CustomText style={styles.accountActionText}>
+                  {accountStatusSaving ? "Saving..." : "Confirm"}
+                </CustomText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ModalWithBlur>
       </View>
     </ContainerHRM>
   );
@@ -686,5 +756,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 10,
+  },
+  lastWorkingModal: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 20,
+    marginHorizontal: 18,
+  },
+  lastWorkingTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+  lastWorkingHint: {
+    fontSize: 13,
+    color: "#64748B",
+    lineHeight: 19,
+    marginTop: 6,
+    marginBottom: 18,
+  },
+  lastWorkingActions: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
+  },
+  lastWorkingButton: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lastWorkingCancel: {
+    backgroundColor: "#F1F5F9",
+  },
+  lastWorkingConfirm: {
+    backgroundColor: "#B63B3B",
   },
 });

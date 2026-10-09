@@ -59,6 +59,14 @@ export let dummyUserDetail = [
     },
     {
         heading: false,
+        title: 'Last working day',
+        value: '-',
+        mb: 10,
+        key: 'lastWorkingDay',
+        isDate: true
+    },
+    {
+        heading: false,
         title: 'Status',
         value: '-',
         mb: 10,

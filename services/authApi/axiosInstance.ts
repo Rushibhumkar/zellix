@@ -63,7 +63,16 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const status = error?.response?.status;
     const message = error?.response?.data;
-    if (status === 401 && message === "SESSION_EXPIRED") {
+    if (
+      status === 401 &&
+      [
+        "SESSION_EXPIRED",
+        "ACCOUNT_INACTIVE",
+        "ONBOARDING_INCOMPLETE",
+        "APPROVAL_PENDING",
+        "APPLICATION_REJECTED",
+      ].includes(message)
+    ) {
       // console.log("SESSION_EXPIRED → Auto logout");
 
       await removeItemValue("token");

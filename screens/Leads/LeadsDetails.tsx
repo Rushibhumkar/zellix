@@ -43,6 +43,7 @@ import {
   useLatestMeetings,
 } from "../../services/rootApi/leadApi";
 import {
+  addManualLeadPositiveStatuses,
   FOLLOWUP_REQUIRED_STATUSES,
   formatRoleName,
   inLeadStatus,
@@ -50,6 +51,10 @@ import {
   roleEnum,
   statusObj,
 } from "../../utils/data";
+import {
+  getTrackedCallDurationSeconds,
+  isShortCallDuration,
+} from "../../utils/callOutcome";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
 import { openWhatsApp } from "../../utils/openWhatsApp";
@@ -86,9 +91,13 @@ import CelebrationModal from "./component/CelebrationModal";
 import {
   getDataJson,
   removeItemValue,
-  storeDataJson,
+  storeData,
 } from "../../hooks/useAsyncStorage";
-import { PENDING_CALL_KEY_LEAD } from "../../utils/pendingCallStorage";
+import {
+  CONFIRMED_CALL_MARKER,
+  PENDING_CALL_KEY_LEAD,
+  isConfirmedPendingCall,
+} from "../../utils/pendingCallStorage";
 import { getAppSettings } from "../../services/rootApi/api";
 import { LeadFoldersModal } from "./component/LeadFolders";
 
@@ -185,6 +194,8 @@ const LeadsDetails = () => {
 
   const isDialerOpenedRef = useRef(false);
 
+  const dialRequestAcceptedRef = useRef(false);
+
   const isCallTrackingRef = useRef(false);
 
   const isCallLogSentRef = useRef(false);
@@ -207,6 +218,10 @@ const LeadsDetails = () => {
     endTime: number;
   } | null>(null);
   const isResumingRef = useRef(false);
+  const callReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dialerCancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const isSubSupSrMng =
     user?.role === roleEnum?.sub_admin ||
@@ -216,6 +231,7 @@ const LeadsDetails = () => {
   const { params } = useRoute();
 
   const shouldTriggerCall = params?.triggerCall;
+  const hasConsumedCallTriggerRef = useRef(false);
 
   const modalNote = useModal();
   const [activeTab, setActiveTab] = useState(1);
@@ -272,6 +288,9 @@ const LeadsDetails = () => {
   const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [isStatusPopupFromCall, setIsStatusPopupFromCall] = useState(false);
+  const callDurationInSeconds = getTrackedCallDurationSeconds(callMeta);
+  const isShortCallFromCall =
+    isStatusPopupFromCall && isShortCallDuration(callDurationInSeconds);
 
   useEffect(() => {
     setFields({
@@ -406,6 +425,25 @@ const LeadsDetails = () => {
 
   const navToCall = async () => {
     try {
+      // Arm the AppState listener before opening iOS' native Call/Cancel
+      // prompt. A real call can background the app before this promise
+      // continuation gets a chance to run.
+      dialRequestAcceptedRef.current = false;
+      setIsDialerOpened(true);
+      isDialerOpenedRef.current = true;
+
+      await Linking.openURL(`tel:+${detail?.clientMobile}`);
+
+      dialRequestAcceptedRef.current = true;
+
+      if (callStartTimeRef.current) {
+        await storeData(PENDING_CALL_KEY_LEAD, JSON.stringify({
+          leadId: detail?._id,
+          initiatedAt: callStartTimeRef.current,
+          confirmation: CONFIRMED_CALL_MARKER,
+        }));
+      }
+
       await dispatch(
         setCallDetect({
           isCall: true,
@@ -413,17 +451,12 @@ const LeadsDetails = () => {
         }),
       );
 
-      setIsDialerOpened(true);
-      isDialerOpenedRef.current = true;
-
-      // ✅ ADD: persist before opening dialer
-      await storeDataJson(PENDING_CALL_KEY_LEAD, {
-        leadId: detail?._id,
-        initiatedAt: Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS,
-      });
-
-      await Linking.openURL(`tel:+${detail?.clientMobile}`);
     } catch (err) {
+      dialRequestAcceptedRef.current = false;
+      setIsDialerOpened(false);
+      isDialerOpenedRef.current = false;
+      await removeItemValue(PENDING_CALL_KEY_LEAD);
+      dispatch(setCallDetect({ isCall: false, leadId: null }));
       console.log("❌ Call error", err);
     }
   };
@@ -489,6 +522,11 @@ const LeadsDetails = () => {
     if (isResumingRef.current) return;
 
     const pending = await getDataJson(PENDING_CALL_KEY_LEAD);
+    if (!pending) return;
+    if (!isConfirmedPendingCall(pending)) {
+      await removeItemValue(PENDING_CALL_KEY_LEAD);
+      return;
+    }
     if (!pending?.initiatedAt) return;
 
     // only resume if this is the right lead
@@ -560,6 +598,17 @@ const LeadsDetails = () => {
       // console.log("isCallTracking =>", isCallTracking);
       // console.log("callStartTime =>", callStartTime);
 
+      // After the user presses Call, iOS can emit a transient `active` state
+      // before it backgrounds the app. Keep the dial intent armed during this
+      // hand-off; only a stable active state means that the prompt was closed.
+      if (
+        nextAppState !== "active"
+        && dialerCancelTimerRef.current
+      ) {
+        clearTimeout(dialerCancelTimerRef.current);
+        dialerCancelTimerRef.current = null;
+      }
+
       // App moved to background AFTER user clicked CALL
       if (isDialerOpenedRef.current && nextAppState === "background") {
         // console.log("✅ CALL START DETECTED");
@@ -580,6 +629,15 @@ const LeadsDetails = () => {
         setIsCallTracking(true);
 
         isCallTrackingRef.current = true;
+
+        // Persist on the real background transition. iOS can suspend the JS
+        // continuation of Linking.openURL while the phone call is active, so
+        // waiting for that continuation would lose killed-app call recovery.
+        storeData(PENDING_CALL_KEY_LEAD, JSON.stringify({
+          leadId: detail?._id,
+          initiatedAt: startTime,
+          confirmation: CONFIRMED_CALL_MARKER,
+        })).catch((error) => console.log("Pending lead call save error", error));
 
         setIsDialerOpened(false);
 
@@ -602,15 +660,63 @@ const LeadsDetails = () => {
             prev ? { ...prev, finishedAt: endTime } : null,
           );
 
-          removeItemValue(PENDING_CALL_KEY_LEAD); // ✅ clear pending
+          const initiatedAt = callStartTimeRef.current;
+          if (callReturnTimerRef.current) {
+            clearTimeout(callReturnTimerRef.current);
+          }
+          callReturnTimerRef.current = setTimeout(() => {
+            callReturnTimerRef.current = null;
 
-          handleCallEnd(callStartTimeRef.current!, endTime); // ✅ use handleCallEnd
+            // The Call/Cancel prompt can briefly change AppState. Only finish
+            // the flow after Linking confirms that the dial request returned
+            // successfully; otherwise discard the candidate call.
+            if (!dialRequestAcceptedRef.current) {
+              setCallMeta(null);
+              setCallStartTime(null);
+              setIsCallTracking(false);
+              isCallTrackingRef.current = false;
+              callStartTimeRef.current = null;
+              removeItemValue(PENDING_CALL_KEY_LEAD);
+              dispatch(setCallDetect({ isCall: false, leadId: null }));
+              return;
+            }
 
-          setCallStartTime(null);
-          setIsCallTracking(false);
-          isCallTrackingRef.current = false;
-          callStartTimeRef.current = null;
+            removeItemValue(PENDING_CALL_KEY_LEAD);
+            handleCallEnd(initiatedAt, endTime);
+            setCallStartTime(null);
+            setIsCallTracking(false);
+            isCallTrackingRef.current = false;
+            callStartTimeRef.current = null;
+            dialRequestAcceptedRef.current = false;
+            dispatch(setCallDetect({ isCall: false, leadId: null }));
+          }, 350);
         }
+      }
+
+      if (
+        nextAppState === "active"
+        && isDialerOpenedRef.current
+        && !isCallTrackingRef.current
+      ) {
+        if (dialerCancelTimerRef.current) {
+          clearTimeout(dialerCancelTimerRef.current);
+        }
+        dialerCancelTimerRef.current = setTimeout(() => {
+          dialerCancelTimerRef.current = null;
+          if (
+            appState.current !== "active"
+            || !isDialerOpenedRef.current
+            || isCallTrackingRef.current
+          ) {
+            return;
+          }
+
+          setIsDialerOpened(false);
+          isDialerOpenedRef.current = false;
+          dialRequestAcceptedRef.current = false;
+          removeItemValue(PENDING_CALL_KEY_LEAD);
+          dispatch(setCallDetect({ isCall: false, leadId: null }));
+        }, 750);
       }
 
       appState.current = nextAppState;
@@ -620,14 +726,32 @@ const LeadsDetails = () => {
       console.log("🔴 AppState Listener Removed");
 
       subscription.remove();
+      if (callReturnTimerRef.current) {
+        clearTimeout(callReturnTimerRef.current);
+        callReturnTimerRef.current = null;
+      }
+      if (dialerCancelTimerRef.current) {
+        clearTimeout(dialerCancelTimerRef.current);
+        dialerCancelTimerRef.current = null;
+      }
     };
   }, [callStartTime, isCallTracking, isDialerOpened]);
 
   useEffect(() => {
-    if (shouldTriggerCall && detail?._id) {
-      navToCall();
+    if (!shouldTriggerCall) {
+      hasConsumedCallTriggerRef.current = false;
+      return;
     }
-  }, [shouldTriggerCall, detail?._id]);
+
+    if (!detail?._id || hasConsumedCallTriggerRef.current) return;
+
+    // `triggerCall` represents a user click, not persistent screen state.
+    // Consume it before opening iOS' native call confirmation prompt so an
+    // app restart/route restoration cannot initiate the same call again.
+    hasConsumedCallTriggerRef.current = true;
+    (navigation as any).setParams({ triggerCall: false });
+    navToCall();
+  }, [shouldTriggerCall, detail?._id, navigation]);
 
   useEffect(() => {
     if (detail?._id) {
@@ -729,6 +853,12 @@ const LeadsDetails = () => {
       // ❌ cancel case
       if (!statusAfterCall && durationInSec >= 12) {
         callType = "connected";
+      }
+
+      // Calls up to and including 60 seconds are always not connected,
+      // regardless of a stale or tampered positive status selection.
+      if (isShortCallDuration(durationInSec)) {
+        callType = "not_connected";
       }
 
       isCallLogSentRef.current = true; // ✅ lock
@@ -855,6 +985,16 @@ const LeadsDetails = () => {
         return;
       }
 
+      if (
+        isShortCallFromCall &&
+        addManualLeadPositiveStatuses.includes(fields.status)
+      ) {
+        toast.error(
+          "Calls of 60 seconds or less cannot be marked as Interested or Positive.",
+        );
+        return;
+      }
+
       if (selectLeadType !== "calling_data") {
         if (
           NOTE_REQUIRED_STATUSES.includes(fields.status) &&
@@ -968,6 +1108,22 @@ const LeadsDetails = () => {
     },
   });
 
+  useEffect(() => {
+    if (
+      !isShortCallFromCall ||
+      !addManualLeadPositiveStatuses.includes(fields?.status)
+    ) {
+      return;
+    }
+
+    setFields((prev) => ({
+      ...prev,
+      status: "",
+      statusInfo: "",
+    }));
+    formik.setFieldValue("status", "", false);
+  }, [isShortCallFromCall, fields?.status]);
+
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
@@ -1024,7 +1180,13 @@ const LeadsDetails = () => {
   const totalStatusChanges = detail?.statusHistory?.length || 0;
 
   const filteredLeadStatus = inLeadStatus
-    .filter((s) => s._id !== "assign" && s._id !== "re_assigned")
+    .filter(
+      (s) =>
+        s._id !== "assign" &&
+        s._id !== "re_assigned" &&
+        (!isShortCallFromCall ||
+          !addManualLeadPositiveStatuses.includes(s._id)),
+    )
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const unActionableStatuses = ["claimed", "assign", "re_assigned", "new"];

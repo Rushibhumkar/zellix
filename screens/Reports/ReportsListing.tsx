@@ -98,6 +98,10 @@ const ReportsListing = () => {
     "none" | "asc" | "desc"
   >("none");
 
+  const [fiveMinuteCallsSortOrder, setFiveMinuteCallsSortOrder] = useState<
+    "none" | "asc" | "desc"
+  >("none");
+
   const [connectedSortOrder, setConnectedSortOrder] = useState<
     "none" | "asc" | "desc"
   >("none");
@@ -128,6 +132,7 @@ const ReportsListing = () => {
       "User Name",
       "User Email",
       "Total Calls",
+      "5+ Min Calls",
       "Connected",
       "Not Connected",
       "Positive",
@@ -145,6 +150,7 @@ const ReportsListing = () => {
     setUserNameSortOrder("none");
     setEmailSortOrder("none");
     setTotalCallsSortOrder("none");
+    setFiveMinuteCallsSortOrder("none");
     setConnectedSortOrder("none");
     setNotConnectedSortOrder("none");
     setPositiveSortOrder("none");
@@ -227,6 +233,20 @@ const ReportsListing = () => {
     if (totalCallsSortOrder === "desc") {
       return data.sort(
         (a: any, b: any) => (b?.totalCalls || 0) - (a?.totalCalls || 0),
+      );
+    }
+
+    if (fiveMinuteCallsSortOrder === "asc") {
+      return data.sort(
+        (a: any, b: any) =>
+          (a?.fiveMinuteCallCount || 0) - (b?.fiveMinuteCallCount || 0),
+      );
+    }
+
+    if (fiveMinuteCallsSortOrder === "desc") {
+      return data.sort(
+        (a: any, b: any) =>
+          (b?.fiveMinuteCallCount || 0) - (a?.fiveMinuteCallCount || 0),
       );
     }
 
@@ -313,6 +333,7 @@ const ReportsListing = () => {
     totalDurationSortOrder,
     emailSortOrder,
     totalCallsSortOrder,
+    fiveMinuteCallsSortOrder,
     connectedSortOrder,
     notConnectedSortOrder,
     positiveSortOrder,
@@ -340,6 +361,7 @@ const ReportsListing = () => {
         item?.userName || "-",
         item?.userEmail || "-",
         item?.totalCalls || 0,
+        item?.fiveMinuteCallCount || 0,
         item?.connectedCalls || 0,
         item?.notConnectedCalls || 0,
         item?.positiveCalls || 0,
@@ -451,6 +473,14 @@ const ReportsListing = () => {
     setTotalCallsSortOrder(next);
   };
 
+  const handleFiveMinuteCallsSort = () => {
+    const next = getNextSortState(fiveMinuteCallsSortOrder);
+
+    resetAllSorts();
+
+    setFiveMinuteCallsSortOrder(next);
+  };
+
   const handleConnectedSort = () => {
     const next = getNextSortState(connectedSortOrder);
 
@@ -506,6 +536,7 @@ const ReportsListing = () => {
         "User Name": item?.userName || "",
         "User Email": item?.userEmail || "",
         "Total Calls": item?.totalCalls || 0,
+        "5+ Min Calls": item?.fiveMinuteCallCount || 0,
         Connected: item?.connectedCalls || 0,
         "Not Connected": item?.notConnectedCalls || 0,
         Positive: item?.positiveCalls || 0,
@@ -563,15 +594,16 @@ const ReportsListing = () => {
     0: 140, // User Name
     1: 210, // Email
     2: 100, // Total Calls
-    3: 100, // Connected
-    4: 110, // Not Connected
-    5: 80, // Positive
-    6: 80, // Negative
-    7: 80, // InBound
-    8: 90, // OutBound
-    9: 110, // Connection%
-    10: 110, // Avg Duration
-    11: 110, // Total Duration
+    3: 110, // 5+ Min Calls
+    4: 100, // Connected
+    5: 110, // Not Connected
+    6: 80, // Positive
+    7: 80, // Negative
+    8: 80, // InBound
+    9: 90, // OutBound
+    10: 110, // Connection%
+    11: 110, // Avg Duration
+    12: 110, // Total Duration
   };
 
   const getColumnSortOrder = (column: string) => {
@@ -581,6 +613,9 @@ const ReportsListing = () => {
 
       case "Total Calls":
         return totalCallsSortOrder;
+
+      case "5+ Min Calls":
+        return fiveMinuteCallsSortOrder;
 
       case "Connected":
         return connectedSortOrder;
@@ -925,6 +960,7 @@ const ReportsListing = () => {
                         ![
                           "User Email",
                           "Total Calls",
+                          "5+ Min Calls",
                           "Connected",
                           "Not Connected",
                           "Positive",
@@ -954,6 +990,10 @@ const ReportsListing = () => {
 
                         if (column === "Total Calls") {
                           handleTotalCallsSort();
+                        }
+
+                        if (column === "5+ Min Calls") {
+                          handleFiveMinuteCallsSort();
                         }
 
                         if (column === "Connected") {
@@ -991,6 +1031,7 @@ const ReportsListing = () => {
                       {[
                         "User Email",
                         "Total Calls",
+                        "5+ Min Calls",
                         "Connected",
                         "Not Connected",
                         "Positive",

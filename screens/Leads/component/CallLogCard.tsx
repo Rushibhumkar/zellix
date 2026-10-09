@@ -11,11 +11,26 @@ interface Props {
   onLongPress?: () => void;
   selected?: boolean;
   reviewMode?: boolean;
+  showFlag?: boolean;
   onApprove?: () => void;
   onReject?: () => void;
+  onFlagToggle?: (isFlagged: boolean) => void;
 }
 
-const CallLogCard = ({ item, onPress, onCallPress, onLongPress, selected, reviewMode, onApprove, onReject }: Props) => {
+const FLAG_ELIGIBLE_DURATION_SECONDS = 5 * 60;
+
+const CallLogCard = ({
+  item,
+  onPress,
+  onCallPress,
+  onLongPress,
+  selected,
+  reviewMode,
+  showFlag,
+  onApprove,
+  onReject,
+  onFlagToggle,
+}: Props) => {
   const getStatusColor = (type: string) => {
     switch (type) {
       case "positive":
@@ -41,6 +56,13 @@ const CallLogCard = ({ item, onPress, onCallPress, onLongPress, selected, review
   const clientMobile =
     leadDetails?.clientMobile?.trim() || item?.phoneNumber || "-";
   const callTimestamp = item?.initiatedAt || item?.createdAt;
+  const flagEligible =
+    typeof item?.flagEligible === "boolean"
+      ? item.flagEligible
+      : Number(item?.duration) >= FLAG_ELIGIBLE_DURATION_SECONDS;
+  const isFlagged =
+    flagEligible &&
+    (typeof item?.isFlagged === "boolean" ? item.isFlagged : true);
   const callDateTime = callTimestamp
     ? new Date(callTimestamp).toLocaleString("en-US", {
         day: "2-digit",
@@ -151,7 +173,9 @@ const CallLogCard = ({ item, onPress, onCallPress, onLongPress, selected, review
         <View style={styles.row}>
           <Feather name="user" size={14} color="#64748B" />
           <Text style={styles.infoText}>
-            {[item.userId.name, item.userId.lastName].filter(Boolean).join(" ") || "-"}
+            {[item.userId.name, item.userId.lastName]
+              .filter(Boolean)
+              .join(" ") || "-"}
           </Text>
         </View>
       )}
@@ -169,15 +193,75 @@ const CallLogCard = ({ item, onPress, onCallPress, onLongPress, selected, review
           {item.comment}
         </Text>
       )}
-      {reviewMode && (
+      {(reviewMode || showFlag) && (
         <View style={styles.reviewFooter}>
-          <View style={[styles.reviewStatus, { backgroundColor: item.reviewStatus === "approved" ? "#DCFCE7" : item.reviewStatus === "rejected" ? "#FEE2E2" : "#FEF3C7" }]}>
-            <Text style={styles.reviewStatusText}>{item.reviewStatus || "pending"}</Text>
+          <View style={styles.reviewBadges}>
+            {reviewMode && (
+              <View
+                style={[
+                  styles.reviewStatus,
+                  {
+                    backgroundColor:
+                      item.reviewStatus === "approved"
+                        ? "#DCFCE7"
+                        : item.reviewStatus === "rejected"
+                          ? "#FEE2E2"
+                          : "#FEF3C7",
+                  },
+                ]}
+              >
+                <Text style={styles.reviewStatusText}>
+                  {item.reviewStatus || "pending"}
+                </Text>
+              </View>
+            )}
+            {showFlag && (
+              <View
+                style={[
+                  styles.reviewStatus,
+                  { backgroundColor: isFlagged ? "#FFEDD5" : "#F1F5F9" },
+                ]}
+              >
+                <Text style={styles.reviewStatusText}>
+                  {flagEligible
+                    ? isFlagged
+                      ? "Flagged"
+                      : "Unflagged"
+                    : "Flag: —"}
+                </Text>
+              </View>
+            )}
           </View>
-          {!selected && <View style={styles.reviewActions}>
-            {item.reviewStatus !== "approved" && <TouchableOpacity style={[styles.reviewButton, styles.approveButton]} onPress={onApprove}><Text style={styles.reviewButtonText}>Approve</Text></TouchableOpacity>}
-            {item.reviewStatus !== "rejected" && <TouchableOpacity style={[styles.reviewButton, styles.rejectButton]} onPress={onReject}><Text style={styles.reviewButtonText}>Reject</Text></TouchableOpacity>}
-          </View>}
+          {reviewMode && !selected && (
+            <View style={styles.reviewActions}>
+              {flagEligible && (
+                <TouchableOpacity
+                  style={[styles.reviewButton, styles.flagButton]}
+                  onPress={() => onFlagToggle?.(!isFlagged)}
+                >
+                  <Text style={styles.reviewButtonText}>
+                    {isFlagged ? "Unflag" : "Flag"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {item.reviewStatus !== "approved" && (
+                <TouchableOpacity
+                  style={[styles.reviewButton, styles.approveButton]}
+                  onPress={onApprove}
+                >
+                  <Text style={styles.reviewButtonText}>Approve</Text>
+                </TouchableOpacity>
+              )}
+              {item.reviewStatus !== "rejected" && (
+                <TouchableOpacity
+                  style={[styles.reviewButton, styles.rejectButton]}
+                  onPress={onReject}
+                >
+                  <Text style={styles.reviewButtonText}>Reject</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       )}
     </TouchableOpacity>
@@ -198,13 +282,30 @@ const styles = StyleSheet.create({
     ...shadowPrimaryColor,
   },
   selectedCard: { borderColor: "#2563EB", backgroundColor: "#EFF6FF" },
-  reviewFooter: { marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  reviewFooter: { marginTop: 8, gap: 8 },
+  reviewBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
   reviewStatus: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 10 },
-  reviewStatusText: { fontSize: 11, fontWeight: "700", textTransform: "capitalize", color: "#334155" },
-  reviewActions: { flexDirection: "row", gap: 8 },
+  reviewStatusText: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "capitalize",
+    color: "#334155",
+  },
+  reviewActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
+    flexWrap: "wrap",
+  },
   reviewButton: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8 },
   approveButton: { backgroundColor: "#16A34A" },
   rejectButton: { backgroundColor: "#DC2626" },
+  flagButton: { backgroundColor: "#D97706" },
   reviewButtonText: { color: "white", fontWeight: "700", fontSize: 12 },
 
   header: {

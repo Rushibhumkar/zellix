@@ -4,7 +4,11 @@ import { axiosInstance } from "../authApi/axiosInstance";
 
 export const updateUserAccountStatus = async (
   id: string,
-  payload: { isActive: boolean; reason?: "resigned" | "terminated" | "other" },
+  payload: {
+    isActive: boolean;
+    reason?: "resigned" | "terminated" | "other";
+    lastWorkingDay?: string | Date;
+  },
 ) => (await axiosInstance.patch(`/api/hrms/user/account-status/${id}`, payload)).data;
 
 export const getRolePermissionSet = async (role: string) =>

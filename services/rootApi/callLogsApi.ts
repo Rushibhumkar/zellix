@@ -161,3 +161,8 @@ export const useReviewPnls = (enabled: boolean) => useQuery({
 
 export const updateLongCallReviewStatus = (ids: string[], status: "approved" | "rejected") =>
   axiosInstance.patch("/api/call-logs/reviews/status", { ids, status }).then((res) => res.data);
+
+export const updateCallLogFlag = (ids: string[], isFlagged: boolean) =>
+  axiosInstance
+    .patch("/api/call-logs/reports/actions", { ids, isFlagged })
+    .then((res) => res.data);

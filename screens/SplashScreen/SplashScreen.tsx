@@ -1,12 +1,17 @@
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import React, { useEffect } from "react";
 import { View } from "react-native";
-import { getData, getDataJson } from "../../hooks/useAsyncStorage";
+import {
+  getData,
+  getDataJson,
+  removeItemValue,
+} from "../../hooks/useAsyncStorage";
 import AppLogo from "../../assets/svg/AppLogo";
 import { navigationRef } from "../../navigation/navigationRef";
 import {
   PENDING_CALL_KEY,
   PENDING_CALL_KEY_LEAD,
+  isConfirmedPendingCall,
 } from "../../utils/pendingCallStorage";
 
 const SplashScreen = () => {
@@ -34,8 +39,11 @@ const SplashScreen = () => {
     }
 
     try {
-      navigationRef.navigate("allLead2", {
-        screen: "CallListing",
+      navigationRef.navigate("Dashboard", {
+        screen: "allLead2",
+        params: {
+          screen: "CallListing",
+        },
       });
       console.log("✅ Navigated to CallListing");
     } catch (e) {
@@ -68,10 +76,13 @@ const SplashScreen = () => {
     }
 
     try {
-      navigationRef.navigate("allLead2", {
-        screen: "LeadsDetails",
+      navigationRef.navigate("Dashboard", {
+        screen: "allLead2",
         params: {
-          item: { _id: leadId },
+          screen: "LeadsDetails",
+          params: {
+            item: { _id: leadId },
+          },
         },
       });
       console.log("✅ Navigated to LeadsDetails");
@@ -105,6 +116,14 @@ const SplashScreen = () => {
     // ✅ check for a pending (interrupted) call before deciding where to land
     const pending = await getDataJson(PENDING_CALL_KEY);
     const pendingLead = await getDataJson(PENDING_CALL_KEY_LEAD);
+    const hasConfirmedPendingCall = isConfirmedPendingCall(pending);
+    const hasConfirmedPendingLeadCall = isConfirmedPendingCall(pendingLead);
+    if (pending && !hasConfirmedPendingCall) {
+      await removeItemValue(PENDING_CALL_KEY);
+    }
+    if (pendingLead && !hasConfirmedPendingLeadCall) {
+      await removeItemValue(PENDING_CALL_KEY_LEAD);
+    }
     console.log("📞 pending call check on splash:", pending);
 
     dispatch(
@@ -114,7 +133,7 @@ const SplashScreen = () => {
       }),
     );
 
-    if (pending?.number) {
+    if (hasConfirmedPendingCall && pending?.number) {
       console.log(
         "🔄 Pending call found on splash — will redirect to CallListing",
         pending,
@@ -122,7 +141,7 @@ const SplashScreen = () => {
       setTimeout(() => {
         navigateToCallListingWithRetry();
       }, 300);
-    } else if (pendingLead?.leadId) {
+    } else if (hasConfirmedPendingLeadCall && pendingLead?.leadId) {
       // ✅ ADD
       console.log(
         "🔄 Pending lead call found on splash — will redirect to LeadsDetails",
