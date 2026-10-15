@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { shadowPrimaryColor } from "../../../const/globalStyle";
+import { color } from "../../../const/color";
 import { formatSeconds } from "../../../utils/commonFunctions";
 
 interface Props {
@@ -31,6 +32,30 @@ const CallLogCard = ({
   onReject,
   onFlagToggle,
 }: Props) => {
+  const [visibleTooltip, setVisibleTooltip] = useState<
+    "flagged" | "rejected" | null
+  >(null);
+  const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showTooltip = (tooltip: "flagged" | "rejected") => {
+    setVisibleTooltip(tooltip);
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+    }
+    tooltipTimerRef.current = setTimeout(() => {
+      tooltipTimerRef.current = null;
+      setVisibleTooltip(null);
+    }, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (tooltipTimerRef.current) {
+        clearTimeout(tooltipTimerRef.current);
+      }
+    };
+  }, []);
+
   const getStatusColor = (type: string) => {
     switch (type) {
       case "positive":
@@ -63,6 +88,7 @@ const CallLogCard = ({
   const isFlagged =
     flagEligible &&
     (typeof item?.isFlagged === "boolean" ? item.isFlagged : true);
+  const reviewStatus = item?.reviewStatus || "pending";
   const callDateTime = callTimestamp
     ? new Date(callTimestamp).toLocaleString("en-US", {
         day: "2-digit",
@@ -77,11 +103,16 @@ const CallLogCard = ({
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      style={[styles.card, selected && styles.selectedCard]}
+      style={[
+        styles.card,
+        reviewMode && styles.reviewCard,
+        selected && styles.selectedCard,
+        visibleTooltip && styles.cardWithTooltip,
+      ]}
       onPress={onPress}
       onLongPress={onLongPress}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, reviewMode && styles.reviewHeader]}>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
@@ -145,119 +176,217 @@ const CallLogCard = ({
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+      <View style={[styles.callMeta, reviewMode && styles.reviewCallMeta]}>
         <View style={{ flex: 1 }}>
-          <View style={styles.row}>
+          <View style={[styles.row, reviewMode && styles.reviewRow]}>
             <Feather name="phone-call" size={14} color="#64748B" />
 
-            <Text style={styles.infoText}>{clientMobile}</Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.infoText, reviewMode && styles.reviewInfoText]}
+            >
+              {clientMobile}
+            </Text>
           </View>
 
-          <View style={styles.row}>
+          <View style={[styles.row, reviewMode && styles.reviewRow]}>
             <Feather name="calendar" size={14} color="#64748B" />
 
-            <Text style={styles.infoText}>{callDateTime}</Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.infoText, reviewMode && styles.reviewInfoText]}
+            >
+              {callDateTime}
+            </Text>
           </View>
         </View>
 
-        <View style={[styles.row, { alignSelf: "flex-end" }]}>
+        <View
+          style={[
+            styles.row,
+            styles.durationRow,
+            reviewMode && styles.reviewRow,
+          ]}
+        >
           <Feather name="clock" size={14} color="#64748B" />
 
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoText, reviewMode && styles.reviewInfoText]}>
             {formatSeconds(item?.duration ?? 0)}
           </Text>
         </View>
       </View>
 
-      {reviewMode && item?.userId && typeof item.userId === "object" && (
-        <View style={styles.row}>
-          <Feather name="user" size={14} color="#64748B" />
-          <Text style={styles.infoText}>
-            {[item.userId.name, item.userId.lastName]
-              .filter(Boolean)
-              .join(" ") || "-"}
-          </Text>
+      {reviewMode &&
+      ((item?.userId && typeof item.userId === "object") ||
+        item?.leadStatusAfterCall) ? (
+        <View style={styles.reviewSummaryRow}>
+          {item?.userId && typeof item.userId === "object" && (
+            <View style={[styles.row, styles.reviewRow, styles.reviewUser]}>
+              <Feather name="user" size={14} color="#64748B" />
+              <Text
+                numberOfLines={1}
+                style={[styles.infoText, styles.reviewInfoText]}
+              >
+                {[item.userId.name, item.userId.lastName]
+                  .filter(Boolean)
+                  .join(" ") || "-"}
+              </Text>
+            </View>
+          )}
+          {!!item?.leadStatusAfterCall && (
+            <View style={[styles.tag, styles.reviewTag]}>
+              <Text
+                numberOfLines={1}
+                style={[styles.tagText, styles.reviewTagText]}
+              >
+                {item.leadStatusAfterCall.replaceAll("_", " ")}
+              </Text>
+            </View>
+          )}
         </View>
-      )}
-
-      {!!item?.leadStatusAfterCall && (
+      ) : !!item?.leadStatusAfterCall ? (
         <View style={styles.tag}>
           <Text style={styles.tagText}>
             {item.leadStatusAfterCall.replaceAll("_", " ")}
           </Text>
         </View>
-      )}
+      ) : null}
 
       {!!item?.comment && (
-        <Text numberOfLines={2} style={styles.comment}>
+        <Text
+          numberOfLines={reviewMode ? 1 : 2}
+          style={[styles.comment, reviewMode && styles.reviewComment]}
+        >
           {item.comment}
         </Text>
       )}
-      {(reviewMode || showFlag) && (
-        <View style={styles.reviewFooter}>
-          <View style={styles.reviewBadges}>
-            {reviewMode && (
+      {(reviewMode ||
+        (showFlag && isFlagged) ||
+        reviewStatus === "rejected") && (
+        <View
+          style={[
+            styles.reviewFooter,
+            reviewMode && styles.compactReviewFooter,
+          ]}
+        >
+          <View
+            style={[
+              styles.reviewBadges,
+              reviewMode && styles.compactReviewBadges,
+            ]}
+          >
+            {reviewMode && reviewStatus === "pending" && (
               <View
-                style={[
-                  styles.reviewStatus,
-                  {
-                    backgroundColor:
-                      item.reviewStatus === "approved"
-                        ? "#DCFCE7"
-                        : item.reviewStatus === "rejected"
-                          ? "#FEE2E2"
-                          : "#FEF3C7",
-                  },
-                ]}
+                style={[styles.reviewStatus, { backgroundColor: "#FEF3C7" }]}
               >
-                <Text style={styles.reviewStatusText}>
-                  {item.reviewStatus || "pending"}
+                <Text style={[styles.reviewStatusText, { color: "#92400E" }]}>
+                  Pending
                 </Text>
               </View>
             )}
-            {showFlag && (
-              <View
-                style={[
-                  styles.reviewStatus,
-                  { backgroundColor: isFlagged ? "#FFEDD5" : "#F1F5F9" },
-                ]}
-              >
-                <Text style={styles.reviewStatusText}>
-                  {flagEligible
-                    ? isFlagged
-                      ? "Flagged"
-                      : "Unflagged"
-                    : "Flag: —"}
-                </Text>
+            {reviewStatus === "rejected" && (
+              <View style={styles.statusIconWrapper}>
+                {visibleTooltip === "rejected" && (
+                  <View style={styles.tooltip}>
+                    <Text style={styles.tooltipText}>
+                      This call was rejected during review.
+                    </Text>
+                    <View style={styles.tooltipArrow} />
+                  </View>
+                )}
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Rejected call information"
+                  hitSlop={8}
+                  style={[styles.statusIcon, styles.rejectedIcon]}
+                  onPress={() => showTooltip("rejected")}
+                >
+                  <Feather name="x" size={14} color="#B91C1C" />
+                </TouchableOpacity>
+              </View>
+            )}
+            {showFlag && isFlagged && (
+              <View style={styles.statusIconWrapper}>
+                {visibleTooltip === "flagged" && (
+                  <View style={styles.tooltip}>
+                    <Text style={styles.tooltipText}>
+                      This call is flagged for review.
+                    </Text>
+                    <View style={styles.tooltipArrow} />
+                  </View>
+                )}
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Flagged call information"
+                  hitSlop={8}
+                  style={[styles.statusIcon, styles.flaggedIcon]}
+                  onPress={() => showTooltip("flagged")}
+                >
+                  <Feather name="flag" size={12} color="#6D28D9" />
+                </TouchableOpacity>
               </View>
             )}
           </View>
           {reviewMode && !selected && (
-            <View style={styles.reviewActions}>
+            <View style={[styles.reviewActions, styles.compactReviewActions]}>
               {flagEligible && (
                 <TouchableOpacity
-                  style={[styles.reviewButton, styles.flagButton]}
+                  hitSlop={4}
+                  style={[
+                    styles.reviewButton,
+                    styles.compactReviewButton,
+                    isFlagged ? styles.unflagButton : styles.flagButton,
+                  ]}
                   onPress={() => onFlagToggle?.(!isFlagged)}
                 >
-                  <Text style={styles.reviewButtonText}>
+                  <Text
+                    style={[
+                      styles.reviewButtonText,
+                      styles.compactReviewButtonText,
+                    ]}
+                  >
                     {isFlagged ? "Unflag" : "Flag"}
                   </Text>
                 </TouchableOpacity>
               )}
               {item.reviewStatus !== "approved" && (
                 <TouchableOpacity
-                  style={[styles.reviewButton, styles.approveButton]}
+                  hitSlop={4}
+                  style={[
+                    styles.reviewButton,
+                    styles.compactReviewButton,
+                    styles.approveButton,
+                  ]}
                   onPress={onApprove}
                 >
-                  <Text style={styles.reviewButtonText}>Approve</Text>
+                  <Text
+                    style={[
+                      styles.reviewButtonText,
+                      styles.compactReviewButtonText,
+                    ]}
+                  >
+                    Approve
+                  </Text>
                 </TouchableOpacity>
               )}
               {item.reviewStatus !== "rejected" && (
                 <TouchableOpacity
-                  style={[styles.reviewButton, styles.rejectButton]}
+                  hitSlop={4}
+                  style={[
+                    styles.reviewButton,
+                    styles.compactReviewButton,
+                    styles.rejectButton,
+                  ]}
                   onPress={onReject}
                 >
-                  <Text style={styles.reviewButtonText}>Reject</Text>
+                  <Text
+                    style={[
+                      styles.reviewButtonText,
+                      styles.compactReviewButtonText,
+                    ]}
+                  >
+                    Reject
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -281,13 +410,34 @@ const styles = StyleSheet.create({
     borderColor: "#E3E8EF",
     ...shadowPrimaryColor,
   },
+  reviewCard: {
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginBottom: 7,
+  },
+  cardWithTooltip: {
+    zIndex: 50,
+    elevation: 12,
+  },
   selectedCard: { borderColor: "#2563EB", backgroundColor: "#EFF6FF" },
   reviewFooter: { marginTop: 8, gap: 8 },
+  compactReviewFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+    gap: 6,
+  },
   reviewBadges: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     flexWrap: "wrap",
+  },
+  compactReviewBadges: {
+    flexShrink: 0,
+    gap: 5,
   },
   reviewStatus: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 10 },
   reviewStatusText: {
@@ -296,17 +446,84 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
     color: "#334155",
   },
+  statusIconWrapper: {
+    position: "relative",
+    alignItems: "center",
+    overflow: "visible",
+  },
+  statusIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  rejectedIcon: {
+    backgroundColor: "#FEE2E2",
+    borderColor: "#FCA5A5",
+  },
+  flaggedIcon: {
+    backgroundColor: "#EDE9FE",
+    borderColor: "#C4B5FD",
+  },
+  tooltip: {
+    position: "absolute",
+    bottom: 38,
+    width: 174,
+    left: -7,
+    zIndex: 20,
+    elevation: 8,
+    backgroundColor: "#334155",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    ...shadowPrimaryColor,
+  },
+  tooltipText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    lineHeight: 15,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  tooltipArrow: {
+    position: "absolute",
+    bottom: -7,
+    left: 14,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 7,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "#334155",
+  },
   reviewActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 8,
     flexWrap: "wrap",
   },
+  compactReviewActions: {
+    flex: 1,
+    flexWrap: "nowrap",
+    gap: 5,
+  },
   reviewButton: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8 },
+  compactReviewButton: {
+    minHeight: 28,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    justifyContent: "center",
+  },
   approveButton: { backgroundColor: "#16A34A" },
   rejectButton: { backgroundColor: "#DC2626" },
-  flagButton: { backgroundColor: "#D97706" },
+  flagButton: { backgroundColor: color.primaryColor },
+  unflagButton: { backgroundColor: color.secondaryColor },
   reviewButtonText: { color: "white", fontWeight: "700", fontSize: 12 },
+  compactReviewButtonText: { fontSize: 11 },
 
   header: {
     flexDirection: "row",
@@ -314,6 +531,23 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 8,
   },
+  reviewHeader: { marginBottom: 5 },
+
+  callMeta: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  reviewCallMeta: { gap: 8 },
+  durationRow: { alignSelf: "flex-end" },
+  reviewSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginVertical: 2,
+  },
+  reviewUser: { flex: 1, minWidth: 0 },
 
   name: {
     fontSize: 15,
@@ -345,12 +579,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
+  reviewRow: { marginBottom: 2 },
 
   infoText: {
     marginLeft: 8,
     color: "#475569",
     fontSize: 13,
   },
+  reviewInfoText: { marginLeft: 6, fontSize: 12 },
 
   tag: {
     alignSelf: "flex-start",
@@ -360,6 +596,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 2,
   },
+  reviewTag: {
+    flexShrink: 1,
+    maxWidth: "46%",
+    marginTop: 0,
+    paddingVertical: 2,
+  },
 
   tagText: {
     color: "#2563EB",
@@ -367,10 +609,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textTransform: "capitalize",
   },
+  reviewTagText: { fontSize: 11 },
 
   comment: {
     marginTop: 6,
     color: "#475569",
     fontSize: 12,
   },
+  reviewComment: { marginTop: 3, fontSize: 11, lineHeight: 15 },
 });

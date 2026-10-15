@@ -134,17 +134,43 @@ export const useCallLogsByUserId = (userId: string) => {
 
 export type ReviewStatus = "pending" | "approved" | "rejected";
 
-export const getLongCallReviews = async ({ pageParam = 1, status = "pending", pnlId = "" }) => {
+export const getLongCallReviews = async ({
+  pageParam = 1,
+  status = "rejected",
+  pnlId = "",
+  startDate = "",
+  endDate = "",
+}) => {
   const response = await axiosInstance.get("/api/call-logs/reviews/long", {
-    params: { page: pageParam, limit: 20, status, ...(pnlId ? { pnlId } : {}) },
+    params: {
+      page: pageParam,
+      limit: 20,
+      status,
+      ...(pnlId ? { pnlId } : {}),
+      ...(startDate ? { startDate } : {}),
+      ...(endDate ? { endDate } : {}),
+    },
   });
   return response.data;
 };
 
-export const useLongCallReviews = (enabled: boolean, status: ReviewStatus, pnlId = "") =>
+export const useLongCallReviews = (
+  enabled: boolean,
+  status: ReviewStatus,
+  pnlId = "",
+  startDate = "",
+  endDate = "",
+) =>
   useInfiniteQuery({
-    queryKey: ["longCallReviews", status, pnlId],
-    queryFn: ({ pageParam = 1 }) => getLongCallReviews({ pageParam, status, pnlId }),
+    queryKey: ["longCallReviews", status, pnlId, startDate, endDate],
+    queryFn: ({ pageParam = 1 }) =>
+      getLongCallReviews({
+        pageParam,
+        status,
+        pnlId,
+        startDate,
+        endDate,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage?.pagination?.hasNextPage
       ? lastPage.pagination.page + 1
