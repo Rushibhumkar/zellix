@@ -101,6 +101,11 @@ export const userApproved = ({ id }) => {
     .then((res) => res?.data);
 };
 
+export const resendUserCredentials = ({ id }: { id: string }) =>
+  axiosInstance
+    .post(`/api/hrms/user/resendCredentials/${id}`)
+    .then((res) => res?.data);
+
 export const leadPoolRestriction = (data) => {
   return axiosInstance
     .post(`/api/user/updatePoolRestriction`, data)

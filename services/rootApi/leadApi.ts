@@ -302,7 +302,11 @@ export const deleteLeadsByIds = async (ids: string[]) => {
 const fetchLatestMeetings = async (id) => {
   try {
     const res = await axiosInstance.get(`/api/meeting/getLatestMeetings/${id}`);
-    return res?.data?.data || [];
+    return {
+      meetings: res?.data?.data || [],
+      totalMeetings:
+        res?.data?.totalMeetings ?? res?.data?.data?.length ?? 0,
+    };
   } catch (err) {
     throw err;
   }

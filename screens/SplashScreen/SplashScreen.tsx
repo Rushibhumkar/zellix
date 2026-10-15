@@ -13,6 +13,7 @@ import {
   PENDING_CALL_KEY_LEAD,
   isConfirmedPendingCall,
 } from "../../utils/pendingCallStorage";
+import { isIgnoredCallDuration } from "../../utils/callOutcome";
 
 const SplashScreen = () => {
   const { dispatch } = useNavigation();
@@ -116,8 +117,20 @@ const SplashScreen = () => {
     // ✅ check for a pending (interrupted) call before deciding where to land
     const pending = await getDataJson(PENDING_CALL_KEY);
     const pendingLead = await getDataJson(PENDING_CALL_KEY_LEAD);
-    const hasConfirmedPendingCall = isConfirmedPendingCall(pending);
-    const hasConfirmedPendingLeadCall = isConfirmedPendingCall(pendingLead);
+    const pendingDuration = pending?.initiatedAt
+      ? Math.floor((Date.now() - pending.initiatedAt) / 1000)
+      : null;
+    const pendingLeadDuration = pendingLead?.initiatedAt
+      ? Math.floor((Date.now() - pendingLead.initiatedAt) / 1000)
+      : null;
+    const shouldIgnorePendingCall = isIgnoredCallDuration(pendingDuration);
+    const shouldIgnorePendingLeadCall = isIgnoredCallDuration(
+      pendingLeadDuration,
+    );
+    const hasConfirmedPendingCall =
+      isConfirmedPendingCall(pending) && !shouldIgnorePendingCall;
+    const hasConfirmedPendingLeadCall =
+      isConfirmedPendingCall(pendingLead) && !shouldIgnorePendingLeadCall;
     if (pending && !hasConfirmedPendingCall) {
       await removeItemValue(PENDING_CALL_KEY);
     }

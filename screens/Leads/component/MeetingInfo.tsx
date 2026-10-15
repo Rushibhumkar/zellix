@@ -20,7 +20,6 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import { sizes } from "../../../const";
 import { color } from "../../../const/color";
 import NoDataFound from "../../../myComponents/NoDataFound/NoDataFound";
-import { myConsole } from "../../../hooks/useConsole";
 
 const MeetingInfo = ({
   leadId = "",
@@ -31,11 +30,16 @@ const MeetingInfo = ({
 }: any) => {
   const meetingsInfo = useLatestMeetings(leadId);
   const [refreshing, setRefreshing] = useState(false);
+  const meetings = meetingsInfo?.data?.meetings ?? [];
+  const totalMeetings = meetingsInfo?.data?.totalMeetings ?? meetings.length;
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    meetingsInfo.refetch();
-    setRefreshing(false);
+    try {
+      await meetingsInfo.refetch();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -56,10 +60,15 @@ const MeetingInfo = ({
         }
       >
         <View style={{ paddingBottom: 150 }}>
-          <MainTitle
-            title="Meeting Information"
-            containerStyle={{ marginBottom: 20 }}
-          />
+          <View style={styles.titleRow}>
+            <MainTitle
+              title="Meeting Information"
+              containerStyle={styles.title}
+            />
+            <View style={styles.totalBadge}>
+              <Text style={styles.totalBadgeText}>Total: {totalMeetings}</Text>
+            </View>
+          </View>
 
           {meetingsInfo?.isLoading ? (
             <View
@@ -71,16 +80,28 @@ const MeetingInfo = ({
             >
               <ActivityIndicator size="large" color={color.mainTxtColor} />
             </View>
-          ) : !meetingsInfo?.isLoading &&
-            (meetingsInfo?.data ?? []).length > 0 ? (
-            meetingsInfo.data.map((x, i, arr) => {
-              const meeting = x?.latestMeeting || {};
+          ) : !meetingsInfo?.isLoading && meetings.length > 0 ? (
+            meetings.map((x, i) => {
+              const meeting = x?.meeting || x?.latestMeeting || {};
               const date = meeting?.scheduleDate
                 ? moment(meeting.scheduleDate).format("DD/MM/YYYY , hh:mm A")
                 : "N/A";
 
               return (
-                <View key={x._id}>
+                <View
+                  key={x?.meetingEntryId || meeting?._id || `${x?._id}-${i}`}
+                  style={styles.meetingCard}
+                >
+                  <View style={styles.meetingCardHeader}>
+                    <Text style={styles.meetingNumber}>
+                      Meeting {totalMeetings - i}
+                    </Text>
+                    {i === 0 && (
+                      <View style={styles.latestBadge}>
+                        <Text style={styles.latestBadgeText}>Latest</Text>
+                      </View>
+                    )}
+                  </View>
                   <RowItem
                     title="Date"
                     containerStyle={{ marginBottom: 10 }}
@@ -120,19 +141,10 @@ const MeetingInfo = ({
                           }}
                         />
                       ) : (
-                        <CustomText>N/A</CustomText>
+                        <CustomText color={color.mainTxtColor}>N/A</CustomText>
                       )
                     }
                   />
-                  {arr.length - 1 !== i && (
-                    <View
-                      style={{
-                        borderWidth: 0.5,
-                        marginVertical: 10,
-                        borderColor: "gray",
-                      }}
-                    />
-                  )}
                 </View>
               );
             })
@@ -155,3 +167,60 @@ const MeetingInfo = ({
 };
 
 export default MeetingInfo;
+
+const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 18,
+  },
+  title: {
+    flex: 1,
+  },
+  totalBadge: {
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: "#E8F0FE",
+  },
+  totalBadgeText: {
+    color: "#2D67C6",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  meetingCard: {
+    marginBottom: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+  },
+  meetingCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF2F7",
+  },
+  meetingNumber: {
+    color: color.mainTxtColor,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  latestBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "#DCFCE7",
+  },
+  latestBadgeText: {
+    color: "#15803D",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+});

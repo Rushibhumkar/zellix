@@ -52,7 +52,9 @@ import {
   statusObj,
 } from "../../utils/data";
 import {
+  formatCallDuration,
   getTrackedCallDurationSeconds,
+  isIgnoredCallDuration,
   isShortCallDuration,
 } from "../../utils/callOutcome";
 import { queryKeyCRM } from "../../utils/queryKeys";
@@ -463,6 +465,20 @@ const LeadsDetails = () => {
 
   const handleCallEnd = (initiatedAt: number, endTime: number) => {
     const diffSec = Math.floor((endTime - initiatedAt) / 1000);
+    console.log(
+      "📞 TOTAL CALL DURATION =>",
+      formatCallDuration(diffSec),
+      `(${diffSec} sec)`,
+    );
+
+    if (isIgnoredCallDuration(diffSec)) {
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+      setCallMeta(null);
+      return;
+    }
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
       // Calls longer than 20 minutes are not reliable enough to log. Do not
@@ -538,6 +554,21 @@ const LeadsDetails = () => {
     await removeItemValue(PENDING_CALL_KEY_LEAD);
 
     const diffSec = Math.floor((endTime - pending.initiatedAt) / 1000);
+    console.log(
+      "📞 RECOVERED CALL ELAPSED DURATION =>",
+      formatCallDuration(diffSec),
+      `(${diffSec} sec)`,
+    );
+
+    if (isIgnoredCallDuration(diffSec)) {
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+      setCallMeta(null);
+      isResumingRef.current = false;
+      return;
+    }
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
       pendingResumeRef.current = null;
@@ -791,6 +822,13 @@ const LeadsDetails = () => {
         (callMeta.finishedAt - callMeta.initiatedAt) / 1000,
       );
 
+      if (isIgnoredCallDuration(durationInSec)) {
+        setCallMeta(null);
+        setShowChangeStatusPopup(false);
+        setIsStatusPopupFromCall(false);
+        return;
+      }
+
       if (durationInSec > DURATION_THRESHOLD_SEC) {
         setCallMeta(null);
         return;
@@ -990,7 +1028,7 @@ const LeadsDetails = () => {
         addManualLeadPositiveStatuses.includes(fields.status)
       ) {
         toast.error(
-          "Calls of 60 seconds or less cannot be marked as Interested or Positive.",
+          "Positive outcomes are available after a meaningful conversation. Please choose the outcome that best matches this brief interaction.",
         );
         return;
       }

@@ -21,6 +21,7 @@ import { useUserDetailHRM } from "../../hooks/useGetQuerryHRM";
 import {
   deleteDeviceId,
   leadPoolRestriction,
+  resendUserCredentials,
   updateUserAccountStatus,
   userApproved,
 } from "../../services/hrmApi/userHrmApi";
@@ -75,7 +76,11 @@ const UserDetailHRM = () => {
 
   const [useDetail, setUseDetail] = useState(dummyUserDetail);
   const [isLoadingApprove, setIsLoadingApprove] = useState(false);
+  const [isResendingCredentials, setIsResendingCredentials] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const canResendCredentials =
+    isSubSup && Boolean(data?._id) && data?.status !== "approved";
 
   const handleCall = (phone: string) => {
     if (!phone) return;
@@ -129,6 +134,46 @@ const UserDetailHRM = () => {
     } catch (err) {
       console.log("errUserApprove", err);
     }
+  };
+
+  const confirmResendCredentials = () => {
+    if (!targetUserId || !canResendCredentials || isResendingCredentials) return;
+
+    Alert.alert(
+      "Resend login credentials?",
+      `The login credentials email will be sent again to ${data?.email || "this user"}.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Resend",
+          onPress: async () => {
+            setIsResendingCredentials(true);
+            try {
+              const result = await resendUserCredentials({
+                id: String(targetUserId),
+              });
+              await Promise.all([
+                refetch(),
+                queryClient.invalidateQueries({
+                  queryKey: [queryKeyHRM.getAllUserHRM],
+                }),
+              ]);
+              toast.success(
+                result?.message || "Login credentials sent successfully.",
+              );
+            } catch (error: any) {
+              toast.error(
+                error?.response?.data?.message ||
+                  error?.response?.data ||
+                  "Unable to send login credentials.",
+              );
+            } finally {
+              setIsResendingCredentials(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   //
@@ -379,6 +424,23 @@ const UserDetailHRM = () => {
                 textStyle={styles.updateBtnText}
               />
             </View>
+          )}
+          {canResendCredentials && (
+            <TouchableOpacity
+              disabled={isResendingCredentials}
+              onPress={confirmResendCredentials}
+              style={[
+                styles.resendCredentialsButton,
+                isResendingCredentials && styles.disabledAction,
+              ]}
+            >
+              <Feather name="key" size={17} color="#FFFFFF" />
+              <CustomText style={styles.accountActionText}>
+                {isResendingCredentials
+                  ? "Sending credentials..."
+                  : "Resend Login Credentials"}
+              </CustomText>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -668,6 +730,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 18,
     gap: 12,
+  },
+
+  resendCredentialsButton: {
+    minHeight: 46,
+    marginTop: 18,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: "#2E67BE",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+  disabledAction: {
+    opacity: 0.6,
   },
 
   acceptBtn: {
