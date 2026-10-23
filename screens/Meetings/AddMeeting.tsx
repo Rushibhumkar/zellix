@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useExistingMeetingForLead, useMeetingEligibility, useMeetingMemberOptions } from "../../hooks/useMeetingLifecycle";
 import { openExistingMeeting } from "../../utils/meetingNavigation";
+import { meetingLeadOptions } from "../../utils/meetingLeadOptions";
 import { combineMeetingDate, isMeetingConflict, latestMeetingEntry, meetingActions, meetingId, meetingMembers, meetingSupportingMembers, meetingMessage, meetingRequestId, meetingSuccess, meetingVersion } from "../../utils/meetingLifecycle";
 import {
   ActivityIndicator,
@@ -94,6 +95,7 @@ const AddMeeting = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
+  const [selectedLeadOption, setSelectedLeadOption] = useState<any>(null);
   const [isUpdateFrom, setIsUpdateFrom] = useState(data?.lead?._id);
   const searchOnlyAssignedLeads = ![
     "sup_admin",
@@ -374,17 +376,9 @@ const AddMeeting = () => {
     setSearchValue(v);
   };
 
-  const leadOptions = [returnedLead, ...(leadList || [])]
-    .filter((lead) => lead?._id)
-    .filter(
-      (lead, index, list) =>
-        list.findIndex((item) => String(item?._id) === String(lead?._id)) ===
-        index,
-    )
-    .map((lead) => ({
-      name: lead?.clientName || lead?.name || "Unnamed Lead",
-      _id: lead?._id,
-    }));
+  const leadOptions = meetingLeadOptions(leadList || [], values.lead, [
+    selectedLeadOption, returnedLead, leadDetail, data?.lead,
+  ]);
 
   const handleAddLeadFromMeeting = () => {
     navigate("allLead2", {
@@ -450,6 +444,7 @@ const AddMeeting = () => {
                   setFieldValue("self", true);
                   setFieldValue("agents", []);
                 }}
+                onSelect={(lead) => setSelectedLeadOption(lead)}
                 containerStyle={{ marginBottom: 15 }}
                 onBlur={handleBlur("lead")}
                 initialValue={values?.lead}

@@ -8,6 +8,10 @@ an administrator must reconcile them with the backend migration tools.
   responsible and always participates. Self is ownership-derived, not editable.
   Add/edit/reschedule do not display a Self switch or its info icon, matching Web;
   the backend-required ownership value is still derived and sent automatically.
+- Lead search retains the selected option's ID/label after selection clears the
+  search or replaces paginated results. Only the currently selected ID is pinned;
+  a different lead's previous label cannot leak into the input. Current result
+  labels take precedence over the retained snapshot.
 - Supporting members come from `/api/meeting/member-options`, not the global
   Redux user list. Rescheduling/editing preserves responsibility and Self.
   Selected chips and submitted supporting IDs are deduplicated and intersected

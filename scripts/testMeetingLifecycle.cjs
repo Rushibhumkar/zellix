@@ -14,6 +14,14 @@ function compile(file, resolve) {
   return mod.exports;
 }
 const life = compile("utils/meetingLifecycle.ts", () => { throw Error("Unexpected dependency"); });
+const leadOptionsHelper = compile("utils/meetingLeadOptions.ts", () => { throw Error("Unexpected dependency"); });
+const searchedLead = { _id: "searched", name: "Selected searched lead" };
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([], "searched", [searchedLead]), [searchedLead]);
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([{ _id: "first-page", clientName: "Other lead" }], "searched", [searchedLead]), [{ _id: "first-page", name: "Other lead" }, searchedLead]);
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([{ _id: "searched", clientName: "Updated label" }], "searched", [searchedLead]), [{ _id: "searched", name: "Updated label" }]);
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([], "different", [searchedLead]), []);
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([], "", [searchedLead]), []);
+assert.deepEqual(leadOptionsHelper.meetingLeadOptions([], "returned", [searchedLead, { _id: "returned", clientName: "Newly created lead" }]), [{ _id: "returned", name: "Newly created lead" }]);
 const meetingNavigation = compile("utils/meetingNavigation.ts", () => { throw Error("Unexpected dependency"); });
 const historyRows = [
   { _id: "open-group", lead: { _id: "lead" }, responsibleUserId: "owner", meeting: { status: "schedule" } },
@@ -88,6 +96,7 @@ const resolve = name => {
   if (name === "@tanstack/react-query") return { useQueryClient: () => ({ invalidateQueries: async () => {}, setQueryData: (...args) => cacheWrites.push(args) }) };
   if (name.includes("/utils/meetingLifecycle")) return life;
   if (name.includes("/utils/meetingNavigation")) return meetingNavigation;
+  if (name.includes("/utils/meetingLeadOptions")) return leadOptionsHelper;
   if (name.includes("/hooks/useMeetingLifecycle")) return { useExistingMeetingForLead: () => existingResult, useMeetingEligibility: () => ({ data: eligible, error: eligibilityError, isFetching: eligibilityFetching, refetch: async () => { eligibilityChecks++; return { data: eligible, error: eligibilityError }; } }), useMeetingMemberOptions: () => memberResult };
   if (name.includes("/services/rootApi/meetingApi")) return api;
   if (name.includes("/hooks/useCRMgetQuerry")) return { useGetLeadInAddMeeting: () => ({ data: [] }), useGetLeadById: () => ({ data: {} }) };
