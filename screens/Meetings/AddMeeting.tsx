@@ -1,12 +1,14 @@
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { useFormik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useExistingMeetingForLead, useMeetingEligibility, useMeetingMemberOptions } from "../../hooks/useMeetingLifecycle";
+import { openExistingMeeting } from "../../utils/meetingNavigation";
+import { combineMeetingDate, isMeetingConflict, latestMeetingEntry, meetingActions, meetingId, meetingMembers, meetingSupportingMembers, meetingMessage, meetingRequestId, meetingSuccess, meetingVersion } from "../../utils/meetingLifecycle";
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
   StyleSheet,
-  Switch,
   View,
 } from "react-native";
 import Header from "../../components/Header";
@@ -14,7 +16,11 @@ import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
-import { addMeeting, updateMeeting } from "../../services/rootApi/meetingApi";
+import {
+  addMeeting,
+  addMeetingEntry,
+  updateMeeting,
+} from "../../services/rootApi/meetingApi";
 import { addMeetingSchema } from "../../utils/validation";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
 import CustomModelMessage from "../../myComponents/CustomModelMessage";
@@ -37,23 +43,30 @@ import { selectUser } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import { Feather } from "@expo/vector-icons";
 import { useAppToast } from "../../components/AppToast";
+import { routeMeeting } from "../../utils/routes";
 
 const AddMeeting = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
+  const requestRef = useRef<any>(null);
   // const { lead, user, allUsers } = useSelector(selectUser);
   // const dispatch = useDispatch();
-  const { navigate, goBack } = useNavigation();
-  const { params } = useRoute();
+  const navigation = useNavigation<any>();
+  const { navigate, goBack } = navigation;
+  const { params } = useRoute<any>();
   const { user, allUsers } = useSelector(selectUser);
 
   let data = params?.detail;
+  const followUpSource = params?.followUpSource;
+  const isFollowUp = Boolean(data?._id && followUpSource?._id);
   const returnedMeetingDraft = params?.meetingDraft;
   const returnedLead = params?.createdLead;
 
   const incomingStatus = params?.detail?.status;
 
-  const isUpdate = Boolean(data?._id && Array.isArray(data?.meetings));
+  const isUpdate = Boolean(
+    !isFollowUp && data?._id && Array.isArray(data?.meetings),
+  );
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -65,10 +78,14 @@ const AddMeeting = () => {
   const [tempDate, setTempDate] = useState(() => ({
     date: returnedMeetingDraft?.date
       ? new Date(returnedMeetingDraft.date)
-      : new Date(),
+      : isFollowUp
+        ? new Date(Date.now() + 5 * 60 * 1000)
+        : new Date(),
     time: returnedMeetingDraft?.time
       ? new Date(returnedMeetingDraft.time)
-      : new Date(),
+      : isFollowUp
+        ? new Date(Date.now() + 5 * 60 * 1000)
+        : new Date(),
   }));
   const [dateTimeError, setDateTimeError] = useState("");
 
@@ -82,6 +99,7 @@ const AddMeeting = () => {
     "sup_admin",
     "sub_admin",
     "developer",
+    "sr_manager", "pnl", "manager", "assistant_manager", "team_lead",
   ].includes(user?.role);
   //react query lead
   const {
@@ -108,23 +126,30 @@ const AddMeeting = () => {
           ? data?.meetings[0]?.status
           : "";
 
-  const defaultAgents = Array.isArray(data?.agents)
-    ? data.agents.filter((memberId) => String(memberId) !== String(user?._id))
-    : [];
-  const memberOptions = (allUsers || [])
-    .filter((member) => String(member?._id) !== String(user?._id))
-    .map((member) => ({
-      ...member,
-      name: `${member?.name || ""} ${member?.lastName || ""}`.trim(),
-    }));
+  const sourceMeeting = latestMeetingEntry(data) || followUpSource;
+  const selfMemberId = isUpdate
+    ? meetingId(data?.responsibleUserId)
+    : String(user?._id);
+  const defaultAgents = (sourceMeeting?.members?.length
+    ? sourceMeeting.members.map((member) => member?._id || member)
+    : isFollowUp || isUpdate ? [data?.createdBy?._id || data?.createdBy].filter(Boolean) : [])
+    .filter((memberId) => String(memberId) !== selfMemberId);
 
   useEffect(() => {
-    if (returnedMeetingDraft?.date || returnedMeetingDraft?.time) return;
+    if (
+      isFollowUp ||
+      returnedMeetingDraft?.date ||
+      returnedMeetingDraft?.time
+    ) return;
     setTempDate({
-      date: data?.scheduleDate?.date ?? new Date(),
-      time: data?.scheduleDate?.time ?? new Date(),
+      date: sourceMeeting?.scheduleDate
+        ? new Date(sourceMeeting.scheduleDate)
+        : new Date(Date.now() + 5 * 60 * 1000),
+      time: sourceMeeting?.scheduleDate
+        ? new Date(sourceMeeting.scheduleDate)
+        : new Date(Date.now() + 5 * 60 * 1000),
     });
-  }, [data?.scheduleDate, returnedMeetingDraft]);
+  }, [sourceMeeting?.scheduleDate, returnedMeetingDraft, isFollowUp]);
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
@@ -141,7 +166,10 @@ const AddMeeting = () => {
     initialValues: {
       lead: returnedLead?._id ?? returnedMeetingDraft?.lead ?? data?.lead?._id ?? "",
       productPitch:
-        returnedMeetingDraft?.productPitch ?? data?.productPitch ?? "",
+        returnedMeetingDraft?.productPitch ??
+        sourceMeeting?.productPitch ??
+        data?.productPitch ??
+        "",
       clientAddress:
         returnedMeetingDraft?.clientAddress ?? data?.clientAddress ?? "",
       clientCity: returnedMeetingDraft?.clientCity ?? data?.clientCity ?? "",
@@ -149,28 +177,25 @@ const AddMeeting = () => {
         returnedMeetingDraft?.clientCountry ?? data?.clientCountry ?? "",
       meetingMode:
         returnedMeetingDraft?.meetingMode ||
-        data?.meetings?.[0]?.meetingMode ||
-        (data?.meetings?.[0]?.virtualMeetingLink ? "virtual" : "physical"),
+        sourceMeeting?.meetingMode ||
+        (sourceMeeting?.virtualMeetingLink ? "virtual" : "physical"),
       location:
-        returnedMeetingDraft?.location ??
-        (data?.meetings?.length > 0 ? data?.meetings[0]?.location : ""),
+        returnedMeetingDraft?.location ?? (sourceMeeting?.location || ""),
       virtualMeetingLink:
         returnedMeetingDraft?.virtualMeetingLink ??
-        (data?.meetings?.length > 0
-          ? (data?.meetings[0]?.virtualMeetingLink ?? "")
-          : ""),
+        (sourceMeeting?.virtualMeetingLink || ""),
       remarks:
-        returnedMeetingDraft?.remarks ??
-        (data?.meetings?.length > 0 ? data?.meetings[0]?.remarks : ""),
-      status: returnedMeetingDraft?.status ?? mappedMeetingStatus,
-      self: returnedMeetingDraft?.self ?? data?.self ?? true,
+        returnedMeetingDraft?.remarks ?? (sourceMeeting?.remarks || ""),
+      status: isUpdate ? sourceMeeting?.status : isFollowUp
+        ? "schedule"
+        : returnedMeetingDraft?.status ?? mappedMeetingStatus,
+      self:
+        returnedMeetingDraft?.self ?? sourceMeeting?.self ?? data?.self ?? true,
       agents: returnedMeetingDraft?.agents ?? defaultAgents,
-      scheduleDate: data?.scheduleDate ?? new Date(),
+      scheduleDate: sourceMeeting?.scheduleDate ?? new Date(),
       coordinates:
         returnedMeetingDraft?.coordinates ??
-        (data?.meetings?.length > 0
-          ? data?.meetings[0]?.coordinates
-          : { lat: null, lng: null }),
+        (sourceMeeting?.coordinates || { lat: null, lng: null }),
     },
     onSubmit: async (value) => {
       if (!tempDate?.date || !tempDate?.time) {
@@ -179,19 +204,55 @@ const AddMeeting = () => {
       }
 
       setDateTimeError("");
+      if (isUpdate && !meetingActions(data).edit) {
+        toast.error("This meeting is read-only. Refresh or ask an admin to review its history.");
+        return;
+      }
       setLoading(true);
-      let tempDa = `${tempDate?.date.toString().slice(0, 13)}${tempDate?.time
-        .toString()
-        .slice(13)}`;
       try {
+        if (memberQuery.isPending || memberQuery.error || !Array.isArray(memberQuery.data)) throw new Error(meetingMessage(memberQuery.error, "Supporting members are still loading. Please try again."));
+        const eligible = isUpdate ? null : await eligibility.refetch();
+        if (!isUpdate && (eligible?.error || (!eligible?.data?.allowed && !requestRef.current))) throw new Error(eligible?.data?.reason || meetingMessage(eligible?.error, "Unable to verify lead eligibility. Please try again."));
+        const self = isUpdate ? Boolean(sourceMeeting?.self) : eligible?.data?.self === true;
+        const responsible = isUpdate ? data?.responsibleUserId : eligible?.data?.responsible;
+        const tempDa = isUpdate ? sourceMeeting.scheduleDate : combineMeetingDate(tempDate.date, tempDate.time);
         let sendData = {
           ...values,
+          self,
+          members: meetingMembers(responsible, meetingSupportingMembers(responsible, values.agents, memberQuery.data)),
           scheduleDate: tempDa,
         };
-        if (isUpdate) {
+        const context = isUpdate || isFollowUp ? meetingVersion(data) : {};
+        if (!isUpdate && !eligible?.data?.allowed && requestRef.current?.signature !== JSON.stringify({ ...sendData, ...context })) throw new Error(eligible?.data?.reason || "Refresh lead eligibility before creating this meeting.");
+        const requestId = meetingRequestId(requestRef, { ...sendData, ...context });
+        if (isFollowUp) {
+          const res = await addMeetingEntry(data._id, {
+            ...meetingVersion(data),
+            requestId,
+            sourceEntryId: followUpSource._id,
+            scheduleDate: tempDa,
+            meetingMode: values.meetingMode,
+            location: values.location,
+            virtualMeetingLink: values.virtualMeetingLink,
+            remarks: values.remarks,
+            productPitch: values.productPitch,
+            coordinates: values.coordinates,
+            self,
+            members: sendData.members,
+          });
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: [queryKeyCRM.getMeetingById, data._id],
+            }),
+            queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getMeeting] }),
+          ]);
+          toast.success(res?.data?.message || "Meeting added successfully");
+          if (res?.data?.meetingId && String(res.data.meetingId) !== String(data._id)) navigate(routeMeeting.MeetingDetails, { item: { _id: res.data.meetingId } });
+          else goBack();
+        } else if (isUpdate) {
           let res = await updateMeeting({
             id: data?._id,
-            data: { ...sendData },
+            data: { ...sendData, status: sourceMeeting.status, ...meetingVersion(data) },
           });
           // myConsole("update", resUpdate?.data)
           // setIsVisible(true);
@@ -205,9 +266,9 @@ const AddMeeting = () => {
           });
           goBack();
           // navigate(routeMeeting.AllMeetings);
-          toast.success(res?.data);
+          toast.success(meetingSuccess(res, "Meeting updated"));
         } else {
-          let res = await addMeeting(sendData);
+          let res = await addMeeting({ ...sendData, requestId });
           // myConsole("resAddMeeting", res)
           // await setIsVisible(true);
           // await setMessage(res?.data);
@@ -215,15 +276,33 @@ const AddMeeting = () => {
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getMeeting],
           });
-          toast.success(res?.data);
+          toast.success(meetingSuccess(res, "Meeting saved"));
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getDashboardCount],
           });
           goBack();
           // await navigate(routeMeeting.AllMeetings);
         }
-      } catch (error) {
-        toast.error("Server error");
+      } catch (error: any) {
+        toast.error(meetingMessage(error));
+        if (isMeetingConflict(error)) {
+          // A definitive conflict is not an uncertain network response; it must
+          // not leave the retry exception enabling creation for a blocked lead.
+          if (!isUpdate) requestRef.current = null;
+          // A concurrent creation may win after eligibility was checked. Keep
+          // its existing-meeting link even if the subsequent refresh is offline.
+          if (!isUpdate && error?.response?.data?.meetingId) {
+            queryClient.setQueryData(["meetingEligibility", user?._id, values.lead], (previous: any) => ({
+              ...previous,
+              allowed: false,
+              reason: meetingMessage(error),
+              meetingId: error.response.data.meetingId,
+            }));
+          }
+          await queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getMeetingById, data?._id] });
+          await eligibility.refetch();
+          if (isUpdate || isFollowUp) goBack();
+        }
         console.log("errorrrrr", error);
         // setMessage(error?.response?.data);
         // setIsVisible(false);
@@ -232,6 +311,21 @@ const AddMeeting = () => {
       }
     },
   });
+  const eligibility = useMeetingEligibility(values.lead, user?._id, !isUpdate);
+  const existingMeeting = useExistingMeetingForLead(values.lead, user?._id, eligibility.data, !isUpdate);
+  const existingMeetingId = meetingId(eligibility.data?.meetingId || existingMeeting.data);
+  const memberQuery = useMeetingMemberOptions(user?._id);
+  useFocusEffect(useCallback(() => {
+    if (!isUpdate && values.lead) void eligibility.refetch({ cancelRefetch: false });
+  }, [isUpdate, values.lead, eligibility.refetch]));
+  const blockedEligibility = !isUpdate && eligibility.data?.allowed === false;
+  const submitDisabled = isLoading || memberQuery.isPending || !!memberQuery.error || !Array.isArray(memberQuery.data)
+    || (!isUpdate && (eligibility.isFetching || !!eligibility.error || (!eligibility.data?.allowed && !requestRef.current)));
+  const responsible = isUpdate ? data?.responsibleUserId : eligibility.data?.responsible;
+  const memberOptions = (memberQuery.data || []).filter((member: any) => meetingId(member) !== meetingId(responsible)).map((member: any) => ({ ...member, name: [member.name, member.lastName].filter(Boolean).join(" ") }));
+  useEffect(() => {
+    if (!isUpdate && typeof eligibility.data?.self === "boolean") void setFieldValue("self", eligibility.data.self);
+  }, [isUpdate, eligibility.data?.self, values.lead]);
 
   useEffect(() => {
     if (!returnedLead?._id) return;
@@ -309,7 +403,15 @@ const AddMeeting = () => {
 
   return (
     <>
-      <Header title={isUpdate ? "Update Meetings" : "Add Meetings"} />
+      <Header
+        title={
+          isFollowUp
+            ? "Add New Meeting"
+            : isUpdate
+              ? "Update Meetings"
+              : "Add Meetings"
+        }
+      />
       <Container>
         <ScrollViewWithKeyboardAvoid>
           <View style={{ padding: 20, paddingBottom: 120 }}>
@@ -389,7 +491,7 @@ const AddMeeting = () => {
               <IllusionBox
                 title="Lead"
                 value={leadDetail?.clientName || leadDetail?.name || ""}
-                onPress={() => setIsUpdateFrom(false)}
+                onPress={isFollowUp || isUpdate ? undefined : () => setIsUpdateFrom(false)}
               />
             )}
 
@@ -397,6 +499,33 @@ const AddMeeting = () => {
               <CustomText style={styles.errorText}>{errors?.lead}</CustomText>
             )}
 
+            {!isUpdate && Boolean(values.lead) && (blockedEligibility || eligibility.error || eligibility.isFetching) && (
+              <View accessibilityRole="alert" style={styles.eligibilityNotice}>
+                <View style={styles.eligibilityNoticeRow}>
+                  <Feather name="alert-triangle" size={18} color="#B45309" />
+                  <CustomText style={styles.eligibilityNoticeText}>
+                    {blockedEligibility
+                      ? eligibility.data?.reason || "This lead cannot have another meeting yet. Conduct or cancel its open meeting first."
+                      : eligibility.error
+                        ? meetingMessage(eligibility.error, "Unable to check meeting eligibility. Please retry.")
+                        : "Checking whether this lead can have a new meeting…"}
+                  </CustomText>
+                </View>
+                {blockedEligibility && !!existingMeetingId && (
+                  <Pressable accessibilityRole="button" accessibilityLabel="Open existing meeting" onPress={() => { if (!openExistingMeeting(navigation, existingMeetingId)) toast.error("Meeting details are not available in your current navigation. Please check Meeting access."); }} style={styles.existingMeetingButton}>
+                    <Feather name="external-link" size={15} color="#92400E" />
+                    <CustomText style={styles.existingMeetingText}>Open existing meeting</CustomText>
+                  </Pressable>
+                )}
+                {blockedEligibility && !eligibility.data?.meetingId && existingMeeting.isFetching && <CustomText style={styles.eligibilityNoticeText}>Finding the existing meeting…</CustomText>}
+                {blockedEligibility && !!existingMeeting.error && <Pressable accessibilityRole="button" accessibilityLabel="Retry finding existing meeting" onPress={() => existingMeeting.refetch()} style={styles.existingMeetingButton}><CustomText style={styles.existingMeetingText}>Unable to load the existing meeting. Tap to retry.</CustomText></Pressable>}
+                {!!eligibility.error && <Pressable accessibilityRole="button" accessibilityLabel="Retry eligibility check" onPress={() => eligibility.refetch()} style={styles.existingMeetingButton}><CustomText style={styles.existingMeetingText}>Retry eligibility check</CustomText></Pressable>}
+              </View>
+            )}
+
+            {isFollowUp || isUpdate ? (
+              <IllusionBox title="Status" value={isFollowUp ? "Meeting Scheduled" : sourceMeeting?.status} onPress={undefined} />
+            ) : (
             <DropdownRNE
               label="Status *"
               placeholder="Status"
@@ -418,6 +547,7 @@ const AddMeeting = () => {
               onChange={(a) => setFieldValue("status", a)}
               initialValue={values?.status}
             />
+            )}
             {errors.status && touched.status && (
               <CustomText style={styles.errorText}>{errors.status}</CustomText>
             )}
@@ -593,7 +723,7 @@ const AddMeeting = () => {
             <CustomText style={styles.requiredLabel}>
               Meeting Date & Time *
             </CustomText>
-            <View
+            {isUpdate ? <IllusionBox title="Meeting Date & Time" value={moment(sourceMeeting?.scheduleDate).format("DD MMM YYYY, hh:mm A")} onPress={undefined} /> : <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
@@ -611,7 +741,8 @@ const AddMeeting = () => {
                   }))
                 }
                 initialValue={tempDate?.date}
-                minimumDate={new Date()} // ⛔ past dates blocked
+                minimumDate={values.status === "conducted" ? undefined : new Date()}
+                maximumDate={values.status === "conducted" ? new Date() : undefined}
               />
 
               <DatePickerExpo
@@ -620,51 +751,39 @@ const AddMeeting = () => {
                 onSelect={(time) => setTempDate((prev) => ({ ...prev, time }))}
                 initialValue={tempDate?.time}
                 mode="time"
-                minimumDate={isTodaySelected ? new Date() : undefined} // ⛔ past time blocked
+                minimumDate={values.status !== "conducted" && isTodaySelected ? new Date() : undefined}
               />
-            </View>
+            </View>}
             {dateTimeError ? (
               <CustomText style={styles.dateTimeError}>
                 {dateTimeError}
               </CustomText>
             ) : null}
-            <View style={styles.selfRow}>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <CustomText style={styles.requiredLabel}>
-                  Self meeting
-                </CustomText>
-                {/* <CustomText style={styles.selfHint}>
-                  Members are optional when Self is on.
-                </CustomText> */}
-              </View>
-              <Switch
-                value={Boolean(values.self)}
-                onValueChange={(value) => setFieldValue("self", value)}
-                trackColor={{ false: "#CBD5E1", true: "#93B9F8" }}
-                thumbColor={values.self ? "#2E67BE" : "#FFFFFF"}
-              />
-            </View>
+            <CustomText style={{ color: "#64748B", marginBottom: 12 }}>{responsible ? `Responsible: ${[responsible.name, responsible.lastName].filter(Boolean).join(" ") || meetingId(responsible)} (always included)` : "Select a lead to verify responsibility."}</CustomText>
+            {!!memberQuery.error && <CustomText color="#B91C1C">{meetingMessage(memberQuery.error, "Unable to load supporting members")}</CustomText>}
+            {!!memberQuery.error && <Pressable accessibilityRole="button" onPress={() => memberQuery.refetch()} style={{ paddingVertical: 12 }}><CustomText color="#2E67BE">Retry loading members</CustomText></Pressable>}
             <DropdownRNE
               arrOfObj={memberOptions}
               isMultiSelect={true}
               keyValueShowInBox="name"
               keyValueGetOnSelect="_id"
-              label={`Members${values.self ? " (Optional)" : " *"}`}
-              keyName="agent"
+              label="Supporting members (Optional)"
               placeholder={"Select members"}
               containerStyle={{ marginBottom: 15 }}
-              onChange={(a) => setFieldValue("agents", a)}
-              initialValue={values?.agents}
+              onChange={(a) => setFieldValue("agents", meetingSupportingMembers(responsible, a as any[], memberQuery.data || []))}
+              initialValue={meetingSupportingMembers(responsible, values.agents, memberQuery.data || [])}
+              disabled={memberQuery.isPending || !!memberQuery.error}
               isSearch
               mode="modal"
-              excludedItems={user?._id ? [user._id] : []}
+              excludedItems={[meetingId(responsible)]}
             />
             {errors.agents && touched.agents && (
               <CustomText style={styles.errorText}>{errors.agents}</CustomText>
             )}
             <CustomBtn
               title="Submit"
-              onPress={handleSubmit}
+              disabled={submitDisabled}
+              onPress={() => { if (!isLoading && (isUpdate || eligibility.data?.allowed || requestRef.current)) handleSubmit(); else if (!isLoading) toast.error(eligibility.data?.reason || "Wait for lead eligibility to load."); }}
               containerStyle={{ margin: 20 }}
               isLoading={isLoading}
             />
@@ -682,6 +801,11 @@ const AddMeeting = () => {
 };
 
 const styles = StyleSheet.create({
+  eligibilityNotice: { padding: 12, marginBottom: 16, borderRadius: 10, borderWidth: 1, borderColor: "#FDE3B8", backgroundColor: "#FFF7EB", gap: 8 },
+  eligibilityNoticeRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  eligibilityNoticeText: { flex: 1, fontSize: 12, lineHeight: 18, color: "#92400E" },
+  existingMeetingButton: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 10, paddingHorizontal: 8, minHeight: 44 },
+  existingMeetingText: { fontSize: 12, fontWeight: "600", color: "#92400E" },
   addLeadLink: {
     alignSelf: "flex-start",
     flexDirection: "row",

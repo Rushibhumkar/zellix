@@ -45,7 +45,7 @@ const DashbordHeader = () => {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      void logOut(user?._id).catch(() => {});
+      await logOut(user?._id);
       await queryClient.clear();
       await removeItemValue("token");
       await removeItemValue("userDetail");

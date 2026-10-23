@@ -39,7 +39,7 @@ const SettingHRM = () => {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      void logOut(user?._id).catch(() => {});
+      await logOut(user?._id);
       // console.log('aLogOut', a)
       await queryClient.clear();
       await removeItemValue("token");

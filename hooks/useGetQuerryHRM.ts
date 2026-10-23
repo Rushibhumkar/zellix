@@ -114,7 +114,7 @@ export const useGetAvailableRoles = ({ id }) => {
 //2.Leave
 export const useGetAllLeave = ({ search, startDate, endDate }) => {
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getAllLeave", search],
+    queryKey: ["getAllLeave", search, startDate, endDate],
     queryFn: ({ pageParam }) =>
       getAllLeave({ search, pageParam, startDate, endDate }),
     getNextPageParam: (lastPage, allPages) => {
@@ -184,11 +184,11 @@ export const useGetMeetingForCheckInOut = () => {
 };
 
 //4.Attendance
-export const useGetAllAttendance = ({ search, startDate, endDate }) => {
+export const useGetAllAttendance = ({ search, startDate, endDate, userId = "" }) => {
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getAllAttendance", search, startDate, endDate],
+    queryKey: ["getAllAttendance", userId, search, startDate, endDate],
     queryFn: ({ pageParam }) =>
-      getAllAttendance({ search, pageParam, startDate, endDate }),
+      getAllAttendance({ search, pageParam, startDate, endDate, userId }),
     getNextPageParam: (lastPage, allPages) => {
       // console.log('lastPage?.pagination', lastPage?.pagination)
       return lastPage?.pagination?.isNextPage
@@ -228,15 +228,15 @@ export const useGetSingleUserAttList = ({
 };
 //issue
 
-export const useGetIssueAttendance = () => {
+export const useGetIssueAttendance = ({ userId = "" } = {}) => {
   // return useQuery({
   //     queryKey: ['getIssueAttendance'],
   //     queryFn: getDashboardAttendance,
   //     staleTime: Infinity,
   // })
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getIssueAttendance"],
-    queryFn: ({ pageParam }) => getIssueAttendance({ pageParam }),
+    queryKey: ["getIssueAttendance", userId],
+    queryFn: ({ pageParam }) => getIssueAttendance({ pageParam, userId }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.isNextPage
         ? parseInt(lastPage.pagination.currentPage) + 1

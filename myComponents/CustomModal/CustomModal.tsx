@@ -1,5 +1,6 @@
 import {
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -20,6 +21,7 @@ interface TCustomModal {
   hasBackdrop?: boolean;
   modalStyle?: StyleProp<ViewStyle>;
   minHeightPercent?: number;
+  avoidKeyboard?: boolean;
 }
 
 const { height } = Dimensions.get("window");
@@ -31,6 +33,7 @@ const CustomModal = ({
   hasBackdrop,
   modalStyle,
   minHeightPercent,
+  avoidKeyboard = false,
 }: TCustomModal) => {
   const translateY = useRef(new Animated.Value(height)).current;
 
@@ -104,11 +107,16 @@ const CustomModal = ({
       onRequestClose={closeModal}
     >
       <TouchableWithoutFeedback onPress={handleBackdropPress}>
-        <View style={styles.overlay}>
+        <KeyboardAvoidingView
+          style={styles.overlay}
+          enabled={avoidKeyboard}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <TouchableWithoutFeedback>
             <Animated.View
               style={[
                 styles.bottomSheet,
+                avoidKeyboard && { flexShrink: 1 },
                 {
                   transform: [{ translateY }],
                   ...(minHeightPercent && {
@@ -129,7 +137,7 @@ const CustomModal = ({
               {children}
             </Animated.View>
           </TouchableWithoutFeedback>
-        </View>
+        </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </Modal>
   );

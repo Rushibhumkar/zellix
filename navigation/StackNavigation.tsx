@@ -4,6 +4,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
+import { consumeMeetingNotification, pendingMeetingNotification, subscribeMeetingNotification } from "../utils/meetingNotification";
 import { Platform, StyleSheet } from "react-native";
 
 /***** Auth ********/
@@ -58,9 +59,9 @@ import NoInternet from "../screens/NoInternet/NoInternet";
 import SplashScreen from "../screens/SplashScreen/SplashScreen";
 import AdvanceSearch from "../screens/AdvanceSearch/AdvanceSearch";
 import MeetingReschedule from "../screens/Meetings/MeetingReschedule";
-import { getDataJson } from "../hooks/useAsyncStorage";
-import { useSelector } from "react-redux";
-import { selectUser } from "../redux/userSlice";
+import { getData, getDataJson } from "../hooks/useAsyncStorage";
+import { useSelector, useStore } from "react-redux";
+import { selectUser, setUserInfo } from "../redux/userSlice";
 import { HRManagementStack } from "./HRManagementStack";
 import SettingHRM from "../screensHRM/NotificationAndSetting/SettingHRM";
 import NotificationHRM from "../screensHRM/NotificationAndSetting/NotificationHRM";
@@ -121,7 +122,33 @@ export const navigate = (name, params) => {
 };
 
 const BottomTabs = () => {
+  const [pendingMeeting, setPendingMeeting] = useState(pendingMeetingNotification);
+  useEffect(() => subscribeMeetingNotification(() => setPendingMeeting(pendingMeetingNotification())), []);
   const { user } = useSelector(selectUser);
+  const reduxStore = useStore();
+
+  useEffect(() => {
+    if (user?._id) return;
+    let cancelled = false;
+
+    const hydrateStoredUser = async () => {
+      const token = await getData("token");
+      if (!token || token === "null" || token === "undefined") return;
+      const storedUser = await getDataJson("userDetail");
+      if (!storedUser?._id) return;
+
+      // A logout/account switch or Dashboard hydration may finish while the
+      // storage reads are pending. Never restore an old session over it.
+      const currentToken = await getData("token");
+      if (!cancelled && currentToken === token && !selectUser(reduxStore.getState())?.user?._id) {
+        reduxStore.dispatch(setUserInfo(storedUser));
+      }
+    };
+
+    hydrateStoredUser().catch(() => console.warn("Unable to restore stored user for tabs"));
+    return () => { cancelled = true; };
+  }, [user?._id, reduxStore]);
+
   const isAgent = user?.role === "agent";
   const insets = useSafeAreaInsets();
   const { data: permission = {} } = useGetUserPermission(user?._id);
@@ -138,6 +165,18 @@ const BottomTabs = () => {
     "sidebar",
     user?.role,
   );
+  useEffect(() => {
+    if (!pendingMeeting || !user?._id || !canViewMeetings) return;
+    const open = () => {
+      if (!navigationRef.isReady()) return false;
+      consumeMeetingNotification(pendingMeeting);
+      navigate("Dashboard", { screen: "MeetingsNavigator", params: { screen: "MeetingDetails", params: { item: { _id: pendingMeeting } } } });
+      setPendingMeeting(null);
+      return true;
+    };
+    const timer = setInterval(() => { if (open()) clearInterval(timer); }, 100);
+    return () => clearInterval(timer);
+  }, [pendingMeeting, user?._id, canViewMeetings]);
 
   return (
     <Tab.Navigator

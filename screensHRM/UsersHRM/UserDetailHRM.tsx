@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+import DeviceSessionsCard from "./components/DeviceSessionsCard";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { myConsole } from "../../hooks/useConsole";
@@ -49,6 +50,9 @@ const UserDetailHRM = () => {
   const paramsData = params?.item;
   const queryClient = useQueryClient();
   const { user } = useSelector(selectUser);
+  const canViewDevices = [roleEnum.sup_admin, roleEnum.sub_admin].includes(user?.role);
+  const [detailsTab, setDetailsTab] = useState<"personal" | "devices">("personal");
+  useEffect(() => { setDetailsTab("personal"); }, [paramsData?._id, paramsData?.dataId, canViewDevices]);
 
   const [isPoolRestrict, setIsPoolRestrict] = useState(
     params?.item?.isPoolRestrict,
@@ -104,7 +108,7 @@ const UserDetailHRM = () => {
           if (el?.key === "name") {
             return {
               ...el,
-              value: `${data?.name} ${data?.lastName}`,
+              value: [data?.name, data?.lastName].filter(Boolean).join(" "),
             };
           }
           if (el?.key === "activeStatus") {
@@ -347,8 +351,22 @@ const UserDetailHRM = () => {
           }),
       }}
       isLoading={isLoading}
+      childStyle={{ flex: 1, height: undefined }}
     >
       <View style={styles.container}>
+        {canViewDevices && <View style={styles.detailsTabs} accessibilityRole="tablist">
+          {(["personal", "devices"] as const).map((tab) => <TouchableOpacity
+            key={tab}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: detailsTab === tab }}
+            onPress={() => setDetailsTab(tab)}
+            style={[styles.detailsTab, detailsTab === tab && styles.detailsTabSelected]}
+          >
+            <Feather name={tab === "personal" ? "user" : "smartphone"} size={17} color={detailsTab === tab ? "#fff" : "#64748B"} />
+            <CustomText style={[styles.detailsTabText, detailsTab === tab && { color: "#fff" }]}>{tab === "personal" ? "Personal Details" : "Devices"}</CustomText>
+          </TouchableOpacity>)}
+        </View>}
+        {canViewDevices && detailsTab === "devices" ? <DeviceSessionsCard key={targetUserId} userId={targetUserId} /> : <>
         {/* TOP ACTION CARD */}
         <View style={styles.topCard}>
           {canManageAccount && (
@@ -467,7 +485,7 @@ const UserDetailHRM = () => {
 
             const isDevices = item?.key === "devices";
 
-            if (isDevices && (!isSubSup || item?.value?.length === 0)) {
+            if (isDevices) {
               return null;
             }
 
@@ -575,6 +593,7 @@ const UserDetailHRM = () => {
         />
 
         {/* MODAL */}
+        </>}
         <ModalWithBlur visible={openModal?.open}>
           <LeadPoolRestriction
             heading="Lead Pool Restriction"
@@ -628,6 +647,10 @@ const UserDetailHRM = () => {
 export default UserDetailHRM;
 
 const styles = StyleSheet.create({
+  detailsTabs: { flexDirection: "row", backgroundColor: "#EEF3FA", borderRadius: 14, padding: 4, marginHorizontal: 16, marginTop: 16, gap: 4 },
+  detailsTab: { flex: 1, minHeight: 44, paddingHorizontal: 10, borderRadius: 11, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 7 },
+  detailsTabSelected: { backgroundColor: "#2E67BE" },
+  detailsTabText: { fontSize: 13, fontWeight: "600", color: "#64748B" },
   accountSection: {
     paddingBottom: 18,
     marginBottom: 18,

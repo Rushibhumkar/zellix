@@ -1,6 +1,12 @@
 import { useAppToast } from "../components/AppToast";
 
-export const checkPermission = (perm, module, task, userRole) => {
+export const checkPermission = (
+  perm: Record<string, any> = {},
+  module: string,
+  task: string,
+  userRole?: string,
+): boolean => {
+  if (userRole === "agent" && module === "HrmsDashboard") return false;
   return (
     userRole === "sup_admin" ||
     userRole === "developer" ||

@@ -1,5 +1,6 @@
 import {
   CommonActions,
+  useIsFocused,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
@@ -8,6 +9,8 @@ import * as Linking from "expo-linking";
 import * as MailComposer from "expo-mail-composer";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
+import { useCallUiGuard } from "../../hooks/useCallUiGuard";
+import { useAndroidCallModalReady } from "../../hooks/useAndroidCallModalReady";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -177,6 +180,8 @@ const combineDateAndTime = (dateStr, timeStr) => {
 };
 
 const LeadsDetails = () => {
+  const focused = useIsFocused();
+  const callModalReady = useAndroidCallModalReady(focused);
   const queryClient = useQueryClient();
   const toast = useAppToast();
   const navigation = useNavigation();
@@ -220,6 +225,10 @@ const LeadsDetails = () => {
     endTime: number;
   } | null>(null);
   const isResumingRef = useRef(false);
+  const isHandlingResumeAlertRef = useRef(false);
+  const resumeModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const callReturnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dialerCancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -319,6 +328,12 @@ const LeadsDetails = () => {
   });
 
   const FUTModal = useModal();
+  const { beginCallUi, endCallUi } = useCallUiGuard(
+    showChangeStatusPopup ||
+      FUTModal.visible ||
+      showDurationEditor ||
+      showCelebration,
+  );
 
   const isLeadEdit =
     (user?.role === roleEnum?.sup_admin ||
@@ -426,7 +441,9 @@ const LeadsDetails = () => {
   }, []);
 
   const navToCall = async () => {
+    if (isDialerOpenedRef.current || isCallTrackingRef.current) return;
     try {
+      beginCallUi();
       // Arm the AppState listener before opening iOS' native Call/Cancel
       // prompt. A real call can background the app before this promise
       // continuation gets a chance to run.
@@ -439,11 +456,14 @@ const LeadsDetails = () => {
       dialRequestAcceptedRef.current = true;
 
       if (callStartTimeRef.current) {
-        await storeData(PENDING_CALL_KEY_LEAD, JSON.stringify({
-          leadId: detail?._id,
-          initiatedAt: callStartTimeRef.current,
-          confirmation: CONFIRMED_CALL_MARKER,
-        }));
+        await storeData(
+          PENDING_CALL_KEY_LEAD,
+          JSON.stringify({
+            leadId: detail?._id,
+            initiatedAt: callStartTimeRef.current,
+            confirmation: CONFIRMED_CALL_MARKER,
+          }),
+        );
       }
 
       await dispatch(
@@ -452,8 +472,17 @@ const LeadsDetails = () => {
           leadId: detail?._id,
         }),
       );
-
     } catch (err) {
+      endCallUi();
+      if (callReturnTimerRef.current) {
+        clearTimeout(callReturnTimerRef.current);
+        callReturnTimerRef.current = null;
+      }
+      isCallTrackingRef.current = false;
+      callStartTimeRef.current = null;
+      setIsCallTracking(false);
+      setCallStartTime(null);
+      setCallMeta(null);
       dialRequestAcceptedRef.current = false;
       setIsDialerOpened(false);
       isDialerOpenedRef.current = false;
@@ -472,6 +501,7 @@ const LeadsDetails = () => {
     );
 
     if (isIgnoredCallDuration(diffSec)) {
+      endCallUi();
       pendingResumeRef.current = null;
       setShowDurationEditor(false);
       setShowChangeStatusPopup(false);
@@ -481,6 +511,7 @@ const LeadsDetails = () => {
     }
 
     if (diffSec > DURATION_THRESHOLD_SEC) {
+      endCallUi();
       // Calls longer than 20 minutes are not reliable enough to log. Do not
       // show a status/duration modal or create a call log for them.
       pendingResumeRef.current = null;
@@ -535,7 +566,7 @@ const LeadsDetails = () => {
   };
 
   const resumePendingCallIfAny = async () => {
-    if (isResumingRef.current) return;
+    if (isResumingRef.current || isHandlingResumeAlertRef.current) return;
 
     const pending = await getDataJson(PENDING_CALL_KEY_LEAD);
     if (!pending) return;
@@ -549,6 +580,7 @@ const LeadsDetails = () => {
     if (pending?.leadId && pending.leadId !== detail?._id) return;
 
     isResumingRef.current = true;
+    beginCallUi();
     const endTime = Date.now();
 
     await removeItemValue(PENDING_CALL_KEY_LEAD);
@@ -567,6 +599,7 @@ const LeadsDetails = () => {
       setIsStatusPopupFromCall(false);
       setCallMeta(null);
       isResumingRef.current = false;
+      endCallUi();
       return;
     }
 
@@ -577,6 +610,7 @@ const LeadsDetails = () => {
       setIsStatusPopupFromCall(false);
       setCallMeta(null);
       isResumingRef.current = false;
+      endCallUi();
       return;
     }
     const initiatedDate = new Date(pending.initiatedAt);
@@ -596,6 +630,15 @@ const LeadsDetails = () => {
     const leadName = detail?.clientName || "N/A";
     const leadMobile = detail?.clientMobile || "N/A";
 
+    // Android alerts change AppState too; do not run a second call-return flow.
+    isHandlingResumeAlertRef.current = true;
+    isCallTrackingRef.current = false;
+    isDialerOpenedRef.current = false;
+    callStartTimeRef.current = null;
+    setIsCallTracking(false);
+    setIsDialerOpened(false);
+    setCallStartTime(null);
+
     Alert.alert(
       "Missed Call Log",
       `Lead: ${leadName}\nMobile: ${leadMobile}\n\nA call was initiated at ${formattedDateTime}.\n\nPlease log this call to update your call records.`,
@@ -603,13 +646,12 @@ const LeadsDetails = () => {
         {
           text: "OK",
           onPress: () => {
-            setIsStatusPopupFromCall(true);
-            setCallMeta({
-              initiatedAt: pending.initiatedAt,
-              finishedAt: endTime,
-            });
-            setShowChangeStatusPopup(true);
-            isResumingRef.current = false;
+            resumeModalTimerRef.current = setTimeout(() => {
+              resumeModalTimerRef.current = null;
+              isHandlingResumeAlertRef.current = false;
+              isResumingRef.current = false;
+              handleCallEnd(pending.initiatedAt, endTime);
+            }, 300);
           },
         },
       ],
@@ -620,7 +662,7 @@ const LeadsDetails = () => {
   useEffect(() => {
     //console.log("🟢 AppState Listener Mounted");
 
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
+    const onCallAppStateChange = (nextAppState: string) => {
       // console.log("━━━━━━━━━━━━━━━━━━━━━━");
       // console.log("📱 AppState Changed");
       // console.log("Previous State =>", appState.current);
@@ -632,12 +674,13 @@ const LeadsDetails = () => {
       // After the user presses Call, iOS can emit a transient `active` state
       // before it backgrounds the app. Keep the dial intent armed during this
       // hand-off; only a stable active state means that the prompt was closed.
-      if (
-        nextAppState !== "active"
-        && dialerCancelTimerRef.current
-      ) {
+      if (nextAppState !== "active" && dialerCancelTimerRef.current) {
         clearTimeout(dialerCancelTimerRef.current);
         dialerCancelTimerRef.current = null;
+      }
+      if (nextAppState !== "active" && callReturnTimerRef.current) {
+        clearTimeout(callReturnTimerRef.current);
+        callReturnTimerRef.current = null;
       }
 
       // App moved to background AFTER user clicked CALL
@@ -664,11 +707,14 @@ const LeadsDetails = () => {
         // Persist on the real background transition. iOS can suspend the JS
         // continuation of Linking.openURL while the phone call is active, so
         // waiting for that continuation would lose killed-app call recovery.
-        storeData(PENDING_CALL_KEY_LEAD, JSON.stringify({
-          leadId: detail?._id,
-          initiatedAt: startTime,
-          confirmation: CONFIRMED_CALL_MARKER,
-        })).catch((error) => console.log("Pending lead call save error", error));
+        storeData(
+          PENDING_CALL_KEY_LEAD,
+          JSON.stringify({
+            leadId: detail?._id,
+            initiatedAt: startTime,
+            confirmation: CONFIRMED_CALL_MARKER,
+          }),
+        ).catch((error) => console.log("Pending lead call save error", error));
 
         setIsDialerOpened(false);
 
@@ -682,52 +728,59 @@ const LeadsDetails = () => {
 
       // User returned to app
       // User returned to app
-      if (appState.current === "background" && nextAppState === "active") {
+      if (appState.current !== "active" && nextAppState === "active") {
         console.log("🟡 APP RETURNED TO FOREGROUND");
         if (callStartTimeRef.current && isCallTrackingRef.current) {
           const endTime = Date.now();
-
-          setCallMeta((prev) =>
-            prev ? { ...prev, finishedAt: endTime } : null,
-          );
 
           const initiatedAt = callStartTimeRef.current;
           if (callReturnTimerRef.current) {
             clearTimeout(callReturnTimerRef.current);
           }
-          callReturnTimerRef.current = setTimeout(() => {
-            callReturnTimerRef.current = null;
+          callReturnTimerRef.current = setTimeout(
+            () => {
+              callReturnTimerRef.current = null;
+              // A second dialer/notification transition can interrupt the delay.
+              // Retain tracking/pending data until a subsequent stable return.
+              if (
+                AppState.currentState !== "active" ||
+                appState.current !== "active"
+              )
+                return;
 
-            // The Call/Cancel prompt can briefly change AppState. Only finish
-            // the flow after Linking confirms that the dial request returned
-            // successfully; otherwise discard the candidate call.
-            if (!dialRequestAcceptedRef.current) {
-              setCallMeta(null);
+              // The Call/Cancel prompt can briefly change AppState. Only finish
+              // the flow after Linking confirms that the dial request returned
+              // successfully; otherwise discard the candidate call.
+              if (!dialRequestAcceptedRef.current) {
+                setCallMeta(null);
+                setCallStartTime(null);
+                setIsCallTracking(false);
+                isCallTrackingRef.current = false;
+                callStartTimeRef.current = null;
+                removeItemValue(PENDING_CALL_KEY_LEAD);
+                dispatch(setCallDetect({ isCall: false, leadId: null }));
+                endCallUi();
+                return;
+              }
+
+              removeItemValue(PENDING_CALL_KEY_LEAD);
+              handleCallEnd(initiatedAt, endTime);
               setCallStartTime(null);
               setIsCallTracking(false);
               isCallTrackingRef.current = false;
               callStartTimeRef.current = null;
-              removeItemValue(PENDING_CALL_KEY_LEAD);
+              dialRequestAcceptedRef.current = false;
               dispatch(setCallDetect({ isCall: false, leadId: null }));
-              return;
-            }
-
-            removeItemValue(PENDING_CALL_KEY_LEAD);
-            handleCallEnd(initiatedAt, endTime);
-            setCallStartTime(null);
-            setIsCallTracking(false);
-            isCallTrackingRef.current = false;
-            callStartTimeRef.current = null;
-            dialRequestAcceptedRef.current = false;
-            dispatch(setCallDetect({ isCall: false, leadId: null }));
-          }, 350);
+            },
+            Platform.OS === "android" ? 600 : 350,
+          );
         }
       }
 
       if (
-        nextAppState === "active"
-        && isDialerOpenedRef.current
-        && !isCallTrackingRef.current
+        nextAppState === "active" &&
+        isDialerOpenedRef.current &&
+        !isCallTrackingRef.current
       ) {
         if (dialerCancelTimerRef.current) {
           clearTimeout(dialerCancelTimerRef.current);
@@ -735,9 +788,9 @@ const LeadsDetails = () => {
         dialerCancelTimerRef.current = setTimeout(() => {
           dialerCancelTimerRef.current = null;
           if (
-            appState.current !== "active"
-            || !isDialerOpenedRef.current
-            || isCallTrackingRef.current
+            appState.current !== "active" ||
+            !isDialerOpenedRef.current ||
+            isCallTrackingRef.current
           ) {
             return;
           }
@@ -747,11 +800,16 @@ const LeadsDetails = () => {
           dialRequestAcceptedRef.current = false;
           removeItemValue(PENDING_CALL_KEY_LEAD);
           dispatch(setCallDetect({ isCall: false, leadId: null }));
+          endCallUi();
         }, 750);
       }
 
       appState.current = nextAppState;
-    });
+    };
+    const subscription = AppState.addEventListener(
+      "change",
+      onCallAppStateChange,
+    );
 
     return () => {
       console.log("🔴 AppState Listener Removed");
@@ -766,7 +824,15 @@ const LeadsDetails = () => {
         dialerCancelTimerRef.current = null;
       }
     };
-  }, [callStartTime, isCallTracking, isDialerOpened]);
+  }, [detail?._id, endCallUi]);
+
+  useEffect(
+    () => () => {
+      if (resumeModalTimerRef.current)
+        clearTimeout(resumeModalTimerRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!shouldTriggerCall) {
@@ -1079,7 +1145,8 @@ const LeadsDetails = () => {
       toast.success(res?.data?.message || "Status updated successfully");
 
       const celebrationStatusAfterUpdate =
-        fields.status === "meeting_scheduled" || fields.status === "meeting_done"
+        fields.status === "meeting_scheduled" ||
+        fields.status === "meeting_done"
           ? fields.status
           : null;
 
@@ -1265,8 +1332,11 @@ const LeadsDetails = () => {
   useEffect(() => {
     if (showChangeStatusPopup) {
       setShowActionsMenu(false);
+      // The visible-UI layout lease is already acquired before releasing the
+      // dial intent lease, so a due reminder cannot race this modal hand-off.
+      endCallUi();
     }
-  }, [showChangeStatusPopup]);
+  }, [showChangeStatusPopup, endCallUi]);
 
   useEffect(() => {
     return () => {
@@ -1411,14 +1481,36 @@ const LeadsDetails = () => {
           {Array.isArray(detail?.folders) && detail.folders.length > 0 && (
             <View style={styles.folderSection}>
               <CustomText style={styles.folderSectionTitle}>Folders</CustomText>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.folderScrollContent}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.folderScrollContent}
+              >
                 {detail.folders.map((folder: any) => {
                   const folderColor = folder?.color || "#2E67BE";
-                  const folderName = String(folder?.name || "Untitled folder").trim() || "Untitled folder";
+                  const folderName =
+                    String(folder?.name || "Untitled folder").trim() ||
+                    "Untitled folder";
                   return (
-                    <View key={folder?._id || folderName} style={[styles.folderChip, { borderColor: `${folderColor}66` }]}>
-                      <View style={[styles.folderChipDot, { backgroundColor: folderColor }]} />
-                      <CustomText numberOfLines={1} style={styles.folderChipText}>{folderName}</CustomText>
+                    <View
+                      key={folder?._id || folderName}
+                      style={[
+                        styles.folderChip,
+                        { borderColor: `${folderColor}66` },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.folderChipDot,
+                          { backgroundColor: folderColor },
+                        ]}
+                      />
+                      <CustomText
+                        numberOfLines={1}
+                        style={styles.folderChipText}
+                      >
+                        {folderName}
+                      </CustomText>
                     </View>
                   );
                 })}
@@ -1556,24 +1648,25 @@ const LeadsDetails = () => {
           </ModalWithBlur>
 
           {/* <---------------- Change Status popup -------------> */}
-          <ModalWithBlur
-            visible={showChangeStatusPopup}
-            onClose={
-              // ✅ canShowCancelBtn sirf call ke baad apply hoga
-              isStatusPopupFromCall && !canShowCancelBtn
-                ? undefined
-                : () => {
-                    setShowChangeStatusPopup(false);
-                    hitCreateCallLog();
-                    FUTModal.closeModal();
-                  }
-            }
-            minHeight={"55%"}
-          >
-            <View style={styles.modalContent}>
-              <CustomText style={styles.title}>Change Status</CustomText>
+          {callModalReady && showChangeStatusPopup && (
+            <ModalWithBlur
+              visible={showChangeStatusPopup}
+              onClose={
+                // ✅ canShowCancelBtn sirf call ke baad apply hoga
+                isStatusPopupFromCall && !canShowCancelBtn
+                  ? undefined
+                  : () => {
+                      setShowChangeStatusPopup(false);
+                      hitCreateCallLog();
+                      FUTModal.closeModal();
+                    }
+              }
+              minHeight={"55%"}
+            >
+              <View style={styles.modalContent}>
+                <CustomText style={styles.title}>Change Status</CustomText>
 
-              {/* <TouchableOpacity
+                {/* <TouchableOpacity
                 style={{
                   position: "absolute",
                   top: 0,
@@ -1588,171 +1681,177 @@ const LeadsDetails = () => {
                 <AntDesign name="close" size={22} color={color.mainTxtColor} />
               </TouchableOpacity> */}
 
-              <DropdownRNE
-                placeholder="Select Status"
-                arrOfObj={filteredLeadStatus}
-                keyValueGetOnSelect="_id"
-                keyValueShowInBox="name"
-                initialValue={fields?.status}
-                onChange={(v) => onChange("status", v)}
-                mode="auto"
-                dropdownStyle={{ height: 45 }}
-                disabledItems={["claimed", "assign", "re_assigned"]}
-              />
-              {!!fields?.status && fields?.status !== "claimed" && (
-                <>
-                  <View style={{ marginTop: 15 }}>
-                    <CustomText style={styles.label}>
-                      Follow Up Time{" "}
-                      {fields?.status &&
-                        FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) && (
-                          <CustomText style={{ color: "red" }}> *</CustomText>
-                        )}
-                    </CustomText>
-
-                    <TouchableOpacity
-                      onPress={() => {
-                        FUTModal.openModal();
-                      }}
-                      style={{
-                        borderWidth: 1,
-                        borderColor: color.borderColor,
-                        borderRadius: 12,
-                        padding: 12,
-                        marginTop: 6,
-                      }}
-                    >
-                      <CustomText style={{ color: color.mainTxtColor }}>
-                        {tdForFUT?.date && tdForFUT?.time
-                          ? formatDateTime(tdForFUT.date, tdForFUT.time)
-                          : "Select Date & Time"}
-                      </CustomText>
-                    </TouchableOpacity>
-                  </View>
-                  <CustomInput
-                    label={
-                      <>
-                        Notes
+                <DropdownRNE
+                  placeholder="Select Status"
+                  arrOfObj={filteredLeadStatus}
+                  keyValueGetOnSelect="_id"
+                  keyValueShowInBox="name"
+                  initialValue={fields?.status}
+                  onChange={(v) => onChange("status", v)}
+                  mode="auto"
+                  dropdownStyle={{ height: 45 }}
+                  disabledItems={["claimed", "assign", "re_assigned"]}
+                />
+                {!!fields?.status && fields?.status !== "claimed" && (
+                  <>
+                    <View style={{ marginTop: 15 }}>
+                      <CustomText style={styles.label}>
+                        Follow Up Time{" "}
                         {fields?.status &&
-                          NOTE_REQUIRED_STATUSES.includes(fields.status) && (
+                          FOLLOWUP_REQUIRED_STATUSES.includes(
+                            fields.status,
+                          ) && (
                             <CustomText style={{ color: "red" }}> *</CustomText>
                           )}
-                      </>
-                    }
-                    value={formik.values.note}
-                    onChangeText={formik.handleChange("note")}
-                    errors={formik.touched.note && formik.errors.note}
-                    onBlur={formik.handleBlur("note")}
-                    placeholder="Add note"
-                    multiline
-                    numberOfLines={3}
-                    marginBottom={10}
-                    // inputContainerStyle={{
-                    //   // height: 160,
-                    //   backgroundColor: "red",
-                    //   alignSelf: "flex-start",
-                    // }}
-                    containerStyle={{ marginTop: 8 }}
-                    inputStyle={{ height: 140 }}
-                  />
-                  <CustomModal
-                    visible={FUTModal.visible}
-                    onClose={FUTModal.closeModal}
-                    hasBackdrop
-                  >
-                    <View
-                      style={{
-                        backgroundColor: "white",
-                        padding: 20,
-                        borderRadius: 10,
-                      }}
-                    >
-                      <MainTitle title="Select Date and Time" />
-                      <View style={{ height: 15 }} />
-                      <DatePickerExpo
-                        title="Date"
-                        minimumDate={new Date()}
-                        boxContainerStyle={{ marginBottom: 15 }}
-                        onSelect={(v) => {
-                          setTdForFUT((prev) => ({
-                            ...prev,
-                            date: v || null,
-                          }));
-                        }}
-                        initialValue={tdForFUT.date}
-                      />
-                      <DatePickerExpo
-                        key={timePickerKey}
-                        title="Time"
-                        mode="time"
-                        minuteInterval={5} // 👈 ADD THIS (00,05,10...)
-                        minimumDate={
-                          moment(tdForFUT.date).isSame(new Date(), "day")
-                            ? new Date() // 👈 SAME DAY → past time block
-                            : undefined
-                        }
-                        boxContainerStyle={{ marginBottom: 20 }}
-                        onSelect={(v) => {
-                          setTdForFUT((prev) => ({
-                            ...prev,
-                            time: v ? roundToNext5Min(new Date(v)) : null,
-                          }));
-                        }}
-                        initialValue={tdForFUT.time}
-                      />
+                      </CustomText>
 
-                      <CustomBtn
-                        title="Submit"
-                        containerStyle={{
-                          marginBottom: 20,
-                          marginTop: 20,
-                          // width: 100,
-                          // alignSelf: "center",
-                        }}
+                      <TouchableOpacity
                         onPress={() => {
-                          FUTModal.closeModal(); // ✅ only close modal, no API call
+                          FUTModal.openModal();
                         }}
-                        isLoading={isLoading}
-                        textStyle={{ fontSize: 14 }}
-                        disabled={isFUTSubmitDisabled}
-                      />
+                        style={{
+                          borderWidth: 1,
+                          borderColor: color.borderColor,
+                          borderRadius: 12,
+                          padding: 12,
+                          marginTop: 6,
+                        }}
+                      >
+                        <CustomText style={{ color: color.mainTxtColor }}>
+                          {tdForFUT?.date && tdForFUT?.time
+                            ? formatDateTime(tdForFUT.date, tdForFUT.time)
+                            : "Select Date & Time"}
+                        </CustomText>
+                      </TouchableOpacity>
                     </View>
-                  </CustomModal>
-                </>
-              )}
+                    <CustomInput
+                      label={
+                        <>
+                          Notes
+                          {fields?.status &&
+                            NOTE_REQUIRED_STATUSES.includes(fields.status) && (
+                              <CustomText style={{ color: "red" }}>
+                                {" "}
+                                *
+                              </CustomText>
+                            )}
+                        </>
+                      }
+                      value={formik.values.note}
+                      onChangeText={formik.handleChange("note")}
+                      errors={formik.touched.note && formik.errors.note}
+                      onBlur={formik.handleBlur("note")}
+                      placeholder="Add note"
+                      multiline
+                      numberOfLines={3}
+                      marginBottom={10}
+                      // inputContainerStyle={{
+                      //   // height: 160,
+                      //   backgroundColor: "red",
+                      //   alignSelf: "flex-start",
+                      // }}
+                      containerStyle={{ marginTop: 8 }}
+                      inputStyle={{ height: 140 }}
+                    />
+                    <CustomModal
+                      visible={FUTModal.visible}
+                      onClose={FUTModal.closeModal}
+                      hasBackdrop
+                    >
+                      <View
+                        style={{
+                          backgroundColor: "white",
+                          padding: 20,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <MainTitle title="Select Date and Time" />
+                        <View style={{ height: 15 }} />
+                        <DatePickerExpo
+                          title="Date"
+                          minimumDate={new Date()}
+                          boxContainerStyle={{ marginBottom: 15 }}
+                          onSelect={(v) => {
+                            setTdForFUT((prev) => ({
+                              ...prev,
+                              date: v || null,
+                            }));
+                          }}
+                          initialValue={tdForFUT.date}
+                        />
+                        <DatePickerExpo
+                          key={timePickerKey}
+                          title="Time"
+                          mode="time"
+                          minuteInterval={5} // 👈 ADD THIS (00,05,10...)
+                          minimumDate={
+                            moment(tdForFUT.date).isSame(new Date(), "day")
+                              ? new Date() // 👈 SAME DAY → past time block
+                              : undefined
+                          }
+                          boxContainerStyle={{ marginBottom: 20 }}
+                          onSelect={(v) => {
+                            setTdForFUT((prev) => ({
+                              ...prev,
+                              time: v ? roundToNext5Min(new Date(v)) : null,
+                            }));
+                          }}
+                          initialValue={tdForFUT.time}
+                        />
 
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    marginTop: 20,
-                    backgroundColor: isSubmitDisabled
-                      ? color.primaryFade
-                      : color.mainTxtColor,
-                  },
-                ]}
-                onPress={handleChangeStatusSubmit}
-                disabled={statusLoading || isSubmitDisabled}
-              >
-                {statusLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <CustomText
-                    style={[
-                      styles.buttonText,
-                      {
-                        color: isSubmitDisabled
-                          ? color.mainTxtColorFade
-                          : color.white,
-                      },
-                    ]}
-                  >
-                    Submit
-                  </CustomText>
+                        <CustomBtn
+                          title="Submit"
+                          containerStyle={{
+                            marginBottom: 20,
+                            marginTop: 20,
+                            // width: 100,
+                            // alignSelf: "center",
+                          }}
+                          onPress={() => {
+                            FUTModal.closeModal(); // ✅ only close modal, no API call
+                          }}
+                          isLoading={isLoading}
+                          textStyle={{ fontSize: 14 }}
+                          disabled={isFUTSubmitDisabled}
+                        />
+                      </View>
+                    </CustomModal>
+                  </>
                 )}
-              </TouchableOpacity>
-            </View>
-          </ModalWithBlur>
+
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    {
+                      marginTop: 20,
+                      backgroundColor: isSubmitDisabled
+                        ? color.primaryFade
+                        : color.mainTxtColor,
+                    },
+                  ]}
+                  onPress={handleChangeStatusSubmit}
+                  disabled={statusLoading || isSubmitDisabled}
+                >
+                  {statusLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <CustomText
+                      style={[
+                        styles.buttonText,
+                        {
+                          color: isSubmitDisabled
+                            ? color.mainTxtColorFade
+                            : color.white,
+                        },
+                      ]}
+                    >
+                      Submit
+                    </CustomText>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ModalWithBlur>
+          )}
 
           <ScrollView
             style={{
@@ -2347,13 +2446,17 @@ const LeadsDetails = () => {
         />
       )}
       <CelebrationModal
-        visible={showCelebration}
+        visible={showCelebration && callModalReady}
         status={celebrationStatus}
         onCreateMeeting={handleCelebrationCreateMeeting}
         onClose={() => setShowCelebration(false)}
       />
 
-      <Modal visible={showDurationEditor} transparent animationType="fade">
+      <Modal
+        visible={showDurationEditor && callModalReady}
+        transparent
+        animationType="fade"
+      >
         <View
           style={{
             flex: 1,
@@ -2541,6 +2644,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: color.saffronMango,
     paddingVertical: 12,
+    marginBottom: 20,
     borderRadius: 14,
     alignItems: "center",
   },

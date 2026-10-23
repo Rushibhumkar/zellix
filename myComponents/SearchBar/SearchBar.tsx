@@ -31,6 +31,7 @@ interface TSearchBar {
   isWithAnimation?: boolean;
   autoFocus?: boolean;
   moduleName?: any;
+  variant?: "default" | "hrms";
 }
 
 const SearchBar = ({
@@ -41,6 +42,7 @@ const SearchBar = ({
   isWithAnimation = true,
   autoFocus = false,
   moduleName,
+  variant = "default",
 }: TSearchBar) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -87,9 +89,10 @@ const SearchBar = ({
 
   return (
     <LinearGradient
-      colors={["#2452FA", "#6CA8FF"]}
+      // Start at the HRMS header's bottom colour for a seamless continuation.
+      colors={variant === "hrms" ? ["#4985F2", "#2E67BE"] : ["#2452FA", "#6CA8FF"]}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: variant === "hrms" ? 0 : 1, y: 1 }}
       style={styles.gradientBox}
     >
       {/* <Animated.View style={[animatedSearchBox]}> */}

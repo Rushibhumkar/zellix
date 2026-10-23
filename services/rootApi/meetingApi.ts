@@ -1,8 +1,11 @@
 import { myConsole } from "../../hooks/useConsole";
 import { axiosInstance } from "../authApi/axiosInstance"
+export type MeetingMutationContext = { expectedEntryId: string; expectedVersion: number };
 
 interface TAddMeeting {
-    agents: [string];
+    requestId: string;
+    members: string[];
+    agents: string[];
     clientAddress?: string;
     clientCity?: string;
     clientCountry: string;
@@ -17,20 +20,37 @@ interface TAddMeeting {
     status: 'conducted' | 'schedule';
 }
 
+interface TAddMeetingEntry {
+    requestId: string;
+    expectedEntryId: string;
+    expectedVersion: number;
+    sourceEntryId: string;
+    scheduleDate: string;
+    productPitch?: string;
+    meetingMode: 'physical' | 'virtual';
+    location?: string;
+    virtualMeetingLink?: string;
+    remarks?: string;
+    coordinates?: { lat?: number | null; lng?: number | null };
+    self: boolean;
+    members: string[];
+}
+
 export const addMeeting = (data: TAddMeeting) => {
     return axiosInstance.post('/api/meeting', data)
         .then((res) => res)
-        .catch(err => {
-            throw new Error(err)
-        })
 }
 
-export const updateMeeting = ({ id, data }) => {
+export const addMeetingEntry = (meetingId: string, data: TAddMeetingEntry) => {
+    return axiosInstance.post(`/api/meeting/${meetingId}/entries`, data)
+}
+
+export const cancelMeetingEntry = (meetingId: string, entryId: string, reason: string, context: { expectedEntryId: string; expectedVersion: number }) =>
+    axiosInstance.post(`/api/meeting/${meetingId}/entries/${entryId}/cancel`, { ...context, reason });
+
+export const updateMeeting = ({ id, data }: { id: string; data: MeetingMutationContext & Record<string, any> }) => {
     return axiosInstance.put(`/api/meeting/updateMeetingById/${id}`, data)
         .then((res) => res)
-        .catch(err => {
-            throw new Error(err)
-        })
 }
 
 export const deleteMeeting = (id: [string]) => {
@@ -41,12 +61,8 @@ export const deleteMeeting = (id: [string]) => {
         })
 }
 
-export const meetingRescheduled = (id: string, data) => {
+export const meetingRescheduled = (id: string, data: MeetingMutationContext & { requestId: string } & Record<string, any>) => {
     return axiosInstance.post(`/api/meeting/reScheduleMeetingById/${id}`, data)
-        .then(res => res)
-        .catch(err => {
-            throw new Error(err)
-        })
 
 }
 export const meetingOtpGenerate = (id: string) => {
@@ -64,12 +80,9 @@ export const meetingOtpVerify = (id: string, data) => {
         })
 }
 
-export const meetingConduct = (id: string, data) => {
+export const meetingConduct = (id: string, data: MeetingMutationContext & { remarks: string } & Record<string, any>) => {
     return axiosInstance.post(`/api/meeting/conductById/${id}`, data)
         .then(res => res)
-        .catch(err => {
-            throw new Error(err)
-        })
 }
 
 export const getMeeting = async ({
@@ -107,6 +120,7 @@ export const getMeeting = async ({
     }
     catch (err) {
         console.log('getMeetingErrPag', err)
+        throw err;
     }
 }
 
@@ -117,6 +131,7 @@ export const getMeetingById = async (id) => {
     }
     catch (err) {
         console.log('getMeetingByIdErrPag', err)
+        throw err;
     }
 }
 
@@ -137,4 +152,3 @@ export const getMeetingForBooking = async ({
         console.log('getMeetingForBookingErrPag', err)
     }
 }
-

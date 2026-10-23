@@ -13,6 +13,7 @@ import { setMeetingQueryKey } from "../../redux/userSlice";
 import { color } from "../../const/color";
 
 const meetingFilters = [
+  { _id: "cancelled", name: "Cancelled", icon: "x-circle", type: "status" },
   { _id: "schedule", name: "Scheduled", icon: "calendar", type: "status" },
   { _id: "conducted", name: "Conducted", icon: "check-square", type: "status" },
   {

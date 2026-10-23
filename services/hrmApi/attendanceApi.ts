@@ -23,12 +23,13 @@ export const getAllAttendance = ({
     })
     .catch((err) => console.log("errorGetAllAttendance", err));
 
-export const getIssueAttendance = ({ pageParam = 1 }) => {
+export const getIssueAttendance = ({ pageParam = 1, userId = "" }) => {
   return axiosInstance
     .get(`/api/hrms/att`, {
       params: {
         page: pageParam,
         issue: true,
+        userId,
       },
     })
     .then((res) => res?.data)

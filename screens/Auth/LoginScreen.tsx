@@ -45,6 +45,9 @@ const LoginScreen = () => {
     // dev : agent
     // email: "abhishek@swavishsoftware.com",
     // password: "",
+    // dev : agent dev ( Test Agent 8 )
+    // email: "karenma.v.e.r.ic.k.6@gmail.com",
+    // password: "",
     // dev : agent ( Rushikesh Bhumkar )
     // email: "test1@swavishtek.com",
     // password: "",
@@ -151,7 +154,6 @@ const LoginScreen = () => {
     login(data)
       .then(async (res) => {
         let isAdmin = res?.role === roleEnum.sup_admin;
-        console.log("res?.token", res?.token);
         await storeData("token", res?.token);
         await storeDataJson("userDetail", { ...res, isAdmin });
 

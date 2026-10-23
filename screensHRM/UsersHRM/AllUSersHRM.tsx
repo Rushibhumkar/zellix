@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
-import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowOnLeave from "../../myComponentsHRM/Row/RowOnLeave";
 import RowEmployee from "../../myComponentsHRM/Row/RowEmployee";
@@ -23,8 +22,8 @@ import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
 import HeaderRowEmployee from "../../myComponentsHRM/Row/rowHeader/HeaderRowEmployee";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
+import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
+import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { selectUser } from "../../redux/userSlice";
@@ -43,13 +42,22 @@ const AllUSersHRM = () => {
     roleEnum.developer,
   ].includes(user?.role);
   const canOnboardUsers = isSubSup || user?.role === roleEnum.hr;
-  const canManageRolePermissions = isSubSup || user?.role === roleEnum.office_admin;
+  const canManageRolePermissions =
+    isSubSup || user?.role === roleEnum.office_admin;
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
     startDate: "",
     endDate: "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  const updateSearch = useCallback(
+    (search: string) =>
+      setSearchSubmit((prev) =>
+        prev.search === search ? prev : { ...prev, search },
+      ),
+    [],
+  );
+  const search = useHRMListingSearch(updateSearch);
   const {
     data: allUsers,
     isLoading,
@@ -61,9 +69,6 @@ const AllUSersHRM = () => {
     if (hasNextPage && !isLoading && allUsers?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
-  };
-  const handleSearchSubmit = (v) => {
-    setSearchSubmit(v);
   };
 
   const onRefresh = () => {
@@ -80,7 +85,19 @@ const AllUSersHRM = () => {
   };
 
   return (
-    <ContainerHRM headingTitle="Users">
+    <ContainerHRM
+      headingTitle="Users"
+      onPressSearch={search.toggleSearch}
+      showSearch={search.showSearch}
+      childStyle={{ flex: 1, height: undefined }}
+    >
+      {search.showSearch && (
+        <ListingSearch
+          value={search.searchValue}
+          onChangeText={search.setSearchValue}
+          onClose={search.closeSearch}
+        />
+      )}
       {canOnboardUsers && (
         <TouchableOpacity
           onPress={() => navigate(routeUser.AddUserHRM)}
@@ -92,12 +109,16 @@ const AllUSersHRM = () => {
       )}
       <View style={styles.container}>
         {canManageRolePermissions && (
-          <TouchableOpacity onPress={() => navigate(routeUser.RolePermissionSetsHRM)} style={styles.rolePermissionsButton}>
+          <TouchableOpacity
+            onPress={() => navigate(routeUser.RolePermissionSetsHRM)}
+            style={styles.rolePermissionsButton}
+          >
             <Feather name="shield" size={18} color="#2E67BE" />
             <Text style={styles.rolePermissionsText}>Role Permission Sets</Text>
           </TouchableOpacity>
         )}
         <FlatList
+          ref={search.listRef}
           data={allUsers ?? []}
           renderItem={({ item }) => {
             return (
@@ -111,26 +132,10 @@ const AllUSersHRM = () => {
           ListHeaderComponent={
             <>
               <CircularBarChart type="userChart" />
-              <CardHRM />
               <TitleHRM
                 title="Total Employees"
                 marginTop={12}
                 marginBottom={20}
-                onPressFilter={() =>
-                  popUpConfToast.bottomSheet({
-                    bodyComponent: () => (
-                      <SearchBox
-                        onPressSubmit={handleSearchSubmit}
-                        initialValue={searchSubmit}
-                        hideFiles={{
-                          endDate: true,
-                          startDate: true,
-                        }}
-                      />
-                    ),
-                    snapPoints: ["70%"],
-                  })
-                }
               />
             </>
           }
@@ -166,6 +171,8 @@ const AllUSersHRM = () => {
             />
           }
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         />
       </View>
     </ContainerHRM>
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
   },
   rolePermissionsText: { color: "#2E67BE", fontSize: 14, fontWeight: "700" },
   container: {
-    minHeight: 600,
+    flex: 1,
   },
   listContent: {
     paddingBottom: 180,
@@ -202,7 +209,7 @@ const styles = StyleSheet.create({
   },
   fabButton: {
     position: "absolute",
-    bottom: Platform.OS === "ios" ? 120 : 100,
+    bottom: Platform.OS === "ios" ? 60 : 100,
     right: 20,
     zIndex: 5,
     // backgroundColor: "#2D67C6",

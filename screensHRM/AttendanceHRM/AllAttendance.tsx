@@ -5,7 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
@@ -22,7 +22,8 @@ import {
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
-import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
+import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
+import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { useSelector } from "react-redux";
@@ -31,12 +32,18 @@ import { roleEnum } from "../../utils/data";
 import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import { checkPermission } from "../../utils/commonFunctions";
+import { canViewAttendanceSummary } from "../../utils/attendanceSummary";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
-import moment from "moment";
+import HeaderRowAttendance from "../../myComponentsHRM/Row/rowHeader/HeaderRowAttendance";
+import HeaderRowUserAtt from "../../myComponentsHRM/Row/rowHeader/HeaderRowUserAtt";
 const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const isAgent = user?.role === roleEnum.agent;
+  const showAttendanceSummary = canViewAttendanceSummary(
+    permission,
+    user?.role,
+  );
   const { navigate } = useNavigation();
   const queryClient = useQueryClient();
   const [searchSubmit, setSearchSubmit] = useState({
@@ -45,15 +52,26 @@ const AllAttendance = () => {
     endDate: "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  const updateSearch = useCallback(
+    (search: string) =>
+      setSearchSubmit((prev) =>
+        prev.search === search ? prev : { ...prev, search },
+      ),
+    [],
+  );
+  const search = useHRMListingSearch(updateSearch);
   const { data, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
-    useGetAllAttendance({ ...searchSubmit });
+    useGetAllAttendance({
+      ...searchSubmit,
+      userId: isAgent ? user?._id : "",
+    });
   const {
     data: issueAttList,
     isLoading: isLoadingIssue,
     hasNextPage: hasNextPageIssue,
     isFetchingNextPage: isFetchingNextPageIssue,
     fetchNextPage: fetchNextPageIssue,
-  } = useGetIssueAttendance();
+  } = useGetIssueAttendance({ userId: isAgent ? user?._id : "" });
   //
   const onEndReach = () => {
     if (hasNextPage && !isLoading && data?.length > 0) {
@@ -68,18 +86,8 @@ const AllAttendance = () => {
     }
   };
 
-  const handleSearchSubmit = (v) => {
-    setSearchSubmit(v);
-  };
   //
   const onRefresh = async () => {
-    const defaultDates = {
-      search: "",
-      startDate: moment().subtract(11, "months").startOf("month").toDate(),
-      endDate: moment().endOf("month").toDate(),
-    };
-
-    setSearchSubmit(defaultDates);
     try {
       setRefreshing(true);
       await queryClient.invalidateQueries({
@@ -88,6 +96,10 @@ const AllAttendance = () => {
       await queryClient.invalidateQueries({
         queryKey: [queryKeyHRM.getIssueAttendance],
       });
+      if (showAttendanceSummary)
+        await queryClient.invalidateQueries({
+          queryKey: [queryKeyHRM.getAttendanceChart],
+        });
     } catch (e) {
       console.log("refreshInUser", e);
     } finally {
@@ -95,18 +107,39 @@ const AllAttendance = () => {
     }
   };
   return (
-    <ContainerHRM headingTitle="Attendance">
+    <ContainerHRM
+      headingTitle="Attendance"
+      onPressSearch={search.toggleSearch}
+      showSearch={search.showSearch}
+      childStyle={{ flex: 1, height: undefined }}
+    >
+      {search.showSearch && (
+        <ListingSearch
+          value={search.searchValue}
+          onChangeText={search.setSearchValue}
+          onClose={search.closeSearch}
+          dates={searchSubmit}
+          onDateChange={(key, value) =>
+            setSearchSubmit((prev) => ({ ...prev, [key]: value }))
+          }
+        />
+      )}
       <FlatList
+        ref={search.listRef}
         ListHeaderComponent={
           <>
-            <CircularBarChart type="attendanceChart" />
-            {!isAgent && <CardHRM />}
+            {showAttendanceSummary && (
+              <>
+                <CircularBarChart type="attendanceChart" />
+                <CardHRM />
+              </>
+            )}
             <FlatList
               style={{ gap: 2 }}
               ListHeaderComponent={
                 <>
-                  <TitleHRM title="Issues" marginBottom={0} marginTop={12} />
-                  {/* {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />} */}
+                  <TitleHRM title="Issues" marginBottom={4} marginTop={12} />
+                  {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
                 </>
               }
               ListEmptyComponent={
@@ -194,26 +227,13 @@ const AllAttendance = () => {
                 </View>
               }
             />
-            <TitleHRM
-              title="Attendance"
-              marginBottom={0}
-              marginTop={8}
-              onPressFilter={() =>
-                popUpConfToast.bottomSheet({
-                  snapPoints: ["75%"],
-                  bodyComponent: () => (
-                    <SearchBox
-                      onPressSubmit={handleSearchSubmit}
-                      initialValue={searchSubmit}
-                    />
-                  ),
-                })
-              }
-            />
+            <TitleHRM title="Attendance" marginBottom={4} marginTop={8} />
             {/* {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />} */}
           </>
         }
         // contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         data={data?.length > 0 ? data : []}
         renderItem={({ item }) => {
           return !isAgent ? (

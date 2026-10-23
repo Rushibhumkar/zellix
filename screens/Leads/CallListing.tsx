@@ -61,7 +61,12 @@ import CallLogCard from "./component/CallLogCard";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import moment from "moment";
 import DatePickerExpo from "../../myComponents/DatePickerExpo/DatePickerExpo";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { useCallUiGuard } from "../../hooks/useCallUiGuard";
 import { routeLead } from "../../utils/routes";
 import {
   getDataJson,
@@ -196,6 +201,9 @@ const CallListing = () => {
     null,
   );
   const isClosingLeadModalRef = useRef(false);
+  const { beginCallUi, endCallUi } = useCallUiGuard(
+    showDialPad || (!userId && showLeadModal) || showDurationEditor,
+  );
 
   const showShortCallInfo = () => {
     setShortCallInfo(
@@ -473,6 +481,7 @@ const CallListing = () => {
       return;
     }
     try {
+      beginCallUi();
       isCallingRef.current = true;
       dialRequestAcceptedRef.current = false;
       isCallLogSentRef.current = false;
@@ -493,6 +502,7 @@ const CallListing = () => {
         );
       }
     } catch (err) {
+      endCallUi();
       isCallingRef.current = false;
       dialRequestAcceptedRef.current = false;
       dialedNumberRef.current = "";
@@ -516,6 +526,7 @@ const CallListing = () => {
     console.log("✅ RESUMING PENDING CALL =>", pending);
 
     isResumingRef.current = true;
+    beginCallUi();
 
     const endTime = Date.now();
 
@@ -541,6 +552,7 @@ const CallListing = () => {
       setCallMeta(null);
       isResumingRef.current = false;
       isHandlingResumeAlertRef.current = false;
+      endCallUi();
       return;
     }
 
@@ -555,6 +567,7 @@ const CallListing = () => {
       setShowDurationEditor(false);
       setCallMeta(null);
       isResumingRef.current = false;
+      endCallUi();
       return;
     }
 
@@ -645,7 +658,14 @@ const CallListing = () => {
     isCallTrackingRef.current = false;
     callStartTimeRef.current = null;
     setShowDialPad(false);
-    setShowLeadModal(true);
+    // The dial pad and outcome form are separate native windows. Dismiss the
+    // first before mounting the second, while keeping reminders blocked.
+    if (resumeModalTimerRef.current) clearTimeout(resumeModalTimerRef.current);
+    resumeModalTimerRef.current = setTimeout(() => {
+      resumeModalTimerRef.current = null;
+      setShowLeadModal(true);
+      endCallUi();
+    }, 350);
   };
 
   // ✅ NEW: decides whether duration looks reliable (<=25min) or needs manual edit
@@ -692,6 +712,7 @@ const CallListing = () => {
       callStartTimeRef.current = null;
       dialedNumberRef.current = "";
       setShowDialPad(false);
+      endCallUi();
       return;
     }
 
@@ -706,6 +727,7 @@ const CallListing = () => {
       isCallTrackingRef.current = false;
       callStartTimeRef.current = null;
       setShowDialPad(false);
+      endCallUi();
       return;
     }
 
@@ -831,6 +853,7 @@ const CallListing = () => {
             callStartTimeRef.current = null;
             dialedNumberRef.current = "";
             removeItemValue(PENDING_CALL_KEY);
+            endCallUi();
             return;
           }
 
@@ -861,6 +884,7 @@ const CallListing = () => {
           dialRequestAcceptedRef.current = false;
           dialedNumberRef.current = "";
           removeItemValue(PENDING_CALL_KEY);
+          endCallUi();
         }, 750);
       }
       // ❌ REMOVED: the aggressive fallback that fired on every "active" transition
@@ -1707,7 +1731,8 @@ const CallListing = () => {
         transparent
         onRequestClose={() => setShowDialPad(false)}
       >
-        <View style={styles.overlay}>
+        {/* Native modals have their own window, so measure its safe area here. */}
+        <SafeAreaProvider style={styles.overlay}>
           {/* ✅ backdrop as a separate absolutely-positioned sibling — avoids fragile nested TouchableWithoutFeedback propagation issues on Android with rapid taps */}
           <TouchableWithoutFeedback
             onPress={() => {
@@ -1719,7 +1744,10 @@ const CallListing = () => {
           </TouchableWithoutFeedback>
 
           {/* ✅ content sits on top as a sibling, not wrapped in any dismiss-handler touchable */}
-          <View style={styles.bottomSheet}>
+          <SafeAreaView
+            edges={["bottom", "left", "right"]}
+            style={styles.bottomSheet}
+          >
             {/* Header */}
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Dial Pad</Text>
@@ -1764,7 +1792,8 @@ const CallListing = () => {
               data={DIAL_PAD}
               keyExtractor={(_, index) => String(index)}
               numColumns={3}
-              scrollEnabled={false}
+              style={styles.dialPadList}
+              keyboardShouldPersistTaps="handled"
               columnWrapperStyle={styles.row}
               contentContainerStyle={{ paddingTop: 10 }}
               renderItem={({ item }) => (
@@ -1820,19 +1849,20 @@ const CallListing = () => {
                 </TouchableOpacity>
               )}
             </View>
-          </View>
-        </View>
+          </SafeAreaView>
+        </SafeAreaProvider>
       </Modal>
       {!userId && (
         <Modal visible={showLeadModal} transparent animationType="slide">
-          <View
+          <SafeAreaProvider
             style={{
               flex: 1,
               justifyContent: "flex-end",
               backgroundColor: "rgba(0,0,0,0.4)",
             }}
           >
-            <View
+            <SafeAreaView
+              edges={["bottom", "left", "right"]}
               style={{
                 backgroundColor: "#fff",
                 borderTopLeftRadius: 24,
@@ -2382,8 +2412,8 @@ const CallListing = () => {
                   </View>
                 </View>
               </KeyboardAvoidingView>
-            </View>
-          </View>
+            </SafeAreaView>
+          </SafeAreaProvider>
         </Modal>
       )}
 
@@ -2726,6 +2756,7 @@ const styles = StyleSheet.create({
   },
 
   bottomSheet: {
+    maxHeight: "90%",
     backgroundColor: "#fff",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
@@ -2734,7 +2765,13 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
 
+  dialPadList: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+
   sheetHeader: {
+    flexShrink: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -2748,6 +2785,7 @@ const styles = StyleSheet.create({
   },
 
   numberContainer: {
+    flexShrink: 0,
     minHeight: 46,
     borderRadius: 16,
     marginBottom: 14,
@@ -2826,6 +2864,7 @@ const styles = StyleSheet.create({
   },
 
   bottomActions: {
+    flexShrink: 0,
     height: 72,
     marginTop: 8,
     justifyContent: "center",

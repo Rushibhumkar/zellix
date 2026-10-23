@@ -5,7 +5,7 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import HeaderRowAttendance from "../../myComponentsHRM/Row/rowHeader/HeaderRowAttendance";
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
@@ -18,8 +18,8 @@ import { useGetSingleUserAttList } from "../../hooks/useGetQuerryHRM";
 import { myConsole } from "../../hooks/useConsole";
 import { routeAttendance } from "../../utils/routesHRM";
 import { roleHRM } from "../../utils/hrmKeysMatchToBE";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
+import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
+import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
 
 const UserAttendanceList = () => {
   const { params } = useRoute();
@@ -31,6 +31,8 @@ const UserAttendanceList = () => {
   });
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useGetSingleUserAttList({ userId: params?.item?.user, ...searchSubmit });
+  const updateSearch = useCallback((search: string) => setSearchSubmit(prev => prev.search === search ? prev : { ...prev, search }), []);
+  const search = useHRMListingSearch(updateSearch);
 
   const onEndReach = () => {
     if (hasNextPage && !isLoading) {
@@ -38,15 +40,16 @@ const UserAttendanceList = () => {
     }
   };
 
-  const handleSearchSubmit = (v) => {
-    setSearchSubmit(v);
-  };
   return (
     <ContainerHRM
+      onPressSearch={search.toggleSearch}
+      showSearch={search.showSearch}
+      childStyle={{ flex: 1, height: undefined }}
       isBAck={{
         title: "Single User Attendance",
       }}
     >
+      {search.showSearch && <ListingSearch value={search.searchValue} onChangeText={search.setSearchValue} onClose={search.closeSearch} dates={searchSubmit} onDateChange={(key, value) => setSearchSubmit(prev => ({ ...prev, [key]: value }))} />}
       {/* <View style={{ padding: 20 }}> <HeaderRowUserAtt /></View> */}
       <View
         style={{
@@ -58,20 +61,11 @@ const UserAttendanceList = () => {
       >
         <TitleHRM
           title={`${params?.item?.name} (${roleHRM[params?.item?.role]})`}
-          onPressFilter={() =>
-            popUpConfToast.plzWait({
-              bodyComponent: () => (
-                <SearchBox
-                  onPressSubmit={handleSearchSubmit}
-                  initialValue={searchSubmit}
-                />
-              ),
-            })
-          }
         />
         <HeaderRowUserAtt />
       </View>
       <FlatList
+        ref={search.listRef}
         ListHeaderComponent={<></>}
         ListEmptyComponent={
           <>
@@ -97,6 +91,8 @@ const UserAttendanceList = () => {
         }}
         onEndReached={onEndReach}
         onEndReachedThreshold={0.5}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListFooterComponent={
           isFetchingNextPage && (
             <ActivityIndicator size={"small"} color={"#002E6B"} />

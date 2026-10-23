@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
-import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowLeaveInAllList from "../../myComponentsHRM/Row/RowLeaveInAllList";
 import { useNavigation } from "@react-navigation/native";
@@ -20,7 +19,8 @@ import { useGetAllLeave } from "../../hooks/useGetQuerryHRM";
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
-import SearchBox from "../../myComponentsHRM/SearchBox/SearchBox";
+import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
+import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
@@ -43,6 +43,14 @@ const AllLeave = () => {
     endDate: "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  const updateSearch = useCallback(
+    (search: string) =>
+      setSearchSubmit((prev) =>
+        prev.search === search ? prev : { ...prev, search },
+      ),
+    [],
+  );
+  const search = useHRMListingSearch(updateSearch);
   const { data, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
     useGetAllLeave({ ...searchSubmit });
   const onEndReach = () => {
@@ -51,9 +59,6 @@ const AllLeave = () => {
     }
   };
 
-  const handleSearchSubmit = (v) => {
-    setSearchSubmit(v);
-  };
   const onRefresh = async () => {
     try {
       setRefreshing(true);
@@ -69,7 +74,23 @@ const AllLeave = () => {
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
   return (
-    <ContainerHRM headingTitle="Leave">
+    <ContainerHRM
+      headingTitle="Leave"
+      onPressSearch={search.toggleSearch}
+      showSearch={search.showSearch}
+      childStyle={{ flex: 1, height: undefined }}
+    >
+      {search.showSearch && (
+        <ListingSearch
+          value={search.searchValue}
+          onChangeText={search.setSearchValue}
+          onClose={search.closeSearch}
+          dates={searchSubmit}
+          onDateChange={(key, value) =>
+            setSearchSubmit((prev) => ({ ...prev, [key]: value }))
+          }
+        />
+      )}
       <>
         {currentDate < 25 && (
           <TouchableOpacity
@@ -77,7 +98,7 @@ const AllLeave = () => {
             activeOpacity={0.5}
             style={{
               position: "absolute",
-              bottom: Platform.OS === "ios" ? 120 : 100,
+              bottom: Platform.OS === "ios" ? 60 : 40,
               right: 10,
               zIndex: 5,
             }}
@@ -87,27 +108,11 @@ const AllLeave = () => {
         )}
 
         <FlatList
+          ref={search.listRef}
           ListHeaderComponent={
             <>
-              <CircularBarChart type="leavesChart" />
-              {!isAgent && <CardHRM />}
-              {isAgent && <CircularBarChart type="attendanceChart" />}
-              <TitleHRM
-                title="Total Leaves"
-                marginTop={12}
-                marginBottom={20}
-                onPressFilter={() =>
-                  popUpConfToast.bottomSheet({
-                    bodyComponent: () => (
-                      <SearchBox
-                        onPressSubmit={handleSearchSubmit}
-                        initialValue={searchSubmit}
-                      />
-                    ),
-                    snapPoints: ["85%"],
-                  })
-                }
-              />
+              {!isAgent && <CircularBarChart type="leavesChart" />}
+              <TitleHRM title="Total Leaves" marginTop={12} marginBottom={20} />
               {/* <HeaderRowLeave /> */}
             </>
           }
@@ -143,6 +148,8 @@ const AllLeave = () => {
           }}
           onEndReached={onEndReach}
           onEndReachedThreshold={0.5}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ListFooterComponent={
             isFetchingNextPage && (
               <ActivityIndicator size={"small"} color={color.mainTxtColor} />

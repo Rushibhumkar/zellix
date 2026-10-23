@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { queueMeetingNotification } from "./utils/meetingNotification";
 import * as Device from "expo-device";
 import { isRunningInExpoGo } from "expo";
 import { useEffect, useRef, useState } from "react";
@@ -90,6 +91,7 @@ export default function App() {
         myConsole("Notification CLICK RESPONSE:", response);
 
         const notData = response?.notification?.request?.content?.data;
+        if (queueMeetingNotification(notData)) { void Notifications.clearLastNotificationResponseAsync().catch(() => {}); return; }
 
         myConsole("📦 CLICK DATA:", notData);
 
@@ -116,6 +118,7 @@ export default function App() {
 
       if (response) {
         const notData = response?.notification?.request?.content?.data;
+        if (queueMeetingNotification(notData)) { void Notifications.clearLastNotificationResponseAsync().catch(() => {}); return; }
 
         console.log("🔥 INITIAL CLICK:", notData);
 

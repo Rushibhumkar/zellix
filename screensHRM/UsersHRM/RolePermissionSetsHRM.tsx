@@ -102,13 +102,19 @@ const RolePermissionSetsHRM = () => {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2E67BE" colors={["#2E67BE"]} />}
           >
             <CustomText style={{ fontSize: 15, fontWeight: "700", color: "#1E293B", marginBottom: 8 }}>Select role</CustomText>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 12, flexGrow: 0, flexShrink: 0 }}
+              contentContainerStyle={{ alignItems: "center" }}
+            >
               {ASSIGNABLE_ROLE_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.value}
                   onPress={() => { if (!saving) { setRefreshing(false); setRole(option.value); } }}
                   style={{
                     paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, marginRight: 8,
+                    minHeight: 44, justifyContent: "center", alignSelf: "center",
                     backgroundColor: role === option.value ? "#2E67BE" : "#fff",
                     borderWidth: 1, borderColor: role === option.value ? "#2E67BE" : "#DCE5F2",
                   }}
@@ -123,17 +129,20 @@ const RolePermissionSetsHRM = () => {
 
             {loading ? <ActivityIndicator size="large" color="#2E67BE" /> : !permissions ? (
               <CustomText style={{ color: "#64748B" }}>No permissions found for this role.</CustomText>
-            ) : Object.entries(permissions).map(([moduleName, group]) => {
+            ) : Object.entries(permissions)
+              .filter(([moduleName]) => role !== UserRole.agent || moduleName !== "HrmsDashboard")
+              .map(([moduleName, group]) => {
               const isOpen = expanded === moduleName;
-              const enabled = Object.values(group).filter((item) => item.value).length;
+              const entries = Object.entries(group).filter(([key]) => moduleName !== "Users" || !["allowMultipleDeviceLogins", "deviceLoginAccess"].includes(key));
+              const enabled = entries.filter(([, item]) => item.value).length;
               return (
                 <View key={moduleName} style={{ backgroundColor: "#fff", borderRadius: 14, marginBottom: 10, borderWidth: 1, borderColor: "#E2E8F0", overflow: "hidden" }}>
                   <TouchableOpacity onPress={() => setExpanded(isOpen ? null : moduleName)} style={{ flexDirection: "row", alignItems: "center", padding: 15 }}>
                     <CustomText style={{ flex: 1, fontWeight: "700", color: "#1E293B" }}>{readable(moduleName)}</CustomText>
-                    <CustomText style={{ color: "#64748B", marginRight: 10 }}>{enabled}/{Object.keys(group).length}</CustomText>
+                    <CustomText style={{ color: "#64748B", marginRight: 10 }}>{enabled}/{entries.length}</CustomText>
                     <Feather name={isOpen ? "chevron-up" : "chevron-down"} size={18} color="#64748B" />
                   </TouchableOpacity>
-                  {isOpen && Object.entries(group).map(([key, permission]) => (
+                  {isOpen && entries.map(([key, permission]) => (
                     <View key={key} style={{ paddingHorizontal: 15, paddingVertical: 9, borderTopWidth: 1, borderTopColor: "#F1F5F9", flexDirection: "row", alignItems: "center" }}>
                       <View style={{ flex: 1, paddingRight: 12 }}>
                         <CustomText style={{ color: "#334155", fontWeight: "600" }}>{permission.label || readable(key)}</CustomText>

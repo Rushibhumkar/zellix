@@ -15,6 +15,8 @@ export const bookingEntryStatusObj = {
 };
 
 export const meetingStatus = {
+  superseded: "Rescheduled (Previous entry)",
+  cancelled: "Meeting Cancelled",
   schedule: "Meeting Scheduled",
   conducted: "Meeting Conducted",
   reschedule: "Meeting Rescheduled",
@@ -367,6 +369,7 @@ export const inBookingStatus = [
 ];
 
 export const inMeetingStatus = [
+  { name: "Cancelled", _id: "cancelled" },
   {
     name: "Schedule",
     _id: "schedule",

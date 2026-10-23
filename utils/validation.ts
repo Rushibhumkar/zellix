@@ -175,12 +175,7 @@ export const addMeetingSchema = Yup.object().shape({
   lead: Yup.string().required("Field required"),
   self: Yup.boolean().required(),
   agents: Yup.array()
-    .of(Yup.string())
-    .when("self", {
-      is: false,
-      then: (schema) => schema.min(1, "At least one member is required when Self is off"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    .of(Yup.string()),
 });
 export const addExpenseSchema = Yup.object().shape({
   expenseCategory: Yup.string().required("Expense Category required"),

@@ -6,6 +6,15 @@ import {
 import * as Linking from "expo-linking";
 import moment from "moment";
 import React, { useState, useEffect } from "react";
+import { useMeetingEligibility } from "../../hooks/useMeetingLifecycle";
+import {
+  isMeetingConflict,
+  latestMeetingEntry,
+  meetingActions,
+  meetingMessage,
+  meetingSuccess,
+  meetingVersion,
+} from "../../utils/meetingLifecycle";
 import * as MailComposer from "expo-mail-composer";
 import {
   ActivityIndicator,
@@ -30,9 +39,8 @@ import CustomModal from "../../myComponents/CustomModal/CustomModal";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
 import { myConsole } from "../../hooks/useConsole";
 // import ConfirmationCodeInput from "react-native-confirmation-code-input";
-import { meetingOtpGenerate } from "../../services/rootApi/meetingApi";
 import { meetingConduct } from "../../services/rootApi/meetingApi";
-import { meetingOtpVerify } from "../../services/rootApi/meetingApi";
+import { cancelMeetingEntry } from "../../services/rootApi/meetingApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { HEIGHT, WIDTH } from "../../const/deviceInfo";
 import CustomMapView from "../../myComponents/CustomMapView/CustomMapView";
@@ -47,6 +55,7 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { headerIconWrapperStyle } from "../../const/globalStyle";
 import * as Clipboard from "expo-clipboard";
 import { useAppToast } from "../../components/AppToast";
+import MeetingActionButtons from "../../components/MeetingActionButtons";
 
 const ASPECT_RATIO = WIDTH / HEIGHT;
 const LATITUDE_DELTA = 0.04;
@@ -111,17 +120,52 @@ const MeetingDetails = () => {
   const dispatch = useDispatch();
   const toast = useAppToast();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isModalVisibleConduct, setModalVisibleConduct] = useState(false);
   const [isModalVisibleRemark, setModalVisibleRemark] = useState(false);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [mapLatLng, setMapLatLng] = useState({});
   const { allUsers, user } = useSelector(selectUser);
-  const [isLoadingOtp, setIsLoadingOtp] = useState(false);
   const [isLoadingRemark, setIsLoadingRemark] = useState(false);
   const [isLoadingConduct, setIsLoadingConduct] = useState(false);
-  const [followUpId, setFollowUpId] = useState("");
-  const [token, setToken] = useState("");
   const [location, setLocation] = useState(null);
+  const [cancelEntryId, setCancelEntryId] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [actionSnapshot, setActionSnapshot] = useState<any>(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleCancelMeeting = async () => {
+    if (!cancellationReason.trim() || isCancelling) return;
+    setIsCancelling(true);
+    try {
+      const response = await cancelMeetingEntry(
+        id,
+        cancelEntryId,
+        cancellationReason.trim(),
+        meetingVersion(actionSnapshot),
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyCRM.getMeetingById, id],
+        }),
+        queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getMeeting] }),
+      ]);
+      toast.success(meetingSuccess(response, "Meeting cancelled"));
+      setCancelEntryId("");
+      setCancellationReason("");
+    } catch (error: any) {
+      toast.error(meetingMessage(error, "Unable to cancel the meeting."));
+      if (isMeetingConflict(error)) {
+        setCancelEntryId("");
+        await refetch();
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   //react query
   const {
@@ -129,21 +173,32 @@ const MeetingDetails = () => {
     isLoading: isLoadingQuery,
     refetch,
     isFetching,
+    error: detailError,
   } = useGetMeetingById(id);
+  const actions = meetingActions(detailError ? null : detail, now);
+  const eligibility = useMeetingEligibility(
+    detail?.lead?._id,
+    user?._id,
+    actions.closed,
+  );
+  useEffect(() => {
+    if (isFocused) void refetch();
+  }, [isFocused, id]);
 
   // myConsole("meededetailll", detail);
   //location
   useEffect(() => {
     const el = detail?.meetings[detail?.meetings?.length - 1];
     const isCurrentDate = moment(el?.scheduleDate).isSame(moment(), "day");
-    const isNeedLocation =
-      isCurrentDate &&
-      el?.status !== "conducted" &&
-      user?._id === detail?.createdBy?._id;
-    if (isFocused) {
+    const isNeedLocation = meetingActions(detail).conduct;
+    if (isFocused && isNeedLocation) {
       (async () => {
-        let tempLocation = await getLocationLatLng();
-        setLocation(tempLocation);
+        try {
+          let tempLocation = await getLocationLatLng();
+          setLocation(tempLocation);
+        } catch {
+          setLocation(null);
+        }
       })();
       // (async () => {
       //   console.log('checkingLOCTION')
@@ -161,15 +216,14 @@ const MeetingDetails = () => {
       //   setLocation(currentLocation);
       // })();
     }
-  }, [isFocused]);
+  }, [isFocused, actions.conduct]);
 
   //map
   // let detail = params?.item;
   const [isMailAvail, setIsMailAvail] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [tempFollowUpId, setTempFollowUpId] = useState("");
-  const isMeetingEdit =
-    user?.role === roleEnum?.sup_admin || user?.role === roleEnum?.sub_admin;
+  const isMeetingEdit = actions.edit;
 
   const handleConvertToBooking = () => {
     // navigate(routeMeeting.DeveloperInformation2, {
@@ -187,28 +241,12 @@ const MeetingDetails = () => {
     resetForm();
   };
 
-  const toggleModalOtpVerify = () => {
-    setModalVisibleConduct(!isModalVisibleConduct);
-  };
-
   const toggleModalOpenRemark = () => {
     setModalVisibleRemark(!isModalVisibleRemark);
   };
   const toggleMapViewModal = (v) => {
     setIsMapModalVisible(!isMapModalVisible);
     setMapLatLng(v);
-  };
-
-  const handleOtpGenerate = async (_id) => {
-    try {
-      setIsLoadingConduct(true);
-      const { data } = await meetingOtpGenerate(id);
-      setFollowUpId(_id);
-      toggleModalOtpVerify();
-    } catch (error) {
-      console.log(error);
-    }
-    setIsLoadingConduct(false);
   };
 
   const openMail = (mailAddress) => {
@@ -226,8 +264,7 @@ const MeetingDetails = () => {
   }, []);
 
   const rescheduleMeeting = () => {
-    const meetingDetails = params?.item;
-    navigate("meetingReschedule", { id, meetingDetails });
+    navigate("meetingReschedule", { id, meetingDetails: detail });
   };
 
   const navToCall = async () => {
@@ -243,15 +280,24 @@ const MeetingDetails = () => {
 
   const showThreeDotsWithNoKeysInPopup = user?._id === detail?.createdBy?._id;
 
+  const latestMeeting = latestMeetingEntry(detail);
+  const originalCreator = detail?.meetings?.find(
+    (entry) =>
+      String(entry._id) ===
+      String(latestMeeting?.appointmentId || latestMeeting?._id),
+  )?.createdBy;
+  const canManageLatest = actions.manage;
+
   const handleCopy = async (text: string, label: string) => {
     if (!text) return;
     await Clipboard.setStringAsync(text);
     toast.success(`${label} copied to clipboard`);
   };
-  const latestMeeting = detail?.meetings?.[detail?.meetings?.length - 1];
-  const memberNames = (detail?.agents || [])
+  const memberNames = (latestMeeting?.members || [])
     .map((memberId: any) => {
-      const member = allUsers?.find((item) => item._id === memberId);
+      const member = memberId?._id
+        ? memberId
+        : allUsers?.find((item) => item._id === memberId);
       return member
         ? `${member.name || ""} ${member.lastName || ""}`.trim()
         : null;
@@ -337,6 +383,69 @@ const MeetingDetails = () => {
             {isFetching && (
               <ActivityIndicator size="small" style={{ marginVertical: 10 }} />
             )}
+            {detail &&
+              (!detail.responsibleUserId ||
+                detail.lifecycleVersion !== 2 ||
+                detail.migrationBlocked) && (
+                <View
+                  style={{
+                    padding: 14,
+                    margin: 12,
+                    borderRadius: 12,
+                    backgroundColor: "#FFF7E6",
+                  }}
+                >
+                  <CustomText color="#9A6517">
+                    This meeting needs migration/admin review. History is
+                    read-only until reviewed.
+                  </CustomText>
+                </View>
+              )}
+            {!!detailError && (
+              <View
+                style={{
+                  padding: 14,
+                  margin: 12,
+                  backgroundColor: "#FFF1F1",
+                  borderRadius: 12,
+                }}
+              >
+                <CustomText color="#B91C1C">
+                  {meetingMessage(
+                    detailError,
+                    "Unable to load meeting details",
+                  )}
+                </CustomText>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => refetch()}
+                  style={{ paddingVertical: 12 }}
+                >
+                  <CustomText color="#2E67BE">Retry</CustomText>
+                </Pressable>
+              </View>
+            )}
+            {detail?.responsibleUserId && (
+              <View
+                style={{
+                  padding: 14,
+                  // marginHorizontal: 12,
+                  marginBottom: 12,
+                  borderRadius: 12,
+                  backgroundColor: "#EFF5FF",
+                }}
+              >
+                <CustomText color="#64748B">Responsible person</CustomText>
+                <CustomText fontWeight="600" color="#2E67BE">
+                  {[
+                    detail.responsibleUserId.name,
+                    detail.responsibleUserId.lastName,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                </CustomText>
+              </View>
+            )}
 
             <View style={styles.clientCard}>
               {/* Top Row */}
@@ -350,23 +459,25 @@ const MeetingDetails = () => {
                     styles.statusBadge,
                     {
                       backgroundColor:
-                        latestMeeting?.status === "conducted"
-                          ? "#DFF5E7"
-                          : "#E3ECFB",
+                        latestMeeting?.status === "cancelled"
+                          ? "#FEE2E2"
+                          : latestMeeting?.status === "conducted"
+                            ? "#DFF5E7"
+                            : "#E3ECFB",
                     },
                   ]}
                 >
                   <CustomText style={styles.statusText}>
-                    {latestMeeting?.status === "conducted"
-                      ? "Conducted"
-                      : "Scheduled"}
+                    {meetingStatus[latestMeeting?.status] ||
+                      latestMeeting?.status ||
+                      "Meeting"}
                   </CustomText>
                 </View>
               </View>
 
               {/* Product */}
               <CustomText style={styles.productText}>
-                {detail?.productPitch}
+                {latestMeeting?.productPitch || detail?.productPitch || "-"}
               </CustomText>
 
               {/* Date */}
@@ -474,7 +585,7 @@ const MeetingDetails = () => {
                   Product Pitch
                 </CustomText>
                 <CustomText style={styles.meetingValue}>
-                  {detail?.productPitch || "-"}
+                  {latestMeeting?.productPitch || detail?.productPitch || "-"}
                 </CustomText>
               </View>
 
@@ -504,11 +615,13 @@ const MeetingDetails = () => {
               </View>
 
               <View style={styles.meetingInfoRow}>
-                <CustomText style={styles.meetingLabel}>Created By</CustomText>
+                <CustomText style={styles.meetingLabel}>
+                  Appointment Creator
+                </CustomText>
                 <CustomText style={styles.meetingValue}>
-                  {`${detail?.createdBy?.name || ""} ${detail?.createdBy?.lastName || ""}`.trim() ||
+                  {`${originalCreator?.name || ""} ${originalCreator?.lastName || ""}`.trim() ||
                     "-"}
-                  {detail?.createdBy?.role ? ` (${detail.createdBy.role})` : ""}
+                  {originalCreator?.role ? ` (${originalCreator.role})` : ""}
                 </CustomText>
               </View>
 
@@ -530,10 +643,22 @@ const MeetingDetails = () => {
             </View>
 
             {(detail?.meetings || []).map((el, index) => {
+              const isLatestEntry = index === detail.meetings.length - 1;
               const isCurrentDate = moment(el?.scheduleDate).isSame(
                 moment(),
                 "day",
               );
+              const addMeetingDisabledReason = !actions.closed
+                ? "Conduct or cancel the latest meeting before adding another meeting."
+                : eligibility.isFetching
+                  ? "Checking lead ownership…"
+                  : !eligibility.data?.allowed
+                    ? eligibility.data?.reason ||
+                      meetingMessage(
+                        eligibility.error,
+                        "Unable to verify lead eligibility. Reopen this screen to retry.",
+                      )
+                    : "";
               return (
                 // <View key={index}>
                 //   <View>
@@ -674,12 +799,62 @@ const MeetingDetails = () => {
                       {el?.meetingMode === "virtual" ? "Virtual" : "Physical"}
                     </CustomText>
 
+                    <CustomText style={styles.meetingRemarks}>
+                      Product Pitch: {el?.productPitch || "-"}
+                    </CustomText>
+
                     {el?.remarks && (
                       <CustomText style={styles.meetingRemarks}>
                         Remark : {el?.remarks}
                       </CustomText>
                     )}
+                    {el?.cancellationReason && (
+                      <CustomText style={styles.meetingRemarks}>
+                        Cancellation reason: {el.cancellationReason}
+                      </CustomText>
+                    )}
                   </View>
+                  {isLatestEntry && (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityHint={addMeetingDisabledReason || undefined}
+                      accessibilityState={{
+                        disabled: Boolean(addMeetingDisabledReason),
+                      }}
+                      disabled={Boolean(addMeetingDisabledReason)}
+                      onPress={() => {
+                        if (addMeetingDisabledReason) {
+                          toast.info(addMeetingDisabledReason);
+                          return;
+                        }
+                        navigate("AddMeeting", {
+                          detail,
+                          followUpSource: el,
+                        });
+                      }}
+                      style={[
+                        styles.addMeetingButton,
+                        Boolean(addMeetingDisabledReason) &&
+                          styles.addMeetingButtonDisabled,
+                      ]}
+                    >
+                      <Feather
+                        name="calendar"
+                        size={16}
+                        color={addMeetingDisabledReason ? "#94A3B8" : "#2E67BE"}
+                      />
+                      <CustomText
+                        style={[
+                          styles.addMeetingButtonText,
+                          Boolean(addMeetingDisabledReason) && {
+                            color: "#94A3B8",
+                          },
+                        ]}
+                      >
+                        Add New Meeting
+                      </CustomText>
+                    </Pressable>
+                  )}
                   {/* {
                     <CustomBtn
                       title="Reschedule"
@@ -718,46 +893,23 @@ const MeetingDetails = () => {
                     )} */}
 
                   {index === detail?.meetings?.length - 1 &&
-                    user?._id === detail?.createdBy?._id && (
-                      <View
-                        style={{
-                          width: "100%",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          alignSelf: "flex-end",
+                    canManageLatest &&
+                    ["schedule", "reschedule"].includes(el?.status) && (
+                      <MeetingActionButtons
+                        onReschedule={rescheduleMeeting}
+                        onCancel={() => {
+                          setActionSnapshot(detail);
+                          setCancelEntryId(el._id);
+                          setCancellationReason("");
                         }}
-                      >
-                        <CustomBtn
-                          title="Reschedule"
-                          textStyle={{ fontSize: 12, color: "#fff" }}
-                          //  onPress={toggleModal}
-                          onPress={rescheduleMeeting}
-                          containerStyle={{
-                            marginBottom: 50,
-                            height: 40,
-                            width: "40%",
-                            backgroundColor: "rgb(191, 191, 191)",
-                            zIndex: 20,
-                          }}
-                        />
-                        {isCurrentDate && el?.status !== "conducted" && (
-                          <CustomBtn
-                            title="Conduct"
-                            textStyle={{ fontSize: 12, color: "#fff" }}
-                            isLoading={isLoadingConduct}
-                            onPress={() => {
-                              setTempFollowUpId(el?._id);
-                              toggleModalOpenRemark();
-                            }}
-                            containerStyle={{
-                              marginBottom: 50,
-                              height: 40,
-                              width: "40%",
-                            }}
-                          />
-                        )}
-                      </View>
+                        canConduct={actions.conduct}
+                        conducting={isLoadingConduct}
+                        onConduct={() => {
+                          setTempFollowUpId(el?._id);
+                          setActionSnapshot(detail);
+                          toggleModalOpenRemark();
+                        }}
+                      />
                     )}
                 </React.Fragment>
               );
@@ -770,184 +922,117 @@ const MeetingDetails = () => {
           </TouchableOpacity> */}
 
           <CustomModal
-            visible={isModalVisibleConduct}
-            onClose={toggleModalOtpVerify}
-            hasBackdrop={false}
-          >
-            <Formik
-              initialValues={{
-                otp: "",
-              }}
-              onSubmit={async (values) => {
-                //console.log("values", values);
-                try {
-                  setIsLoadingOtp(true);
-                  const { data } = await meetingOtpVerify(id, values);
-                  setToken(data?.token);
-                  toggleModalOtpVerify(false);
-                  toggleModalOpenRemark(true);
-                } catch (error) {
-                  myConsole("error", error);
-                }
-                setIsLoadingOtp(false);
-              }}
-            >
-              {({ handleChange, handleSubmit, values, errors }) => (
-                <View
-                  style={{
-                    backgroundColor: "#fff",
-                    padding: 10,
-                    borderRadius: 10,
-                    width: 340,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      padding: 10,
-                    }}
-                  >
-                    <CustomText
-                      style={{
-                        textAlign: "center",
-                        fontSize: 20,
-                        fontWeight: 600,
-                      }}
-                    >
-                      OTP Verification
-                    </CustomText>
-                    <TouchableOpacity onPress={toggleModalOtpVerify}>
-                      <AntDesign name="close" size={24} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                  <CustomText style={{ textAlign: "center" }}>
-                    Kindly ask Your/client to provide the otp sent to there
-                    mobile Number
-                  </CustomText>
-                  <CustomText style={{ textAlign: "center", marginTop: 10 }}>
-                    The session will expire 5 min
-                  </CustomText>
-                  <View style={{ marginBottom: 40 }}></View>
-
-                  <CustomBtn
-                    title={"Submit"}
-                    onPress={handleSubmit}
-                    containerStyle={{ margin: 20, textAlign: "center" }}
-                    isLoading={isLoadingOtp}
-                  />
-                </View>
-              )}
-            </Formik>
-          </CustomModal>
-          <CustomModal
+            avoidKeyboard
             visible={isModalVisibleRemark}
-            onClose={toggleModalOpenRemark}
+            onClose={() => { if (!isLoadingRemark) toggleModalOpenRemark(); }}
             hasBackdrop={false}
           >
             <Formik
+              key={`${actionSnapshot?._id}-${actionSnapshot?.__v}`}
               initialValues={{
                 remarks: "",
-                followUpId: followUpId,
-                token: token,
               }}
               onSubmit={async (values) => {
-                let conductMeetingAddress = !!location?.coords?.latitude
-                  ? await getAddressFromCoordinates(location?.coords)
-                  : null;
-                let tempSendData = {
-                  remarks: values?.remarks,
-                  followUpId: tempFollowUpId,
-                  isMobile: true,
-                  isLocationGranted: !!location?.coords?.latitude
-                    ? true
-                    : false,
-                  ...(!!conductMeetingAddress && {
-                    conductMeetingAddress: conductMeetingAddress,
-                  }),
-                  ...(!!location?.coords?.latitude && {
-                    conductCoordinates: {
-                      lat: location?.coords?.latitude,
-                      lng: location?.coords?.longitude,
-                    },
-                  }),
-                };
+                if (isLoadingRemark) return;
+                if (!values.remarks.trim()) {
+                  toast.error("Completion remarks are required");
+                  return;
+                }
+                setIsLoadingRemark(true);
                 try {
-                  setIsLoadingRemark(true);
+                  let conductMeetingAddress = !!location?.coords?.latitude
+                    ? await getAddressFromCoordinates(location?.coords)
+                    : null;
+                  let tempSendData = {
+                    ...meetingVersion(actionSnapshot),
+                    remarks: values?.remarks,
+                    isMobile: true,
+                    isLocationGranted: !!location?.coords?.latitude
+                      ? true
+                      : false,
+                    ...(!!conductMeetingAddress && {
+                      conductMeetingAddress: conductMeetingAddress,
+                    }),
+                  };
                   // await meetingConduct(id, values); //{followUpId, token,remarks,coordinates:{lat,lng}}
                   let res = await meetingConduct(id, tempSendData);
 
-                  queryClient.invalidateQueries({
+                  await queryClient.invalidateQueries({
                     queryKey: [queryKeyCRM.getMeetingById, id],
                   });
                   queryClient.invalidateQueries({
                     queryKey: [queryKeyCRM.getMeeting],
                   });
-                  popUpConfToast.successMessage(res?.data);
+                  popUpConfToast.successMessage(
+                    meetingSuccess(res, "Meeting conducted"),
+                  );
+                  setModalVisibleRemark(false);
                   // goBack();
                   // await dispatch(getAllMeetingFunc());
                   // navigate(routeMeeting?.AllMeetings);
                 } catch (error) {
-                  console.log(error);
+                  toast.error(meetingMessage(error));
+                  if (isMeetingConflict(error)) {
+                    setModalVisibleRemark(false);
+                    await refetch();
+                  }
                 }
                 setIsLoadingRemark(false);
-                toggleModalOpenRemark(false);
               }}
             >
               {({ handleChange, handleSubmit, values, touched, errors }) => (
-                <View
-                  style={{
-                    backgroundColor: "#fff",
-                    padding: 10,
-                    borderRadius: 10,
-                    width: 340,
-                  }}
+                <ScrollView
+                  style={{ flexGrow: 0, flexShrink: 1 }}
+                  contentContainerStyle={styles.conductSheetBody}
+                  keyboardShouldPersistTaps="handled"
                 >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      padding: 10,
-                    }}
-                  >
-                    <Pressable
-                      onLongPress={() => {
-                        Alert.alert("location", location);
-                      }}
-                    >
-                      <CustomText style={styles.conductMeetingTxt}>
-                        Conduct Meeting
-                      </CustomText>
-                    </Pressable>
-                    <TouchableOpacity onPress={toggleModalOpenRemark}>
-                      <AntDesign name="close" size={24} color="black" />
+                  <View style={styles.conductSheetHeader}>
+                    <View style={styles.conductSheetIcon}>
+                      <Feather name="check-circle" size={21} color="#2E67BE" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <CustomText style={styles.conductSheetTitle}>Conduct Meeting</CustomText>
+                      <CustomText style={styles.conductSheetSubtitle}>Add completion remarks to finish this meeting.</CustomText>
+                    </View>
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close conduct meeting" disabled={isLoadingRemark} onPress={toggleModalOpenRemark} style={styles.conductSheetClose}>
+                      <Feather name="x" size={21} color="#64748B" />
                     </TouchableOpacity>
                   </View>
 
+                  <CustomText style={styles.conductRemarksLabel}>Completion remarks <CustomText color="#B91C1C">*</CustomText></CustomText>
                   <CustomInput
-                    label="Remarks"
-                    // placeholder="remarks"
+                    placeholder="Describe the meeting outcome…"
                     onChangeText={handleChange("remarks")}
                     value={values.remarks}
-                    containerStyle={{ marginBottom: 15 }}
+                    multiline
+                    editable={!isLoadingRemark}
+                    props={{ accessibilityLabel: "Completion remarks", placeholderTextColor: "#64748B", textAlignVertical: "top" }}
+                    inputContainerStyle={styles.conductRemarksContainer}
+                    inputStyle={styles.conductRemarksInput}
                   />
                   {errors.remarks && touched.remarks && (
-                    <CustomText style={{ color: "red" }}>
+                    <CustomText style={{ color: "#B91C1C", fontSize: 12 }}>
                       {errors.remarks}
                     </CustomText>
                   )}
-                  <CustomText fontSize={13} color={color.textGray}>
-                    {location?.coords?.latitude
-                      ? `Note: Your live location is detected.`
-                      : `Note: Your live location is not detected. Please give the location permission. If you have given the location access then please wait for the app to fetch your location or reopen the app`}
-                  </CustomText>
+                  <View style={styles.conductLocationNote}>
+                    <Feather name="map-pin" size={16} color="#527098" />
+                    <CustomText style={styles.conductLocationText}>
+                      {location?.coords?.latitude
+                        ? "Your current location is available and will be recorded when possible."
+                        : "Location is unavailable. You can still mark the meeting as conducted."}
+                    </CustomText>
+                  </View>
                   <CustomBtn
-                    title={"Save"}
+                    title="Mark as Conducted"
                     onPress={handleSubmit}
-                    containerStyle={{ margin: 20, textAlign: "center" }}
+                    disabled={!values.remarks.trim() || isLoadingRemark}
+                    containerStyle={styles.conductSaveButton}
+                    gradientContStyle={{ borderRadius: 10, minHeight: 46 }}
+                    textStyle={{ fontSize: 14, fontWeight: "600" }}
                     isLoading={isLoadingRemark}
                   />
-                </View>
+                </ScrollView>
               )}
             </Formik>
           </CustomModal>
@@ -958,12 +1043,66 @@ const MeetingDetails = () => {
             mapLatLng={mapLatLng}
           />
         </ScrollView>
+        <CustomModal
+          avoidKeyboard
+          visible={Boolean(cancelEntryId)}
+          onClose={() => {
+            if (!isCancelling) setCancelEntryId("");
+          }}
+        >
+          <ScrollView
+            style={{ flexGrow: 0, flexShrink: 1 }}
+            contentContainerStyle={{ padding: 20, gap: 14 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <CustomText fontSize={20} fontWeight="700">
+              Cancel Meeting?
+            </CustomText>
+            <CustomText>
+              This will cancel the latest meeting and stop its pending
+              reminders.
+            </CustomText>
+            <CustomInput
+              label="Cancellation reason"
+              value={cancellationReason}
+              onChangeText={setCancellationReason}
+              props={{ maxLength: 1000, textAlignVertical: "top" }}
+              inputStyle={{ minHeight: 80, maxHeight: 140 }}
+              multiline
+              editable={!isCancelling}
+            />
+            <CustomBtn
+              title="Cancel Meeting"
+              onPress={handleCancelMeeting}
+              isLoading={isCancelling}
+              disabled={!cancellationReason.trim() || isCancelling}
+              containerStyle={{ backgroundColor: "#B91C1C" }}
+            />
+            <CustomBtn
+              title="Keep Meeting"
+              onPress={() => setCancelEntryId("")}
+              disabled={isCancelling}
+            />
+          </ScrollView>
+        </CustomModal>
       </Container>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  conductSheetBody: { paddingHorizontal: 20, paddingBottom: 8, gap: 14 },
+  conductSheetHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
+  conductSheetIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: "#EDF4FF", alignItems: "center", justifyContent: "center" },
+  conductSheetTitle: { fontSize: 18, fontWeight: "700", color: "#1E293B" },
+  conductSheetSubtitle: { fontSize: 12, lineHeight: 17, color: "#64748B", marginTop: 4 },
+  conductSheetClose: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#F3F6FA" },
+  conductRemarksLabel: { fontSize: 13, fontWeight: "600", color: "#334155", marginBottom: -6 },
+  conductRemarksContainer: { borderRadius: 12, borderWidth: 1, borderColor: "#CBD5E1", backgroundColor: "#F8FAFC", alignItems: "flex-start", paddingVertical: 10, paddingHorizontal: 12 },
+  conductRemarksInput: { minHeight: 84, maxHeight: 140, fontSize: 14, lineHeight: 20, color: "#1E293B", paddingVertical: 0 },
+  conductLocationNote: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#F1F6FD" },
+  conductLocationText: { flex: 1, fontSize: 12, lineHeight: 18, color: "#526784" },
+  conductSaveButton: { width: "100%", borderRadius: 10, marginTop: 2, shadowOpacity: 0, elevation: 0 },
   actionItem: {
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -983,11 +1122,6 @@ const styles = StyleSheet.create({
     color: color.mainTxtColor,
   },
 
-  conductMeetingTxt: {
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: 600,
-  },
   actionsOverlay: {
     position: "absolute",
     top: 90, // adjust if needed
@@ -1207,6 +1341,28 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     color: "#6B7280",
+  },
+  addMeetingButton: {
+    marginTop: -8,
+    marginBottom: 16,
+    minHeight: 42,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#BBD3F5",
+    backgroundColor: "#EEF5FF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+  },
+  addMeetingButtonDisabled: {
+    borderColor: "#E2E8F0",
+    backgroundColor: "#F1F5F9",
+  },
+  addMeetingButtonText: {
+    color: "#2E67BE",
+    fontSize: 14,
+    fontWeight: "600",
   },
   viewLeadProfBtn: {
     justifyContent: "center",

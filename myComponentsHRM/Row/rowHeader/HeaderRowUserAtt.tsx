@@ -15,6 +15,7 @@ const HeaderRowUserAtt = () => {
           flexDirection: "row",
           backgroundColor: color.mainTxtColor,
           gap: 5,
+          marginBottom: 4,
         },
       ]}
     >

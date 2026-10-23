@@ -232,7 +232,7 @@ export const useGetMeeting = ({
       search,
       limit,
       status,
-      (pagination = true),
+      pagination,
       srManager,
       manager,
       assistantManager,
@@ -256,6 +256,9 @@ export const useGetMeeting = ({
         startDate,
         endDate,
       }),
+    initialPageParam: 1,
+    refetchOnMount: "always",
+    retry: (count, error: any) => ![401, 403, 404].includes(error?.response?.status) && count < 2,
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext
         ? parseInt(lastPage?.pagination?.currentPage) + 1
@@ -264,7 +267,7 @@ export const useGetMeeting = ({
   });
   let data = [];
   if (res) {
-    data = res?.data?.pages?.map((page) => page?.data).flat();
+    data = res?.data?.pages?.flatMap((page) => Array.isArray(page?.data) ? page.data : []) || [];
   }
   const totalCount = res?.data?.pages?.[0]?.pagination?.totalItem ?? null;
   return { ...res, data, totalCount };

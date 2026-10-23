@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import Card from "../../components/Dashboard/Card";
 import DashbordHeader from "../../components/Dashboard/DashbordHeader";
-import { getDataJson, removeItemValue } from "../../hooks/useAsyncStorage";
+import { getData, getDataJson, removeItemValue } from "../../hooks/useAsyncStorage";
 import Container from "../../myComponents/Container/Container";
 import {
   getAllBookingFunc,
@@ -128,11 +128,12 @@ const Dashboard = () => {
   useEffect(() => {
     if (!reduxUser?.user?._id) return;
 
-    socket.auth = {
-      userId: reduxUser?.user?._id,
-    };
-
-    socket.connect();
+    let cancelled = false;
+    getData("token").then((token) => {
+      if (cancelled || !token) return;
+      socket.auth = { userId: reduxUser?.user?._id, token };
+      socket.connect();
+    });
 
     socket.on("connect", () => {
       console.log("🟢 SOCKET CONNECTED =>", socket.id);
@@ -143,7 +144,7 @@ const Dashboard = () => {
       console.log("🔴 SOCKET ERROR =>", err?.message);
     });
 
-    return () => {};
+    return () => { cancelled = true; socket.disconnect(); socket.off("connect"); socket.off("connect_error"); };
   }, [reduxUser?.user?._id]);
 
   const ifUserNotOnBoard = async () => {

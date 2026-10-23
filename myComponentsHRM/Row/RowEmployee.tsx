@@ -31,6 +31,7 @@ interface TRowEmployee {
     accountStatus?: string;
     inactiveReason?: string;
     customId: string;
+    activeLoginCounts?: { Web: number; Mobile: number };
   };
 }
 
@@ -64,6 +65,7 @@ const RowEmployee = ({ containerStyle, onPress, item }: TRowEmployee) => {
             <CustomText numberOfLines={1} style={styles.name}>
               {item?.name || "N/A"}
             </CustomText>
+            {item.activeLoginCounts && <CustomText style={styles.idText}>Active Web: {item.activeLoginCounts.Web} · Mobile: {item.activeLoginCounts.Mobile}</CustomText>}
 
             <View style={styles.infoRow}>
               <Feather name="hash" size={11} color="#64748B" />

@@ -59,6 +59,8 @@ interface TContainerHRM {
   headingTitle?: string;
   hasStatusIcon?: boolean;
   onStatusPress?: () => void;
+  onPressSearch?: () => void;
+  showSearch?: boolean;
 }
 const ContainerHRM = ({
   children,
@@ -71,6 +73,8 @@ const ContainerHRM = ({
   headingTitle,
   hasStatusIcon,
   onStatusPress,
+  onPressSearch,
+  showSearch = false,
 }: TContainerHRM) => {
   const { navigate, goBack } = useNavigation();
   const { user } = useSelector(selectUser);
@@ -145,6 +149,7 @@ const ContainerHRM = ({
               <ChangeStatus />
             </Pressable>
           )}
+          {onPressSearch && <Pressable accessibilityRole="button" accessibilityLabel={showSearch ? "Close search" : "Search"} onPress={onPressSearch} style={styles.iconBtn}><Feather name={showSearch ? "x" : "search"} size={18} color="#fff" /></Pressable>}
           <Pressable
             onPress={() => navigate(routeExtra?.NotificationHRM)}
             style={styles.iconBtn}
@@ -224,6 +229,7 @@ const ContainerHRM = ({
             marginBottom: Platform.OS === "ios" ? -12 : -4,
           }}
         >
+          {onPressSearch && <Pressable accessibilityRole="button" accessibilityLabel={showSearch ? "Close search" : "Search"} onPress={onPressSearch} style={styles.iconBtn}><Feather name={showSearch ? "x" : "search"} size={18} color="#fff" /></Pressable>}
           {!!isBAck?.isEdit && (
             <Pressable
               onPress={() => isBAck?.isEdit()}

@@ -1,4 +1,5 @@
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { meetingMessage } from "../../utils/meetingLifecycle";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
@@ -38,6 +39,7 @@ import { useAppToast } from "../../components/AppToast";
 import PinnedRow from "../../components/Pinned/PinnedRow";
 import usePinnedItems from "../../hooks/usePinnedItems";
 import { PINNED_LIMIT } from "../../utils/pinnedItemsStorage";
+import MeetingReminderSettings from "../../components/MeetingReminderSettings";
 
 let bgByStatus = {
   reschedule: "#A8C4F5", // soft blue tint
@@ -84,10 +86,13 @@ const AllMeetings = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
+    error: meetingError,
+    refetch: refetchMeetings,
   } = useGetMeeting({
     search: debouncedSearch,
     ...meetingQueryKey,
   });
+  useFocusEffect(React.useCallback(() => { void refetchMeetings(); }, [refetchMeetings]));
 
   const handleSelect = (id) => {
     if (selected.length === 0) {
@@ -222,7 +227,7 @@ const AllMeetings = () => {
   };
 
   const onEndReach = () => {
-    if (hasNextPage && !loading && meetingData?.length > 0) {
+    if (hasNextPage && !loading && !isFetchingNextPage && !meetingError && meetingData?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
   };
@@ -348,6 +353,7 @@ const AllMeetings = () => {
                   }
                   onUnpin={(id) => unpin(id)}
                 />
+                <MeetingReminderSettings />
 
                 {/* <MeetingListHeading /> */}
               </>
@@ -356,8 +362,16 @@ const AllMeetings = () => {
             ListEmptyComponent={
               loading ? (
                 <SkeletonLoadingMeeting />
+              ) : meetingError ? (
+                <View style={{ margin: 20, padding: 18, borderRadius: 14, backgroundColor: "#FFF1F1" }}>
+                  <CustomText color="#B91C1C">{meetingMessage(meetingError, "Unable to load meetings")}</CustomText>
+                  <TouchableOpacity accessibilityRole="button" onPress={() => refetchMeetings()} style={{ paddingVertical: 12 }}><CustomText color="#2E67BE">Retry</CustomText></TouchableOpacity>
+                </View>
               ) : (
-                <NoDataFound style={{ marginTop: sizes.height / 5 }} showTxt />
+                <View>
+                  <NoDataFound style={{ marginTop: sizes.height / 5 }} showTxt />
+                  {!!meetingQueryKey && <TouchableOpacity accessibilityRole="button" onPress={() => { dispatch(setMeetingQueryKey(null)); handleSearchChange(""); }} style={{ alignSelf: "center", padding: 12 }}><CustomText color="#2E67BE">Clear meeting filters</CustomText></TouchableOpacity>}
+                </View>
               )
             }
             onEndReached={onEndReach}
@@ -422,7 +436,9 @@ const MeetingRowItem = ({
   const status = latestMeeting?.status || "";
 
   const statusColor =
-    status === "conducted"
+    status === "cancelled"
+      ? { bg: "#FEE2E2", text: "#B91C1C" }
+      : status === "conducted"
       ? { bg: "#D4F3E3", text: "#0A8F4B" }
       : { bg: "#DCE8FA", text: "#2D67C6" };
 
@@ -461,15 +477,15 @@ const MeetingRowItem = ({
               <CustomText
                 style={[styles.statusText, { color: statusColor.text }]}
               >
-                {status === "conducted" ? "Conducted" : "Scheduled"}
+                {status === "cancelled" ? "Cancelled" : status === "conducted" ? "Conducted" : "Scheduled"}
               </CustomText>
             </View>
           </View>
 
           {/* Product */}
-          {item?.productPitch && (
+          {(latestMeeting?.productPitch || item?.productPitch) && (
             <CustomText style={styles.productText}>
-              {item?.productPitch || "-"}
+              {latestMeeting?.productPitch || item?.productPitch || "-"}
             </CustomText>
           )}
 

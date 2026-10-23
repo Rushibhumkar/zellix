@@ -57,14 +57,16 @@ export const HRManagementStack = () => {
         },
       }}
     >
-      <Tab.Screen
-        name="DashboardHRMStack"
-        component={DashboardHRMStack}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            focused ? <DashboardIconFocus /> : <DashboardIcon />,
-        }}
-      />
+      {!isAgent && (
+        <Tab.Screen
+          name="DashboardHRMStack"
+          component={DashboardHRMStack}
+          options={{
+            tabBarIcon: ({ focused }) =>
+              focused ? <DashboardIconFocus /> : <DashboardIcon />,
+          }}
+        />
+      )}
       {!isAgent && (
         <Tab.Screen
           name="AllUsersHRMStack"

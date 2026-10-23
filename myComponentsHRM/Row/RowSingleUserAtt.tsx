@@ -46,6 +46,7 @@ const RowSingleUserAtt = ({
           alignItems: "flex-start",
           flexDirection: "row",
           gap: 5,
+          marginBottom: 10,
         },
         containerStyle,
       ]}
