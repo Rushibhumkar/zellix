@@ -507,6 +507,24 @@ const LeadsDetails = () => {
       setShowChangeStatusPopup(false);
       setIsStatusPopupFromCall(false);
       setCallMeta(null);
+      toast.info("Call was too short. No call log was recorded.");
+      return;
+    }
+
+    if (isShortCallDuration(diffSec)) {
+      pendingResumeRef.current = null;
+      setShowDurationEditor(false);
+      setShowChangeStatusPopup(false);
+      setIsStatusPopupFromCall(false);
+      setCallMeta(null);
+      endCallUi();
+      toast.info(
+        "Positive outcomes are available after a meaningful conversation. This brief call is classified as Not Connected.",
+        { duration: 4000 },
+      );
+      // Pass completed timestamps directly: React state is asynchronous, and
+      // this path intentionally never mounts the status form.
+      void hitCreateCallLog(undefined, { initiatedAt, finishedAt: endTime }, false);
       return;
     }
 
@@ -875,17 +893,21 @@ const LeadsDetails = () => {
     }
   };
 
-  const hitCreateCallLog = async (statusAfterCall?: string) => {
+  const hitCreateCallLog = async (
+    statusAfterCall?: string,
+    completedCall = callMeta,
+    showSuccessToast = true,
+  ) => {
     console.log("hitcreatecalllogs");
 
     // ✅ STOP duplicate calls
     if (isCallLogSentRef.current) return;
 
     try {
-      if (!callMeta?.initiatedAt || !callMeta?.finishedAt) return;
+      if (!completedCall?.initiatedAt || !completedCall?.finishedAt) return;
 
       const durationInSec = Math.floor(
-        (callMeta.finishedAt - callMeta.initiatedAt) / 1000,
+        (completedCall.finishedAt - completedCall.initiatedAt) / 1000,
       );
 
       if (isIgnoredCallDuration(durationInSec)) {
@@ -971,15 +993,17 @@ const LeadsDetails = () => {
         userId: user?._id,
         leadId: detail?._id,
         type: callType,
-        initiatedAt: new Date(callMeta.initiatedAt).toISOString(),
-        finishedAt: new Date(callMeta.finishedAt).toISOString(),
+        initiatedAt: new Date(completedCall.initiatedAt).toISOString(),
+        finishedAt: new Date(completedCall.finishedAt).toISOString(),
         ...(statusAfterCall && { leadStatusAfterCall: statusAfterCall }),
       });
 
       // myConsole("ressssssss", res);
 
       if (res?.success) {
-        toast.success(res?.message || "Call log created successfully");
+        if (showSuccessToast) {
+          toast.success(res?.message || "Call log created successfully");
+        }
 
         queryClient.invalidateQueries({
           queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
@@ -998,7 +1022,8 @@ const LeadsDetails = () => {
         toast.error(res?.message || "Failed to create call log");
       }
 
-      setCallMeta(null);
+      // A background short-call save must not clear a newer call's state.
+      if (completedCall === callMeta) setCallMeta(null);
     } catch (err: any) {
       console.log("❌ createCallLog error", err);
 
@@ -1320,14 +1345,17 @@ const LeadsDetails = () => {
     }
   };
 
-  const isSubmitDisabled =
+  // && / || preserve operand values: an empty short-call status otherwise
+  // reaches Android accessibilityState.disabled as "" and crashes Fabric.
+  const isSubmitDisabled = Boolean(
     selectLeadType !== "calling_data" &&
     ((fields?.status &&
       NOTE_REQUIRED_STATUSES.includes(fields.status) &&
       !formik.values.note?.trim()) ||
       (fields?.status &&
         FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
-        (!tdForFUT?.date || !tdForFUT?.time)));
+        (!tdForFUT?.date || !tdForFUT?.time))),
+  );
 
   useEffect(() => {
     if (showChangeStatusPopup) {

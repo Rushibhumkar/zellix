@@ -224,6 +224,65 @@ const outcome = load("utils/callOutcome.ts");
 const noop = () => {};
 const ref = (current = null) => ({ current });
 
+// Run the real duration handler at the reported short-call boundaries.
+for (const seconds of [12, 15, 16, 30, 59, 60, 61, 1200, 1201]) {
+  for (const status of ["active_hot", "no_response"]) {
+    let popup = false, fromCall = false, meta, releases = 0;
+    const messages = [], logs = [];
+    const end = loadHandler("screens/Leads/LeadsDetails.tsx", "handleCallEnd", {
+      ...outcome,
+      DURATION_THRESHOLD_SEC: 1200,
+      console: { log() {} }, pendingResumeRef: ref(),
+      toast: { info: message => messages.push(message) },
+      hitCreateCallLog: (...args) => logs.push(args),
+      endCallUi: () => releases++, setShowDurationEditor: noop,
+      setIsStatusPopupFromCall: value => { fromCall = value; },
+      setCallMeta: value => { meta = value; },
+      setShowChangeStatusPopup: value => { popup = value; },
+    });
+    end(1000, 1000 + seconds * 1000);
+    const eligible = seconds > 60 && seconds <= 1200;
+    assert.equal(popup, eligible, `${seconds}s: only meaningful calls open the status form`);
+    assert.equal(fromCall, eligible);
+    assert.equal(releases, eligible ? 0 : 1, "Visible outcome retains the call/reminder guard");
+    if (eligible) {
+      assert.equal(meta.finishedAt - meta.initiatedAt, seconds * 1000);
+    } else assert.equal(meta, null);
+    const shortLogged = seconds > 15 && seconds <= 60;
+    assert.equal(logs.length, shortLogged ? 1 : 0);
+    assert.equal(messages.length, seconds <= 60 ? 1 : 0);
+    if (shortLogged) {
+      assert.deepEqual(logs[0], [undefined, { initiatedAt: 1000, finishedAt: 1000 + seconds * 1000 }, false]);
+      assert.match(messages[0], /Not Connected/);
+    }
+  }
+}
+
+// Reproduce the exact Android failure: short calls clear positive statuses to
+// "", and &&/|| used to pass that string through TouchableOpacity to Fabric's
+// accessibilityState.disabled. Evaluate the actual source initializer.
+for (const status of [undefined, null, "", "active_hot", "no_response", "broker"]) {
+  for (const type of ["lead", "calling_data"]) {
+    for (const note of ["", "  ", "note"]) {
+      for (const followUpReady of [false, true]) {
+        const disabled = loadHandler("screens/Leads/LeadsDetails.tsx", "isSubmitDisabled", {
+          selectLeadType: type, fields: { status },
+          NOTE_REQUIRED_STATUSES: ["active_hot", "broker"],
+          FOLLOWUP_REQUIRED_STATUSES: ["active_hot"],
+          formik: { values: { note } },
+          tdForFUT: { date: followUpReady ? "date" : null, time: followUpReady ? "time" : null },
+        });
+        assert.equal(typeof disabled, "boolean", `Native disabled must be boolean for ${String(status)}`);
+        const expected = type !== "calling_data" && Boolean(status) &&
+          ((["active_hot", "broker"].includes(status) && !note.trim()) ||
+           (status === "active_hot" && !followUpReady));
+        assert.equal(disabled, expected, "Existing note/follow-up validation must not change");
+        for (const loading of [false, true]) assert.equal(typeof (loading || disabled), "boolean");
+      }
+    }
+  }
+}
+
 // Android only: native call dialogs wait for a stable foreground/focused host.
 let leadFocused = true;
 const androidState = { currentState: "active", listeners: new Set(), addEventListener(_, fn) { this.listeners.add(fn); return { remove: () => this.listeners.delete(fn) }; } };
@@ -290,6 +349,35 @@ clock.advance(1);
 assert.deepEqual(opened, [["dial-pad", false], ["outcome", true]]);
 assert.equal(gate.getSnapshot(), false);
 
+async function testShortLeadCallLogs() {
+  for (const seconds of [12, 15, 16, 30, 59, 60, 61]) {
+    const sent = ref(false), calls = [], successes = [], errors = [];
+    let cleared = 0;
+    const save = loadHandler("screens/Leads/LeadsDetails.tsx", "hitCreateCallLog", {
+      ...outcome, callMeta: null, isCallLogSentRef: sent,
+      DURATION_THRESHOLD_SEC: 1200, console: { log() {} },
+      user: { _id: "user-a" }, detail: { _id: "lead-a" },
+      createCallLog: async payload => { calls.push(payload); return { success: true }; },
+      toast: { success: value => successes.push(value), error: value => errors.push(value) },
+      queryClient: { invalidateQueries: noop }, queryKeyCRM: {}, refetchLeadDetail: noop,
+      setCallMeta: () => cleared++, setShowChangeStatusPopup: noop, setIsStatusPopupFromCall: noop,
+    });
+    const completed = { initiatedAt: 1000, finishedAt: 1000 + seconds * 1000 };
+    await save(undefined, completed, false);
+    await save(undefined, completed, false);
+    assert.equal(calls.length, seconds <= 15 ? 0 : 1, "Save each eligible call once, even without a mounted popup");
+    assert.equal(successes.length, 0, "Success toast must not overwrite the short-call explanation");
+    assert.equal(errors.length, 0);
+    if (seconds > 15) {
+      assert.equal(calls[0].type, seconds <= 60 ? "not_connected" : "connected");
+      assert.equal(calls[0].leadId, "lead-a");
+      assert.equal(calls[0].finishedAt, new Date(completed.finishedAt).toISOString());
+      assert.equal(cleared, 0, "A background save cannot clear a newer tracked call");
+      assert.equal("leadStatusAfterCall" in calls[0], false, "Automatic log must not change lead status");
+    }
+  }
+}
+
 async function testLeadDialIntent() {
   const dialer = ref(false), tracking = ref(false), started = ref(), accepted = ref(false), returnTimer = ref();
   let finishOpen, launches = 0, releases = 0, fails = false;
@@ -346,6 +434,6 @@ async function testRecoveredLeadCall() {
   assert.equal(clock.tasks.size, 0);
 }
 
-testLeadDialIntent().then(testRecoveredLeadCall).then(() => {
-  console.log("PASS: Android foreground/focus stability, interrupted resume, inactive→active return, duplicate/dial-failure cleanup, call leases, reminder queue ordering, navigation and recovered-call alert transitions.");
+testShortLeadCallLogs().then(testLeadDialIntent).then(testRecoveredLeadCall).then(() => {
+  console.log("PASS: Native disabled boolean regression (144 form combinations), 12/15/16/30/59/60/61/1200/1201-second boundaries, foreground/focus stability, interrupted resume, duplicate/dial-failure cleanup, call leases, reminder queue/navigation and recovered-call alert transitions.");
 }).catch((error) => { console.error(error); process.exitCode = 1; });
