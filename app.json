@@ -13,7 +13,7 @@
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
       "supportsTablet": true,
-      "buildNumber": "187",
+      "buildNumber": "188",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features.",
