@@ -3,7 +3,7 @@
     "name": "zellix",
     "scheme": "zellix",
     "slug": "zellix",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -13,7 +13,7 @@
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
       "supportsTablet": true,
-      "buildNumber": "183",
+      "buildNumber": "187",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features.",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 166,
+      "versionCode": 168,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -68,14 +68,14 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 36,
+            "compileSdkVersion": 37,
             "targetSdkVersion": 36,
-            "buildToolsVersion": "36.0.0",
+            "buildToolsVersion": "37.0.0",
             "minSdkVersion": 24
           },
           "ios": {
             "deploymentTarget": "16.4",
-            "buildReactNativeFromSource": true
+            "buildReactNativeFromSource": false
           }
         }
       ],
@@ -85,7 +85,7 @@
       "expo-font"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "2.3.0-sdk58",
+    "runtimeVersion": "2.3.1-sdk58",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
@@ -96,8 +96,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "2.3.0"
-    },
-    "android.buildType": "app-bundle"
+      "appVersion": "2.3.1"
+    }
   }
 }
