@@ -23,6 +23,7 @@ import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 interface TRowAttendance {
   containerStyle?: StyleProp<ViewStyle>;
+  action?: React.ReactNode;
 
   onPress: () => void;
 
@@ -37,16 +38,17 @@ interface TRowAttendance {
   };
 }
 
-const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
+const RowAttendance = ({ containerStyle, onPress, item, action }: TRowAttendance) => {
   return (
     <SlideFadeIn>
+      <View style={[styles.card, containerStyle]}>
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={onPress}
-        style={[styles.card, containerStyle]}
+        style={styles.cardContent}
       >
         {/* ROW 1 */}
-        <View style={styles.topRow}>
+        <View style={[styles.topRow, action ? styles.topRowWithAction : undefined]}>
           <View style={styles.leftSection}>
             <View style={styles.avatar}>
               <CustomText style={styles.avatarText}>
@@ -69,18 +71,20 @@ const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
                 </View>
               </View>
             </View>
-            <View style={styles.dateInline}>
+          </View>
+
+          <View style={[styles.rightDetails, action ? styles.rightDetailsWithAction : undefined]}>
+            <View style={[styles.dateInline, action ? styles.centeredDate : undefined]}>
               <Feather name="calendar" size={10} color="#64748B" />
 
               <CustomText style={styles.dateText}>
                 {moment(item?.createdAt).format("DD MMM YYYY")}
               </CustomText>
             </View>
-          </View>
-
           <View
             style={[
               styles.statusBadge,
+              action ? styles.centeredStatus : undefined,
               {
                 backgroundColor:
                   item?.status === "present"
@@ -102,6 +106,7 @@ const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
             >
               {statusAttend[item?.status]}
             </CustomText>
+          </View>
           </View>
         </View>
 
@@ -155,6 +160,8 @@ const RowAttendance = ({ containerStyle, onPress, item }: TRowAttendance) => {
           </View>
         </View>
       </TouchableOpacity>
+      {action && <View style={styles.actionCorner}>{action}</View>}
+      </View>
     </SlideFadeIn>
   );
 };
@@ -165,12 +172,29 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    padding: 12,
     borderWidth: 1,
     borderColor: "#E6ECF5",
     marginTop: 10,
     ...shadowPrimaryColor,
   },
+
+  cardContent: { padding: 12 },
+  actionCorner: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    zIndex: 1,
+  },
+  rightDetails: {
+    minWidth: 100,
+    marginLeft: 10,
+    alignItems: "flex-end",
+    gap: 6,
+  },
+  rightDetailsWithAction: { alignItems: "center", alignSelf: "center", marginLeft: 8 },
+  topRowWithAction: { paddingRight: 100, minHeight: 44 },
+  centeredDate: { justifyContent: "center" },
+  centeredStatus: { alignSelf: "center" },
 
   avatar: {
     width: 40,
@@ -250,8 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 16,
-    marginLeft: 10,
-    alignSelf: "center",
+    alignSelf: "flex-end",
   },
 
   roleDateRow: {
@@ -265,13 +288,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    width: "48%",
+    flex: 1,
   },
 
   dateInline: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    width: "52%",
+    justifyContent: "flex-end",
+    gap: 4,
   },
 });

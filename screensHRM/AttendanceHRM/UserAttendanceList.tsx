@@ -29,7 +29,7 @@ const UserAttendanceList = () => {
     startDate: "",
     endDate: "",
   });
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+  const { data, totalCount, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useGetSingleUserAttList({ userId: params?.item?.user, ...searchSubmit });
   const updateSearch = useCallback((search: string) => setSearchSubmit(prev => prev.search === search ? prev : { ...prev, search }), []);
   const search = useHRMListingSearch(updateSearch);
@@ -42,6 +42,7 @@ const UserAttendanceList = () => {
 
   return (
     <ContainerHRM
+      totalCount={totalCount}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}

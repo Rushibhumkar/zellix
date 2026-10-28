@@ -1,6 +1,7 @@
 //CircularBarChart
 import { View, Text } from "react-native";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { getHRMChartValues } from "../../utils/hrmChartData";
 import { PieChart } from "react-native-gifted-charts";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { color } from "../../const/color";
@@ -27,12 +28,6 @@ interface TCircularBarChart {
   type?: "userChart" | "leavesChart" | "attendanceChart";
 }
 
-const initial = {
-  leavesChart: dummyUser,
-  attendanceChart: dummyLeave,
-  userChart: dummyAttendance,
-};
-
 const titleH = {
   leavesChart: "Leaves Status",
   attendanceChart: "Attendance",
@@ -41,15 +36,14 @@ const titleH = {
 
 const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
   //
-  const [pieCirData, setPieCirData] = useState(initial[type]);
   //
-  const { data: userCount } = useGetUserStatusChart({
+  const { data: userCount, isLoading: userLoading, isError: userError, refetch: retryUsers } = useGetUserStatusChart({
     isEnable: type === "userChart" && true,
   });
   const { data: leaveCount } = useGetLeaveChart({
     isEnable: type === "leavesChart" && true,
   });
-  const { data: attendanceCount } = useGetAttendanceChart({
+  const { data: attendanceCount, isLoading: attendanceLoading, isError: attendanceError, refetch: retryAttendance } = useGetAttendanceChart({
     isEnable: type === "attendanceChart" && true,
   });
 
@@ -57,43 +51,18 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
   // myConsole('leaveCount', leaveCount)
   // myConsole('attendanceCount', attendanceCount)
   //
-  useEffect(() => {
-    let temp = [];
-    if (type === "userChart") {
-      temp = dummyUser?.map((el) => ({
-        ...el,
-        value:
-          typeof userCount?.[el?.key] === "number" ? userCount?.[el?.key] : 0,
-      }));
-    }
-    if (type === "leavesChart") {
-      temp = dummyLeave?.map((el) => ({
-        ...el,
-        value:
-          typeof leaveCount?.[el?.key] === "number" ? leaveCount?.[el?.key] : 0,
-      }));
-    }
-    if (type === "attendanceChart") {
-      temp = dummyAttendance?.map((el) => ({
-        ...el,
-        value:
-          typeof attendanceCount?.[el?.key] === "number"
-            ? attendanceCount?.[el?.key]
-            : 0,
-      }));
-    }
-
-    // 🩹 fallback to dummy data if all values are 0 or empty
-    if (!temp || temp.every((t) => t.value === 0)) {
-      temp = dummyUser; // or whichever dummy set fits type
-    }
-
-    setPieCirData(temp);
-  }, [leaveCount, attendanceCount, userCount, type]);
+  const definitions = type === "userChart" ? userSegments : type === "leavesChart" ? leaveSegments : attendanceSegments;
+  const counts = type === "userChart" ? userCount : type === "leavesChart" ? leaveCount : attendanceCount;
+  const pieCirData = getHRMChartValues(definitions, counts);
+  const hasData = pieCirData.some(item => item.value > 0);
+  const chartData = hasData ? pieCirData : [{ value: 1, color: "#D1D5DB" }];
 
   const RenderDot = ({ color, text, value }) => {
+    const displayCount = type === "userChart" && !userCount && (userLoading || userError) ? "—" : value;
     return (
       <View
+        accessible
+        accessibilityLabel={`${text}: ${displayCount}`}
         style={{
           flexDirection: "row",
           gap: 5,
@@ -114,7 +83,7 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
             style={{ textTransform: "uppercase", color: "#2E67BE" }}
           >
             {text}
-            <CustomText color={color} fontSize={11}>{`(${value})`}</CustomText>
+            <CustomText color={color} fontSize={11}>{`(${displayCount})`}</CustomText>
           </CustomText>
         </SlideFadeIn>
       </View>
@@ -170,10 +139,10 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
       </SlideFadeIn>
       <View style={{ flexDirection: "row", gap: 15, alignItems: "center" }}>
         <PieChart
-          data={pieCirData?.length ? pieCirData : dummyUser}
+          data={chartData}
           donut
-          showGradient
-          sectionAutoFocus
+          showGradient={hasData}
+          sectionAutoFocus={hasData}
           radius={20}
           innerRadius={15}
           // innerCircleColor={'#232B5D'}
@@ -191,6 +160,22 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
         />
         {renderLegendComponent()}
       </View>
+      {type === "userChart" && (userLoading || userError) && (
+        <Text accessibilityRole={userError ? "button" : undefined}
+          onPress={userError ? () => retryUsers() : undefined}
+          style={{ color: userError ? "#B42318" : "#667085", fontSize: 12, marginTop: 8 }}>
+          {userError ? "Unable to load employee counts. Tap to retry." : "Loading employee counts…"}
+        </Text>
+      )}
+      {type === "attendanceChart" && (attendanceLoading || attendanceError) && (
+        <Text
+          accessibilityRole={attendanceError ? "button" : undefined}
+          onPress={attendanceError ? () => retryAttendance() : undefined}
+          style={{ color: attendanceError ? "#B42318" : "#667085", fontSize: 12, marginTop: 8 }}
+        >
+          {attendanceError ? "Unable to load attendance. Tap to retry." : "Loading attendance…"}
+        </Text>
+      )}
     </View>
   );
 };
@@ -198,9 +183,9 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
 export default CircularBarChart;
 
 //
-var dummyUser = [
+const userSegments = [
   {
-    value: 47,
+    value: 0,
     color: color.approve,
     // gradientCenterColor: 'red',
     text: "Approve",
@@ -208,21 +193,21 @@ var dummyUser = [
     // focused: true,
   },
   {
-    value: 40,
+    value: 0,
     color: color.reject,
     // gradientCenterColor: '#3BE9DE',
     text: "Reject",
     key: "rejected",
   },
   {
-    value: 16,
+    value: 0,
     color: color.pending,
     // gradientCenterColor: '#8F80F3',
     text: "Pending",
     key: "pending",
   },
   {
-    value: 16,
+    value: 0,
     color: color.new,
     // gradientCenterColor: '#8F80F3',
     text: "New",
@@ -236,9 +221,9 @@ var dummyUser = [
   // },
 ];
 
-var dummyLeave = [
+const leaveSegments = [
   {
-    value: 47,
+    value: 0,
     color: color.approve,
     // gradientCenterColor: 'red',
     text: "Approve",
@@ -246,14 +231,14 @@ var dummyLeave = [
     // focused: true,
   },
   {
-    value: 40,
+    value: 0,
     color: color.reject,
     // gradientCenterColor: '#3BE9DE',
     text: "Reject",
     key: "rejected",
   },
   {
-    value: 16,
+    value: 0,
     color: color.pending,
     // gradientCenterColor: '#8F80F3',
     text: "Pending",
@@ -267,27 +252,27 @@ var dummyLeave = [
   // },
 ];
 
-var dummyAttendance = [
+const attendanceSegments = [
   {
-    value: 47,
+    value: 0,
     color: color.approve,
     text: "Present",
     key: "present",
   },
   {
-    value: 40,
+    value: 0,
     color: color.pending,
     text: "On Leave",
     key: "leave",
   },
   {
-    value: 16,
+    value: 0,
     color: color.saffronMango,
     text: "Half Day",
     key: "halfDay",
   },
   {
-    value: 3,
+    value: 0,
     color: color.reject,
     text: "Absent",
     key: "absent",

@@ -35,6 +35,7 @@ import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import LeadPoolRestriction from "./components/LeadpoolRestriction";
+import { isHRAdminReadOnly } from "../../utils/hrAdminProtection";
 import DeleteIcon from "../../assets/svg/DeleteIcon";
 import { popupModal2 } from "../../utils/toastFunction";
 import { useAppToast } from "../../components/AppToast";
@@ -50,9 +51,15 @@ const UserDetailHRM = () => {
   const paramsData = params?.item;
   const queryClient = useQueryClient();
   const { user } = useSelector(selectUser);
-  const canViewDevices = [roleEnum.sup_admin, roleEnum.sub_admin].includes(user?.role);
-  const [detailsTab, setDetailsTab] = useState<"personal" | "devices">("personal");
-  useEffect(() => { setDetailsTab("personal"); }, [paramsData?._id, paramsData?.dataId, canViewDevices]);
+  const canViewDevices = [roleEnum.sup_admin, roleEnum.sub_admin].includes(
+    user?.role,
+  );
+  const [detailsTab, setDetailsTab] = useState<"personal" | "devices">(
+    "personal",
+  );
+  useEffect(() => {
+    setDetailsTab("personal");
+  }, [paramsData?._id, paramsData?.dataId, canViewDevices]);
 
   const [isPoolRestrict, setIsPoolRestrict] = useState(
     params?.item?.isPoolRestrict,
@@ -66,16 +73,29 @@ const UserDetailHRM = () => {
   const { data, isLoading, refetch } = useUserDetailHRM({
     id: params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id,
   });
-  const targetUserId = data?._id || (params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id);
+  const targetUserId =
+    data?._id ||
+    (params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id);
+  const readOnlyAdmin = isHRAdminReadOnly(
+    user?.role,
+    data?.role || paramsData?.role,
+  );
   const canManageAccount =
-    [roleEnum.sup_admin, roleEnum.hr, roleEnum.developer].includes(user?.role) &&
+    !readOnlyAdmin &&
+    [roleEnum.sup_admin, roleEnum.hr, roleEnum.developer].includes(
+      user?.role,
+    ) &&
     Boolean(data?._id) &&
     String(user?._id) !== String(targetUserId) &&
     (user?.role !== roleEnum.hr ||
       ![roleEnum.sup_admin, roleEnum.developer].includes(data?.role));
-  const accountInactive = data?.accountStatus === "inactive" || ["resign", "terminated"].includes(data?.activeStatus);
+  const accountInactive =
+    data?.accountStatus === "inactive" ||
+    ["resign", "terminated"].includes(data?.activeStatus);
   const [accountStatusSaving, setAccountStatusSaving] = useState(false);
-  const [pendingInactiveReason, setPendingInactiveReason] = useState<"resigned" | "terminated" | null>(null);
+  const [pendingInactiveReason, setPendingInactiveReason] = useState<
+    "resigned" | "terminated" | null
+  >(null);
   const [lastWorkingDay, setLastWorkingDay] = useState<Date | null>(null);
 
   const [useDetail, setUseDetail] = useState(dummyUserDetail);
@@ -84,7 +104,10 @@ const UserDetailHRM = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const canResendCredentials =
-    isSubSup && Boolean(data?._id) && data?.status !== "approved";
+    !readOnlyAdmin &&
+    isSubSup &&
+    Boolean(data?._id) &&
+    data?.status !== "approved";
 
   const handleCall = (phone: string) => {
     if (!phone) return;
@@ -125,6 +148,7 @@ const UserDetailHRM = () => {
   }, [data]);
 
   const userApprovedByAdmin = async () => {
+    if (readOnlyAdmin) return;
     try {
       // popUpConfToast.plzWait({
       //   bodyComponent: () => <PleaseWait />,
@@ -141,7 +165,8 @@ const UserDetailHRM = () => {
   };
 
   const confirmResendCredentials = () => {
-    if (!targetUserId || !canResendCredentials || isResendingCredentials) return;
+    if (!targetUserId || !canResendCredentials || isResendingCredentials)
+      return;
 
     Alert.alert(
       "Resend login credentials?",
@@ -205,18 +230,25 @@ const UserDetailHRM = () => {
     }));
   };
   const toggleSwitch = () => {
+    if (readOnlyAdmin) return;
     toggleModal("Approve"); // Open modal instead of setting state directly
   };
 
   const toast = useAppToast();
 
-  const confirmAccountStatus = (isActive: boolean, reason?: "resigned" | "terminated") => {
+  const confirmAccountStatus = (
+    isActive: boolean,
+    reason?: "resigned" | "terminated",
+  ) => {
+    if (!canManageAccount) return;
     if (!isActive && reason) {
       setPendingInactiveReason(reason);
       setLastWorkingDay(null);
       return;
     }
-    const title = isActive ? "Activate employee account?" : `Mark employee ${reason}?`;
+    const title = isActive
+      ? "Activate employee account?"
+      : `Mark employee ${reason}?`;
     const message = isActive
       ? "This employee can sign in again. Previously reassigned leads stay with their current owners."
       : "This blocks login, clears device access, disconnects active sessions, and reassigns active leads.";
@@ -229,14 +261,22 @@ const UserDetailHRM = () => {
           if (!targetUserId || accountStatusSaving) return;
           setAccountStatusSaving(true);
           try {
-            const result = await updateUserAccountStatus(String(targetUserId), { isActive, ...(reason ? { reason } : {}) });
+            const result = await updateUserAccountStatus(String(targetUserId), {
+              isActive,
+              ...(reason ? { reason } : {}),
+            });
             await Promise.all([
               refetch(),
-              queryClient.invalidateQueries({ queryKey: [queryKeyHRM.getAllUserHRM] }),
+              queryClient.invalidateQueries({
+                queryKey: [queryKeyHRM.getAllUserHRM],
+              }),
             ]);
             toast.success(result?.message || "Account status updated");
           } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Unable to update account status");
+            toast.error(
+              error?.response?.data?.message ||
+                "Unable to update account status",
+            );
           } finally {
             setAccountStatusSaving(false);
           }
@@ -246,7 +286,12 @@ const UserDetailHRM = () => {
   };
 
   const submitInactiveStatus = async () => {
-    if (!targetUserId || !pendingInactiveReason || !lastWorkingDay || accountStatusSaving) {
+    if (
+      !targetUserId ||
+      !pendingInactiveReason ||
+      !lastWorkingDay ||
+      accountStatusSaving
+    ) {
       if (!lastWorkingDay) toast.error("Last working day is required");
       return;
     }
@@ -259,13 +304,17 @@ const UserDetailHRM = () => {
       });
       await Promise.all([
         refetch(),
-        queryClient.invalidateQueries({ queryKey: [queryKeyHRM.getAllUserHRM] }),
+        queryClient.invalidateQueries({
+          queryKey: [queryKeyHRM.getAllUserHRM],
+        }),
       ]);
       setPendingInactiveReason(null);
       setLastWorkingDay(null);
       toast.success(result?.message || "Account status updated");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Unable to update account status");
+      toast.error(
+        error?.response?.data?.message || "Unable to update account status",
+      );
     } finally {
       setAccountStatusSaving(false);
     }
@@ -292,6 +341,7 @@ const UserDetailHRM = () => {
   };
 
   const handleSubmitRestriction = async () => {
+    if (readOnlyAdmin) return;
     const newValue = !isPoolRestrict;
     setIsSubmitting(true); // ✅ Start loading
     setIsPoolRestrict(newValue); // Optimistic update
@@ -345,255 +395,335 @@ const UserDetailHRM = () => {
       isBAck={{
         title: "User Details",
         isGoBack: () => goBack(),
-        isEdit: () =>
-          navigate(routeUser.AddUserHRM, {
-            item: paramsData,
-          }),
+        isEdit: readOnlyAdmin
+          ? undefined
+          : () =>
+              navigate(routeUser.AddUserHRM, {
+                item: paramsData,
+              }),
       }}
       isLoading={isLoading}
       childStyle={{ flex: 1, height: undefined }}
     >
       <View style={styles.container}>
-        {canViewDevices && <View style={styles.detailsTabs} accessibilityRole="tablist">
-          {(["personal", "devices"] as const).map((tab) => <TouchableOpacity
-            key={tab}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: detailsTab === tab }}
-            onPress={() => setDetailsTab(tab)}
-            style={[styles.detailsTab, detailsTab === tab && styles.detailsTabSelected]}
-          >
-            <Feather name={tab === "personal" ? "user" : "smartphone"} size={17} color={detailsTab === tab ? "#fff" : "#64748B"} />
-            <CustomText style={[styles.detailsTabText, detailsTab === tab && { color: "#fff" }]}>{tab === "personal" ? "Personal Details" : "Devices"}</CustomText>
-          </TouchableOpacity>)}
-        </View>}
-        {canViewDevices && detailsTab === "devices" ? <DeviceSessionsCard key={targetUserId} userId={targetUserId} /> : <>
-        {/* TOP ACTION CARD */}
-        <View style={styles.topCard}>
-          {canManageAccount && (
-            <View style={styles.accountSection}>
-              <View style={styles.accountHeader}>
-                <View>
-                  <CustomText style={styles.accountLabel}>Account status</CustomText>
-                  <CustomText style={styles.accountHint}>Manage this employee's access</CustomText>
-                </View>
-                <View style={[styles.accountBadge, accountInactive && styles.accountBadgeInactive]}>
-                  <CustomText style={[styles.accountBadgeText, accountInactive && styles.accountBadgeTextInactive]}>
-                    {userStatusHRM[getUserStatusHRM(data)]}
-                  </CustomText>
-                </View>
-              </View>
-              {accountInactive ? (
-                <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(true)} style={[styles.accountAction, styles.accountActionActive]}>
-                  <CustomText style={styles.accountActionText}>Activate Account</CustomText>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.accountActions}>
-                  <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(false, "resigned")} style={[styles.accountAction, styles.accountActionResigned]}>
-                    <CustomText style={styles.accountActionText}>Mark Resigned</CustomText>
-                  </TouchableOpacity>
-                  <TouchableOpacity disabled={accountStatusSaving} onPress={() => confirmAccountStatus(false, "terminated")} style={[styles.accountAction, styles.accountActionTerminated]}>
-                    <CustomText style={styles.accountActionText}>Terminate</CustomText>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
-          <View style={styles.switchRow}>
-            <View>
-              <CustomText style={styles.switchTitle}>
-                Lead Pool Restriction
-              </CustomText>
-
-              <CustomText style={styles.switchSubTitle}>
-                Restrict user from lead pool access
-              </CustomText>
-            </View>
-
-            <Switch
-              trackColor={{
-                false: "#CBD5E1",
-                true: "#BFDBFE",
-              }}
-              thumbColor={isPoolRestrict ? "#2563EB" : "#FFFFFF"}
-              ios_backgroundColor="#CBD5E1"
-              onValueChange={toggleSwitch}
-              value={isPoolRestrict}
-            />
-          </View>
-
-          {isSubSup && params?.item?.status !== "approved" && (
-            <View style={styles.actionRow}>
-              <CustomBtn
-                title="Accept"
-                containerStyle={styles.acceptBtn}
-                textStyle={styles.acceptBtnText}
-                onPress={userApprovedByAdmin}
-                isLoading={isLoadingApprove}
-              />
-
-              <OutlineBtn
-                title="Send to Update"
-                onPress={() =>
-                  navigate(routeUser.SendToUpdate, {
-                    item: params?.item,
-                  })
-                }
-                containerStyle={styles.updateBtn}
-                textStyle={styles.updateBtnText}
-              />
-            </View>
-          )}
-          {canResendCredentials && (
-            <TouchableOpacity
-              disabled={isResendingCredentials}
-              onPress={confirmResendCredentials}
-              style={[
-                styles.resendCredentialsButton,
-                isResendingCredentials && styles.disabledAction,
-              ]}
-            >
-              <Feather name="key" size={17} color="#FFFFFF" />
-              <CustomText style={styles.accountActionText}>
-                {isResendingCredentials
-                  ? "Sending credentials..."
-                  : "Resend Login Credentials"}
-              </CustomText>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* DETAIL LIST */}
-        <FlatList
-          data={useDetail}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={styles.listContainer}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          renderItem={({ item }) => {
-            const isAtt = [
-              "addressProof",
-              "bankStatements",
-              "resume",
-              "emiratesId",
-              "pancard",
-              "aadharCard",
-              "sscDuc",
-              "hscDuc",
-              "degreeCertificate",
-            ];
-
-            const isDevices = item?.key === "devices";
-
-            if (isDevices) {
-              return null;
-            }
-
-            if (item?.heading) {
-              return (
-                <View style={styles.headingContainer}>
-                  <CustomText style={styles.headingText}>
-                    {item?.title}
-                  </CustomText>
-                </View>
-              );
-            }
-
-            return (
-              <View
+        {canViewDevices && (
+          <View style={styles.detailsTabs} accessibilityRole="tablist">
+            {(["personal", "devices"] as const).map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: detailsTab === tab }}
+                onPress={() => setDetailsTab(tab)}
                 style={[
-                  styles.infoCard,
-                  {
-                    marginBottom: item?.mb || 12,
-                  },
+                  styles.detailsTab,
+                  detailsTab === tab && styles.detailsTabSelected,
                 ]}
               >
-                <View style={[styles.leftSection, { flex: 1 }]}>
-                  <View style={styles.iconBox}>
-                    <CustomText style={styles.iconText}>
-                      {item?.title?.charAt(0)}
-                    </CustomText>
+                <Feather
+                  name={tab === "personal" ? "user" : "smartphone"}
+                  size={17}
+                  color={detailsTab === tab ? "#fff" : "#64748B"}
+                />
+                <CustomText
+                  style={[
+                    styles.detailsTabText,
+                    detailsTab === tab && { color: "#fff" },
+                  ]}
+                >
+                  {tab === "personal" ? "Personal Details" : "Devices"}
+                </CustomText>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+        {canViewDevices && detailsTab === "devices" ? (
+          <DeviceSessionsCard key={targetUserId} userId={targetUserId} />
+        ) : (
+          <>
+            {/* TOP ACTION CARD */}
+            <View style={styles.topCard}>
+              {canManageAccount && (
+                <View style={styles.accountSection}>
+                  <View style={styles.accountHeader}>
+                    <View>
+                      <CustomText style={styles.accountLabel}>
+                        Account status
+                      </CustomText>
+                      <CustomText style={styles.accountHint}>
+                        Manage this employee's access
+                      </CustomText>
+                    </View>
+                    <View
+                      style={[
+                        styles.accountBadge,
+                        accountInactive && styles.accountBadgeInactive,
+                      ]}
+                    >
+                      <CustomText
+                        style={[
+                          styles.accountBadgeText,
+                          accountInactive && styles.accountBadgeTextInactive,
+                        ]}
+                      >
+                        {userStatusHRM[getUserStatusHRM(data)]}
+                      </CustomText>
+                    </View>
                   </View>
+                  {accountInactive ? (
+                    <TouchableOpacity
+                      disabled={accountStatusSaving}
+                      onPress={() => confirmAccountStatus(true)}
+                      style={[styles.accountAction, styles.accountActionActive]}
+                    >
+                      <CustomText style={styles.accountActionText}>
+                        Activate Account
+                      </CustomText>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.accountActions}>
+                      <TouchableOpacity
+                        disabled={accountStatusSaving}
+                        onPress={() => confirmAccountStatus(false, "resigned")}
+                        style={[
+                          styles.accountAction,
+                          styles.accountActionResigned,
+                        ]}
+                      >
+                        <CustomText style={styles.accountActionText}>
+                          Mark Resigned
+                        </CustomText>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        disabled={accountStatusSaving}
+                        onPress={() =>
+                          confirmAccountStatus(false, "terminated")
+                        }
+                        style={[
+                          styles.accountAction,
+                          styles.accountActionTerminated,
+                        ]}
+                      >
+                        <CustomText style={styles.accountActionText}>
+                          Terminate
+                        </CustomText>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+              <View style={styles.switchRow}>
+                <View>
+                  <CustomText style={styles.switchTitle}>
+                    Lead Pool Restriction
+                  </CustomText>
 
-                  <View style={{ flex: 1, overflow: "hidden" }}>
-                    <CustomText style={styles.label}>{item?.title}</CustomText>
+                  <CustomText style={styles.switchSubTitle}>
+                    Restrict user from lead pool access
+                  </CustomText>
+                </View>
 
-                    {isDevices ? (
-                      <View style={styles.actionRowItem}>
-                        <View style={{ flex: 1 }}>
-                          <CustomText style={styles.value} numberOfLines={3}>
-                            {Array.isArray(item?.value)
-                              ? item?.value.join(", ")
-                              : item?.value || "-"}
-                          </CustomText>
-                        </View>
+                <Switch
+                  disabled={readOnlyAdmin}
+                  trackColor={{
+                    false: "#CBD5E1",
+                    true: "#BFDBFE",
+                  }}
+                  thumbColor={isPoolRestrict ? "#2563EB" : "#FFFFFF"}
+                  ios_backgroundColor="#CBD5E1"
+                  onValueChange={toggleSwitch}
+                  value={isPoolRestrict}
+                />
+              </View>
 
-                        {isSubSup && (
-                          <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={handleDeleteDevices}
-                            style={styles.actionIcon}
-                          >
-                            <Feather name="trash-2" size={16} color="#DC2626" />
-                          </TouchableOpacity>
-                        )}
+              {isSubSup && params?.item?.status !== "approved" && (
+                <View style={styles.actionRow}>
+                  <CustomBtn
+                    title="Accept"
+                    containerStyle={styles.acceptBtn}
+                    textStyle={styles.acceptBtnText}
+                    onPress={userApprovedByAdmin}
+                    isLoading={isLoadingApprove}
+                  />
+
+                  <OutlineBtn
+                    title="Send to Update"
+                    onPress={() =>
+                      navigate(routeUser.SendToUpdate, {
+                        item: params?.item,
+                      })
+                    }
+                    containerStyle={styles.updateBtn}
+                    textStyle={styles.updateBtnText}
+                  />
+                </View>
+              )}
+              {canResendCredentials && (
+                <TouchableOpacity
+                  disabled={isResendingCredentials}
+                  onPress={confirmResendCredentials}
+                  style={[
+                    styles.resendCredentialsButton,
+                    isResendingCredentials && styles.disabledAction,
+                  ]}
+                >
+                  <Feather name="key" size={17} color="#FFFFFF" />
+                  <CustomText style={styles.accountActionText}>
+                    {isResendingCredentials
+                      ? "Sending credentials..."
+                      : "Resend Login Credentials"}
+                  </CustomText>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* DETAIL LIST */}
+            <FlatList
+              data={useDetail}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={styles.listContainer}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              renderItem={({ item }) => {
+                const isAtt = [
+                  "addressProof",
+                  "bankStatements",
+                  "resume",
+                  "emiratesId",
+                  "pancard",
+                  "aadharCard",
+                  "sscDuc",
+                  "hscDuc",
+                  "degreeCertificate",
+                ];
+
+                const isDevices = item?.key === "devices";
+
+                if (isDevices) {
+                  return null;
+                }
+
+                if (item?.heading) {
+                  return (
+                    <View style={styles.headingContainer}>
+                      <CustomText style={styles.headingText}>
+                        {item?.title}
+                      </CustomText>
+                    </View>
+                  );
+                }
+
+                return (
+                  <View
+                    style={[
+                      styles.infoCard,
+                      {
+                        marginBottom: item?.mb || 12,
+                      },
+                    ]}
+                  >
+                    <View style={[styles.leftSection, { flex: 1 }]}>
+                      <View style={styles.iconBox}>
+                        <CustomText style={styles.iconText}>
+                          {item?.title?.charAt(0)}
+                        </CustomText>
                       </View>
-                    ) : (
-                      <View style={styles.valueRow}>
-                        <CustomText style={styles.value}>
-                          {item?.isDate
-                            ? (typeof item?.value === "string" && item.value !== "-" ||
-                                typeof item?.value === "number" || item?.value instanceof Date) &&
-                              moment(item.value).isValid()
-                              ? moment(item.value).format("DD MMM YYYY")
-                              : "N/A"
-                            : item?.value || "-"}
+
+                      <View style={{ flex: 1, overflow: "hidden" }}>
+                        <CustomText style={styles.label}>
+                          {item?.title}
                         </CustomText>
 
-                        {item?.key === "mobile" && !!item?.value && (
-                          <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={() => handleCall(item?.value)}
-                            style={styles.actionIcon}
-                          >
-                            <Feather
-                              name="phone-call"
-                              size={16}
-                              color="#2563EB"
-                            />
-                          </TouchableOpacity>
+                        {isDevices ? (
+                          <View style={styles.actionRowItem}>
+                            <View style={{ flex: 1 }}>
+                              <CustomText
+                                style={styles.value}
+                                numberOfLines={3}
+                              >
+                                {Array.isArray(item?.value)
+                                  ? item?.value.join(", ")
+                                  : item?.value || "-"}
+                              </CustomText>
+                            </View>
+
+                            {isSubSup && (
+                              <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={handleDeleteDevices}
+                                style={styles.actionIcon}
+                              >
+                                <Feather
+                                  name="trash-2"
+                                  size={16}
+                                  color="#DC2626"
+                                />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        ) : (
+                          <View style={styles.valueRow}>
+                            <CustomText style={styles.value}>
+                              {item?.isDate
+                                ? ((typeof item?.value === "string" &&
+                                    item.value !== "-") ||
+                                    typeof item?.value === "number" ||
+                                    item?.value instanceof Date) &&
+                                  moment(item.value).isValid()
+                                  ? moment(item.value).format("DD MMM YYYY")
+                                  : "N/A"
+                                : item?.value || "-"}
+                            </CustomText>
+
+                            {item?.key === "mobile" && !!item?.value && (
+                              <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => handleCall(item?.value)}
+                                style={styles.actionIcon}
+                              >
+                                <Feather
+                                  name="phone-call"
+                                  size={16}
+                                  color="#2563EB"
+                                />
+                              </TouchableOpacity>
+                            )}
+
+                            {item?.key === "email" && !!item?.value && (
+                              <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => handleEmail(item?.value)}
+                                style={styles.actionIcon}
+                              >
+                                <Feather
+                                  name="mail"
+                                  size={16}
+                                  color="#2563EB"
+                                />
+                              </TouchableOpacity>
+                            )}
+                          </View>
                         )}
 
-                        {item?.key === "email" && !!item?.value && (
-                          <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPress={() => handleEmail(item?.value)}
-                            style={styles.actionIcon}
+                        {isAtt.includes(item?.key) && (
+                          <View
+                            style={{
+                              marginTop: 12,
+                            }}
                           >
-                            <Feather name="mail" size={16} color="#2563EB" />
-                          </TouchableOpacity>
+                            <ImageViewModal imagesUri={item?.value} />
+                          </View>
                         )}
                       </View>
-                    )}
-
-                    {isAtt.includes(item?.key) && (
-                      <View
-                        style={{
-                          marginTop: 12,
-                        }}
-                      >
-                        <ImageViewModal imagesUri={item?.value} />
-                      </View>
-                    )}
+                    </View>
                   </View>
-                </View>
-              </View>
-            );
-          }}
-        />
+                );
+              }}
+            />
 
-        {/* MODAL */}
-        </>}
+            {/* MODAL */}
+          </>
+        )}
         <ModalWithBlur visible={openModal?.open}>
           <LeadPoolRestriction
             heading="Lead Pool Restriction"
@@ -606,15 +736,21 @@ const UserDetailHRM = () => {
         <ModalWithBlur visible={Boolean(pendingInactiveReason)}>
           <View style={styles.lastWorkingModal}>
             <CustomText style={styles.lastWorkingTitle}>
-              {pendingInactiveReason === "resigned" ? "Mark employee resigned" : "Terminate employee"}
+              {pendingInactiveReason === "resigned"
+                ? "Mark employee resigned"
+                : "Terminate employee"}
             </CustomText>
             <CustomText style={styles.lastWorkingHint}>
               Select the employee's last working day. This field is required.
             </CustomText>
             <DatePickerExpo
               title="Last working day *"
-              initialValue={lastWorkingDay ? lastWorkingDay.toISOString() : undefined}
-              onSelect={(value: any) => setLastWorkingDay(value ? new Date(value) : null)}
+              initialValue={
+                lastWorkingDay ? lastWorkingDay.toISOString() : undefined
+              }
+              onSelect={(value: any) =>
+                setLastWorkingDay(value ? new Date(value) : null)
+              }
             />
             <View style={styles.lastWorkingActions}>
               <TouchableOpacity
@@ -629,7 +765,11 @@ const UserDetailHRM = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 disabled={accountStatusSaving || !lastWorkingDay}
-                style={[styles.lastWorkingButton, styles.lastWorkingConfirm, !lastWorkingDay && { opacity: 0.5 }]}
+                style={[
+                  styles.lastWorkingButton,
+                  styles.lastWorkingConfirm,
+                  !lastWorkingDay && { opacity: 0.5 },
+                ]}
                 onPress={submitInactiveStatus}
               >
                 <CustomText style={styles.accountActionText}>
@@ -647,8 +787,25 @@ const UserDetailHRM = () => {
 export default UserDetailHRM;
 
 const styles = StyleSheet.create({
-  detailsTabs: { flexDirection: "row", backgroundColor: "#EEF3FA", borderRadius: 14, padding: 4, marginHorizontal: 16, marginTop: 16, gap: 4 },
-  detailsTab: { flex: 1, minHeight: 44, paddingHorizontal: 10, borderRadius: 11, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 7 },
+  detailsTabs: {
+    flexDirection: "row",
+    backgroundColor: "#EEF3FA",
+    borderRadius: 14,
+    padding: 4,
+    marginHorizontal: 16,
+    marginTop: 16,
+    gap: 4,
+  },
+  detailsTab: {
+    flex: 1,
+    minHeight: 44,
+    paddingHorizontal: 10,
+    borderRadius: 11,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 7,
+  },
   detailsTabSelected: { backgroundColor: "#2E67BE" },
   detailsTabText: { fontSize: 13, fontWeight: "600", color: "#64748B" },
   accountSection: {
@@ -686,7 +843,12 @@ const styles = StyleSheet.create({
   accountActionActive: { backgroundColor: "#26754A", alignSelf: "stretch" },
   accountActionResigned: { flex: 1, backgroundColor: "#A86218" },
   accountActionTerminated: { flex: 1, backgroundColor: "#B63B3B" },
-  accountActionText: { color: "#fff", fontSize: 13, fontWeight: "700", textAlign: "center" },
+  accountActionText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
+  },
   container: {
     flex: 1,
   },
@@ -861,13 +1023,13 @@ const styles = StyleSheet.create({
   lastWorkingModal: {
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
-    padding: 20,
+    paddingVertical: 20,
     marginHorizontal: 18,
   },
   lastWorkingTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1E293B",
+    color: color.mainTxtColor,
   },
   lastWorkingHint: {
     fontSize: 13,

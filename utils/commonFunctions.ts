@@ -6,6 +6,12 @@ export const checkPermission = (
   task: string,
   userRole?: string,
 ): boolean => {
+  if (
+    module === "Recruitment" &&
+    ["agent", "team_lead"].includes(userRole || "")
+  ) {
+    return false;
+  }
   if (userRole === "agent" && module === "HrmsDashboard") return false;
   return (
     userRole === "sup_admin" ||

@@ -51,7 +51,7 @@ const AllLeave = () => {
     [],
   );
   const search = useHRMListingSearch(updateSearch);
-  const { data, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
+  const { data, totalCount, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
     useGetAllLeave({ ...searchSubmit });
   const onEndReach = () => {
     if (hasNextPage && !isLoading && data?.length > 0) {
@@ -76,6 +76,7 @@ const AllLeave = () => {
   return (
     <ContainerHRM
       headingTitle="Leave"
+      totalCount={totalCount}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}

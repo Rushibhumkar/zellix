@@ -24,12 +24,16 @@ import parsePhoneNumber from "libphonenumber-js";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import { color } from "../../const/color";
 import { ASSIGNABLE_ROLE_OPTIONS } from "../../utils/roles";
+import { isHRAdminReadOnly } from "../../utils/hrAdminProtection";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/userSlice";
 
 const AddUserHRM = () => {
   const queryClient = useQueryClient();
   const { goBack } = useNavigation();
   const { params } = useRoute();
   const update = params?.item;
+  const { user } = useSelector(selectUser);
   const [isLoading, setIsLoading] = useState(false);
   const {
     values,
@@ -55,6 +59,11 @@ const AddUserHRM = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (value) => {
+      if ((update && isHRAdminReadOnly(user?.role, update?.role)) ||
+          (user?.role === "hr" && value.role && isHRAdminReadOnly(user.role, value.role))) {
+        popUpConfToast.errorMessage("HR has read-only access to admin accounts.");
+        return;
+      }
       myConsole("value", value);
       try {
         // setIsLoading(true)
@@ -94,7 +103,8 @@ const AddUserHRM = () => {
   const { data: teamBySrMn } = useGetTeamsBySrManager({
     id: values?.srManager,
   });
-  const roleList = ASSIGNABLE_ROLE_OPTIONS.map(({ value, label }) => ({ _id: value, name: label }));
+  const roleList = ASSIGNABLE_ROLE_OPTIONS.filter(option => !isHRAdminReadOnly(user?.role, option.value))
+    .map(({ value, label }) => ({ _id: value, name: label }));
   return (
     <ContainerHRM
       isBAck={{

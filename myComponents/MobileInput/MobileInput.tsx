@@ -18,7 +18,7 @@ import DropdownRNE from "../DropdownRNE/DropdownRNE";
 import { color } from "../../const/color";
 
 interface TMobileInput {
-  onChange: (a: TPhone) => void;
+  onChange: (a: TPhone | string) => void;
   value: string;
   error?: any;
   isCountryPicker: boolean;
@@ -98,10 +98,10 @@ const MobileInput = ({
   // }, [number]);
 
   useEffect(() => {
-    if (!number.phone) return;
+    if (isCountryPicker || !number.phone) return;
 
     onChange?.(number.pin ? `${number.pin}-${number.phone}` : number.phone);
-  }, [number.pin, number.phone]);
+  }, [isCountryPicker, number.pin, number.phone]);
 
   const [phone, setPhone] = useState<TPhone>({
     number: "",
@@ -112,25 +112,21 @@ const MobileInput = ({
   const onSelect = ({ country, numb }: TOnSelect) => {
     //country code in alphabet because country picker need
     if (!!country?.cca2) {
-      setPhone((prev) => {
-        let temp = {
-          ...prev,
-          countryCode: `+${country.callingCode}`,
-          countryCodeAlphabet: country.cca2,
-        };
-        !!onChange && onChange(temp);
-        return temp;
-      });
+      const nextPhone = {
+        ...phone,
+        countryCode: `+${country.callingCode?.[0] ?? ""}`,
+        countryCodeAlphabet: country.cca2,
+      };
+      setPhone(nextPhone);
+      onChange?.(nextPhone);
     }
     if (!!numb || numb === "") {
-      setPhone((prev) => {
-        let temp = {
-          ...prev,
-          number: numb?.trim(),
-        };
-        !!onChange && onChange(temp);
-        return temp;
-      });
+      const nextPhone = {
+        ...phone,
+        number: numb?.trim() ?? "",
+      };
+      setPhone(nextPhone);
+      onChange?.(nextPhone);
     }
   };
 

@@ -163,7 +163,7 @@ export const getAllCandidates = ({ pageParam = 1, limit = 10, search = "" }) =>
 
 export const postInterviewProcess = (data) =>
   axiosInstance
-    .post(`/api/recruitment/post-intervierw-process`, data)
+    .post(`/api/recruitment/post-interview-process`, data)
     .then((res) => res?.data);
 
 export const rescheduleInterview = (data) =>

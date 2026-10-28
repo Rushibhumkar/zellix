@@ -45,6 +45,7 @@ export const useGetAllUserHRM = ({ search }) => {
   // })
   let res = useInfiniteQuery<any, any>({
     queryKey: ["getAllUserHRM", search],
+    initialPageParam: 1,
     queryFn: ({ pageParam }) => getAllUserHRM({ search, pageParam }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext
@@ -56,7 +57,13 @@ export const useGetAllUserHRM = ({ search }) => {
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const rawTotal = res.data?.pages?.[0]?.pagination?.totalItem;
+  const totalCount =
+    rawTotal !== null && rawTotal !== undefined && rawTotal !== "" &&
+    Number.isFinite(Number(rawTotal)) && Number(rawTotal) >= 0
+      ? Number(rawTotal)
+      : undefined;
+  return { ...res, data, totalCount };
 };
 
 export const useUserDetailHRM = ({ id }) => {
@@ -115,6 +122,7 @@ export const useGetAvailableRoles = ({ id }) => {
 export const useGetAllLeave = ({ search, startDate, endDate }) => {
   let res = useInfiniteQuery<any, any>({
     queryKey: ["getAllLeave", search, startDate, endDate],
+    initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       getAllLeave({ search, pageParam, startDate, endDate }),
     getNextPageParam: (lastPage, allPages) => {
@@ -127,7 +135,13 @@ export const useGetAllLeave = ({ search, startDate, endDate }) => {
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const rawTotal = res.data?.pages?.[0]?.pagination?.totalItem;
+  const totalCount =
+    rawTotal !== null && rawTotal !== undefined && rawTotal !== "" &&
+    Number.isFinite(Number(rawTotal)) && Number(rawTotal) >= 0
+      ? Number(rawTotal)
+      : undefined;
+  return { ...res, data, totalCount };
 };
 
 export const useGetLeaveDetail = ({ id }) => {
@@ -187,6 +201,7 @@ export const useGetMeetingForCheckInOut = () => {
 export const useGetAllAttendance = ({ search, startDate, endDate, userId = "" }) => {
   let res = useInfiniteQuery<any, any>({
     queryKey: ["getAllAttendance", userId, search, startDate, endDate],
+    initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       getAllAttendance({ search, pageParam, startDate, endDate, userId }),
     getNextPageParam: (lastPage, allPages) => {
@@ -200,7 +215,13 @@ export const useGetAllAttendance = ({ search, startDate, endDate, userId = "" })
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const rawTotal = res.data?.pages?.[0]?.pagination?.totalItem;
+  const totalCount =
+    rawTotal !== null && rawTotal !== undefined && rawTotal !== "" &&
+    Number.isFinite(Number(rawTotal)) && Number(rawTotal) >= 0
+      ? Number(rawTotal)
+      : undefined;
+  return { ...res, data, totalCount };
 };
 
 export const useGetSingleUserAttList = ({
@@ -211,6 +232,7 @@ export const useGetSingleUserAttList = ({
 }) => {
   let res = useInfiniteQuery<any, any>({
     queryKey: ["getSingleUserAttList", userId, search, startDate, endDate],
+    initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       getAllAttendance({ search, pageParam, startDate, endDate, userId }),
     getNextPageParam: (lastPage, allPages) => {
@@ -224,7 +246,13 @@ export const useGetSingleUserAttList = ({
   if (res) {
     data = res?.data?.pages?.map((page) => page?.data).flat();
   }
-  return { ...res, data };
+  const rawTotal = res.data?.pages?.[0]?.pagination?.totalItem;
+  const totalCount =
+    rawTotal !== null && rawTotal !== undefined && rawTotal !== "" &&
+    Number.isFinite(Number(rawTotal)) && Number(rawTotal) >= 0
+      ? Number(rawTotal)
+      : undefined;
+  return { ...res, data, totalCount };
 };
 //issue
 
@@ -272,7 +300,8 @@ export const useGetAttendanceChart = ({ isEnable = false }) => {
   return useQuery({
     queryKey: ["getAttendanceChart"],
     queryFn: getAttendanceChart,
-    staleTime: Infinity,
+    staleTime: 60_000,
+    refetchOnMount: "always",
     enabled: !!isEnable,
   });
 };
@@ -296,7 +325,8 @@ export const useGetUserStatusChart = ({ isEnable }) => {
   return useQuery({
     queryKey: ["getUserStatusChart"],
     queryFn: getUserStatusChart,
-    staleTime: Infinity,
+    staleTime: 60_000,
+    refetchOnMount: "always",
     enabled: isEnable,
   });
 };

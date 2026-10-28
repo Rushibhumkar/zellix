@@ -1,57 +1,69 @@
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
-import React, { useCallback, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
-import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowAttendance from "../../myComponentsHRM/Row/RowAttendance";
-import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
-import { useNavigation } from "@react-navigation/native";
-import { routeAttendance } from "../../utils/routesHRM";
-import { popUpConfToast } from "../../utils/toastModalByFunction";
-import { color } from "../../const/color";
-import {
-  useGetAllAttendance,
-  useGetIssueAttendance,
-} from "../../hooks/useGetQuerryHRM";
+import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
 import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
 import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
 import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeyHRM } from "../../utils/queryKeys";
-import { useSelector } from "react-redux";
+import { useAttendanceListing } from "../../hooks/useAttendanceListing";
 import { selectUser } from "../../redux/userSlice";
-import { roleEnum } from "../../utils/data";
-import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
+import { approveAttendance } from "../../services/hrmApi/attendanceListApi";
 import { checkPermission } from "../../utils/commonFunctions";
 import { canViewAttendanceSummary } from "../../utils/attendanceSummary";
-import SlideFadeIn from "../../utils/animations/SlideFadeIn";
-import HeaderRowAttendance from "../../myComponentsHRM/Row/rowHeader/HeaderRowAttendance";
-import HeaderRowUserAtt from "../../myComponentsHRM/Row/rowHeader/HeaderRowUserAtt";
+import {
+  AttendanceTab,
+  attendanceTabQueryKey,
+  getAttendanceTabs,
+} from "../../utils/attendanceTabs";
+import { routeAttendance } from "../../utils/routesHRM";
+import { queryKeyHRM } from "../../utils/queryKeys";
+import { useAppToast } from "../../components/AppToast";
+import AttendanceAutoApproval, {
+  attendanceSettingsKey,
+} from "./AttendanceAutoApproval";
+import { canManageAttendanceAutoApproval } from "../../utils/attendanceAutoApproval";
+
 const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
-  const isAgent = user?.role === roleEnum.agent;
+  const isAgent = user?.role === "agent";
   const showAttendanceSummary = canViewAttendanceSummary(
     permission,
     user?.role,
   );
-  const { navigate } = useNavigation();
+  const tabs = getAttendanceTabs(user?.role);
+  const [selectedTab, setSelectedTab] = useState<AttendanceTab>("all");
+  const activeTab = tabs.some((tab) => tab.key === selectedTab)
+    ? selectedTab
+    : "all";
+  const { navigate } = useNavigation<any>();
   const queryClient = useQueryClient();
+  const toast = useAppToast();
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
     startDate: "",
     endDate: "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  const approvalLock = useRef(false);
   const updateSearch = useCallback(
     (search: string) =>
       setSearchSubmit((prev) =>
@@ -60,59 +72,158 @@ const AllAttendance = () => {
     [],
   );
   const search = useHRMListingSearch(updateSearch);
-  const { data, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
-    useGetAllAttendance({
-      ...searchSubmit,
-      userId: isAgent ? user?._id : "",
-    });
   const {
-    data: issueAttList,
-    isLoading: isLoadingIssue,
-    hasNextPage: hasNextPageIssue,
-    isFetchingNextPage: isFetchingNextPageIssue,
-    fetchNextPage: fetchNextPageIssue,
-  } = useGetIssueAttendance({ userId: isAgent ? user?._id : "" });
-  //
-  const onEndReach = () => {
-    if (hasNextPage && !isLoading && data?.length > 0) {
-      fetchNextPage && fetchNextPage();
-    }
+    data,
+    totalCount,
+    isLoading,
+    isError,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useAttendanceListing({
+    ...searchSubmit,
+    tab: activeTab,
+    accountId: user?._id,
+    role: user?.role,
+    userId: isAgent ? user?._id : "",
+  });
+  const approval = useMutation({
+    mutationFn: approveAttendance,
+    onSuccess: () => {
+      for (const tab of ["all", "issues", "unapproved"] as AttendanceTab[])
+        void queryClient.invalidateQueries({
+          queryKey: [attendanceTabQueryKey(tab)],
+        });
+      void queryClient.invalidateQueries({
+        queryKey: [queryKeyHRM.getAttendanceChart],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["getSingleUserAttList"],
+      });
+      toast.success("Attendance approved");
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data;
+      toast.error(
+        typeof message === "string"
+          ? message
+          : message?.message || "Unable to approve attendance",
+      );
+    },
+  });
+  const canApprove =
+    !isAgent &&
+    checkPermission(permission, "HRMS", "attendanceApproval", user?.role);
+  const confirmApprove = (id: string) => {
+    if (!canApprove || approvalLock.current || approval.isPending) return;
+    Alert.alert(
+      "Approve attendance?",
+      "This record will move to All Attendance.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Approve",
+          onPress: async () => {
+            if (approvalLock.current) return;
+            approvalLock.current = true;
+            try {
+              await approval.mutateAsync(id);
+            } catch {
+              /* Mutation displays the error. */
+            } finally {
+              approvalLock.current = false;
+            }
+          },
+        },
+      ],
+    );
   };
-  //
-  const loadMoreIssueList = () => {
-    if (hasNextPageIssue && !isLoadingIssue && issueAttList?.length > 0) {
-      console.log("first@@");
-      fetchNextPageIssue && fetchNextPageIssue();
-    }
-  };
-
-  //
+  useFocusEffect(
+    useCallback(() => {
+      void queryClient.invalidateQueries({
+        queryKey: [attendanceTabQueryKey(activeTab)],
+      });
+      if (showAttendanceSummary)
+        void queryClient.invalidateQueries({
+          queryKey: [queryKeyHRM.getAttendanceChart],
+        });
+      if (canManageAttendanceAutoApproval(user?.role))
+        void queryClient.invalidateQueries({ queryKey: attendanceSettingsKey });
+    }, [queryClient, activeTab, showAttendanceSummary, user?.role]),
+  );
   const onRefresh = async () => {
+    setRefreshing(true);
     try {
-      setRefreshing(true);
-      await queryClient.invalidateQueries({
-        queryKey: [queryKeyHRM.getAllAttendance],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: [queryKeyHRM.getIssueAttendance],
-      });
+      await refetch();
+      if (canManageAttendanceAutoApproval(user?.role))
+        await queryClient.invalidateQueries({
+          queryKey: attendanceSettingsKey,
+        });
       if (showAttendanceSummary)
         await queryClient.invalidateQueries({
           queryKey: [queryKeyHRM.getAttendanceChart],
         });
-    } catch (e) {
-      console.log("refreshInUser", e);
     } finally {
       setRefreshing(false);
     }
   };
+  const openAttendance = (item: any) => {
+    if (
+      !checkPermission(permission, "HRMS", "viewAttendanceDetails", user?.role)
+    ) {
+      toast.error("You are not authorized to view attendance details.");
+      return;
+    }
+    navigate(
+      activeTab === "all" && !isAgent
+        ? routeAttendance.UserAttendanceList
+        : routeAttendance.AttendanceDetail,
+      { item },
+    );
+  };
   return (
     <ContainerHRM
       headingTitle="Attendance"
+      totalCount={totalCount}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
     >
+      <View style={styles.tabsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabs}
+          accessibilityRole="tablist"
+        >
+          {tabs.map((tab) => (
+            <Pressable
+              key={tab.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab.key }}
+              onPress={() => {
+                setSelectedTab(tab.key);
+                search.listRef.current?.scrollToOffset({
+                  offset: 0,
+                  animated: false,
+                });
+              }}
+              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab.key && styles.activeTabText,
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
       {search.showSearch && (
         <ListingSearch
           value={search.searchValue}
@@ -125,182 +236,100 @@ const AllAttendance = () => {
         />
       )}
       <FlatList
+        key={activeTab}
         ref={search.listRef}
+        data={data}
+        keyExtractor={(item) => String(item._id)}
         ListHeaderComponent={
           <>
+            <AttendanceAutoApproval role={user?.role} userId={user?._id} />
             {showAttendanceSummary && (
               <>
                 <CircularBarChart type="attendanceChart" />
                 <CardHRM />
               </>
             )}
-            <FlatList
-              style={{ gap: 2 }}
-              ListHeaderComponent={
-                <>
-                  <TitleHRM title="Issues" marginBottom={4} marginTop={12} />
-                  {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />}
-                </>
-              }
-              ListEmptyComponent={
-                <>
-                  {isLoadingIssue && <LoadingCompo />}
-                  {issueAttList?.length === 0 && (
-                    <SlideFadeIn>
-                      <View
-                        style={{
-                          backgroundColor: "#fff",
-                          borderWidth: 0.8,
-                          borderColor: color.borderColor,
-                          borderRadius: 12,
-                          paddingBottom: 12,
-                        }}
-                      >
-                        <NoDataFound height={140} width={140} />
-                      </View>
-                    </SlideFadeIn>
-                  )}
-                </>
-              }
-              data={issueAttList ?? []}
-              renderItem={({ item }) => {
-                return !isAgent ? (
-                  <RowAttendance
-                    item={item}
-                    onPress={() => {
-                      const canViewDetails = checkPermission(
-                        permission,
-                        "HRMS",
-                        "viewAttendanceDetails",
-                        user?.role,
-                      );
-
-                      if (canViewDetails) {
-                        navigate(routeAttendance.AttendanceDetail, { item });
-                      } else {
-                        popUpConfToast.errorMessage(
-                          "You are not authorized to view attendance details.",
-                        );
-                      }
-                    }}
-                  />
-                ) : (
-                  <RowSingleUserAtt
-                    item={item}
-                    onPress={() => {
-                      const canViewDetails = checkPermission(
-                        permission,
-                        "HRMS",
-                        "viewAttendanceDetails",
-                        user?.role,
-                      );
-
-                      if (canViewDetails) {
-                        navigate(routeAttendance.AttendanceDetail, { item });
-                      } else {
-                        popUpConfToast.errorMessage(
-                          "You are not authorized to view attendance details.",
-                        );
-                      }
-                    }}
-                  />
-                );
-              }}
-              ListFooterComponent={
-                <View style={{ marginBottom: 20 }}>
-                  {isFetchingNextPageIssue && (
-                    <ActivityIndicator size={"small"} color={"#002E6B"} />
-                  )}
-                  {issueAttList?.length !== 0 && hasNextPageIssue && (
-                    <CustomBtn
-                      containerStyle={{
-                        width: 100,
-                        alignSelf: "flex-end",
-                        backgroundColor: color.prussianBlue,
-                      }}
-                      gradientContStyle={{ paddingVertical: 10 }}
-                      title="Load More"
-                      textStyle={{ fontSize: 12 }}
-                      onPress={loadMoreIssueList}
-                    />
-                  )}
-                </View>
-              }
-            />
-            <TitleHRM title="Attendance" marginBottom={4} marginTop={8} />
-            {/* {!isAgent ? <HeaderRowAttendance /> : <HeaderRowUserAtt />} */}
+            <Text style={styles.listTitle}>
+              {tabs.find((tab) => tab.key === activeTab)?.label}
+            </Text>
           </>
         }
-        // contentContainerStyle={{ paddingBottom: 80, padding: 20 }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        data={data?.length > 0 ? data : []}
-        renderItem={({ item }) => {
-          return !isAgent ? (
-            <RowAttendance
-              item={item}
-              onPress={() => {
-                const canViewDetails = checkPermission(
-                  permission,
-                  "HRMS",
-                  "viewAttendanceDetails",
-                  user?.role,
-                );
-
-                if (canViewDetails) {
-                  navigate(routeAttendance.UserAttendanceList, { item });
-                } else {
-                  popUpConfToast.errorMessage(
-                    "You are not authorized to view attendance details.",
-                  );
+        renderItem={({ item }) => (
+          <View style={styles.row}>
+            {isAgent ? (
+              <RowSingleUserAtt
+                item={item}
+                onPress={() => openAttendance(item)}
+              />
+            ) : (
+              <RowAttendance
+                item={item}
+                onPress={() => openAttendance(item)}
+                action={
+                  activeTab === "unapproved" && canApprove ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Approve attendance for ${item.name || "employee"}`}
+                      hitSlop={4}
+                      disabled={approval.isPending}
+                      onPress={() => confirmApprove(item._id)}
+                      style={[
+                        styles.approveButton,
+                        approval.isPending && { opacity: 0.5 },
+                      ]}
+                    >
+                      <Text style={styles.approveText}>
+                        {approval.isPending && approval.variables === item._id
+                          ? "Approving…"
+                          : "Approve"}
+                      </Text>
+                    </Pressable>
+                  ) : undefined
                 }
-              }}
-            />
+              />
+            )}
+          </View>
+        )}
+        ListEmptyComponent={
+          isLoading ? (
+            <LoadingCompo />
+          ) : isError ? (
+            <View style={styles.empty}>
+              <Text style={styles.error}>Unable to load attendance.</Text>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isFetching}
+                onPress={() => refetch()}
+                style={styles.retry}
+              >
+                <Text style={styles.approveText}>Retry</Text>
+              </Pressable>
+            </View>
           ) : (
-            <RowSingleUserAtt
-              item={item}
-              onPress={() => {
-                const canViewDetails = checkPermission(
-                  permission,
-                  "HRMS",
-                  "viewAttendanceDetails",
-                  user?.role,
-                );
-
-                if (canViewDetails) {
-                  navigate(routeAttendance.AttendanceDetail, { item });
-                } else {
-                  popUpConfToast.errorMessage(
-                    "You are not authorized to view attendance details.",
-                  );
-                }
-              }}
-            />
-          );
-        }}
-        contentContainerStyle={{
-          paddingBottom: 160,
-          paddingHorizontal: 12,
-          paddingTop: 20,
-          // gap: 10,
-        }}
-        onEndReached={onEndReach}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextPage && (
-            <ActivityIndicator
-              size={"small"}
-              color={color.mainTxtColor}
-              style={{ marginTop: 12 }}
-            />
+            <NoDataFound height={200} width={200} />
           )
         }
-        ListEmptyComponent={
-          <>
-            {isLoading && <LoadingCompo />}
-            {data?.length === 0 && <NoDataFound height={200} width={200} />}
-          </>
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator color="#2E67BE" style={{ marginVertical: 12 }} />
+          ) : isError && data.length > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => refetch()}
+              style={styles.empty}
+            >
+              <Text style={styles.error}>Unable to refresh. Tap to retry.</Text>
+            </Pressable>
+          ) : undefined
         }
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        onEndReached={() => {
+          if (hasNextPage && !isFetching && !isFetchingNextPage)
+            void fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -308,7 +337,50 @@ const AllAttendance = () => {
     </ContainerHRM>
   );
 };
-
 export default AllAttendance;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  tabsContainer: {
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E4EAF2",
+  },
+  tabs: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
+  tab: {
+    minHeight: 44,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+    borderRadius: 10,
+    backgroundColor: "#F1F5F9",
+  },
+  activeTab: { backgroundColor: "#2E67BE" },
+  tabText: { color: "#475467", fontSize: 13, fontWeight: "600" },
+  activeTabText: { color: "#fff" },
+  listContent: { paddingBottom: 160, paddingHorizontal: 12, paddingTop: 12 },
+  listTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1D2939",
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  row: { marginBottom: 10 },
+  approveButton: {
+    paddingHorizontal: 14,
+    minWidth: 90,
+    minHeight: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2E67BE",
+    borderRadius: 8,
+  },
+  approveText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  empty: { alignItems: "center", padding: 20 },
+  error: { color: "#B42318", fontSize: 13 },
+  retry: {
+    backgroundColor: "#2E67BE",
+    padding: 12,
+    marginTop: 12,
+    borderRadius: 10,
+  },
+});

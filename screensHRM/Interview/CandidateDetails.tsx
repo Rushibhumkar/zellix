@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
+  ScrollView,
   ActivityIndicator,
   Text,
   FlatList,
@@ -31,6 +32,83 @@ import * as Yup from "yup";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import moment from "moment";
 import { Feather } from "@expo/vector-icons";
+
+const formatProgressLabel = (stage: string) => {
+  const labels: Record<string, string> = {
+    scheduled: "Scheduled",
+    reschedule: "Rescheduled",
+    rescheduled: "Rescheduled",
+    postinterview: "Post Interview",
+    selected: "Selected",
+    rejected: "Rejected",
+    notcoming: "Not Coming",
+  };
+  const key = String(stage || "").replace(/[\s_-]/g, "").toLowerCase();
+  const formatted = String(stage || "Stage")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]/g, " ");
+  return labels[key] || formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
+
+const CandidateProgress = ({ steps }: { steps: any[] }) => {
+  const activeIndex = steps.length - 1;
+  return (
+    <View style={styles.progressCard}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.progressContent}
+      >
+        {steps.map((step, index) => {
+          const completed = index < activeIndex;
+          const active = index === activeIndex;
+          return (
+            <View key={`${step.stage}-${index}`} style={styles.progressStep}>
+              <View style={styles.progressNodeRow}>
+                <View
+                  style={[
+                    styles.progressNode,
+                    completed && styles.progressNodeCompleted,
+                    active && styles.progressNodeActive,
+                    !completed && !active && styles.progressNodePending,
+                  ]}
+                >
+                  {completed ? (
+                    <Feather name="check" size={17} color="#FFFFFF" />
+                  ) : (
+                    <View
+                      style={[
+                        styles.progressDot,
+                        active ? styles.progressDotActive : styles.progressDotPending,
+                      ]}
+                    />
+                  )}
+                </View>
+                {index < steps.length - 1 && (
+                  <View
+                    style={[
+                      styles.progressConnector,
+                      completed && styles.progressConnectorCompleted,
+                    ]}
+                  />
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.progressLabel,
+                  (completed || active) && styles.progressLabelCurrent,
+                ]}
+                numberOfLines={2}
+              >
+                {formatProgressLabel(step.stage)}
+              </Text>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+};
 
 const CandidateDetailsScreen = () => {
   const { params } = useRoute();
@@ -77,6 +155,11 @@ const CandidateDetailsScreen = () => {
   });
 
   const detail = data?.data;
+  const progressSteps = detail?.progress?.length
+    ? detail.progress
+    : detail?.interview?.status
+      ? [{ stage: detail.interview.status }]
+      : [];
 
   const getDisplayValue = (val: any) => {
     if (!val) return "-";
@@ -150,6 +233,7 @@ const CandidateDetailsScreen = () => {
         isStatus: () => setShowStatusModal(true),
       }}
     >
+      {progressSteps.length > 0 && <CandidateProgress steps={progressSteps} />}
       {/* HEADER CARD */}
       <View style={styles.profileCard}>
         <View style={styles.avatar}>
@@ -316,6 +400,111 @@ const CandidateDetailsScreen = () => {
 export default CandidateDetailsScreen;
 
 const styles = StyleSheet.create({
+  progressCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+
+  progressContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "flex-start",
+  },
+
+  progressStep: {
+    width: 82,
+    alignItems: "center",
+    position: "relative",
+  },
+
+  progressNodeRow: {
+    width: "100%",
+    alignItems: "center",
+  },
+
+  progressNode: {
+    zIndex: 1,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  progressNodeCompleted: {
+    borderColor: color.primaryColor,
+    backgroundColor: color.primaryColor,
+  },
+
+  progressNodeActive: {
+    borderColor: color.primaryColor,
+    backgroundColor: "#FFFFFF",
+    shadowColor: color.primaryColor,
+    shadowOpacity: 0.22,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 2,
+  },
+
+  progressNodePending: {
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+  },
+
+  progressDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 2,
+  },
+
+  progressDotActive: {
+    backgroundColor: color.primaryColor,
+  },
+
+  progressDotPending: {
+    backgroundColor: "#CBD5E1",
+  },
+
+  progressConnector: {
+    position: "absolute",
+    zIndex: 0,
+    top: 15,
+    left: "50%",
+    width: 82,
+    height: 2,
+    backgroundColor: "#CBD5E1",
+  },
+
+  progressConnectorCompleted: {
+    backgroundColor: color.primaryColor,
+  },
+
+  progressLabel: {
+    maxWidth: 78,
+    marginTop: 8,
+    color: "#94A3B8",
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  progressLabelCurrent: {
+    color: "#1E293B",
+    fontWeight: "700",
+  },
+
   profileCard: {
     marginHorizontal: 16,
     marginTop: 18,

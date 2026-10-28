@@ -131,6 +131,10 @@ const RolePermissionSetsHRM = () => {
               <CustomText style={{ color: "#64748B" }}>No permissions found for this role.</CustomText>
             ) : Object.entries(permissions)
               .filter(([moduleName]) => role !== UserRole.agent || moduleName !== "HrmsDashboard")
+              .filter(([moduleName]) =>
+                ![UserRole.agent, UserRole.team_lead].includes(role as UserRole) ||
+                moduleName !== "Recruitment"
+              )
               .map(([moduleName, group]) => {
               const isOpen = expanded === moduleName;
               const entries = Object.entries(group).filter(([key]) => moduleName !== "Users" || !["allowMultipleDeviceLogins", "deviceLoginAccess"].includes(key));

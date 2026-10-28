@@ -57,6 +57,7 @@ interface TContainerHRM {
   pt?: number;
   isLoading?: boolean;
   headingTitle?: string;
+  totalCount?: number;
   hasStatusIcon?: boolean;
   onStatusPress?: () => void;
   onPressSearch?: () => void;
@@ -71,6 +72,7 @@ const ContainerHRM = ({
   pt,
   isLoading = false,
   headingTitle,
+  totalCount,
   hasStatusIcon,
   onStatusPress,
   onPressSearch,
@@ -123,9 +125,20 @@ const ContainerHRM = ({
         }}
       >
         {!!headingTitle ? (
-          <CustomText fontWeight="700" fontSize={20} color={color.white}>
-            {headingTitle}
-          </CustomText>
+          <View style={totalCount !== undefined ? { flex: 1, marginRight: 12 } : undefined}>
+            <CustomText fontWeight="700" fontSize={20} color={color.white}>
+              {headingTitle}
+            </CustomText>
+            {typeof totalCount === "number" && Number.isFinite(totalCount) && totalCount >= 0 && (
+              <CustomText
+                fontSize={13}
+                color="rgb(234, 234, 234)"
+                style={{ marginTop: 2 }}
+              >
+                Total: {totalCount}
+              </CustomText>
+            )}
+          </View>
         ) : (
           <View>
             <CustomText fontSize={20} fontWeight="400" color={color.white}>
@@ -208,16 +221,23 @@ const ContainerHRM = ({
             />
           </AnimatedTouchableOpacity>
 
-          <CustomText
-            fontSize={18}
-            fontWeight="700"
-            style={{
-              textTransform: "capitalize",
-              color: color.white,
-            }}
-          >
-            {isBAck?.title ?? "N/A"}
-          </CustomText>
+          <View>
+            <CustomText
+              fontSize={18}
+              fontWeight="700"
+              style={{
+                textTransform: "capitalize",
+                color: color.white,
+              }}
+            >
+              {isBAck?.title ?? "N/A"}
+            </CustomText>
+            {typeof totalCount === "number" && Number.isFinite(totalCount) && totalCount >= 0 && (
+              <CustomText fontSize={13} color="rgb(234, 234, 234)" style={{ marginTop: 2 }}>
+                Total: {totalCount}
+              </CustomText>
+            )}
+          </View>
         </View>
 
         <View

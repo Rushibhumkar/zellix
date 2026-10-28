@@ -11,16 +11,19 @@ import ExpoImagePicker from "../../myComponents/ExpoImagePicker/ExpoImagePicker"
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import parsePhoneNumber from "libphonenumber-js";
 import { myConsole } from "../../hooks/useConsole";
 import { scheduleInterview } from "../../services/hrmApi/userHrmApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
 import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
 import { uploadFile } from "../../utils/uploadFile";
-import { alphanumericValidation, emailValidate } from "../../utils/validation";
+import { alphanumericValidation } from "../../utils/validation";
 import { color } from "../../const/color";
 import { useAppToast } from "../../components/AppToast";
+import {
+  formatSelectedPhoneNumber,
+  isValidPhoneNumber,
+} from "../../utils/phoneNumber";
 
 const qualifications = [
   { _id: "12th", name: "12th" },
@@ -57,41 +60,48 @@ const ScheduleInterview = () => {
     validationSchema: Yup.object().shape({
       firstName: alphanumericValidation(),
       lastName: alphanumericValidation(),
-      mobile: Yup.string()
-        .required("Required")
-        .test("is-valid", "Invalid number", (value) => {
-          try {
-            const phoneNumber = parsePhoneNumber(value);
-            return phoneNumber.isValid();
-          } catch {
-            return false;
-          }
-        }),
-      email: emailValidate(),
-      designation: Yup.string().required("Required"),
-      qualification: Yup.string().required("Required"),
+      mobile: Yup.string().test(
+        "is-valid-if-provided",
+        "Invalid number",
+        (value) => !value?.trim() || isValidPhoneNumber(value)
+      ),
+      email: Yup.string().email("Invalid email address").notRequired(),
+      designation: Yup.string().notRequired(),
+      qualification: Yup.string().notRequired(),
       dateTime: Yup.string().required("Required"),
-      referredBy: Yup.string().required("Required"),
+      referredBy: Yup.string().notRequired(),
       experience: Yup.number()
         .typeError("Experience must be a number")
         .min(0, "Experience must be at least 0 years")
         .max(50, "Experience can't exceed 50 years")
-        .required("Experience is required"),
-
-      cvFile: Yup.string().required("Please upload a document"),
-    }),
+        .notRequired(),
+      cvFile: Yup.string().notRequired(),
+    }).test(
+      "contact-required",
+      "Provide a valid mobile number or email address",
+      function (values) {
+        const hasEmail = Boolean(values?.email?.trim());
+        const hasMobile = isValidPhoneNumber(values?.mobile);
+        return hasEmail || hasMobile
+          ? true
+          : this.createError({
+              path: "mobile",
+              message: "Provide a valid mobile number or email address",
+            });
+      }
+    ),
     onSubmit: async (values) => {
       setLoading(true);
       try {
         const payload = {
           name: values.firstName,
           lastName: values.lastName,
-          mobile: values.mobile,
-          email: values.email,
+          ...(isValidPhoneNumber(values.mobile) ? { mobile: values.mobile } : {}),
+          ...(values.email?.trim() ? { email: values.email.trim() } : {}),
           designation: values.designation,
           qualification: values.qualification,
           date: values.dateTime,
-          referredBy: values.referredBy,
+          ...(values.referredBy ? { referredBy: values.referredBy } : {}),
           realEstateExperience: values.experience,
           beforeInterview: values.cvFile,
         };
@@ -141,9 +151,11 @@ const ScheduleInterview = () => {
           <CustomText style={styles.label}>Mobile Number</CustomText>
           <MobileInput
             value={formik.values.mobile}
-            onChange={(v) =>
-              formik.setFieldValue("mobile", `${v.countryCode}${v.number}`)
-            }
+            onChange={(v) => {
+              const mobile =
+                typeof v === "string" ? v : formatSelectedPhoneNumber(v);
+              formik.setFieldValue("mobile", mobile);
+            }}
             onBlur={formik.handleBlur("mobile")}
             error={formik.touched.mobile && formik.errors.mobile}
             isCountryPicker={true}
@@ -158,7 +170,7 @@ const ScheduleInterview = () => {
             errors={formik.touched.email && formik.errors.email}
           />
           <DropdownRNE
-            label="Designation"
+            label="Designation (Optional)"
             containerStyle={{ marginBottom: 15 }}
             arrOfObj={[
               { _id: "Portfolio Manager", name: "Portfolio Manager" },
@@ -188,7 +200,7 @@ const ScheduleInterview = () => {
             error={formik.touched.designation && formik.errors.designation}
           />
           <DropdownRNE
-            label="Qualification"
+            label="Qualification (Optional)"
             containerStyle={{ marginBottom: 15 }}
             arrOfObj={qualifications}
             onChange={(v) => formik.setFieldValue("qualification", v)}
@@ -209,7 +221,7 @@ const ScheduleInterview = () => {
             </CustomText>
           )}
           <DropdownRNE
-            label="Referred By"
+            label="Referred By (Optional)"
             containerStyle={{ marginBottom: 15, marginTop: 12 }}
             arrOfObj={allUsers ?? []}
             onChange={(v) => formik.setFieldValue("referredBy", v)}
@@ -233,7 +245,7 @@ const ScheduleInterview = () => {
             }
           />
           <CustomInput
-            label="Real Estate Experience"
+            label="Real Estate Experience (Optional)"
             placeholder="Enter Experience"
             marginBottom={15}
             value={formik.values.experience}
@@ -244,7 +256,7 @@ const ScheduleInterview = () => {
           />
 
           <ExpoImagePicker
-            label="CV Before Interview"
+            label="CV Before Interview (Optional)"
             onSelect={async (file) => {
               await uploadFile({
                 file: file?.assets,

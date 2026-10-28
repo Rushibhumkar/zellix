@@ -13,7 +13,7 @@ import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import RowOnLeave from "../../myComponentsHRM/Row/RowOnLeave";
 import RowEmployee from "../../myComponentsHRM/Row/RowEmployee";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { routeUser } from "../../utils/routesHRM";
 import { color } from "../../const/color";
 import AddIcon from "../../assets/svgHRM/AddIcon";
@@ -36,6 +36,9 @@ const AllUSersHRM = () => {
   const { navigate } = useNavigation();
   const queryClient = useQueryClient();
   const { user } = useSelector(selectUser);
+  useFocusEffect(useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ["getUserStatusChart"] });
+  }, [queryClient]));
   const isSubSup = [
     roleEnum.sub_admin,
     roleEnum.sup_admin,
@@ -60,6 +63,7 @@ const AllUSersHRM = () => {
   const search = useHRMListingSearch(updateSearch);
   const {
     data: allUsers,
+    totalCount,
     isLoading,
     hasNextPage,
     fetchNextPage,
@@ -71,12 +75,13 @@ const AllUSersHRM = () => {
     }
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     try {
       setRefreshing(true);
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: [queryKeyHRM.getAllUserHRM],
       });
+      await queryClient.invalidateQueries({ queryKey: ["getUserStatusChart"] });
     } catch (e) {
       console.log("refreshInUser", e);
     } finally {
@@ -87,6 +92,7 @@ const AllUSersHRM = () => {
   return (
     <ContainerHRM
       headingTitle="Users"
+      totalCount={totalCount}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}

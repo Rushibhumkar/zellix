@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Platform } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import DashboardIconFocus from "../assets/svg/Dashboard";
 import DashboardIcon from "../assets/svg/DashboardIcon";
 
@@ -33,6 +33,8 @@ import UsersBottomFocus from "../assets/svg/UsersBottomFocus";
 import UsersBottomInFocus from "../assets/svg/UsersBottomInFocus";
 import AttendanceBottomFocus from "../assets/svg/AttendanceBottomFocus";
 import AttendanceBottomInfocus from "../assets/svg/AttendanceBottomInfocus";
+import { useGetUserPermission } from "../services/rootApi/permissionApi";
+import { checkPermission } from "../utils/commonFunctions";
 
 ////
 const Stack = createNativeStackNavigator();
@@ -42,8 +44,51 @@ const Tab = createBottomTabNavigator();
 export const HRManagementStack = () => {
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === roleEnum.agent;
-  const isAdmin = ["sup_admin", "sub_admin", "developer"].includes(user?.role);
+  const isRecruitmentRestricted =
+    user?.role === roleEnum.agent || user?.role === roleEnum.team_lead;
+  const { data: permission = {}, isLoading: permissionsLoading } =
+    useGetUserPermission(user?._id);
+  const canViewDashboard = checkPermission(
+    permission,
+    "HrmsDashboard",
+    "sidebar",
+    user?.role,
+  );
+  const canViewUsers =
+    !isAgent && checkPermission(permission, "Users", "sidebar", user?.role);
+  const canViewAttendance = checkPermission(
+    permission,
+    "Attendance",
+    "sidebar",
+    user?.role,
+  );
+  const canViewLeaves = checkPermission(
+    permission,
+    "Leaves",
+    "sidebar",
+    user?.role,
+  );
+  const canViewInterview = !isRecruitmentRestricted && Boolean(user?._id) &&
+    checkPermission(permission, "Recruitment", "sidebar", user?.role);
   const insets = useSafeAreaInsets();
+  if (permissionsLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color="#2E67BE" />
+      </View>
+    );
+  }
+
+  const hasVisibleModule =
+    canViewDashboard ||
+    canViewUsers ||
+    canViewAttendance ||
+    canViewLeaves ||
+    canViewInterview;
+  if (!hasVisibleModule) {
+    return <View style={{ flex: 1, backgroundColor: "#F6F8FC" }} />;
+  }
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -57,7 +102,7 @@ export const HRManagementStack = () => {
         },
       }}
     >
-      {!isAgent && (
+      {canViewDashboard && (
         <Tab.Screen
           name="DashboardHRMStack"
           component={DashboardHRMStack}
@@ -67,7 +112,7 @@ export const HRManagementStack = () => {
           }}
         />
       )}
-      {!isAgent && (
+      {canViewUsers && (
         <Tab.Screen
           name="AllUsersHRMStack"
           component={AllUsersHRMStack}
@@ -77,23 +122,27 @@ export const HRManagementStack = () => {
           }}
         />
       )}
-      <Tab.Screen
-        name="AttendanceStack"
-        component={AttendanceStack}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            focused ? <AttendanceBottomFocus /> : <AttendanceBottomInfocus />,
-        }}
-      />
-      <Tab.Screen
-        name="AllLeaveStack"
-        component={AllLeaveStack}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            focused ? <LeaveActiveIcon /> : <LeaveUnActiveIcon />,
-        }}
-      />
-      {isAdmin && (
+      {canViewAttendance && (
+        <Tab.Screen
+          name="AttendanceStack"
+          component={AttendanceStack}
+          options={{
+            tabBarIcon: ({ focused }) =>
+              focused ? <AttendanceBottomFocus /> : <AttendanceBottomInfocus />,
+          }}
+        />
+      )}
+      {canViewLeaves && (
+        <Tab.Screen
+          name="AllLeaveStack"
+          component={AllLeaveStack}
+          options={{
+            tabBarIcon: ({ focused }) =>
+              focused ? <LeaveActiveIcon /> : <LeaveUnActiveIcon />,
+          }}
+        />
+      )}
+      {canViewInterview && (
         <Tab.Screen
           name="InterviewStack"
           component={InterviewStack}

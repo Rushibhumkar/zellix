@@ -13,7 +13,9 @@ export const useGetUserPermission = (userId: string) => {
     queryKey: ["getUserPermission", userId],
     queryFn: () => getUsersPermission(userId),
     enabled: !!userId,
-    staleTime: Infinity,
+    staleTime: 30_000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     select: (data) => data || {},
   });
 };

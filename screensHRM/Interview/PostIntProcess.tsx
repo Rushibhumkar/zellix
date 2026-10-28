@@ -2,7 +2,6 @@ import { StyleSheet, View, Text, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import parsePhoneNumber from "libphonenumber-js";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
 import ScrollViewWithKeyboardAvoid from "../../myComponents/ScrollViewWithKeyboardAvoid/ScrollViewWithKeyboardAvoid";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
@@ -21,6 +20,10 @@ import { useGetAllUserHRM } from "../../hooks/useGetQuerryHRM";
 import { uploadFile } from "../../utils/uploadFile";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { color } from "../../const/color";
+import {
+  formatSelectedPhoneNumber,
+  isValidPhoneNumber,
+} from "../../utils/phoneNumber";
 
 const PostIntProcess = () => {
   const { params } = useRoute();
@@ -52,39 +55,44 @@ const PostIntProcess = () => {
     validationSchema: Yup.object().shape({
       offerAccepted: Yup.boolean().required("Required"),
       salary: Yup.number()
+        .transform((value, originalValue) => (originalValue === "" ? undefined : value))
         .typeError("Salary must be a number")
         .min(0, "Salary must be a positive number")
-        .required("Required"),
+        .notRequired(),
       mobile: Yup.string()
         .required("Required")
-        .test("is-valid", "Invalid number", (value) => {
-          try {
-            const phoneNumber = parsePhoneNumber(value);
-            return phoneNumber.isValid();
-          } catch {
-            return false;
-          }
-        }),
-      joiningDate: Yup.string().required("Required"),
-      pnl: Yup.string().required("Required"),
-      manager: Yup.string().required("Required"),
+        .test("is-valid", "Invalid number", isValidPhoneNumber),
+      joiningDate: Yup.string().notRequired(),
+      pnl: Yup.string().notRequired(),
+      manager: Yup.string().notRequired(),
       offerLetter: Yup.string().required("Required"),
-      postInterviewCV: Yup.string().required("Required"),
+      postInterviewCV: Yup.string().notRequired(),
       remark: Yup.string(),
-    }),
+    }).test(
+      "manager-or-pnl-required",
+      "Select a PNL or Reporting Manager",
+      function (values) {
+        return values?.pnl || values?.manager
+          ? true
+          : this.createError({
+              path: "pnl",
+              message: "Select a PNL or Reporting Manager",
+            });
+      }
+    ),
     onSubmit: async (values) => {
       try {
         setLoading(true);
         const payload = {
           candidateId: candidate?._id,
-          salaryOffered: values.salary,
           offerAccepted: values.offerAccepted,
-          joiningDate: values.joiningDate,
-          reportingManager: values.manager,
-          pnl: values.pnl,
-          remarks: values.remark,
           offerLetter: values.offerLetter,
-          afterInterview: values.postInterviewCV,
+          ...(values.salary !== "" ? { salaryOffered: values.salary } : {}),
+          ...(values.joiningDate ? { joiningDate: values.joiningDate } : {}),
+          ...(values.manager ? { reportingManager: values.manager } : {}),
+          ...(values.pnl ? { pnl: values.pnl } : {}),
+          ...(values.remark.trim() ? { remarks: values.remark.trim() } : {}),
+          ...(values.postInterviewCV ? { afterInterview: values.postInterviewCV } : {}),
         };
         await postInterviewProcess(payload);
         queryClient.invalidateQueries({
@@ -130,7 +138,7 @@ const PostIntProcess = () => {
           )}
 
           <CustomInput
-            label="Salary Offered"
+            label="Salary Offered (Optional)"
             placeholder="Enter Salary"
             marginBottom={15}
             value={formik.values.salary}
@@ -142,16 +150,18 @@ const PostIntProcess = () => {
           <CustomText style={styles.label}>Mobile Number</CustomText>
           <MobileInput
             value={formik.values.mobile}
-            onChange={(v) =>
-              formik.setFieldValue("mobile", `${v.countryCode}${v.number}`)
-            }
+            onChange={(v) => {
+              const mobile =
+                typeof v === "string" ? v : formatSelectedPhoneNumber(v);
+              formik.setFieldValue("mobile", mobile);
+            }}
             onBlur={formik.handleBlur("mobile")}
             error={formik.touched.mobile && formik.errors.mobile}
             isCountryPicker={true}
           />
 
           <DatePickerExpo
-            title="Joining Date"
+            title="Joining Date (Optional)"
             initialValue={formik.values.joiningDate}
             onSelect={(v) => formik.setFieldValue("joiningDate", v)}
             minimumDate={new Date()}
@@ -163,7 +173,7 @@ const PostIntProcess = () => {
           )}
 
           <DropdownRNE
-            label="PNL"
+            label="PNL (or Reporting Manager)"
             arrOfObj={allUsers ?? []}
             keyValueGetOnSelect="_id"
             keyValueShowInBox="name"
@@ -192,7 +202,7 @@ const PostIntProcess = () => {
           )}
 
           <DropdownRNE
-            label="Reporting Manager"
+            label="Reporting Manager (or PNL)"
             arrOfObj={allUsers ?? []}
             keyValueGetOnSelect="_id"
             keyValueShowInBox="name"
@@ -242,7 +252,7 @@ const PostIntProcess = () => {
             </CustomText>
           )}
           <ExpoImagePicker
-            label="CV After Interview"
+            label="CV After Interview (Optional)"
             boxContainerStyle={{ marginTop: 8 }}
             onSelect={async (file) => {
               await uploadFile({
@@ -264,7 +274,7 @@ const PostIntProcess = () => {
           )}
 
           <CustomInput
-            label="Remark"
+            label="Remark (Optional)"
             containerStyle={{ marginTop: 8 }}
             placeholder="Type Here...."
             marginBottom={20}

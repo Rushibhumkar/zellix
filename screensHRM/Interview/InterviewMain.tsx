@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#0F172A",
+    color: color.mainTxtColor,
   },
 
   headerSubtitle: {
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
   subHeading: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#0F172A",
+    color: color.mainTxtColor,
   },
 
   exportBtn: {
