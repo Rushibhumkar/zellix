@@ -62,9 +62,11 @@ import {
 } from "../../utils/callOutcome";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { routeLead, routeMeeting } from "../../utils/routes";
+import { routeUser } from "../../utils/routesHRM";
 import { openWhatsApp } from "../../utils/openWhatsApp";
 import AddNote from "./component/AddNote";
 import NotesCard from "./component/NotesCard";
+import LeadFollowups from "./component/LeadFollowups";
 import TabButton from "./component/TabButton";
 import MeetingInfo from "./component/MeetingInfo";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
@@ -246,6 +248,10 @@ const LeadsDetails = () => {
 
   const modalNote = useModal();
   const [activeTab, setActiveTab] = useState(1);
+  const [followupNoteId, setFollowupNoteId] = useState<string | null>(null);
+  useEffect(() => {
+    if (activeTab !== 2) setFollowupNoteId(null);
+  }, [activeTab]);
   // let detail = params?.item;
   // let detail = {};
   const details = params?.item;
@@ -2399,6 +2405,7 @@ const LeadsDetails = () => {
           >
             {/* notes */}
             <NotesCard
+              focusNoteId={followupNoteId}
               noteArr={detail?.notes}
               onEdit={(v) => {
                 setNoteUpdate(v);
@@ -2462,6 +2469,28 @@ const LeadsDetails = () => {
             }
           }}
         />
+      )}
+
+      {activeTab === 4 && (
+        <Container>
+          <Header title="Lead Details" onBack={handleLeadDetailsBack} />
+          <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
+          <LeadFollowups key={`${user?._id}:${detail?._id || details?._id}`} leadId={detail?._id || details?._id} onOpenUser={
+            user?.role === roleEnum.sup_admin || user?.role === roleEnum.sub_admin
+              ? (userId) => navigate(routeUser.UserDetailHRMAgent, { item: { _id: userId } })
+              : undefined
+          } onOpen={async (target) => {
+            if (target.type === "note") {
+              const response = await axiosInstance.get(`/api/lead/getLeadById/${detail?._id || details?._id}`);
+              const lead = response.data;
+              if (!lead?.notes?.some((note: any) => String(note._id) === target.id)) throw new Error("Note is no longer available");
+              await refetchLeadDetail();
+              setFollowupNoteId(target.id); setActiveTab(2);
+            } else if (target.type === "meeting") {
+              navigate(routeMeeting.MeetingsNavigator, { screen: routeMeeting.MeetingDetails, params: { item: { _id: target.id }, entryId: target.entryId } });
+            }
+          }} />
+        </Container>
       )}
 
       {isAdminOrAssigne && (

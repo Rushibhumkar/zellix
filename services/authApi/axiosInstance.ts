@@ -1,4 +1,5 @@
 import axios from "axios";
+import { DeviceEventEmitter } from "react-native";
 import Constants from "expo-constants";
 import { getData, removeItemValue } from "../../hooks/useAsyncStorage";
 import { clearSessionData } from "../../redux/userSlice";
@@ -59,7 +60,14 @@ axiosInstance.interceptors.request.use(
 
 myConsole("axiosInstance.interceptors", axiosInstance);
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (
+      String(response.config.method).toLowerCase() !== "get" &&
+      /\/(lead|meeting|reminders)(\/|$)/.test(response.config.url || "")
+    )
+      DeviceEventEmitter.emit("lead-followups-refresh");
+    return response;
+  },
   async (error) => {
     const status = error?.response?.status;
     const message = error?.response?.data;

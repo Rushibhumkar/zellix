@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CustomText from "../../../myComponents/CustomText/CustomText";
 import moment from "moment";
 import { useSelector } from "react-redux";
@@ -17,6 +17,7 @@ import { sizes } from "../../../const";
 import { myConsole } from "../../../hooks/useConsole";
 
 interface TNotesCard {
+  focusNoteId?: string | null;
   noteArr: any;
   onEdit: (a: { notesId: string; note: string }) => void;
   onDelete: (id: string) => void;
@@ -30,8 +31,16 @@ const NotesCard = ({
   onDelete,
   isLoadingDelete,
   selectLeadType,
+  focusNoteId,
 }: TNotesCard) => {
   const { user } = useSelector(selectUser);
+  const [highlightedNoteId, setHighlightedNoteId] = useState(focusNoteId);
+  useEffect(() => {
+    setHighlightedNoteId(focusNoteId);
+    if (!focusNoteId) return;
+    const timer = setTimeout(() => setHighlightedNoteId(null), 2500);
+    return () => clearTimeout(timer);
+  }, [focusNoteId]);
 
   const isSubSup =
     user?.role === roleEnum?.sub_admin || user?.role === roleEnum?.sup_admin;
@@ -48,9 +57,9 @@ const NotesCard = ({
           <NoDataFound width={140} height={140} />
         </View>
       ) : (
-        noteArr.map((item: any, i: number) => {
+        [...noteArr].sort((a: any, b: any) => Number(String(b._id) === focusNoteId) - Number(String(a._id) === focusNoteId)).map((item: any, i: number) => {
           return (
-            <View key={i} style={styles.card}>
+            <View key={item._id || i} style={[styles.card, String(item._id) === highlightedNoteId && { borderColor: "#4985F2", borderWidth: 2, backgroundColor: "#EFF6FF" }]}>
               {/* Top Row: Avatar + Name + Date */}
               <View style={styles.topRow}>
                 {(isSubSupManagerTeamLead || item?.createdBy === user?._id) && (

@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Platform,
 } from "react-native";
 import { color } from "../../../const/color";
@@ -33,38 +32,35 @@ const TabButton = ({ onTabPress, activeTab, setActiveTab }: TTabButton) => {
     { id: 2, label: "Notes" },
     // { id: 3, label: "Logs" },
     { id: 3, label: "Meetings" },
+    { id: 4, label: "Activity Logs" },
     // { id: 3, label: "Timeline" },
   ];
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={tab.id}
+          style={[
+            styles.tab,
+            activeTab === tab.id && styles.activeTab,
+            activeTab === tab.id && styles.activeTabShadow,
+          ]}
+          onPress={() => handlePress(tab.id)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === tab.id }}
+          activeOpacity={0.6}
+        >
+          <CustomText
             style={[
-              styles.tab,
-              activeTab === tab.id && styles.activeTab,
-              activeTab === tab.id && styles.activeTabShadow,
+              styles.tabText,
+              activeTab === tab.id && styles.activeTabText,
             ]}
-            onPress={() => handlePress(tab.id)}
-            activeOpacity={0.6}
           >
-            <CustomText
-              style={[
-                styles.tabText,
-                activeTab === tab.id && styles.activeTabText,
-              ]}
-            >
-              {tab.label}
-            </CustomText>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            {tab.label}
+          </CustomText>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
@@ -77,21 +73,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     padding: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
     ...shadowPrimaryColor,
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "space-between",
-  },
   tab: {
-    flex: 1,
+    flexGrow: 1,
+    minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     borderRadius: 12,
-    // marginHorizontal: 4,
-    minWidth: 100,
   },
   activeTab: {
     backgroundColor: color.saffronMango,

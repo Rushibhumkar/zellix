@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/userSlice";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   assigningUser,
@@ -72,6 +74,7 @@ export const useGetLead = ({
   teamId,
   folderId,
 }) => {
+  const { user } = useSelector(selectUser);
   // return useQuery({
   //     queryKey: ['getLead'],
   //     queryFn: () => getLead(),
@@ -100,7 +103,9 @@ export const useGetLead = ({
       projectId,
       teamId,
       folderId,
+      folderId === "todays-tasks" ? user?._id : undefined,
     ],
+    refetchInterval: folderId === "todays-tasks" ? 60_000 : false,
     queryFn: async ({ pageParam = 1 }) =>
       getLead({
         search,
@@ -177,30 +182,36 @@ export const useGetLeadInAddMeeting = ({
 };
 
 export const useGetLeadById = (id) => {
+  const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getLeadDetailById", id],
+    queryKey: ["getLeadDetailById", id, user?._id],
     queryFn: () => getLeadDetailById(id),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: "always",
     enabled: !!id,
   });
   return res;
 };
 
 export const useGetUserInfoInLeadDetail = (id) => {
+  const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getUserInfoLeadDeatil", id],
+    queryKey: ["getUserInfoLeadDeatil", id, user?._id],
     queryFn: async () => await getUserInfoLeadDeatil(id),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: "always",
     enabled: !!id,
   });
   return res;
 };
 
 export const useGetLogsInfoInLeadDetail = (id) => {
+  const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getLogsInfoLeadDeatil", id],
+    queryKey: ["getLogsInfoLeadDeatil", id, user?._id],
     queryFn: () => getLogsInfoLeadDeatil(id),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: "always",
     enabled: !!id,
   });
   return res;
@@ -274,10 +285,12 @@ export const useGetMeeting = ({
 };
 
 export const useGetMeetingById = (id) => {
+  const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getMeetingById", id],
+    queryKey: ["getMeetingById", id, user?._id],
     queryFn: () => getMeetingById(id),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: "always",
     enabled: !!id,
   });
   return res;

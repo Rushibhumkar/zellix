@@ -642,7 +642,8 @@ const MeetingDetails = () => {
               </View>
             </View>
 
-            {(detail?.meetings || []).map((el, index) => {
+            {[...(detail?.meetings || [])].sort((a, b) => Number(String(b._id) === params?.entryId) - Number(String(a._id) === params?.entryId)).map((el) => {
+              const index = detail.meetings.findIndex((entry) => String(entry._id) === String(el._id));
               const isLatestEntry = index === detail.meetings.length - 1;
               const isCurrentDate = moment(el?.scheduleDate).isSame(
                 moment(),
@@ -738,7 +739,7 @@ const MeetingDetails = () => {
                 //   </View>
                 // </View>
                 <React.Fragment key={el?._id || index}>
-                  <View style={styles.meetingCard}>
+                  <View style={[styles.meetingCard, String(params?.entryId) === String(el?._id) && { borderWidth: 2, borderColor: "#4985F2", backgroundColor: "#EFF6FF" }]}>
                     <View style={styles.meetingCardHeader}>
                       <View
                         style={{

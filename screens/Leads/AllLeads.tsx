@@ -47,8 +47,11 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { sizes } from "../../const";
-import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 import { Feather, FontAwesome } from "@expo/vector-icons";
+import {
+  LegacyScrollView as GestureScrollView,
+  TouchableOpacity as GestureTouchableOpacity,
+} from "react-native-gesture-handler";
 import { useAppToast } from "../../components/AppToast";
 import Animated, {
   FadeInDown,
@@ -105,6 +108,9 @@ const AllLeads = () => {
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
   const flatListRef = React.useRef<FlatList>(null);
+  const scrollGestureRef = React.useRef<any>(null);
+  const lastScrollAt = React.useRef(0);
+  const [selectionMode, setSelectionMode] = useState(false);
   const [focusSearch, setFocusSearch] = useState(false);
   //
   const [selected, setSelected] = useState([]);
@@ -124,7 +130,7 @@ const AllLeads = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [folderModalVisible, setFolderModalVisible] = useState(false);
-  const { data: leadFolders = [] } = useLeadFolders();
+  const { data: leadFolders = [] } = useLeadFolders(selectLeadType);
   const selectedFolder = leadFolders.find(
     (folder: any) => folder._id === selectedFolderId,
   );
@@ -144,6 +150,8 @@ const AllLeads = () => {
     data: leadData,
     totalCount,
     isLoading: loading,
+    isError: leadLoadError,
+    refetch: refetchLeads,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -167,7 +175,7 @@ const AllLeads = () => {
   const handleSelect = (id) => {
     if (!id) return;
 
-    if (selected.length === 0) {
+    if (!selectionMode) {
       // Entering selection mode via long-press deep in the list — the action
       // bar (assign/delete/folder) only renders when showHeaderActions is
       // false, so force it visible immediately without moving the list
@@ -175,6 +183,7 @@ const AllLeads = () => {
       // selection, so no scroll-to-top is needed here).
       setShowHeaderActions(false);
     }
+    setSelectionMode(true);
 
     setSelected((previousSelected) =>
       previousSelected.includes(id)
@@ -196,6 +205,7 @@ const AllLeads = () => {
         queryKey: [queryKeyCRM.getLead],
       });
       setSelected([]);
+      setSelectionMode(false);
       toggleModalClose();
       toast.success(res?.data || "Lead(s) deleted successfully");
     } catch (error) {
@@ -343,8 +353,19 @@ const AllLeads = () => {
     isAgent || user?.role === roleEnum.team_lead || canManageLeadSelection;
 
   const handleTab = (tab: any) => {
+    setSelectionMode(false);
+    setSelectedFolderId("");
+    setSelected([]);
+    setFolderModalVisible(false);
     setSelectLeadType(tab);
   };
+
+  useFocusEffect(useCallback(() => {
+    if (selectedFolderId === "todays-tasks") {
+      void queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLead] });
+    }
+    void queryClient.invalidateQueries({ queryKey: ["leadFolders"] });
+  }, [queryClient, selectedFolderId]));
 
   const handleFolderChange = (folderId: string) => {
     setSelectedFolderId(folderId);
@@ -388,6 +409,7 @@ const AllLeads = () => {
 
   useEffect(() => {
     setSelected([]);
+    setSelectionMode(false);
     setAssignLeadModal(false);
   }, [
     selectLeadType,
@@ -441,6 +463,26 @@ const AllLeads = () => {
     selectedStatus === "all"
       ? leadData
       : leadData?.filter((item) => item?.status === selectedStatus);
+  const visibleLeadIds: string[] = (filteredLeadData || []).map((lead: any) => lead._id);
+  const allVisibleSelected = visibleLeadIds.length > 0 && visibleLeadIds.every((id) => selected.includes(id));
+
+  const exitSelection = useCallback(() => {
+    setSelected([]);
+    setSelectionMode(false);
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    if (!selectionMode) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      exitSelection();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [selectionMode, exitSelection]));
+
+  useEffect(() => {
+    exitSelection();
+  }, [selectedStatus, exitSelection]);
   const selectedHasDealBookedLead = selected.some((leadId) =>
     (leadData || []).some(
       (lead: any) =>
@@ -584,6 +626,25 @@ const AllLeads = () => {
             />
           )}
 
+          {selectionMode && canSelectLeads && (
+            <View style={styles.selectionBar}>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityLabel="Select all loaded leads"
+                accessibilityState={{ checked: allVisibleSelected ? true : selected.length > 0 ? "mixed" : false }}
+                onPress={() => setSelected(allVisibleSelected ? [] : visibleLeadIds)}
+                style={styles.selectAllButton}
+              >
+                <Feather name={allVisibleSelected ? "check-square" : selected.length > 0 ? "minus-square" : "square"} size={22} color="#2E67BE" />
+                <CustomText style={styles.selectionText}>Select all loaded ({visibleLeadIds.length})</CustomText>
+              </Pressable>
+              <CustomText style={styles.selectionCount}>{selected.length} selected</CustomText>
+              <Pressable accessibilityRole="button" accessibilityLabel="Exit selection" onPress={exitSelection} hitSlop={8} style={{ padding: 6 }}>
+                <Feather name="x" size={22} color="#475569" />
+              </Pressable>
+            </View>
+          )}
+
           {selectLeadType === "lead" && canLeadPoolManagement && (
             <TouchableOpacity
               onPress={() => navigation.navigate("LeadPool")}
@@ -601,7 +662,9 @@ const AllLeads = () => {
 
           <FlatList
             ref={flatListRef}
+            renderScrollComponent={(props) => <GestureScrollView {...props} ref={scrollGestureRef} />}
             data={filteredLeadData}
+            extraData={{ selected, selectionMode }}
             renderItem={({ item, index }) => (
               <LeadRowItem
                 index={index}
@@ -609,19 +672,26 @@ const AllLeads = () => {
                 isAgent={isAgent}
                 user={user}
                 selected={selected.indexOf(item?._id) !== -1}
-                isSelectionMode={selected.length > 0}
+                isSelectionMode={selectionMode}
+                scrollGestureRef={scrollGestureRef}
                 bgColor={bgByStatus[item?.status]}
-                onPress={() =>
-                  selected?.length === 0
+                onPress={() => {
+                  if (Date.now() - lastScrollAt.current < 180) return;
+                  !selectionMode
                     ? navigation.navigate("LeadsDetails", {
                         item,
                         selectLeadType,
                       })
-                    : handleSelect(item?._id)
-                }
+                    : handleSelect(item?._id);
+                }}
                 onLongPress={
                   canSelectLeads
-                    ? () => handleSelect(item?._id)
+                    ? () => {
+                        if (Date.now() - lastScrollAt.current < 180) return;
+                        setSelectionMode(true);
+                        setShowHeaderActions(false);
+                        setSelected((ids) => ids.includes(item._id) ? ids : [...ids, item._id]);
+                      }
                     : () => setQuickActionLead(item)
                 }
                 onCallPress={() =>
@@ -640,7 +710,7 @@ const AllLeads = () => {
             keyExtractor={(item) => item?._id}
             showsVerticalScrollIndicator={true}
             contentContainerStyle={{
-              paddingBottom: 280,
+              paddingBottom: 100,
             }}
             ListHeaderComponent={
               <View>
@@ -699,6 +769,7 @@ const AllLeads = () => {
                 </View>
 
                 <LeadFolderBar
+                  type={selectLeadType}
                   selectedFolderId={selectedFolderId}
                   selectedFolderLeadCount={totalCount}
                   onChangeFolder={handleFolderChange}
@@ -791,7 +862,12 @@ const AllLeads = () => {
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
             ListEmptyComponent={
-              loading ? <SkeletonLoadingLead /> : <NoDataFound />
+              loading ? <SkeletonLoadingLead /> : leadLoadError ? (
+                <View style={{ padding: 24, alignItems: "center", gap: 12 }}>
+                  <CustomText style={{ color: "#B91C1C", textAlign: "center" }}>Unable to load leads. Please retry.</CustomText>
+                  <Pressable accessibilityRole="button" onPress={() => { void refetchLeads(); }} style={{ borderWidth: 1, borderColor: "#FECACA", borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 }}><CustomText style={{ color: "#B91C1C" }}>Retry</CustomText></Pressable>
+                </View>
+              ) : <NoDataFound />
             }
             onEndReached={onEndReach}
             onEndReachedThreshold={0.5}
@@ -805,13 +881,14 @@ const AllLeads = () => {
               )
             }
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              selectionMode ? undefined : <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             onScroll={(e) => {
+              lastScrollAt.current = Date.now();
               // Don't let scroll auto-hide the action bar while a selection
               // is active — it needs to stay reachable (folder/delete/assign)
               // no matter how far down the list the user has scrolled.
-              if (selected.length > 0) return;
+              if (selectionMode) return;
               const offsetY = e.nativeEvent.contentOffset.y;
               const show = offsetY > 180;
               if (show !== showHeaderActions) {
@@ -822,19 +899,16 @@ const AllLeads = () => {
             initialNumToRender={15}
             maxToRenderPerBatch={15}
             windowSize={10}
-            getItemLayout={(data, index) => ({
-              length: 80,
-              offset: 80 * index,
-              index,
-            })}
             scrollEventThrottle={16}
           />
           <LeadFoldersModal
+            key={selectLeadType}
+            type={selectLeadType}
             visible={folderModalVisible}
             onClose={() => setFolderModalVisible(false)}
             leadIds={selected}
             selectedFolderId={selectedFolderId}
-            onCompleted={() => setSelected([])}
+            onCompleted={exitSelection}
           />
         </Container>
       ) : (
@@ -888,6 +962,7 @@ const LeadRowItem = React.memo(
     onLongPress,
     selected,
     isSelectionMode,
+    scrollGestureRef,
     bgColor,
     onCallPress,
     onWhatsappIconPress,
@@ -922,13 +997,19 @@ const LeadRowItem = React.memo(
 
     const showClaimBtn = missingCount >= 2;
     return (
-      <SlideFadeIn>
-        <TouchableOpacity
+      <View>
+        <GestureTouchableOpacity
           activeOpacity={0.5}
+          delayLongPress={350}
+          disallowInterruption={false}
+          extraButtonProps={{ simultaneousHandlers: scrollGestureRef, exclusive: false }}
+          accessibilityRole={isSelectionMode ? "checkbox" : "button"}
+          accessibilityLabel={displayValue(item?.clientName)}
+          accessibilityState={isSelectionMode ? { checked: selected } : undefined}
           style={[
             styles.mainlistcontainer,
             {
-              marginTop: index === 0 ? 20 : 10,
+              marginTop: index === 0 ? 8 : 4,
               // backgroundColor: selected
               //   ? color.primary200
               //   : bgColor
@@ -942,7 +1023,7 @@ const LeadRowItem = React.memo(
                     ? bgColor
                     : "white",
 
-              borderColor: item?.isDuplicate ? "#FACC15" : "#E3E8EF",
+              borderColor: selected ? "#2E67BE" : item?.isDuplicate ? "#FACC15" : "#E3E8EF",
 
               borderWidth: item?.isDuplicate ? 1.2 : 1,
             },
@@ -950,9 +1031,11 @@ const LeadRowItem = React.memo(
           onPress={onPress}
           onLongPress={onLongPress}
         >
-          <View style={{ flexDirection: "row" }}>
-            <View style={{ width: "6%", paddingEnd: 2 }}>
-              {index === "S.No" ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View style={{ width: 24, alignItems: "center" }}>
+              {isSelectionMode ? (
+                <Feather name={selected ? "check-square" : "square"} size={21} color={selected ? "#2E67BE" : "#94A3B8"} />
+              ) : index === "S.No" ? (
                 <CustomText
                   style={{
                     color: color.mainTxtColor,
@@ -977,9 +1060,9 @@ const LeadRowItem = React.memo(
             </View>
             <View
               style={{
-                width: isAgent ? "34%" : "30%",
+                flex: 1,
+                minWidth: 0,
                 paddingEnd: 2,
-                marginRight: isAgent ? 6 : 2,
               }}
             >
               <CustomText
@@ -1029,7 +1112,7 @@ const LeadRowItem = React.memo(
 
             <View
               style={{
-                width: isAgent ? "32%" : "30%",
+                width: "29%",
                 // alignItems: "center",
               }}
             >
@@ -1042,7 +1125,7 @@ const LeadRowItem = React.memo(
                   textTransform: "capitalize",
                   backgroundColor: statusColorObj?.[statusKey] ?? "#eee",
                   paddingHorizontal: 6,
-                  paddingVertical: 3,
+                  paddingVertical: 2,
                   borderRadius: 6,
                   alignSelf: "flex-start",
                 }}
@@ -1056,29 +1139,27 @@ const LeadRowItem = React.memo(
                   fontWeight: "400",
                   fontSize: 11,
                   textTransform: "capitalize",
-                  marginTop: 4,
+                  marginTop: 2,
                 }}
               >
                 {getTimeAgo(item?.assignedAt)}
               </CustomText>
             </View>
 
-            {statusKey === "assign" || statusKey === "re_assigned" ? (
+            {isSelectionMode ? null : statusKey === "assign" || statusKey === "re_assigned" ? (
               <TouchableOpacity
                 style={{
                   borderRadius: 8,
                   backgroundColor: color.mainTxtColor,
                   // backgroundColor: "red",
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
                   maxHeight: 32,
                   justifyContent: "center",
                   alignItems: "center",
                   marginTop: 2,
                   borderWidth: 0.9,
                   borderColor: color.borderColor,
-                  position: "absolute",
-                  right: 12,
                   ...shadowPrimaryColor,
                 }}
                 onPress={() => handleChangeStatus(item?._id)}
@@ -1097,9 +1178,7 @@ const LeadRowItem = React.memo(
                   gap: 4,
                   flexDirection: "row",
                   alignItems: "center",
-                  flex: 1,
                   justifyContent: "flex-end",
-                  marginRight: 8,
                 }}
               >
                 {hasDisplayValue(item?.clientMobile) && (
@@ -1131,18 +1210,24 @@ const LeadRowItem = React.memo(
               </View>
             )}
           </View>
-        </TouchableOpacity>
-      </SlideFadeIn>
+        </GestureTouchableOpacity>
+      </View>
     );
   },
-  (prev, next) =>
-    prev.selected === next.selected &&
-    prev.isSelectionMode === next.isSelectionMode &&
-    prev.item?._id === next.item?._id &&
-    prev.item?.status === next.item?.status,
 );
 
 const styles = StyleSheet.create({
+  selectionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#EFF6FF",
+    gap: 8,
+  },
+  selectAllButton: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1, minHeight: 36 },
+  selectionText: { color: "#2E67BE", fontSize: 12, fontWeight: "600" },
+  selectionCount: { color: "#475569", fontSize: 12 },
   divider: {
     borderBottomColor: "#2D67C6",
     width: "100%",
@@ -1154,17 +1239,18 @@ const styles = StyleSheet.create({
   mainlistcontainer: {
     borderWidth: 1,
     borderColor: "#E3E8EF",
-    paddingVertical: 12,
-    paddingLeft: 8,
-    borderRadius: 16,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    minHeight: 58,
+    borderRadius: 10,
     marginHorizontal: 8,
     ...shadowPrimaryColor,
   },
   iconBtn: {
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: "#4984f21e",
     // backgroundColor: "red",
-    padding: 8,
+    padding: 7,
   },
   container: {
     flexDirection: "row",

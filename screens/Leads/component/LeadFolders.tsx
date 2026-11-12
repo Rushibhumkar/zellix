@@ -1,6 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../../redux/userSlice";
 import {
   ActivityIndicator,
   Alert,
@@ -44,20 +46,25 @@ const getError = (error: any, fallback: string) =>
   error?.message ||
   fallback;
 
-export const useLeadFolders = () =>
-  useQuery({
-    queryKey: ["leadFolders"],
-    queryFn: getLeadFolders,
-    staleTime: 30_000,
+export const useLeadFolders = (type = "lead") => {
+  const { user } = useSelector(selectUser);
+  return useQuery({
+    queryKey: ["leadFolders", user?._id, type],
+    queryFn: () => getLeadFolders(type),
+    enabled: Boolean(user?._id),
+    staleTime: 0,
+    refetchInterval: 60_000,
   });
+};
 
 export const LeadFolderBar = ({
+  type = "lead",
   selectedFolderId,
   selectedFolderLeadCount,
   onChangeFolder,
   onManage,
 }: any) => {
-  const { data: folders = [], refetch: refetchFolders } = useLeadFolders();
+  const { data: folders = [], refetch: refetchFolders } = useLeadFolders(type);
   const selectFolder = (folderId: string) => {
     onChangeFolder(folderId);
     refetchFolders();
@@ -109,7 +116,7 @@ export const LeadFolderBar = ({
                 numberOfLines={1}
               >
                 {folder.name} (
-                {selected && Number.isFinite(selectedFolderLeadCount)
+                {!folder.isSystem && selected && Number.isFinite(selectedFolderLeadCount)
                   ? selectedFolderLeadCount
                   : folder.leadCount}
                 )
@@ -130,6 +137,7 @@ export const LeadFolderBar = ({
 };
 
 export const LeadFoldersModal = ({
+  type = "lead",
   visible,
   onClose,
   leadIds = [],
@@ -138,7 +146,9 @@ export const LeadFoldersModal = ({
 }: any) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
-  const { data: folders = [], isLoading } = useLeadFolders();
+  const { data: allFolders = [], isLoading } = useLeadFolders(type);
+  const folders = allFolders.filter((folder: any) => !folder.isSystem);
+  const selectedSystemFolder = allFolders.some((folder: any) => folder._id === selectedFolderId && folder.isSystem);
   const [formVisible, setFormVisible] = useState(false);
   const [editingFolder, setEditingFolder] = useState<any>(null);
   const [name, setName] = useState("");
@@ -167,7 +177,7 @@ export const LeadFoldersModal = ({
     try {
       if (editingFolder)
         await updateLeadFolder(editingFolder._id, { name: name.trim(), color });
-      else await createLeadFolder({ name: name.trim(), color });
+      else await createLeadFolder({ name: name.trim(), color, type });
       toast.success(editingFolder ? "Folder updated" : "Folder created");
       setFormVisible(false);
       await refresh();
@@ -242,7 +252,7 @@ export const LeadFoldersModal = ({
           <View style={styles.modalHeader}>
             <View>
               <CustomText style={styles.modalTitle}>
-                {assigning ? "Add leads to folder" : "Manage lead folders"}
+                {assigning ? "Add to folder" : type === "calling_data" ? "Calling Data folders" : "Lead folders"}
               </CustomText>
               <CustomText style={styles.modalSubTitle}>
                 {assigning
@@ -254,7 +264,7 @@ export const LeadFoldersModal = ({
               <Feather name="x" size={24} color="#475569" />
             </TouchableOpacity>
           </View>
-          {selectedFolderId && assigning && (
+          {selectedFolderId && assigning && !selectedSystemFolder && (
             <TouchableOpacity
               disabled={loading}
               style={styles.removeButton}

@@ -5,6 +5,8 @@ import { popUpConfToast } from "../../utils/toastModalByFunction";
 import { popupModal2 } from "../../utils/toastFunction";
 import { queryKeyCRM } from "../../utils/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/userSlice";
 let a = {
   // clientEmail: "danish@gmail.com",
   // clientMobile: "91-1234567890",
@@ -131,10 +133,10 @@ export const searchLeadOptions = async ({
   return response.data;
 };
 
-export const getLeadFolders = () =>
-  axiosInstance.get("/api/lead/folders").then((res) => res?.data?.data || []);
+export const getLeadFolders = (type = "lead") =>
+  axiosInstance.get("/api/lead/folders", { params: { type } }).then((res) => res?.data?.data || []);
 
-export const createLeadFolder = (data: { name: string; color: string }) =>
+export const createLeadFolder = (data: { name: string; color: string; type?: string }) =>
   axiosInstance.post("/api/lead/folders", data).then((res) => res?.data);
 
 export const updateLeadFolder = (
@@ -202,6 +204,7 @@ export const getLead = async ({
     return response.data;
   } catch (err) {
     console.log("getLeadErrPag", err);
+    throw err;
   }
 };
 
@@ -313,8 +316,11 @@ const fetchLatestMeetings = async (id) => {
 };
 
 export const useLatestMeetings = (id) => {
+  const { user } = useSelector(selectUser);
   return useQuery({
-    queryKey: ["latestMeetings", id],
+    queryKey: ["latestMeetings", id, user?._id],
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: () => fetchLatestMeetings(id),
     enabled: !!id, // Prevents query from running if id is not provided
   });
