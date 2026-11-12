@@ -22,6 +22,8 @@ interface TModalWithBlur {
   onClose?: () => void;
   children?: ReactNode;
   minHeight?: DimensionValue;
+  contentHeight?: DimensionValue;
+  scrollableContent?: boolean;
   // hasBackdrop?: boolean;
 }
 const ModalWithBlur = ({
@@ -29,7 +31,46 @@ const ModalWithBlur = ({
   onClose,
   children,
   minHeight,
+  contentHeight,
+  scrollableContent = false,
 }: TModalWithBlur) => {
+  const sheetStyle = {
+    backgroundColor: "white",
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 34 : 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    width: "100%" as const,
+    height: contentHeight,
+    minHeight: minHeight ?? "25%",
+    maxHeight: "92%" as const,
+    ...shadow1,
+  };
+  const sheetContents = (
+    <>
+      {!!onClose && (
+        <Pressable
+          onPress={onClose}
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            zIndex: 999,
+            width: 32,
+            height: 32,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <AntDesign name="close" size={22} color={color.mainTxtColor} />
+        </Pressable>
+      )}
+      <View style={{ height: 10 }} />
+      {children}
+    </>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -49,63 +90,18 @@ const ModalWithBlur = ({
             }}
           />
 
-          <Pressable
-            style={{
-              flex: 1,
-              justifyContent: "flex-end",
-            }}
-            onPress={onClose ?? undefined}
-          >
-            <Pressable
-              style={{
-                backgroundColor: "white",
-                paddingHorizontal: 20,
-                paddingTop: 16,
-                paddingBottom: Platform.OS === "ios" ? 34 : 20,
-                borderTopLeftRadius: 28,
-                borderTopRightRadius: 28,
-                width: "100%",
-                minHeight: minHeight ?? "25%",
-                maxHeight: "92%",
-                ...shadow1,
-              }}
-              onPress={() => Keyboard.dismiss()}
-            >
-              {!!onClose && (
-                <Pressable
-                  onPress={onClose}
-                  style={{
-                    position: "absolute",
-                    top: 16,
-                    right: 16,
-                    zIndex: 999,
-                    width: 32,
-                    height: 32,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <AntDesign
-                    name="close"
-                    size={22}
-                    color={color.mainTxtColor}
-                  />
-                </Pressable>
-              )}
-              {/* <View
-                style={{
-                  width: 55,
-                  height: 5,
-                  borderRadius: 20,
-                  backgroundColor: "#D1D5DB",
-                  alignSelf: "center",
-                  marginBottom: 16,
-                }}
-              /> */}
-              <View style={{ height: 10 }} />
-              {children}
+          {scrollableContent ? (
+            <View style={{ flex: 1, justifyContent: "flex-end" }} pointerEvents="box-none">
+              <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
+              <View style={sheetStyle}>{sheetContents}</View>
+            </View>
+          ) : (
+            <Pressable style={{ flex: 1, justifyContent: "flex-end" }} onPress={onClose}>
+              <Pressable style={sheetStyle} onPress={() => Keyboard.dismiss()}>
+                {sheetContents}
+              </Pressable>
             </Pressable>
-          </Pressable>
+          )}
         </BlurView>
       </KeyboardAvoidingView>
     </Modal>
