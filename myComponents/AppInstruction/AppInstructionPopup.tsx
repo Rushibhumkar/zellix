@@ -1,4 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/userSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Modal,
   View,
@@ -9,7 +12,6 @@ import {
 import CustomBtn from "../CustomBtn/CustomBtn";
 import CustomText from "../CustomText/CustomText";
 import { getAppInstruction } from "../../services/rootApi/api";
-import { getDataJson, storeDataJson } from "../../hooks/useAsyncStorage";
 import { myConsole } from "../../hooks/useConsole";
 import { Feather } from "@expo/vector-icons";
 import { color } from "../../const/color";
@@ -17,15 +19,20 @@ import { color } from "../../const/color";
 const STORAGE_KEY = "appInstructionDontShow";
 
 const AppInstructionPopup = () => {
-  const hasCheckedRef = useRef(false);
+  const { user } = useSelector(selectUser);
+  const userId = user?._id;
+  const storageKey = `${STORAGE_KEY}:${userId}`;
 
   const [visible, setVisible] = useState(false);
   const [instruction, setInstruction] = useState(null);
   const [dontShowChecked, setDontShowChecked] = useState(false);
 
   useEffect(() => {
-    if (hasCheckedRef.current) return;
-    hasCheckedRef.current = true;
+    let active = true;
+    setVisible(false);
+    setInstruction(null);
+    setDontShowChecked(false);
+    if (!userId) return;
 
     const checkInstruction = async () => {
       try {
@@ -33,17 +40,23 @@ const AppInstructionPopup = () => {
         const data = res?.data?.data;
 
         // no active instruction from backend
-        if (!data) return;
+        if (!active || !data || data.isActive === false) return;
 
         // check locally stored "don't show again" flag for this version
-        const stored = await getDataJson(STORAGE_KEY);
+        const saved = await AsyncStorage.getItem(storageKey);
+        const stored = saved ? JSON.parse(saved) : null;
+        if (!active) return;
 
         // if user opted out for this exact version, don't show again
-        if (stored?.hidden && stored?.version === data.version) {
+        if ((stored?.hidden || (data.showOnce && stored?.seen)) && stored?.version === data.version) {
           myConsole("App instruction hidden by user for version", data.version);
           return;
         }
 
+        if (data.showOnce) {
+          await AsyncStorage.setItem(storageKey, JSON.stringify({ seen: true, version: data.version }));
+        }
+        if (!active) return;
         setInstruction(data);
         setVisible(true);
       } catch (e) {
@@ -52,15 +65,17 @@ const AppInstructionPopup = () => {
     };
 
     checkInstruction();
-  }, []);
+    return () => { active = false; };
+  }, [userId, storageKey]);
 
   const handleClose = async () => {
-    if (dontShowChecked && instruction?.version) {
+    if ((dontShowChecked || instruction?.showOnce) && instruction?.version) {
       try {
-        await storeDataJson(STORAGE_KEY, {
-          hidden: true,
+        await AsyncStorage.setItem(storageKey, JSON.stringify({
+          hidden: dontShowChecked,
+          seen: true,
           version: instruction.version,
-        });
+        }));
       } catch (e) {
         console.log("❌ Failed to store dontShowAgain flag:", e);
       }
@@ -82,7 +97,7 @@ const AppInstructionPopup = () => {
   } = instruction;
 
   return (
-    <Modal visible transparent animationType="fade">
+    <Modal visible transparent animationType="fade" onRequestClose={showCrossIcon ? handleClose : () => {}}>
       <TouchableWithoutFeedback
         onPress={showCrossIcon ? handleClose : undefined}
       >
@@ -173,7 +188,7 @@ const AppInstructionPopup = () => {
                 )}
               </ScrollView>
 
-              {dontShowAgain?.show && (
+              {!instruction.showOnce && dontShowAgain?.show && (
                 <TouchableOpacity
                   onPress={toggleDontShow}
                   style={{
