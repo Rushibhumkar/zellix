@@ -17,12 +17,14 @@ export const getRolePermissionSet = async (role: string) =>
 export const updateRolePermissionSet = async (role: string, permissions: object) =>
   (await axiosInstance.put(`/api/permission/roles/${role}`, { permissions })).data;
 
-export const getAllUserHRM = ({ search = null, pageParam = 1 }) =>
+export const getAllUserHRM = ({ search = null, pageParam = 1, userStatus = "", status = "" }) =>
   axiosInstance
     .get("/api/hrms/user", {
       params: {
         page: pageParam,
         search,
+        userStatus: userStatus || undefined,
+        status: status || undefined,
       },
     })
     .then((res) => {
@@ -150,13 +152,16 @@ export const changeInterviewStatus = ({ candidateId, newStatus }) =>
     })
     .then((res) => res?.data);
 
-export const getAllCandidates = ({ pageParam = 1, limit = 10, search = "" }) =>
+export const getAllCandidates = ({ pageParam = 1, limit = 10, search = "", status = "", startDate = "", endDate = "" }) =>
   axiosInstance
     .get(`/api/recruitment`, {
       params: {
         page: pageParam,
         limit,
         search,
+        status: status || undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
       },
     })
     .then((res) => res?.data);

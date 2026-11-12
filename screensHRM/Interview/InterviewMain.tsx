@@ -1,3 +1,6 @@
+import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
+import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
+import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
 import {
   FlatList,
   StyleSheet,
@@ -40,6 +43,10 @@ const InterviewMain = () => {
   const { navigate } = useNavigation();
   const { user } = useSelector(selectUser);
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<HRMFilterValues>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [listingSearch, setListingSearch] = useState("");
+  const search = useHRMListingSearch(setListingSearch);
 
   const {
     data: candidates,
@@ -48,7 +55,7 @@ const InterviewMain = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetAllCandidates({ search: "" });
+  } = useGetAllCandidates({ search: listingSearch, ...filters });
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
@@ -217,7 +224,9 @@ const InterviewMain = () => {
   };
 
   return (
-    <ContainerHRM headingTitle="Interview">
+    <ContainerHRM headingTitle="Interview" onPressSearch={search.toggleSearch} showSearch={search.showSearch} onPressFilter={() => setFiltersOpen(true)} filterCount={hrmFilterCount(filters)} childStyle={{ flex: 1, height: undefined }}>
+      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="interview" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
+      {search.showSearch && <ListingSearch value={search.searchValue} onChangeText={search.setSearchValue} onClose={search.closeSearch} />}
       {/* OPTIONS MODAL */}
 
       <ModalWithBlur
@@ -423,14 +432,15 @@ const InterviewMain = () => {
           />
         ) : isError ? (
           <View style={styles.noDataWrapper}>
-            <NoDataFound height={200} width={200} />
+            <NoDataFound height={200} width={200} style={{ marginTop: 0 }} />
           </View>
         ) : candidates.length === 0 ? (
           <View style={styles.noDataWrapper}>
-            <NoDataFound height={200} width={200} />
+            <NoDataFound height={200} width={200} style={{ marginTop: 0 }} />
           </View>
         ) : (
           <FlatList
+            ref={search.listRef}
             data={candidates}
             keyExtractor={(item) => item?._id}
             renderItem={renderItem}
@@ -679,9 +689,13 @@ const styles = StyleSheet.create({
   },
 
   noDataWrapper: {
-    flex: 1,
+    position: "absolute",
+    top: "50%",
+    left: 0,
+    right: 0,
+    height: 200,
+    transform: [{ translateY: -100 }],
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 80,
   },
 });

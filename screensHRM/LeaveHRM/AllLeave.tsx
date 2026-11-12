@@ -1,3 +1,4 @@
+import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
 import {
   ActivityIndicator,
   FlatList,
@@ -36,6 +37,8 @@ const AllLeave = () => {
   const isAgent = user?.role === roleEnum.agent;
   const { navigate } = useNavigation();
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<HRMFilterValues>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const currentDate = new Date().getDate();
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
@@ -52,7 +55,7 @@ const AllLeave = () => {
   );
   const search = useHRMListingSearch(updateSearch);
   const { data, totalCount, hasNextPage, isLoading, fetchNextPage, isFetchingNextPage } =
-    useGetAllLeave({ ...searchSubmit });
+    useGetAllLeave({ ...searchSubmit, ...filters });
   const onEndReach = () => {
     if (hasNextPage && !isLoading && data?.length > 0) {
       fetchNextPage && fetchNextPage();
@@ -77,19 +80,18 @@ const AllLeave = () => {
     <ContainerHRM
       headingTitle="Leave"
       totalCount={totalCount}
+      onPressFilter={() => setFiltersOpen(true)}
+      filterCount={hrmFilterCount(filters)}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
     >
+      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="leaves" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
       {search.showSearch && (
         <ListingSearch
           value={search.searchValue}
           onChangeText={search.setSearchValue}
           onClose={search.closeSearch}
-          dates={searchSubmit}
-          onDateChange={(key, value) =>
-            setSearchSubmit((prev) => ({ ...prev, [key]: value }))
-          }
         />
       )}
       <>

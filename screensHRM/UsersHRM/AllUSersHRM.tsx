@@ -1,3 +1,4 @@
+import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
 import {
   ActivityIndicator,
   FlatList,
@@ -35,6 +36,8 @@ import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 const AllUSersHRM = () => {
   const { navigate } = useNavigation();
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<HRMFilterValues>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const { user } = useSelector(selectUser);
   useFocusEffect(useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ["getUserStatusChart"] });
@@ -68,7 +71,7 @@ const AllUSersHRM = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useGetAllUserHRM({ search: searchSubmit?.search });
+  } = useGetAllUserHRM({ search: searchSubmit?.search, ...filters });
   const onEndReach = () => {
     if (hasNextPage && !isLoading && allUsers?.length > 0) {
       fetchNextPage && fetchNextPage();
@@ -93,10 +96,13 @@ const AllUSersHRM = () => {
     <ContainerHRM
       headingTitle="Users"
       totalCount={totalCount}
+      onPressFilter={() => setFiltersOpen(true)}
+      filterCount={hrmFilterCount(filters)}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
     >
+      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="users" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
       {search.showSearch && (
         <ListingSearch
           value={search.searchValue}

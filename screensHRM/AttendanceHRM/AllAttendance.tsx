@@ -1,3 +1,4 @@
+import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -56,6 +57,8 @@ const AllAttendance = () => {
     : "all";
   const { navigate } = useNavigation<any>();
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<HRMFilterValues>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const toast = useAppToast();
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
@@ -84,6 +87,7 @@ const AllAttendance = () => {
     refetch,
   } = useAttendanceListing({
     ...searchSubmit,
+    ...filters,
     tab: activeTab,
     accountId: user?._id,
     role: user?.role,
@@ -187,10 +191,20 @@ const AllAttendance = () => {
     <ContainerHRM
       headingTitle="Attendance"
       totalCount={totalCount}
+      onPressFilter={() => setFiltersOpen(true)}
+      filterCount={hrmFilterCount(filters)}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
     >
+      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="attendance" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
+      {search.showSearch && (
+        <ListingSearch
+          value={search.searchValue}
+          onChangeText={search.setSearchValue}
+          onClose={search.closeSearch}
+        />
+      )}
       <View style={styles.tabsContainer}>
         <ScrollView
           horizontal
@@ -224,17 +238,6 @@ const AllAttendance = () => {
           ))}
         </ScrollView>
       </View>
-      {search.showSearch && (
-        <ListingSearch
-          value={search.searchValue}
-          onChangeText={search.setSearchValue}
-          onClose={search.closeSearch}
-          dates={searchSubmit}
-          onDateChange={(key, value) =>
-            setSearchSubmit((prev) => ({ ...prev, [key]: value }))
-          }
-        />
-      )}
       <FlatList
         key={activeTab}
         ref={search.listRef}

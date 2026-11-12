@@ -1,12 +1,12 @@
 import { axiosInstance } from "../authApi/axiosInstance";
 import { AttendanceTab } from "../../utils/attendanceTabs";
 
-export const getAttendanceList = async ({ tab, pageParam = 1, userId = "", search = "", startDate = "", endDate = "" }: {
-  tab: AttendanceTab; pageParam?: number; userId?: string; search?: string; startDate?: string; endDate?: string;
+export const getAttendanceList = async ({ tab, pageParam = 1, userId = "", search = "", startDate = "", endDate = "", status = "" }: {
+  tab: AttendanceTab; pageParam?: number; userId?: string; search?: string; startDate?: string; endDate?: string; status?: string;
 }) => {
   const response = await axiosInstance.get(tab === "unapproved"
     ? "/api/hrms/att/get-notapproved-attendance" : "/api/hrms/att", {
-    params: { page: pageParam, userId, search, startDate, endDate, ...(tab === "issues" ? { issue: true } : {}) },
+    params: { page: pageParam, userId, search, startDate, endDate, status: status || undefined, ...(tab === "issues" ? { issue: true } : {}) },
   });
   if (!Array.isArray(response.data?.data)) throw new Error("Invalid attendance response. Please retry.");
   return response.data;

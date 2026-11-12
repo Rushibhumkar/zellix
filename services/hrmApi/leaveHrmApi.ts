@@ -7,14 +7,17 @@ interface TLeaveApproveReject {
     remarks: string;
     key: 'leaveRejectById' | 'leaveApproveById'
 }
-interface TGetAllLeave { pageParam: number; search: string | null; startDate: string; endDate: string }
-export const getAllLeave = ({ pageParam = 1, search = null, startDate = '', endDate = '' }: TGetAllLeave) =>
+interface TGetAllLeave { pageParam: number; search: string | null; startDate: string; endDate: string; payType?: string; status?: string; today?: string }
+export const getAllLeave = ({ pageParam = 1, search = null, startDate = '', endDate = '', payType = '', status = '', today = '' }: TGetAllLeave) =>
     axiosInstance.get('/api/hrms/leave', {
         params: {
             page: pageParam,
             search,
             startDate,
-            endDate
+            endDate,
+            payType: payType || undefined,
+            status: status || undefined,
+            today: today || undefined,
         }
     })
         .then(res => {

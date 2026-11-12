@@ -60,6 +60,8 @@ interface TContainerHRM {
   totalCount?: number;
   hasStatusIcon?: boolean;
   onStatusPress?: () => void;
+  onPressFilter?: () => void;
+  filterCount?: number;
   onPressSearch?: () => void;
   showSearch?: boolean;
 }
@@ -75,6 +77,8 @@ const ContainerHRM = ({
   totalCount,
   hasStatusIcon,
   onStatusPress,
+  onPressFilter,
+  filterCount = 0,
   onPressSearch,
   showSearch = false,
 }: TContainerHRM) => {
@@ -125,7 +129,7 @@ const ContainerHRM = ({
         }}
       >
         {!!headingTitle ? (
-          <View style={totalCount !== undefined ? { flex: 1, marginRight: 12 } : undefined}>
+          <View style={totalCount !== undefined || onPressFilter ? { flex: 1, minWidth: 0, marginRight: 12 } : undefined}>
             <CustomText fontWeight="700" fontSize={20} color={color.white}>
               {headingTitle}
             </CustomText>
@@ -162,6 +166,7 @@ const ContainerHRM = ({
               <ChangeStatus />
             </Pressable>
           )}
+          {onPressFilter && <Pressable accessibilityRole="button" accessibilityLabel={`Filters, ${filterCount} active`} onPress={onPressFilter} style={styles.iconBtn}><Feather name="filter" size={18} color="#fff" />{filterCount > 0 && <Text style={{ position: "absolute", top: -4, right: -4, backgroundColor: "#FFFFFF", color: "#2E67BE", borderRadius: 9, minWidth: 17, textAlign: "center", fontSize: 10, fontWeight: "700" }}>{filterCount}</Text>}</Pressable>}
           {onPressSearch && <Pressable accessibilityRole="button" accessibilityLabel={showSearch ? "Close search" : "Search"} onPress={onPressSearch} style={styles.iconBtn}><Feather name={showSearch ? "x" : "search"} size={18} color="#fff" /></Pressable>}
           <Pressable
             onPress={() => navigate(routeExtra?.NotificationHRM)}
@@ -202,6 +207,7 @@ const ContainerHRM = ({
             justifyContent: "flex-end",
             alignItems: "center",
             gap: 12,
+            ...(onPressFilter ? { flex: 1, minWidth: 0, marginRight: 12 } : {}),
             paddingTop: Platform.OS === "ios" ? 24 : 12,
             paddingBlock: 12,
           }}
@@ -221,7 +227,7 @@ const ContainerHRM = ({
             />
           </AnimatedTouchableOpacity>
 
-          <View>
+          <View style={onPressFilter ? { flex: 1, minWidth: 0 } : undefined}>
             <CustomText
               fontSize={18}
               fontWeight="700"
@@ -249,6 +255,7 @@ const ContainerHRM = ({
             marginBottom: Platform.OS === "ios" ? -12 : -4,
           }}
         >
+          {onPressFilter && <Pressable accessibilityRole="button" accessibilityLabel={`Filters, ${filterCount} active`} onPress={onPressFilter} style={styles.iconBtn}><Feather name="filter" size={18} color="#fff" />{filterCount > 0 && <Text style={{ position: "absolute", top: -4, right: -4, backgroundColor: "#FFFFFF", color: "#2E67BE", borderRadius: 9, minWidth: 17, textAlign: "center", fontSize: 10, fontWeight: "700" }}>{filterCount}</Text>}</Pressable>}
           {onPressSearch && <Pressable accessibilityRole="button" accessibilityLabel={showSearch ? "Close search" : "Search"} onPress={onPressSearch} style={styles.iconBtn}><Feather name={showSearch ? "x" : "search"} size={18} color="#fff" /></Pressable>}
           {!!isBAck?.isEdit && (
             <Pressable

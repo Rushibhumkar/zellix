@@ -2,13 +2,13 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { getAttendanceList } from "../services/hrmApi/attendanceListApi";
 import { AttendanceTab, attendanceTabQueryKey, nextAttendancePage, canViewUnapprovedAttendance } from "../utils/attendanceTabs";
 
-export const useAttendanceListing = ({ tab, userId = "", accountId, role, search = "", startDate = "", endDate = "" }: {
-  tab: AttendanceTab; userId?: string; accountId?: string; role?: string; search?: string; startDate?: string; endDate?: string;
+export const useAttendanceListing = ({ tab, userId = "", accountId, role, search = "", startDate = "", endDate = "", status = "" }: {
+  tab: AttendanceTab; userId?: string; accountId?: string; role?: string; search?: string; startDate?: string; endDate?: string; status?: string;
 }) => {
   const query = useInfiniteQuery({
-    queryKey: [attendanceTabQueryKey(tab), accountId, userId, search, startDate, endDate],
+    queryKey: [attendanceTabQueryKey(tab), accountId, userId, search, startDate, endDate, status],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => getAttendanceList({ tab, userId, search, startDate, endDate, pageParam }),
+    queryFn: ({ pageParam }) => getAttendanceList({ tab, userId, search, startDate, endDate, status, pageParam }),
     getNextPageParam: nextAttendancePage,
     enabled: Boolean(accountId) && (tab !== "unapproved" || canViewUnapprovedAttendance(role)),
   });

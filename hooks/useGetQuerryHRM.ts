@@ -37,16 +37,16 @@ import {
 } from "../services/hrmApi/extraApi";
 
 //1.users
-export const useGetAllUserHRM = ({ search }) => {
+export const useGetAllUserHRM = ({ search, userStatus = "", status = "" }) => {
   // return useQuery({
   //     queryKey: ['getAllUserHRM'],
   //     queryFn: () => getAllUserHRM({ page, search }),
   //     staleTime: Infinity,
   // })
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getAllUserHRM", search],
+    queryKey: ["getAllUserHRM", search, userStatus, status],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => getAllUserHRM({ search, pageParam }),
+    queryFn: ({ pageParam }) => getAllUserHRM({ search, pageParam, userStatus, status }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext
         ? lastPage?.pagination?.next
@@ -119,12 +119,12 @@ export const useGetAvailableRoles = ({ id }) => {
 };
 
 //2.Leave
-export const useGetAllLeave = ({ search, startDate, endDate }) => {
+export const useGetAllLeave = ({ search, startDate, endDate, payType = "", status = "", today = "" }) => {
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getAllLeave", search, startDate, endDate],
+    queryKey: ["getAllLeave", search, startDate, endDate, payType, status, today],
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
-      getAllLeave({ search, pageParam, startDate, endDate }),
+      getAllLeave({ search, pageParam, startDate, endDate, payType, status, today }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.isNextPage
         ? parseInt(lastPage.pagination.currentPage) + 1
@@ -229,12 +229,13 @@ export const useGetSingleUserAttList = ({
   startDate,
   endDate,
   userId,
+  status = "",
 }) => {
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getSingleUserAttList", userId, search, startDate, endDate],
+    queryKey: ["getSingleUserAttList", userId, search, startDate, endDate, status],
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
-      getAllAttendance({ search, pageParam, startDate, endDate, userId }),
+      getAllAttendance({ search, pageParam, startDate, endDate, userId, status }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.isNextPage
         ? parseInt(lastPage.pagination.currentPage) + 1
@@ -367,11 +368,11 @@ export const useGetNotificationInCRM = ({ id }) => {
   return { ...res, data };
 };
 
-export const useGetAllCandidates = ({ search, limit = 10 }) => {
+export const useGetAllCandidates = ({ search, limit = 10, status = "", startDate = "", endDate = "" }) => {
   const res = useInfiniteQuery<any, any>({
-    queryKey: ["getAllCandidates", search],
+    queryKey: ["getAllCandidates", search, limit, status, startDate, endDate],
     queryFn: ({ pageParam = 1 }) =>
-      getAllCandidates({ pageParam, limit, search }),
+      getAllCandidates({ pageParam, limit, search, status, startDate, endDate }),
     getNextPageParam: (lastPage) => {
       return lastPage?.pagination?.isNextPage
         ? parseInt(lastPage?.pagination?.currentPage) + 1

@@ -7,6 +7,7 @@ export const getAllAttendance = ({
   startDate = "",
   endDate = "",
   userId = "",
+  status = "",
 }) =>
   axiosInstance
     .get("/api/hrms/att", {
@@ -16,6 +17,7 @@ export const getAllAttendance = ({
         startDate,
         endDate,
         userId,
+        status: status || undefined,
       },
     })
     .then((res) => {

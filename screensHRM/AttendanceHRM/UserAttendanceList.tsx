@@ -1,3 +1,4 @@
+import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
 import {
   ActivityIndicator,
   FlatList,
@@ -24,13 +25,15 @@ import { useHRMListingSearch } from "../../hooks/useHRMListingSearch";
 const UserAttendanceList = () => {
   const { params } = useRoute();
   const { navigate } = useNavigation();
+  const [filters, setFilters] = useState<HRMFilterValues>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchSubmit, setSearchSubmit] = useState({
     search: "",
     startDate: "",
     endDate: "",
   });
   const { data, totalCount, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useGetSingleUserAttList({ userId: params?.item?.user, ...searchSubmit });
+    useGetSingleUserAttList({ userId: params?.item?.user, ...searchSubmit, ...filters });
   const updateSearch = useCallback((search: string) => setSearchSubmit(prev => prev.search === search ? prev : { ...prev, search }), []);
   const search = useHRMListingSearch(updateSearch);
 
@@ -43,6 +46,8 @@ const UserAttendanceList = () => {
   return (
     <ContainerHRM
       totalCount={totalCount}
+      onPressFilter={() => setFiltersOpen(true)}
+      filterCount={hrmFilterCount(filters)}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
@@ -50,7 +55,8 @@ const UserAttendanceList = () => {
         title: "Single User Attendance",
       }}
     >
-      {search.showSearch && <ListingSearch value={search.searchValue} onChangeText={search.setSearchValue} onClose={search.closeSearch} dates={searchSubmit} onDateChange={(key, value) => setSearchSubmit(prev => ({ ...prev, [key]: value }))} />}
+      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="attendance" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
+      {search.showSearch && <ListingSearch value={search.searchValue} onChangeText={search.setSearchValue} onClose={search.closeSearch} />}
       {/* <View style={{ padding: 20 }}> <HeaderRowUserAtt /></View> */}
       <View
         style={{
