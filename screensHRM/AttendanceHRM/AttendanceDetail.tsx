@@ -1,19 +1,17 @@
+import { Feather } from "@expo/vector-icons";
+import { Linking, Pressable } from "react-native";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
-import RowItemDetail from "../../myComponentsHRM/Row/RowItemDetail";
-import TitleInDetail from "../../myComponentsHRM/TitleHRM/TitleInDetail";
-import { dummyAttendanceDetails } from "../../utils/dummyData";
 import { useRoute } from "@react-navigation/native";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetAttendanceDetail } from "../../hooks/useGetQuerryHRM";
 import OutlineBtn from "../../myComponents/OutlineBtn/OutlineBtn";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import LeaveAppRemark from "../LeaveHRM/components/LeaveAppRemark";
-import { attendanceStatus } from "../../utils/hrmKeysMatchToBE";
+import { attendanceStatus, punchType, roleHRM, statusAttend, statusColorAttend } from "../../utils/hrmKeysMatchToBE";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
-import { roleEnum } from "../../utils/data";
 import {
   issueResolveAdmin,
   issueRiseAgent,
@@ -24,25 +22,26 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import moment from "moment";
 import CustomText from "../../myComponents/CustomText/CustomText";
-import ActionButton from "../../myComponents/ActionButton";
+
+const attendanceEventLabels: Record<string, string> = {
+  CHECK_IN: "Check In",
+  CHECK_OUT: "Check Out",
+  VISIT_IN: "Visit In",
+  VISIT_OUT: "Visit Out",
+  CORRECTION: "Attendance corrected",
+};
+
+const timelineDateTime = (value: string) =>
+  moment(value).locale("en").format("D MMM YYYY · hh:mm A");
 
 const AttendanceDetail = () => {
-  const [attendanceDetailById, setAttendanceDetailById] = useState(
-    dummyAttendanceDetails,
-  );
   const { params } = useRoute();
   const { user } = useSelector(selectUser);
-  const isAgent = user?.role === roleEnum.agent;
-  const isSubSup = [
-    roleEnum.sub_admin,
-    roleEnum.sup_admin,
-    roleEnum.developer,
-  ].includes(user?.role);
-  const attendanceId = params?.item?._id;
+  const attendanceId = params?.item?.from === "nav" ? params?.item?.dataId : params?.item?._id;
   const queryClient = useQueryClient();
   //
   const { data, isLoading, refetch } = useGetAttendanceDetail({
-    id: params?.item?.from === "nav" ? params?.item?.dataId : attendanceId,
+    id: attendanceId,
   });
   const [openModal, setOpenModal] = useState(false);
   const [formValue, setFormValue] = useState({
@@ -53,28 +52,7 @@ const AttendanceDetail = () => {
   );
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    let aa = dummyAttendanceDetails?.map((el, i) => {
-      if (data?.hasOwnProperty(el?.key)) {
-        if (!!el?.subKey) {
-          return {
-            ...el,
-            value: data[el?.key]?.[el?.subKey],
-          };
-        } else {
-          if (el?.key === "resolve") {
-            return {
-              ...el,
-              value: !!data[el?.key] ? "Resolved" : "Unresolved",
-            };
-          } else {
-            return { ...el, value: data[el?.key] };
-          }
-        }
-      } else return el;
-    });
-    setAttendanceDetailById(aa);
-  }, [data]);
+
 
   const toggleModal = () => {
     setOpenModal((prev) => !prev);
@@ -92,7 +70,7 @@ const AttendanceDetail = () => {
       popUpConfToast.plzWait({
         bodyComponent: () => <PleaseWait />,
       });
-      if (isAgent) {
+      if (issueRiseUpdate === "raise") {
         let res = await issueRiseAgent({
           id: attendanceId,
           data: {
@@ -124,8 +102,9 @@ const AttendanceDetail = () => {
         });
         popUpConfToast.successMessage(res?.message);
       }
-    } catch (error) {
-      popUpConfToast.errorMessage();
+    } catch (error: any) {
+      const body = error?.response?.data;
+      popUpConfToast.errorMessage(typeof body === "string" ? body : body?.message);
     } finally {
     }
   };
@@ -140,12 +119,53 @@ const AttendanceDetail = () => {
       setRefreshing(false);
     }
   };
+  const dateValue = data?.workDate || data?.createdAt;
+  const workDate = dateValue ? moment(dateValue).locale("en") : null;
+  const formatPunchTime = (value?: string) => {
+    const punch = value ? moment(value).locale("en") : null;
+    if (!punch?.isValid()) return "—";
+    if (!workDate?.isValid()) return punch.format("D MMM YYYY · hh:mm A");
+    if (punch.isSame(workDate, "day")) return punch.format("hh:mm A");
+    return punch.format(punch.isSame(workDate, "year") ? "D MMM · hh:mm A" : "D MMM YYYY · hh:mm A");
+  };
+  const status = data?.status;
+  const statusTint = status === "present" ? "#15803D" : statusColorAttend[status] || "#475569";
+  const punches = [
+    { label: "Check In", icon: "log-in" as const, time: data?.punchedIn, type: data?.punchedInType },
+    { label: "Check Out", icon: "log-out" as const, time: data?.punchedOut, type: data?.punchedOutType },
+  ];
+  const nameParts = [data?.name, data?.lastName].filter(Boolean);
+  const employeeName = nameParts.join(" ");
+  const initials = nameParts.map((part) => part.trim().charAt(0)).join("").toUpperCase();
+  const employeeRole = roleHRM[data?.role] || data?.role;
+  const sections = [
+    {
+      kind: "personal",
+      title: "Personal Details",
+      fields: [
+        { label: "Mobile Number", icon: "phone" as const, value: data?.mobile },
+        { label: "Email Address", icon: "mail" as const, value: data?.email },
+      ],
+    },
+    {
+      kind: "attendance",
+      title: "Attendance Details",
+      fields: [
+        { label: "Date", icon: "calendar" as const, value: workDate?.isValid() ? workDate.format("D MMM YYYY") : undefined },
+      ],
+    },
+  ];
+
   return (
     <ContainerHRM
       isBAck={{
         title: "Attendance Details",
+        onRaiseIssue: data?.user && String(data.user) === String(user?._id) ? () => {
+          setIssueRiseUpdate("raise");
+          toggleModal();
+        } : undefined,
         isEdit:
-          isSubSup &&
+          data?.canEdit &&
           (() => {
             setIssueRiseUpdate("update");
             toggleModal();
@@ -154,46 +174,125 @@ const AttendanceDetail = () => {
       isLoading={isLoading}
     >
       <FlatList
-        data={attendanceDetailById ?? []}
-        keyExtractor={(_, index) => `${index}`}
+        data={data ? sections : []}
+        keyExtractor={(section) => section.title}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        renderItem={({ item }) => {
-          return item?.heading ? (
-            <View style={styles.headingContainer}>
-              <CustomText style={styles.headingText}>{item?.title}</CustomText>
-            </View>
-          ) : (
-            <View
-              style={[
-                styles.infoCard,
-                {
-                  marginBottom: item?.mb || 12,
-                },
-              ]}
-            >
-              <View style={styles.leftSection}>
-                <View style={styles.iconBox}>
-                  <CustomText style={styles.iconText}>
-                    {item?.title?.charAt(0)}
-                  </CustomText>
+        renderItem={({ item }) => (
+          <View style={styles.detailCard}>
+            <View style={styles.timelineHeader}>
+              <CustomText style={styles.detailTitle}>{item.title}</CustomText>
+              {item.kind === "attendance" && status && (
+                <View style={[styles.detailBadge, { backgroundColor: statusTint + "18" }]}>
+                  <CustomText style={[styles.detailBadgeText, { color: statusTint }]}>{statusAttend[status] || status}</CustomText>
                 </View>
-
-                <View style={{ flex: 1 }}>
-                  <CustomText style={styles.label}>{item?.title}</CustomText>
-
-                  <CustomText style={styles.value}>
-                    {item?.value || "N/A"}
-                  </CustomText>
+              )}
+            </View>
+            {item.kind === "personal" && (
+              <View style={styles.profileHeader}>
+                <View style={styles.profileAvatar} accessible={false}>
+                  {initials ? <CustomText style={styles.profileInitials}>{initials}</CustomText> :
+                    <Feather name="user" size={20} color="#2E67BE" />}
+                </View>
+                <View style={styles.profileIdentity}>
+                  <CustomText style={styles.profileName}>{employeeName || "—"}</CustomText>
+                  {!!employeeRole && (
+                    <View style={[styles.detailBadge, styles.profileRole]}>
+                      <CustomText style={[styles.detailBadgeText, styles.punchTypeText]}>{employeeRole}</CustomText>
+                    </View>
+                  )}
                 </View>
               </View>
-            </View>
-          );
-        }}
+            )}
+            <View style={styles.detailDivider} />
+            {item.fields.map(({ label, icon, value }) => (
+              item.kind === "personal" ? (
+                <View key={label} style={styles.contactRow}>
+                  <View style={styles.contactIcon} accessible={false}>
+                    <Feather name={icon} size={16} color="#2E67BE" />
+                  </View>
+                  <CustomText accessibilityLabel={`${label}, ${value || "unavailable"}`} style={styles.contactValue}>{value || "—"}</CustomText>
+                </View>
+              ) : <View key={label} style={styles.detailRow}>
+                <View style={styles.detailLabelGroup}>
+                  <Feather name={icon} size={17} color="#7A869A" />
+                  <CustomText style={styles.detailLabel}>{label}</CustomText>
+                </View>
+                <CustomText style={styles.detailValue}>{value || "—"}</CustomText>
+              </View>
+            ))}
+            {item.kind === "attendance" && (
+              <View style={styles.punchGrid}>
+                {punches.map(({ label, icon, time, type }) => (
+                  <View key={label} style={styles.punchTile}>
+                    <View style={styles.punchLabelGroup}>
+                      <Feather name={icon} size={15} color="#2E67BE" />
+                      <CustomText style={styles.detailLabel}>{label}</CustomText>
+                    </View>
+                    <CustomText style={styles.punchTime}>{formatPunchTime(time)}</CustomText>
+                    {!!type && (
+                      <View style={[styles.detailBadge, styles.punchTypeBadge]}>
+                        <Feather name={type === "office" ? "home" : type === "leave" ? "calendar" : "map-pin"} size={12} color="#245AA9" />
+                        <CustomText style={[styles.detailBadgeText, styles.punchTypeText]}>{punchType[type] || type}</CustomText>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
         ListFooterComponent={
           <>
+            {!!data?.remarks && (
+              <View style={styles.infoCard}>
+                <CustomText style={styles.label}>Remarks</CustomText>
+                <CustomText style={styles.value}>{data.remarks}</CustomText>
+              </View>
+            )}
+            {!!data?.reviewFlags?.length && (
+              <CustomText style={{ color: "#92400E" }}>{data.reviewFlags.join(" · ")}</CustomText>
+            )}
+            {!!data?.events?.length && (
+              <View style={styles.timeline}>
+                <CustomText style={styles.headingText}>Attendance timeline</CustomText>
+                {data.events.map((event, index) => {
+                  const effective = event.effectiveAt ? timelineDateTime(event.effectiveAt) : null;
+                  const recorded = event.recordedAt ? timelineDateTime(event.recordedAt) : null;
+                  return (
+                    <View key={event.requestId || event.machineEventId || index} style={styles.timelineItem}>
+                      {index < data.events.length - 1 && <View style={styles.timelineLine} />}
+                      <View style={styles.timelineDot} />
+                      <View style={styles.timelineCard}>
+                        <View style={styles.timelineHeader}>
+                          <CustomText style={styles.timelineAction}>
+                            {attendanceEventLabels[event.action] || event.action?.replace(/_/g, " ")}
+                          </CustomText>
+                          {!!event.source && (
+                            <CustomText style={styles.timelineSource}>{event.source.replace(/_/g, " ")}</CustomText>
+                          )}
+                        </View>
+                        {!!effective && <CustomText style={styles.timelineDate}>{effective}</CustomText>}
+                        {!!recorded && recorded !== effective && <CustomText style={styles.timelineDate}>Recorded {recorded}</CustomText>}
+                        {!!event.remarks && <CustomText>{event.remarks}</CustomText>}
+                        {!!event.location && (
+                          <Pressable accessibilityRole="link" onPress={() => {
+                            const query = encodeURIComponent(`${event.location.lat},${event.location.lng}`);
+                            void Linking.openURL(`https://www.google.com/maps?q=${query}`).catch(() => {
+                              popUpConfToast.errorMessage("Could not open Google Maps.");
+                            });
+                          }}>
+                            <CustomText style={styles.timelineLink}>View location</CustomText>
+                          </Pressable>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
             {!!data?.issue && (
               <View style={styles.infoCard}>
                 <View style={styles.leftSection}>
@@ -275,9 +374,7 @@ const AttendanceDetail = () => {
                     <CustomText style={styles.label}>Punch In Time</CustomText>
 
                     <CustomText style={styles.value}>
-                      {moment(data?.punchInMeetingTime).format(
-                        "YYYY-MM-DD HH:mm A",
-                      )}
+                      {timelineDateTime(data.punchInMeetingTime)}
                     </CustomText>
                   </View>
                 </View>
@@ -315,25 +412,13 @@ const AttendanceDetail = () => {
                     <CustomText style={styles.label}>Punch Out Time</CustomText>
 
                     <CustomText style={styles.value}>
-                      {moment(data?.punchOutMeetingTime).format(
-                        "h:mm A , DD-MM-YYYY",
-                      )}
+                      {timelineDateTime(data.punchOutMeetingTime)}
                     </CustomText>
                   </View>
                 </View>
               </View>
             )}
 
-            <ActionButton
-              title="Raise Issue"
-              icon="alert-circle"
-              variant="outline"
-              containerStyle={styles.issueBtn}
-              onPress={() => {
-                setIssueRiseUpdate("raise");
-                toggleModal();
-              }}
-            />
             <View style={{ height: 40 }} />
           </>
         }
@@ -347,7 +432,7 @@ const AttendanceDetail = () => {
           onPressCancel={toggleModal}
           onChangeText={(v) => handleFormValues("remarks", v)}
           isDropDown={
-            !isAgent && {
+            issueRiseUpdate === "update" && {
               arrOfObj: attendanceStatus,
               onChange: (v) => handleFormValues("status", v),
             }
@@ -362,15 +447,58 @@ const AttendanceDetail = () => {
 export default AttendanceDetail;
 
 const styles = StyleSheet.create({
+  timeline: { marginBottom: 16, gap: 8 },
+  timelineItem: { position: "relative", paddingLeft: 20 },
+  timelineLine: { position: "absolute", left: 5, top: 16, bottom: -24, width: 2, backgroundColor: "#DCE6F5" },
+  timelineDot: { position: "absolute", left: 0, top: 14, width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#DBEAFE", backgroundColor: "#2E67BE" },
+  timelineCard: { gap: 5, padding: 10, borderRadius: 12, borderWidth: 1, borderColor: "#E2E8F0", backgroundColor: "#F8FAFC" },
+  timelineHeader: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 6 },
+  timelineAction: { fontSize: 14, fontWeight: "700", color: "#1E293B" },
+  timelineSource: { fontSize: 10, color: "#1E40AF", backgroundColor: "#EAF2FF", borderRadius: 8, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
+  timelineDate: { fontSize: 12, color: "#475569" },
+  timelineLink: { color: "#2E67BE", textDecorationLine: "underline", fontSize: 12 },
+
   contentContainer: {
     padding: 16,
     paddingBottom: 160,
   },
 
-  headingContainer: {
-    marginTop: 14,
-    marginBottom: 12,
+  detailBadge: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 4 },
+  profileHeader: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, padding: 10, borderRadius: 12, backgroundColor: "#F1F5F9" },
+  profileAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#DBEAFE", justifyContent: "center", alignItems: "center" },
+  profileInitials: { fontSize: 16, fontWeight: "700", color: "#2E67BE" },
+  profileIdentity: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 8 },
+  profileName: { flex: 1, minWidth: 0, fontSize: 16, fontWeight: "700", color: "#1E293B" },
+  profileRole: { maxWidth: "45%", backgroundColor: "#E0EDFF" },
+  contactRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 6 },
+  contactIcon: { width: 34, height: 34, borderRadius: 9, backgroundColor: "#EEF4FF", alignItems: "center", justifyContent: "center" },
+  contactValue: { flex: 1, minWidth: 0, fontSize: 14, fontWeight: "600", color: "#2F3A4A" },
+  detailBadgeText: { fontSize: 11, fontWeight: "700" },
+  punchGrid: { flexDirection: "row", gap: 8, marginTop: 4 },
+  punchTile: { flex: 1, minWidth: 0, gap: 6, padding: 10, borderRadius: 12, backgroundColor: "#F1F5F9" },
+  punchLabelGroup: { flexDirection: "row", alignItems: "center", gap: 6 },
+  punchTime: { fontSize: 13, fontWeight: "600", color: "#2F3A4A" },
+  punchTypeBadge: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#E0EDFF" },
+  punchTypeText: { color: "#245AA9" },
+  detailCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E6EAF0",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
+  detailTitle: { fontSize: 20, fontWeight: "700", color: "#2E67BE" },
+  detailDivider: { height: 1, backgroundColor: "#E6EAF0", marginTop: 12, marginBottom: 4 },
+  detailRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
+  detailLabelGroup: { flex: 2, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 8 },
+  detailLabel: { flex: 1, fontSize: 13, color: "#6B778C" },
+  detailValue: { flex: 3, minWidth: 0, textAlign: "right", fontSize: 14, fontWeight: "600", color: "#2F3A4A" },
 
   headingText: {
     fontSize: 18,
@@ -420,12 +548,6 @@ const styles = StyleSheet.create({
     color: "#1E293B",
   },
 
-  issueBtn: {
-    width: "45%",
-    marginTop: 14,
-    borderRadius: 12,
-    alignSelf: "flex-end",
-  },
 
   issueBtnText: {
     fontSize: 15,

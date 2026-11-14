@@ -1,12 +1,11 @@
 import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -15,10 +14,11 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
+import CheckInOut from "../DashboardHRM/CheckInOut";
+import { UserRole } from "../../utils/roles";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import RowAttendance from "../../myComponentsHRM/Row/RowAttendance";
 import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
-import LoadingCompo from "../../myComponentsHRM/LoadingCompo/LoadingCompo";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import CircularBarChart from "../../myComponentsHRM/CircularBarChart/CircularBarChart";
 import ListingSearch from "../../myComponentsHRM/SearchBox/ListingSearch";
@@ -46,6 +46,11 @@ const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const isAgent = user?.role === "agent";
+  const canPunch =
+    !!user?.role &&
+    user.role !== UserRole.sup_admin &&
+    user.role !== UserRole.sub_admin &&
+    user.role !== UserRole.office_admin;
   const showAttendanceSummary = canViewAttendanceSummary(
     permission,
     user?.role,
@@ -58,6 +63,10 @@ const AllAttendance = () => {
   const { navigate } = useNavigation<any>();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<HRMFilterValues>({});
+  const filterValues = useMemo(
+    () => ({ ...filters, view: activeTab === "all" ? "" : activeTab }),
+    [filters, activeTab],
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const toast = useAppToast();
   const [searchSubmit, setSearchSubmit] = useState({
@@ -65,6 +74,8 @@ const AllAttendance = () => {
     startDate: "",
     endDate: "",
   });
+  const [punchLoadFailed, setPunchLoadFailed] = useState(false);
+  const [punchRetryVersion, setPunchRetryVersion] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const approvalLock = useRef(false);
   const updateSearch = useCallback(
@@ -187,17 +198,30 @@ const AllAttendance = () => {
       { item },
     );
   };
+  const showLoadError = isError || (canPunch && punchLoadFailed);
+
   return (
     <ContainerHRM
       headingTitle="Attendance"
       totalCount={totalCount}
       onPressFilter={() => setFiltersOpen(true)}
-      filterCount={hrmFilterCount(filters)}
+      filterCount={hrmFilterCount(filters) + Number(activeTab !== "all")}
       onPressSearch={search.toggleSearch}
       showSearch={search.showSearch}
       childStyle={{ flex: 1, height: undefined }}
     >
-      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="attendance" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
+      <HRMFilters
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        kind="attendance"
+        attendanceViews={tabs.map(({ key, label }) => [key === "all" ? "" : key, label])}
+        values={filterValues}
+        onApply={({ view, ...values }) => {
+          setSelectedTab(tabs.find((tab) => tab.key === view)?.key ?? "all");
+          setFilters(values);
+          search.listRef.current?.scrollToOffset({ offset: 0, animated: false });
+        }}
+      />
       {search.showSearch && (
         <ListingSearch
           value={search.searchValue}
@@ -205,39 +229,25 @@ const AllAttendance = () => {
           onClose={search.closeSearch}
         />
       )}
-      <View style={styles.tabsContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabs}
-          accessibilityRole="tablist"
-        >
-          {tabs.map((tab) => (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: activeTab === tab.key }}
-              onPress={() => {
-                setSelectedTab(tab.key);
-                search.listRef.current?.scrollToOffset({
-                  offset: 0,
-                  animated: false,
-                });
-              }}
-              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === tab.key && styles.activeTabText,
-                ]}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
+      {canPunch && <CheckInOut showInitialLoader={!isLoading && !showLoadError} onLoadError={setPunchLoadFailed} retryVersion={punchRetryVersion} />}
+      {showLoadError && (
+        <View style={styles.errorCard} accessibilityLiveRegion="polite">
+          <View style={styles.errorCopy}>
+            <Text style={styles.errorTitle}>{isError ? "Attendance couldn’t load" : "Attendance actions couldn’t refresh"}</Text>
+            <Text style={styles.errorDescription}>Check your connection and try again.</Text>
+          </View>
+          <Pressable accessibilityRole="button" accessibilityLabel="Retry loading attendance" disabled={isFetching}
+            style={[styles.retry, isFetching && { opacity: 0.6 }]} onPress={() => {
+              if (canPunch && punchLoadFailed) {
+                setPunchLoadFailed(false);
+                setPunchRetryVersion((version) => version + 1);
+              }
+              if (isError) void refetch();
+            }}>
+            {isFetching ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.approveText}>Retry</Text>}
+          </Pressable>
+        </View>
+      )}
       <FlatList
         key={activeTab}
         ref={search.listRef}
@@ -295,34 +305,14 @@ const AllAttendance = () => {
         )}
         ListEmptyComponent={
           isLoading ? (
-            <LoadingCompo />
-          ) : isError ? (
-            <View style={styles.empty}>
-              <Text style={styles.error}>Unable to load attendance.</Text>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isFetching}
-                onPress={() => refetch()}
-                style={styles.retry}
-              >
-                <Text style={styles.approveText}>Retry</Text>
-              </Pressable>
-            </View>
-          ) : (
+            <ActivityIndicator color="#2E67BE" size="large" accessibilityLabel="Loading attendance" style={{ marginVertical: 24 }} />
+          ) : showLoadError ? null : (
             <NoDataFound height={200} width={200} />
           )
         }
         ListFooterComponent={
           isFetchingNextPage ? (
             <ActivityIndicator color="#2E67BE" style={{ marginVertical: 12 }} />
-          ) : isError && data.length > 0 ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => refetch()}
-              style={styles.empty}
-            >
-              <Text style={styles.error}>Unable to refresh. Tap to retry.</Text>
-            </Pressable>
           ) : undefined
         }
         contentContainerStyle={styles.listContent}
@@ -343,22 +333,6 @@ const AllAttendance = () => {
 export default AllAttendance;
 
 const styles = StyleSheet.create({
-  tabsContainer: {
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E4EAF2",
-  },
-  tabs: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
-  tab: {
-    minHeight: 44,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    borderRadius: 10,
-    backgroundColor: "#F1F5F9",
-  },
-  activeTab: { backgroundColor: "#2E67BE" },
-  tabText: { color: "#475467", fontSize: 13, fontWeight: "600" },
-  activeTabText: { color: "#fff" },
   listContent: { paddingBottom: 160, paddingHorizontal: 12, paddingTop: 12 },
   listTitle: {
     fontSize: 16,
@@ -378,12 +352,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   approveText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  empty: { alignItems: "center", padding: 20 },
-  error: { color: "#B42318", fontSize: 13 },
-  retry: {
-    backgroundColor: "#2E67BE",
-    padding: 12,
-    marginTop: 12,
-    borderRadius: 10,
+  errorCard: {
+    flexDirection: "row", alignItems: "center", gap: 12, marginHorizontal: 12,
+    marginVertical: 8, padding: 12, borderRadius: 12, borderWidth: 1,
+    borderColor: "#FECACA", backgroundColor: "#FFF5F5",
   },
+  errorCopy: { flex: 1, minWidth: 0, gap: 3 },
+  errorTitle: { color: "#991B1B", fontSize: 14, fontWeight: "700" },
+  errorDescription: { color: "#475569", fontSize: 12 },
+  retry: { minHeight: 44, minWidth: 68, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", backgroundColor: "#2E67BE", borderRadius: 8 },
 });

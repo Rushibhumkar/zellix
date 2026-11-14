@@ -51,6 +51,7 @@ interface TContainerHRM {
     isDelete?: () => void;
     isEdit?: () => void;
     isStatus?: () => void;
+    onRaiseIssue?: () => void;
   };
   ph?: number;
   pv?: number;
@@ -263,6 +264,11 @@ const ContainerHRM = ({
               style={{ ...iconWrapperStyle, padding: 7 }}
             >
               <Feather name="edit-2" size={18} color={"#fff"} />
+            </Pressable>
+          )}
+          {!!isBAck?.onRaiseIssue && (
+            <Pressable accessibilityRole="button" accessibilityLabel="Raise Issue" onPress={isBAck.onRaiseIssue} style={styles.iconBtn}>
+              <Feather name="alert-circle" size={18} color="#fff" />
             </Pressable>
           )}
           {!!isBAck?.isDelete && (

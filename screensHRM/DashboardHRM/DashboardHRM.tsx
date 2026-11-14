@@ -20,7 +20,6 @@ import TitleHRM from "../../myComponentsHRM/TitleHRM/TitleHRM";
 import { selectUser } from "../../redux/userSlice";
 import { roleEnum } from "../../utils/data";
 import { routeAttendance, routeLeave } from "../../utils/routesHRM";
-import CheckInOut from "./CheckInOut";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { color } from "../../const/color";
@@ -33,11 +32,6 @@ const DashboardHRM = () => {
   const { user } = useSelector(selectUser);
   const { navigate } = useNavigation();
   const isAgent = user?.role === roleEnum.agent;
-  const punchAccess =
-    user?.role === roleEnum.agent ||
-    user?.role === roleEnum.manager ||
-    user?.role === roleEnum.team_lead ||
-    user?.role === roleEnum.assistant_manager;
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const {
@@ -89,7 +83,6 @@ const DashboardHRM = () => {
           <FlatList
             data={null}
             renderItem={() => null}
-            ListHeaderComponent={punchAccess && <CheckInOut />}
             ListFooterComponent={!isAgent && <CardHRM />}
           />
         }

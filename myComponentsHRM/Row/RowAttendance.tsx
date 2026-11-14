@@ -11,8 +11,6 @@ import moment from "moment";
 
 import CustomText from "../../myComponents/CustomText/CustomText";
 import {
-  punchType,
-  roleHRM,
   statusAttend,
   statusColorAttend,
 } from "../../utils/hrmKeysMatchToBE";
@@ -21,24 +19,42 @@ import { color } from "../../const/color";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
-interface TRowAttendance {
+export interface TRowAttendance {
   containerStyle?: StyleProp<ViewStyle>;
   action?: React.ReactNode;
+  personal?: boolean;
 
   onPress: () => void;
 
   item: {
-    name: string;
-    role: string;
-    punchedInType: string;
+    name?: string;
+    role?: string;
+    punchedInType?: string;
+    punchedOutType?: string;
+    punchedIn?: string;
+    punchedOut?: string;
+    workDate?: string;
     status: string;
+    workMinutes?: number;
+    visitCount?: number;
+    reviewFlags?: string[];
     createdAt: string;
     issue: boolean;
     resolve: boolean;
   };
 }
 
-const RowAttendance = ({ containerStyle, onPress, item, action }: TRowAttendance) => {
+const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRowAttendance) => {
+  const attendanceDate = item.workDate || item.createdAt;
+  const date = attendanceDate ? moment(attendanceDate) : null;
+  const dateLabel = date?.isValid() ? date.locale("en").format("D MMM YYYY") : "—";
+  const needsReview = !!item.reviewFlags?.length;
+  const statusText = needsReview ? "Needs Review" : statusAttend[item.status] || "—";
+  const statusTint = needsReview ? "#92400E" : item.status === "present" ? "#15803D" : statusColorAttend[item.status] || color.mainTxtColor;
+  const formatTime = (value?: string) => {
+    const time = value ? moment(value) : null;
+    return time?.isValid() ? time.format("hh:mm A") : "—";
+  };
   return (
     <SlideFadeIn>
       <View style={[styles.card, containerStyle]}>
@@ -49,7 +65,14 @@ const RowAttendance = ({ containerStyle, onPress, item, action }: TRowAttendance
       >
         {/* ROW 1 */}
         <View style={[styles.topRow, action ? styles.topRowWithAction : undefined]}>
-          <View style={styles.leftSection}>
+          {personal ? (
+            <View style={styles.leftSection}>
+              <View style={styles.avatar}>
+                <Feather name="calendar" size={17} color="#2D67C6" />
+              </View>
+              <CustomText style={styles.userName}>{dateLabel}</CustomText>
+            </View>
+          ) : <View style={styles.leftSection}>
             <View style={styles.avatar}>
               <CustomText style={styles.avatarText}>
                 {item?.name?.charAt(0)?.toUpperCase()}
@@ -61,104 +84,51 @@ const RowAttendance = ({ containerStyle, onPress, item, action }: TRowAttendance
                 {item?.name || "N/A"}
               </CustomText>
 
-              <View style={styles.roleDateRow}>
-                <View style={styles.roleRow}>
-                  <Feather name="briefcase" size={10} color="#64748B" />
-
-                  <CustomText numberOfLines={1} style={styles.roleText}>
-                    {roleHRM[item?.role] || "N/A"}
-                  </CustomText>
-                </View>
-              </View>
             </View>
-          </View>
+          </View>}
 
           <View style={[styles.rightDetails, action ? styles.rightDetailsWithAction : undefined]}>
-            <View style={[styles.dateInline, action ? styles.centeredDate : undefined]}>
+            {!personal && <View style={[styles.dateInline, action ? styles.centeredDate : undefined]}>
               <Feather name="calendar" size={10} color="#64748B" />
 
               <CustomText style={styles.dateText}>
-                {moment(item?.createdAt).format("DD MMM YYYY")}
+                {dateLabel}
               </CustomText>
+            </View>}
+            <View style={[styles.badgeRow, action && styles.centeredStatus]}>
+              {typeof item.visitCount === "number" && item.visitCount > 0 && (
+                <View style={[styles.statusBadge, styles.visitBadge]}>
+                  <CustomText style={[styles.statusText, styles.visitBadgeText]}>
+                    {item.visitCount} {item.visitCount === 1 ? "visit" : "visits"}
+                  </CustomText>
+                </View>
+              )}
+              <View style={[styles.statusBadge, { backgroundColor: needsReview ? "#FEF3C7" : statusTint + "18" }]}>
+                <CustomText style={[styles.statusText, { color: statusTint }]}>{statusText}</CustomText>
+              </View>
             </View>
-          <View
-            style={[
-              styles.statusBadge,
-              action ? styles.centeredStatus : undefined,
-              {
-                backgroundColor:
-                  item?.status === "present"
-                    ? "#DCFCE7" // light green (fixed)
-                    : `${statusColorAttend[item?.status]}15`,
-              },
-            ]}
-          >
-            <CustomText
-              style={[
-                styles.statusText,
-                {
-                  color:
-                    item?.status === "present"
-                      ? "#15803D" // dark green (fixed)
-                      : statusColorAttend[item?.status] || color.mainTxtColor,
-                },
-              ]}
-            >
-              {statusAttend[item?.status]}
-            </CustomText>
-          </View>
           </View>
         </View>
 
-        {/* ROW 2 */}
         <View style={styles.middleRow}>
-          <View style={styles.infoItem}>
-            <Feather
-              name={item?.punchedInType === "office" ? "home" : "map-pin"}
-              size={11}
-              color="#2D67C6"
-            />
-
-            <CustomText style={styles.infoText}>
-              {punchType[item?.punchedInType] || "-"}
-            </CustomText>
-          </View>
-
-          <View style={styles.infoItem}>
-            <Feather
-              name={
-                !item?.issue
-                  ? "check-circle"
-                  : item?.resolve
-                    ? "shield"
-                    : "alert-circle"
-              }
-              size={11}
-              color={
-                !item?.issue ? "#16A34A" : item?.resolve ? "#F59E0B" : "#DC2626"
-              }
-            />
-
-            <CustomText
-              style={[
-                styles.infoText,
-                {
-                  color: !item?.issue
-                    ? "#16A34A"
-                    : item?.resolve
-                      ? "#F59E0B"
-                      : "#DC2626",
-                },
-              ]}
-            >
-              {!item?.issue
-                ? "No Issue"
-                : item?.resolve
-                  ? "Resolved"
-                  : "Unresolved"}
-            </CustomText>
-          </View>
+          {([
+            ["log-in", "Check In", item.punchedIn],
+            ["log-out", "Check Out", item.punchedOut],
+          ] as const).map(([icon, label, value]) => (
+            <View key={label} style={styles.infoItem}>
+              <Feather name={icon} size={14} color="#2D67C6" />
+              <View style={styles.punchDetails}>
+                <CustomText style={styles.roleText}>{label}</CustomText>
+                <CustomText style={styles.infoText}>{formatTime(value)}</CustomText>
+              </View>
+            </View>
+          ))}
         </View>
+        {item.issue && (
+          <CustomText style={[styles.issueText, { color: item.resolve ? "#15803D" : "#B91C1C" }]}>
+            {item.resolve ? "Issue resolved" : "Issue open"}
+          </CustomText>
+        )}
       </TouchableOpacity>
       {action && <View style={styles.actionCorner}>{action}</View>}
       </View>
@@ -174,15 +144,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#E6ECF5",
-    marginTop: 10,
+    marginTop: 8,
     ...shadowPrimaryColor,
   },
 
-  cardContent: { padding: 12 },
+  cardContent: { padding: 10 },
   actionCorner: {
     position: "absolute",
-    top: 12,
-    right: 12,
+    top: 10,
+    right: 10,
     zIndex: 1,
   },
   rightDetails: {
@@ -195,11 +165,14 @@ const styles = StyleSheet.create({
   topRowWithAction: { paddingRight: 100, minHeight: 44 },
   centeredDate: { justifyContent: "center" },
   centeredStatus: { alignSelf: "center" },
+  badgeRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  visitBadge: { backgroundColor: "#EEF4FF", paddingHorizontal: 7 },
+  visitBadgeText: { color: "#245AA9" },
 
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#EEF4FF",
     justifyContent: "center",
     alignItems: "center",
@@ -226,13 +199,14 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontWeight: "700",
-    textTransform: "capitalize",
   },
 
+  punchDetails: { flex: 1, gap: 2 },
+  issueText: { fontSize: 11, marginTop: 6 },
   middleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 6,
     gap: 8,
   },
 
@@ -240,23 +214,24 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    backgroundColor: "#F8FAFC",
+    gap: 8,
+    backgroundColor: "#F1F5F9",
     borderRadius: 10,
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 10,
   },
 
   infoText: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "700",
     color: "#1E293B",
-    flex: 1,
+    fontVariant: ["tabular-nums"],
   },
 
   dateText: {
-    fontSize: 11,
-    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#475569",
   },
 
   topRow: {
@@ -277,19 +252,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
 
-  roleDateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-    width: "100%",
-  },
 
-  roleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    flex: 1,
-  },
 
   dateInline: {
     flexDirection: "row",

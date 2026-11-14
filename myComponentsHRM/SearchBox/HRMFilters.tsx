@@ -22,8 +22,9 @@ const fields: Record<HRMFilterKind, Field[]> = {
 };
 export const hrmFilterCount = (values: HRMFilterValues) => Object.values(values).filter(Boolean).length;
 
-export default function HRMFilters({ visible, onClose, kind, values, onApply }: {
+export default function HRMFilters({ visible, onClose, kind, values, onApply, attendanceViews }: {
   visible: boolean; onClose: () => void; kind: HRMFilterKind;
+  attendanceViews?: [string, string][];
   values: HRMFilterValues; onApply: (values: HRMFilterValues) => void;
 }) {
   const [draft, setDraft] = useState<HRMFilterValues>({});
@@ -35,11 +36,14 @@ export default function HRMFilters({ visible, onClose, kind, values, onApply }: 
     ...previous, [key]: value,
     ...(key === "today" ? { status: value === "true" ? "approved" : "", startDate: "", endDate: "" } : {}),
   }));
+  const filterFields = attendanceViews
+    ? [{ key: "view", label: "Attendance view", options: attendanceViews }, ...fields[kind]]
+    : fields[kind];
   return <ModalWithBlur visible={visible} onClose={onClose} contentHeight="82%" scrollableContent>
     <Text style={{ fontSize: 21, fontWeight: "700", color: "#1E293B", marginBottom: 6 }}>Filters</Text>
     <Text style={{ color: "#64748B", fontSize: 13, marginBottom: 18 }}>Choose filters, then tap Apply to update the list.</Text>
     <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
-      {fields[kind].map((field) => <View key={field.key} style={{ marginBottom: 22 }}>
+      {filterFields.map((field) => <View key={field.key} style={{ marginBottom: 22 }}>
         <Text style={{ fontSize: 14, fontWeight: "600", color: "#334155", marginBottom: 10 }}>{field.label}</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {field.options.map(([value, label]) => {

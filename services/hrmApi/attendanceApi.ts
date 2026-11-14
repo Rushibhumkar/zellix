@@ -47,14 +47,12 @@ export const getAttendanceDetail = ({ id }) =>
 export const issueRiseAgent = ({ id, data }) =>
   axiosInstance
     .post(`/api/hrms/att/issueRaiseById/${id}`, data)
-    .then((res) => res?.data)
-    .catch((err) => console.log("errorIssueRiseAgent", err));
+    .then((res) => res?.data);
 
 export const issueResolveAdmin = ({ id, data }) =>
   axiosInstance
     .post(`/api/hrms/att/updateStatusById/${id}`, data)
-    .then((res) => res?.data)
-    .catch((err) => console.log("errorIssueResolveAdmin", err));
+    .then((res) => res?.data);
 
 export const getTodayAbsent = () => {
   return axiosInstance

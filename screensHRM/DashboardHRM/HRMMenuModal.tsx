@@ -56,7 +56,7 @@ const HRMMenuModal: React.FC<HRMMenuModalProps> = ({
     },
     isAgent && {
       label: "User Profile",
-      icon: <EvilIcons name="user" size={28} color="#2452FA" />,
+      icon: <EvilIcons name="user" size={28} color="#FFFFFF" />,
       route: "UserDetailHRMAgent",
       params: { item: { ...user } },
     },
