@@ -1,5 +1,11 @@
 import React from "react";
-import { ToastProvider, useToast } from "react-native-toast-notifications";
+import ToastContainer, { ToastProvider, useToast } from "react-native-toast-notifications";
+
+export type AppToastHostHandle = ToastContainer;
+
+export const AppToastHost = React.forwardRef<AppToastHostHandle>(function AppToastHost(_, ref) {
+  return <ToastContainer ref={ref} placement="top" offset={16} duration={2500} swipeEnabled />;
+});
 
 /** Wrap a subtree (you already have a root provider; use this only if needed) */
 export const AppToastProvider = ({ children, ...overrides }) => (
@@ -21,8 +27,8 @@ export function useAppToast() {
   const show = (message, opts = {}) => toast.show(message, { ...opts });
   const success = (message, opts = {}) =>
     toast.show(message, { type: "success", ...opts });
-  const error = (message, opts = {}) =>
-    toast.show(message, { type: "danger", ...opts });
+  const error = (message, opts = {}, host?: AppToastHostHandle | null) =>
+    (host ?? toast).show(message, { type: "danger", ...opts });
   const info = (message, opts = {}) =>
     toast.show(message, { type: "normal", ...opts });
   const warning = (message, opts = {}) =>

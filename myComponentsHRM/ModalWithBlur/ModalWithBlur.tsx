@@ -21,6 +21,7 @@ interface TModalWithBlur {
   visible: boolean;
   onClose?: () => void;
   children?: ReactNode;
+  overlay?: ReactNode;
   minHeight?: DimensionValue;
   contentHeight?: DimensionValue;
   scrollableContent?: boolean;
@@ -30,6 +31,7 @@ const ModalWithBlur = ({
   visible,
   onClose,
   children,
+  overlay,
   minHeight,
   contentHeight,
   scrollableContent = false,
@@ -102,6 +104,7 @@ const ModalWithBlur = ({
               </Pressable>
             </Pressable>
           )}
+          {overlay}
         </BlurView>
       </KeyboardAvoidingView>
     </Modal>
