@@ -28,6 +28,8 @@ const attendanceEventLabels: Record<string, string> = {
   CHECK_OUT: "Check Out",
   VISIT_IN: "Visit In",
   VISIT_OUT: "Visit Out",
+  SITE_IN: "Visit In",
+  SITE_OUT: "Visit Out",
   CORRECTION: "Attendance corrected",
 };
 
@@ -189,6 +191,11 @@ const AttendanceDetail = () => {
                   <CustomText style={[styles.detailBadgeText, { color: statusTint }]}>{statusAttend[status] || status}</CustomText>
                 </View>
               )}
+              {item.kind === "attendance" && status === "present" && data?.lateMinutes > 0 && (
+                <View style={[styles.detailBadge, { backgroundColor: "#FEF3C7" }]}>
+                  <CustomText style={[styles.detailBadgeText, { color: "#92400E" }]}>Late · {data.lateMinutes} min</CustomText>
+                </View>
+              )}
             </View>
             {item.kind === "personal" && (
               <View style={styles.profileHeader}>
@@ -276,6 +283,7 @@ const AttendanceDetail = () => {
                         </View>
                         {!!effective && <CustomText style={styles.timelineDate}>{effective}</CustomText>}
                         {!!recorded && recorded !== effective && <CustomText style={styles.timelineDate}>Recorded {recorded}</CustomText>}
+                        {!!event.siteVisit?.name && <CustomText>{event.siteVisit.name}</CustomText>}
                         {!!event.remarks && <CustomText>{event.remarks}</CustomText>}
                         {!!event.location && (
                           <Pressable accessibilityRole="link" onPress={() => {

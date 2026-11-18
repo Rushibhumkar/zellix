@@ -10,6 +10,7 @@ export const useAttendanceListing = ({ tab, userId = "", accountId, role, search
     initialPageParam: 1,
     queryFn: ({ pageParam }) => getAttendanceList({ tab, userId, search, startDate, endDate, status, pageParam }),
     getNextPageParam: nextAttendancePage,
+    refetchInterval: query => tab === "all" && (query.state.data?.pages.length ?? 0) <= 1 ? 60_000 : false,
     enabled: Boolean(accountId) && (tab !== "unapproved" || canViewUnapprovedAttendance(role)),
   });
   const pages = query.data?.pages || [];

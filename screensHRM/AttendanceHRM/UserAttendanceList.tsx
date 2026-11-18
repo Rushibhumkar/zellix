@@ -1,4 +1,7 @@
-import HRMFilters, { HRMFilterValues, hrmFilterCount } from "../../myComponentsHRM/SearchBox/HRMFilters";
+import HRMFilters, {
+  HRMFilterValues,
+  hrmFilterCount,
+} from "../../myComponentsHRM/SearchBox/HRMFilters";
 import {
   ActivityIndicator,
   FlatList,
@@ -32,9 +35,25 @@ const UserAttendanceList = () => {
     startDate: "",
     endDate: "",
   });
-  const { data, totalCount, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useGetSingleUserAttList({ userId: params?.item?.user, ...searchSubmit, ...filters });
-  const updateSearch = useCallback((search: string) => setSearchSubmit(prev => prev.search === search ? prev : { ...prev, search }), []);
+  const {
+    data,
+    totalCount,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useGetSingleUserAttList({
+    userId: params?.item?.user,
+    ...searchSubmit,
+    ...filters,
+  });
+  const updateSearch = useCallback(
+    (search: string) =>
+      setSearchSubmit((prev) =>
+        prev.search === search ? prev : { ...prev, search },
+      ),
+    [],
+  );
   const search = useHRMListingSearch(updateSearch);
 
   const onEndReach = () => {
@@ -55,8 +74,26 @@ const UserAttendanceList = () => {
         title: "Single User Attendance",
       }}
     >
-      <HRMFilters visible={filtersOpen} onClose={() => setFiltersOpen(false)} kind="attendance" values={filters} onApply={(values) => { setFilters(values); search.listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
-      {search.showSearch && <ListingSearch value={search.searchValue} onChangeText={search.setSearchValue} onClose={search.closeSearch} />}
+      <HRMFilters
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        kind="attendance"
+        values={filters}
+        onApply={(values) => {
+          setFilters(values);
+          search.listRef.current?.scrollToOffset({
+            offset: 0,
+            animated: false,
+          });
+        }}
+      />
+      {search.showSearch && (
+        <ListingSearch
+          value={search.searchValue}
+          onChangeText={search.setSearchValue}
+          onClose={search.closeSearch}
+        />
+      )}
       {/* <View style={{ padding: 20 }}> <HeaderRowUserAtt /></View> */}
       <View
         style={{
@@ -69,7 +106,7 @@ const UserAttendanceList = () => {
         <TitleHRM
           title={`${params?.item?.name} (${roleHRM[params?.item?.role]})`}
         />
-        <HeaderRowUserAtt />
+        {/* <HeaderRowUserAtt /> */}
       </View>
       <FlatList
         ref={search.listRef}

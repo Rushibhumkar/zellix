@@ -302,6 +302,7 @@ export const useGetAttendanceChart = ({ isEnable = false }) => {
     queryKey: ["getAttendanceChart"],
     queryFn: getAttendanceChart,
     staleTime: 60_000,
+    refetchInterval: 60_000,
     refetchOnMount: "always",
     enabled: !!isEnable,
   });

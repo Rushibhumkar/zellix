@@ -167,6 +167,11 @@ const CircularBarChart = ({ type = "leavesChart" }: TCircularBarChart) => {
           {userError ? "Unable to load employee counts. Tap to retry." : "Loading employee counts…"}
         </Text>
       )}
+      {type === "attendanceChart" && attendanceCount && (
+        <Text style={{ color: "#92400E", fontSize: 12, marginTop: 8 }}>
+          Late check-ins: {attendanceCount.late ?? 0}
+        </Text>
+      )}
       {type === "attendanceChart" && (attendanceLoading || attendanceError) && (
         <Text
           accessibilityRole={attendanceError ? "button" : undefined}

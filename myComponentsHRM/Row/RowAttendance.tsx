@@ -35,6 +35,7 @@ export interface TRowAttendance {
     punchedOut?: string;
     workDate?: string;
     status: string;
+    lateMinutes?: number;
     workMinutes?: number;
     visitCount?: number;
     reviewFlags?: string[];
@@ -49,8 +50,8 @@ const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRow
   const date = attendanceDate ? moment(attendanceDate) : null;
   const dateLabel = date?.isValid() ? date.locale("en").format("D MMM YYYY") : "—";
   const needsReview = !!item.reviewFlags?.length;
-  const statusText = needsReview ? "Needs Review" : statusAttend[item.status] || "—";
-  const statusTint = needsReview ? "#92400E" : item.status === "present" ? "#15803D" : statusColorAttend[item.status] || color.mainTxtColor;
+  const statusText = statusAttend[item.status] || "—";
+  const statusTint = item.status === "present" ? "#15803D" : statusColorAttend[item.status] || color.mainTxtColor;
   const formatTime = (value?: string) => {
     const time = value ? moment(value) : null;
     return time?.isValid() ? time.format("hh:mm A") : "—";
@@ -103,9 +104,19 @@ const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRow
                   </CustomText>
                 </View>
               )}
-              <View style={[styles.statusBadge, { backgroundColor: needsReview ? "#FEF3C7" : statusTint + "18" }]}>
+              <View style={[styles.statusBadge, { backgroundColor: statusTint + "18" }]}>
                 <CustomText style={[styles.statusText, { color: statusTint }]}>{statusText}</CustomText>
               </View>
+              {item.status === "present" && (item.lateMinutes ?? 0) > 0 && (
+                <View style={[styles.statusBadge, { backgroundColor: "#FEF3C7" }]}>
+                  <CustomText style={[styles.statusText, { color: "#92400E" }]}>Late</CustomText>
+                </View>
+              )}
+              {needsReview && (
+                <View style={[styles.statusBadge, { backgroundColor: "#FEF3C7" }]}>
+                  <CustomText style={[styles.statusText, { color: "#92400E" }]}>Needs Review</CustomText>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -165,7 +176,7 @@ const styles = StyleSheet.create({
   topRowWithAction: { paddingRight: 100, minHeight: 44 },
   centeredDate: { justifyContent: "center" },
   centeredStatus: { alignSelf: "center" },
-  badgeRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 4 },
   visitBadge: { backgroundColor: "#EEF4FF", paddingHorizontal: 7 },
   visitBadgeText: { color: "#245AA9" },
 

@@ -12,7 +12,7 @@ const fields: Record<HRMFilterKind, Field[]> = {
     { key: "userStatus", label: "Account status", options: [["", "All"], ["active", "Active"], ["inactive", "Inactive"], ["resigned", "Resigned"], ["terminated", "Terminated"]] },
     { key: "status", label: "Approval status", options: [["", "All"], ["new", "New"], ["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]] },
   ],
-  attendance: [{ key: "status", label: "Attendance status", options: [["", "All"], ["present", "Present"], ["absent", "Absent"], ["leave", "Leave"], ["halfDay", "Half Day"]] }],
+  attendance: [{ key: "status", label: "Attendance status", options: [["", "All"], ["present", "Present"], ["late", "Late"], ["absent", "Absent"], ["leave", "Leave"], ["halfDay", "Half Day"]] }],
   leaves: [
     { key: "payType", label: "Pay type", options: [["", "All"], ["paid", "Paid"], ["unpaid", "Unpaid"]] },
     { key: "status", label: "Leave status", options: [["", "All"], ["pending", "Pending"], ["approved", "Approved"], ["forwarded", "Forwarded"], ["rejected", "Rejected"], ["cancel", "Cancelled"]] },
