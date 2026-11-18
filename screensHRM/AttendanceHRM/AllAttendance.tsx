@@ -37,6 +37,7 @@ import {
 import { routeAttendance } from "../../utils/routesHRM";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { useAppToast } from "../../components/AppToast";
+import AddSiteVisitLocation from "./AddSiteVisitLocation";
 import AttendanceAutoApproval, {
   attendanceSettingsKey,
 } from "./AttendanceAutoApproval";
@@ -46,11 +47,9 @@ const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const isAgent = user?.role === "agent";
-  const canPunch =
-    !!user?.role &&
-    user.role !== UserRole.sup_admin &&
-    user.role !== UserRole.sub_admin &&
-    user.role !== UserRole.office_admin;
+  const canAddSite = user?.role === UserRole.sup_admin ||
+    user?.role === UserRole.sub_admin || user?.role === UserRole.office_admin;
+  const canPunch = Boolean(user?.role) && !canAddSite;
   const showAttendanceSummary = canViewAttendanceSummary(
     permission,
     user?.role,
@@ -229,7 +228,7 @@ const AllAttendance = () => {
           onClose={search.closeSearch}
         />
       )}
-      {canPunch && <CheckInOut showInitialLoader={!isLoading && !showLoadError} onLoadError={setPunchLoadFailed} retryVersion={punchRetryVersion} />}
+      {canPunch && <CheckInOut key={user?._id} showInitialLoader={!isLoading && !showLoadError} onLoadError={setPunchLoadFailed} retryVersion={punchRetryVersion} />}
       {showLoadError && (
         <View style={styles.errorCard} accessibilityLiveRegion="polite">
           <View style={styles.errorCopy}>
@@ -256,6 +255,7 @@ const AllAttendance = () => {
         ListHeaderComponent={
           <>
             <AttendanceAutoApproval role={user?.role} userId={user?._id} />
+            {canAddSite && <AddSiteVisitLocation />}
             {showAttendanceSummary && (
               <>
                 <CircularBarChart type="attendanceChart" />
