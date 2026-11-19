@@ -1,3 +1,7 @@
+import { fetchPreparedLeads } from "../../utils/todayTasksPreparation";
+import { readLeadData } from "../../utils/leadReadRetry";
+import { isCancel } from "axios";
+import type { LeadRequestTiming } from "../../utils/leadSavePerformance";
 import { err } from "react-native-svg/lib/typescript/xml";
 import { axiosInstance } from "../authApi/axiosInstance";
 import { myConsole } from "../../hooks/useConsole";
@@ -77,17 +81,17 @@ export const deleteLead = (data: [string]) => {
   );
 };
 
-export const leadStatusUpdate = ({ id, data }) => {
+export const leadStatusUpdate = ({ id, data, timing }: { id: string; data: any; timing?: LeadRequestTiming }) => {
   return (
     axiosInstance
-      .post(`/api/lead/statusUpdateById/${id}`, data)
+      .post(`/api/lead/statusUpdateById/${id}`, data, { leadSaveTiming: timing })
       // .then((res) => res)
       .then((res) => {
         // popUpConfToast.successMessage(res?.data)
         return res?.data;
       })
       .catch((err) => {
-        throw new Error(err);
+        throw err;
         // myConsole('errUpdateCase', err?.response?.data)
         // popUpConfToast.errorMessage('Server error')
       })
@@ -102,9 +106,9 @@ export const leadCallTrack = ({ id, data }: any) => {
   return axiosInstance.post(`/api/lead/updateCallLogById/${id}`, data);
 };
 
-export const getLeadDetailById = (id: string) => {
+export const getLeadDetailById = (id: string, summary = false) => {
   return axiosInstance
-    .get(`/api/lead/getLeadById/${id}`)
+    .get(`/api/lead/getLeadById/${id}`, { params: summary ? { view: "summary" } : undefined })
     .then((res) => res?.data);
 };
 
@@ -133,8 +137,9 @@ export const searchLeadOptions = async ({
   return response.data;
 };
 
-export const getLeadFolders = (type = "lead") =>
-  axiosInstance.get("/api/lead/folders", { params: { type } }).then((res) => res?.data?.data || []);
+export const getLeadFolders = (type = "lead", signal?: AbortSignal) =>
+  readLeadData("folders", () => axiosInstance.get("/api/lead/folders", { params: { type }, signal }), signal)
+    .then((res) => res?.data?.data || []);
 
 export const createLeadFolder = (data: { name: string; color: string; type?: string }) =>
   axiosInstance.post("/api/lead/folders", data).then((res) => res?.data);
@@ -157,7 +162,7 @@ export const getLead = async ({
   search = null,
   pageParam = 1,
   type = "lead",
-  limit = 10,
+  limit = 20,
   status,
   individual,
   pagination = true,
@@ -174,9 +179,10 @@ export const getLead = async ({
   projectId,
   teamId,
   folderId,
+  signal = undefined as AbortSignal | undefined,
 }) => {
   try {
-    const response = await axiosInstance.get("api/lead", {
+    const request = {
       params: {
         page: pageParam,
         search,
@@ -199,11 +205,15 @@ export const getLead = async ({
         ...(teamId && { teamId }),
         ...(folderId && { folderId }),
       },
-    });
-    // console.log("🟢 getLead RAW response.data:", response.data);
+      signal,
+    };
+    if (folderId === "todays-tasks") return await fetchPreparedLeads(request.params, signal);
+    const response = await readLeadData("leads", () => axiosInstance.get("api/lead", request), signal);
     return response.data;
   } catch (err) {
-    console.log("getLeadErrPag", err);
+    if (!signal?.aborted && !isCancel(err) && (err as any)?.name !== "AbortError") {
+      console.log("getLeadErrPag", err);
+    }
     throw err;
   }
 };

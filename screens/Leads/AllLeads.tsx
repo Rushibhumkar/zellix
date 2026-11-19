@@ -5,6 +5,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
+import LeadReadRetry from "./component/LeadReadRetry";
 import {
   ActivityIndicator,
   Alert,
@@ -48,10 +49,6 @@ import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { sizes } from "../../const";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import {
-  LegacyScrollView as GestureScrollView,
-  TouchableOpacity as GestureTouchableOpacity,
-} from "react-native-gesture-handler";
 import { useAppToast } from "../../components/AppToast";
 import Animated, {
   FadeInDown,
@@ -108,8 +105,6 @@ const AllLeads = () => {
 
   const [showHeaderActions, setShowHeaderActions] = useState(false);
   const flatListRef = React.useRef<FlatList>(null);
-  const scrollGestureRef = React.useRef<any>(null);
-  const lastScrollAt = React.useRef(0);
   const [selectionMode, setSelectionMode] = useState(false);
   const [focusSearch, setFocusSearch] = useState(false);
   //
@@ -130,7 +125,7 @@ const AllLeads = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [folderModalVisible, setFolderModalVisible] = useState(false);
-  const { data: leadFolders = [] } = useLeadFolders(selectLeadType);
+  const { data: leadFolders = [], isSuccess: foldersLoaded } = useLeadFolders(selectLeadType);
   const selectedFolder = leadFolders.find(
     (folder: any) => folder._id === selectedFolderId,
   );
@@ -143,14 +138,18 @@ const AllLeads = () => {
   }, [navigation, params?.clearRSVPSelection]);
 
   useEffect(() => {
-    if (selectedFolderId && !selectedFolder) setSelectedFolderId("");
-  }, [selectedFolder, selectedFolderId]);
+    if (foldersLoaded && selectedFolderId && !selectedFolder) setSelectedFolderId("");
+  }, [foldersLoaded, selectedFolder, selectedFolderId]);
   //get Query
   const {
     data: leadData,
     totalCount,
     isLoading: loading,
     isError: leadLoadError,
+    error: leadError,
+    isFetching: leadsFetching,
+    isFetchNextPageError,
+    isRefetchError,
     refetch: refetchLeads,
     hasNextPage,
     fetchNextPage,
@@ -264,7 +263,7 @@ const AllLeads = () => {
   };
 
   const onEndReach = () => {
-    if (hasNextPage && !loading && leadData?.length > 0) {
+    if (hasNextPage && !leadsFetching && !leadLoadError && leadData?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
   };
@@ -662,7 +661,8 @@ const AllLeads = () => {
 
           <FlatList
             ref={flatListRef}
-            renderScrollComponent={(props) => <GestureScrollView {...props} ref={scrollGestureRef} />}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             data={filteredLeadData}
             extraData={{ selected, selectionMode }}
             renderItem={({ item, index }) => (
@@ -673,10 +673,8 @@ const AllLeads = () => {
                 user={user}
                 selected={selected.indexOf(item?._id) !== -1}
                 isSelectionMode={selectionMode}
-                scrollGestureRef={scrollGestureRef}
                 bgColor={bgByStatus[item?.status]}
                 onPress={() => {
-                  if (Date.now() - lastScrollAt.current < 180) return;
                   !selectionMode
                     ? navigation.navigate("LeadsDetails", {
                         item,
@@ -687,7 +685,6 @@ const AllLeads = () => {
                 onLongPress={
                   canSelectLeads
                     ? () => {
-                        if (Date.now() - lastScrollAt.current < 180) return;
                         setSelectionMode(true);
                         setShowHeaderActions(false);
                         setSelected((ids) => ids.includes(item._id) ? ids : [...ids, item._id]);
@@ -863,16 +860,16 @@ const AllLeads = () => {
             ListHeaderComponentStyle={{ paddingTop: 5 }}
             ListEmptyComponent={
               loading ? <SkeletonLoadingLead /> : leadLoadError ? (
-                <View style={{ padding: 24, alignItems: "center", gap: 12 }}>
-                  <CustomText style={{ color: "#B91C1C", textAlign: "center" }}>Unable to load leads. Please retry.</CustomText>
-                  <Pressable accessibilityRole="button" onPress={() => { void refetchLeads(); }} style={{ borderWidth: 1, borderColor: "#FECACA", borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 }}><CustomText style={{ color: "#B91C1C" }}>Retry</CustomText></Pressable>
-                </View>
+                <LeadReadRetry error={leadError} busy={leadsFetching} message="Leads couldn’t load. Please retry." onRetry={() => { void refetchLeads(); }} />
               ) : <NoDataFound />
             }
             onEndReached={onEndReach}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              isFetchingNextPage && (
+              leadData?.length > 0 && (isFetchNextPageError || isRefetchError) ? (
+                <LeadReadRetry error={leadError} busy={leadsFetching} message={isFetchNextPageError ? "More leads couldn’t load. Please retry." : "Leads couldn’t refresh. Your loaded leads are still available."}
+                  onRetry={() => { if (isFetchNextPageError) void fetchNextPage(); else void refetchLeads(); }} />
+              ) : isFetchingNextPage && (
                 <ActivityIndicator
                   size={"small"}
                   color={color.mainTxtColor}
@@ -884,7 +881,6 @@ const AllLeads = () => {
               selectionMode ? undefined : <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             onScroll={(e) => {
-              lastScrollAt.current = Date.now();
               // Don't let scroll auto-hide the action bar while a selection
               // is active — it needs to stay reachable (folder/delete/assign)
               // no matter how far down the list the user has scrolled.
@@ -895,7 +891,7 @@ const AllLeads = () => {
                 setShowHeaderActions(show);
               }
             }}
-            removeClippedSubviews={true}
+            removeClippedSubviews={Platform.OS === "android"}
             initialNumToRender={15}
             maxToRenderPerBatch={15}
             windowSize={10}
@@ -962,7 +958,6 @@ const LeadRowItem = React.memo(
     onLongPress,
     selected,
     isSelectionMode,
-    scrollGestureRef,
     bgColor,
     onCallPress,
     onWhatsappIconPress,
@@ -998,11 +993,9 @@ const LeadRowItem = React.memo(
     const showClaimBtn = missingCount >= 2;
     return (
       <View>
-        <GestureTouchableOpacity
+        <TouchableOpacity
           activeOpacity={0.5}
           delayLongPress={350}
-          disallowInterruption={false}
-          extraButtonProps={{ simultaneousHandlers: scrollGestureRef, exclusive: false }}
           accessibilityRole={isSelectionMode ? "checkbox" : "button"}
           accessibilityLabel={displayValue(item?.clientName)}
           accessibilityState={isSelectionMode ? { checked: selected } : undefined}
@@ -1210,7 +1203,7 @@ const LeadRowItem = React.memo(
               </View>
             )}
           </View>
-        </GestureTouchableOpacity>
+        </TouchableOpacity>
       </View>
     );
   },

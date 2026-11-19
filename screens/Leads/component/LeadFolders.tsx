@@ -27,6 +27,8 @@ import {
   updateLeadFolder,
 } from "../../../services/rootApi/leadApi";
 import { queryKeyCRM } from "../../../utils/queryKeys";
+import { retryLeadRead } from "../../../utils/leadReadRetry";
+import LeadReadRetry from "./LeadReadRetry";
 
 const COLORS = [
   "#2E67BE",
@@ -50,10 +52,11 @@ export const useLeadFolders = (type = "lead") => {
   const { user } = useSelector(selectUser);
   return useQuery({
     queryKey: ["leadFolders", user?._id, type],
-    queryFn: () => getLeadFolders(type),
+    queryFn: ({ signal }) => getLeadFolders(type, signal),
     enabled: Boolean(user?._id),
     staleTime: 0,
     refetchInterval: 60_000,
+    retry: retryLeadRead,
   });
 };
 
@@ -64,12 +67,13 @@ export const LeadFolderBar = ({
   onChangeFolder,
   onManage,
 }: any) => {
-  const { data: folders = [], refetch: refetchFolders } = useLeadFolders(type);
+  const { data: folders = [], refetch: refetchFolders, isError, error, isFetching } = useLeadFolders(type);
   const selectFolder = (folderId: string) => {
     onChangeFolder(folderId);
-    refetchFolders();
   };
   return (
+    <View>
+    {isError && <LeadReadRetry error={error} busy={isFetching} onRetry={() => { void refetchFolders(); }} message="Folders couldn’t load. Please retry." />}
     <View style={styles.barRow}>
       <ScrollView
         horizontal
@@ -92,6 +96,8 @@ export const LeadFolderBar = ({
         </TouchableOpacity>
         {folders.map((folder: any) => {
           const selected = selectedFolderId === folder._id;
+          const count = selected && Number.isFinite(selectedFolderLeadCount)
+            ? selectedFolderLeadCount : folder.leadCount;
           return (
             <TouchableOpacity
               key={folder._id}
@@ -115,11 +121,7 @@ export const LeadFolderBar = ({
                 style={[styles.chipText, selected && styles.selectedChipText]}
                 numberOfLines={1}
               >
-                {folder.name} (
-                {!folder.isSystem && selected && Number.isFinite(selectedFolderLeadCount)
-                  ? selectedFolderLeadCount
-                  : folder.leadCount}
-                )
+                {folder.name}{Number.isFinite(count) ? ` (${count})` : ""}
               </CustomText>
             </TouchableOpacity>
           );
@@ -132,6 +134,7 @@ export const LeadFolderBar = ({
       >
         <Feather name="folder-plus" size={18} color="#2E67BE" />
       </TouchableOpacity>
+    </View>
     </View>
   );
 };
@@ -146,7 +149,7 @@ export const LeadFoldersModal = ({
 }: any) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
-  const { data: allFolders = [], isLoading } = useLeadFolders(type);
+  const { data: allFolders = [], isLoading, isError, error, isFetching, refetch } = useLeadFolders(type);
   const folders = allFolders.filter((folder: any) => !folder.isSystem);
   const selectedSystemFolder = allFolders.some((folder: any) => folder._id === selectedFolderId && folder.isSystem);
   const [formVisible, setFormVisible] = useState(false);
@@ -277,6 +280,7 @@ export const LeadFoldersModal = ({
             </TouchableOpacity>
           )}
           <ScrollView contentContainerStyle={styles.folderList}>
+            {isError && <LeadReadRetry error={error} busy={isFetching} onRetry={() => { void refetch(); }} message="Folders couldn’t load. Please retry." />}
             {isLoading ? (
               <ActivityIndicator color="#2E67BE" />
             ) : (
@@ -292,9 +296,9 @@ export const LeadFoldersModal = ({
                     <CustomText style={styles.folderName}>
                       {folder.name}
                     </CustomText>
-                    <CustomText style={styles.folderCount}>
+                    {Number.isFinite(folder.leadCount) && <CustomText style={styles.folderCount}>
                       {folder.leadCount} lead(s)
-                    </CustomText>
+                    </CustomText>}
                   </View>
                   {assigning ? (
                     <TouchableOpacity

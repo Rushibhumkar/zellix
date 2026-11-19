@@ -1,6 +1,9 @@
 import { useSelector } from "react-redux";
+import { useIsFocused } from "@react-navigation/native";
 import { selectUser } from "../redux/userSlice";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { retryLeadRead } from "../utils/leadReadRetry";
+import { effectiveLeadLimit, nextLeadPage } from "../utils/leadPagination";
 import {
   assigningUser,
   getLead,
@@ -75,6 +78,7 @@ export const useGetLead = ({
   folderId,
 }) => {
   const { user } = useSelector(selectUser);
+  const focused = useIsFocused();
   // return useQuery({
   //     queryKey: ['getLead'],
   //     queryFn: () => getLead(),
@@ -105,9 +109,12 @@ export const useGetLead = ({
       folderId,
       folderId === "todays-tasks" ? user?._id : undefined,
     ],
-    refetchInterval: folderId === "todays-tasks" ? 60_000 : false,
-    queryFn: async ({ pageParam = 1 }) =>
+    enabled: focused && Boolean(user?._id),
+    refetchInterval: focused && folderId === "todays-tasks" ? 60_000 : false,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1, signal }) =>
       getLead({
+        signal,
         search,
         pageParam,
         type,
@@ -129,11 +136,8 @@ export const useGetLead = ({
         teamId,
         folderId,
       }),
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage?.pagination?.hasNext
-        ? parseInt(lastPage?.pagination?.currentPage) + 1
-        : undefined;
-    },
+    getNextPageParam: nextLeadPage,
+    retry: retryLeadRead,
   });
   // console.log("🟡 useGetLead res.data.pages:", res?.data?.pages);
   // console.log("🟠 FIRST PAGE KEYS:", Object.keys(res?.data?.pages?.[0] ?? {}));
@@ -144,7 +148,7 @@ export const useGetLead = ({
   }
   const totalCount = res?.data?.pages?.[0]?.pagination?.totalItem ?? null;
 
-  return { ...res, data, totalCount };
+  return { ...res, data, totalCount, effectiveLimit: effectiveLeadLimit(res.data?.pages?.[0]) };
 };
 export const useGetLeadInAddMeeting = ({
   search,
@@ -181,11 +185,11 @@ export const useGetLeadInAddMeeting = ({
   return { ...res, data };
 };
 
-export const useGetLeadById = (id) => {
+export const useGetLeadById = (id, summary = false) => {
   const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getLeadDetailById", id, user?._id],
-    queryFn: () => getLeadDetailById(id),
+    queryKey: ["getLeadDetailById", id, user?._id, summary],
+    queryFn: () => getLeadDetailById(id, summary),
     staleTime: 0,
     refetchOnMount: "always",
     enabled: !!id,
@@ -322,7 +326,11 @@ export const useGetBooking = ({
   paymentMode,
   token,
   businessStatus,
+  asOf = "",
+  teamId = "",
+  reportMetric = "",
 }) => {
+  const { user } = useSelector(selectUser);
   // return useQuery({
   //     queryKey: ['getLead'],
   //     queryFn: () => getLead(),
@@ -330,8 +338,10 @@ export const useGetBooking = ({
   //     // enabled: !!type
   // })
   let res = useInfiniteQuery({
+    initialPageParam: 1,
     queryKey: [
       "getBooking",
+      user?._id,
       search,
       limit,
       status,
@@ -356,6 +366,9 @@ export const useGetBooking = ({
       paymentMode,
       token,
       businessStatus,
+      asOf,
+      teamId,
+      reportMetric,
     ],
     queryFn: ({ pageParam = 1 }) =>
       getBooking({
@@ -384,6 +397,9 @@ export const useGetBooking = ({
         paymentMode,
         token,
         businessStatus,
+      asOf,
+      teamId,
+      reportMetric,
       }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.hasNext
@@ -400,8 +416,9 @@ export const useGetBooking = ({
 };
 // getBookingById
 export const useGetBookingById = (id) => {
+  const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getBookingById", id],
+    queryKey: ["getBookingById", id, user?._id],
     queryFn: () => getBookingById(id),
     staleTime: Infinity,
     enabled: !!id,
@@ -410,8 +427,10 @@ export const useGetBookingById = (id) => {
 };
 
 export const useGetMeetingForBooking = ({ search }) => {
+  const { user } = useSelector(selectUser);
   let res = useInfiniteQuery({
-    queryKey: ["getMeetingForBooking", search],
+    queryKey: ["getMeetingForBooking", search, user?._id],
+    initialPageParam: 1,
     queryFn: ({ pageParam = 1 }) =>
       getMeetingForBooking({
         search,
