@@ -14,8 +14,6 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
-import CheckInOut from "../DashboardHRM/CheckInOut";
-import { UserRole } from "../../utils/roles";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import RowAttendance from "../../myComponentsHRM/Row/RowAttendance";
 import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
@@ -37,7 +35,6 @@ import {
 import { routeAttendance } from "../../utils/routesHRM";
 import { queryKeyHRM } from "../../utils/queryKeys";
 import { useAppToast } from "../../components/AppToast";
-import AddSiteVisitLocation from "./AddSiteVisitLocation";
 import AttendanceAutoApproval, {
   attendanceSettingsKey,
 } from "./AttendanceAutoApproval";
@@ -47,9 +44,6 @@ const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const isAgent = user?.role === "agent";
-  const canAddSite = user?.role === UserRole.sup_admin ||
-    user?.role === UserRole.sub_admin || user?.role === UserRole.office_admin;
-  const canPunch = Boolean(user?.role) && !canAddSite;
   const showAttendanceSummary = canViewAttendanceSummary(
     permission,
     user?.role,
@@ -73,8 +67,6 @@ const AllAttendance = () => {
     startDate: "",
     endDate: "",
   });
-  const [punchLoadFailed, setPunchLoadFailed] = useState(false);
-  const [punchRetryVersion, setPunchRetryVersion] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const approvalLock = useRef(false);
   const updateSearch = useCallback(
@@ -197,7 +189,7 @@ const AllAttendance = () => {
       { item },
     );
   };
-  const showLoadError = isError || (canPunch && punchLoadFailed);
+  const showLoadError = isError;
 
   return (
     <ContainerHRM
@@ -228,19 +220,14 @@ const AllAttendance = () => {
           onClose={search.closeSearch}
         />
       )}
-      {canPunch && <CheckInOut key={user?._id} showInitialLoader={!isLoading && !showLoadError} onLoadError={setPunchLoadFailed} retryVersion={punchRetryVersion} />}
       {showLoadError && (
         <View style={styles.errorCard} accessibilityLiveRegion="polite">
           <View style={styles.errorCopy}>
-            <Text style={styles.errorTitle}>{isError ? "Attendance couldn’t load" : "Attendance actions couldn’t refresh"}</Text>
+            <Text style={styles.errorTitle}>Attendance couldn’t load</Text>
             <Text style={styles.errorDescription}>Check your connection and try again.</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Retry loading attendance" disabled={isFetching}
             style={[styles.retry, isFetching && { opacity: 0.6 }]} onPress={() => {
-              if (canPunch && punchLoadFailed) {
-                setPunchLoadFailed(false);
-                setPunchRetryVersion((version) => version + 1);
-              }
               if (isError) void refetch();
             }}>
             {isFetching ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.approveText}>Retry</Text>}
@@ -255,7 +242,6 @@ const AllAttendance = () => {
         ListHeaderComponent={
           <>
             <AttendanceAutoApproval role={user?.role} userId={user?._id} />
-            {canAddSite && <AddSiteVisitLocation />}
             {showAttendanceSummary && (
               <>
                 <CircularBarChart type="attendanceChart" />

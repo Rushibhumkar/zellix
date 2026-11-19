@@ -55,6 +55,7 @@ import BookingStatusScroller from "../../components/Dashboard/BookingStatusScrol
 import FollowUpsCard from "../../components/Dashboard/FollowUpsCard";
 import { myConsole } from "../../hooks/useConsole";
 import BookingCard from "../../components/Dashboard/BookingCard";
+import AttendancePunchActions from "../../components/Dashboard/AttendancePunchActions";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export const socket = io(baseURL, {
@@ -601,6 +602,8 @@ const Dashboard = () => {
             >
               <Card item={dashboardCount} loading={loadingDashboardCount} />
             </View>
+
+            <AttendancePunchActions refreshing={refreshing} />
 
             <FollowUpsCard onRefresh={refreshing} />
 

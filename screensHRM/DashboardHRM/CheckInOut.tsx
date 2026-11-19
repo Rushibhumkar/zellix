@@ -364,7 +364,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 12, marginBottom: 4 },
+  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 0, marginBottom: 16 },
   actionRow: { flexDirection: "row", alignItems: "stretch", gap: 6 },
   actionButton: {
     flex: 1,
