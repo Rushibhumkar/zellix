@@ -239,6 +239,7 @@ const BottomTabs = () => {
         component={LeadsNavigator}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
+            e.preventDefault();
             navigation.navigate("allLead2", {
               screen: "AllLeads",
             });
