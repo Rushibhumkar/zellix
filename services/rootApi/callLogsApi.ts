@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../authApi/axiosInstance";
 import { myConsole } from "../../hooks/useConsole";
+import type { LeadRequestTiming } from "../../utils/leadSavePerformance";
 
 /* ------------------ CREATE CALL LOG ------------------ */
 
@@ -10,11 +11,11 @@ export interface TCreateCallLog {
   type: "not_connected" | "positive" | "negative" | "connected";
   initiatedAt: string; // ISO string
   finishedAt: string; // ISO string
-  leadStatusAfterCall: string;
+  leadStatusAfterCall?: string;
 }
 
-export const createCallLog = (data: TCreateCallLog) =>
-  axiosInstance.post("/api/call-logs/", data).then((res) => res?.data);
+export const createCallLog = (data: TCreateCallLog, timing?: LeadRequestTiming) =>
+  axiosInstance.post("/api/call-logs/", data, { leadSaveTiming: timing }).then((res) => res?.data);
 
 /* ------------------ GET CALL LOGS (PAGINATED) ------------------ */
 

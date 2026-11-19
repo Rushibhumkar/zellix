@@ -13,6 +13,7 @@ import { useCallUiGuard } from "../../hooks/useCallUiGuard";
 import { useAndroidCallModalReady } from "../../hooks/useAndroidCallModalReady";
 import {
   ActivityIndicator,
+  Keyboard,
   RefreshControl,
   ScrollView,
   Text,
@@ -32,6 +33,8 @@ import Header from "../../components/Header";
 import { myConsole } from "../../hooks/useConsole";
 import { useGetLeadById } from "../../hooks/useCRMgetQuerry";
 import useModal from "../../hooks/useModal";
+import { useLeadHistory } from "../../hooks/useLeadHistory";
+import { getSubmissionProject } from "../../utils/leadSubmissionProject";
 import Container from "../../myComponents/Container/Container";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
@@ -86,7 +89,17 @@ import {
   headerIconWrapperStyle,
   shadowPrimaryColor,
 } from "../../const/globalStyle";
-import { useAppToast } from "../../components/AppToast";
+import { AppToastHost, useAppToast } from "../../components/AppToast";
+import type { AppToastHostHandle } from "../../components/AppToast";
+import {
+  refreshLeadSaveViews,
+  saveLeadInteraction,
+} from "../../utils/leadSaveFlow";
+import type { LeadSaveProgress } from "../../utils/leadSaveFlow";
+import {
+  newLeadInteractionId,
+  recordLeadSaveTiming,
+} from "../../utils/leadSavePerformance";
 import { initiateCall } from "../../services/rootApi/callApi";
 import AssignmentRow from "./component/AssignmentRow";
 import ActionButton from "./component/ActionButton";
@@ -207,7 +220,19 @@ const LeadsDetails = () => {
 
   const isCallTrackingRef = useRef(false);
 
-  const isCallLogSentRef = useRef(false);
+  const callLogWrites = useRef(new Map<string, Promise<any>>());
+  const statusSubmissionBusy = useRef(false);
+  const statusSaveProgress = useRef<LeadSaveProgress>({});
+  const statusToastHost = useRef<AppToastHostHandle>(null);
+  const closeStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const screenMounted = useRef(true);
+  useEffect(() => {
+    screenMounted.current = true;
+    return () => {
+      screenMounted.current = false;
+      if (closeStatusTimer.current) clearTimeout(closeStatusTimer.current);
+    };
+  }, []);
 
   const callStartTimeRef = useRef<number | null>(null);
 
@@ -269,7 +294,37 @@ const LeadsDetails = () => {
     isError: isLeadDetailError,
     error: leadDetailError,
     refetch: refetchLeadDetail,
-  } = useGetLeadById(params?.item?._id);
+  } = useGetLeadById(params?.item?._id, true);
+  const notesHistory = useLeadHistory(
+    details?._id,
+    user?._id,
+    "notes",
+    activeTab === 2,
+    detail?.updatedAt,
+  );
+  const [focusedNote, setFocusedNote] = useState<any>(null);
+  useEffect(() => {
+    setFocusedNote(null);
+  }, [details?._id]);
+  const noteItems =
+    focusedNote &&
+    !notesHistory.items.some((note) => note._id === focusedNote._id)
+      ? [focusedNote, ...notesHistory.items]
+      : notesHistory.items;
+  const historyFooter = (history: ReturnType<typeof useLeadHistory>) => (
+    <View style={{ paddingVertical: 12, alignItems: "center" }}>
+      {history.isPending || history.isFetchingNextPage ? (
+        <ActivityIndicator color="#2E67BE" />
+      ) : history.isError ? (
+        <CustomBtn
+          title="Retry loading history"
+          onPress={() => history.refetch()}
+        />
+      ) : history.hasNextPage ? (
+        <CustomBtn title="Load more" onPress={() => history.fetchNextPage()} />
+      ) : null}
+    </View>
+  );
 
   const { data: appSettingsData } = useQuery({
     queryKey: ["getAppSettings"],
@@ -297,10 +352,16 @@ const LeadsDetails = () => {
     initiatedAt: number | null;
     finishedAt: number | null;
   } | null>(null);
+  const callMetaRef = useRef(callMeta);
+  callMetaRef.current = callMeta;
 
   //
   const [isLoading, setIsLoading] = useState(false);
-  const [fields, setFields] = useState({});
+  const [fields, setFields] = useState({
+    comments: "",
+    status: "",
+    statusInfo: "",
+  });
   const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
   const [showChangeStatusPopup, setShowChangeStatusPopup] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
@@ -310,12 +371,18 @@ const LeadsDetails = () => {
     isStatusPopupFromCall && isShortCallDuration(callDurationInSeconds);
 
   useEffect(() => {
+    if (showChangeStatusPopup) return;
     setFields({
       comments: detail?.comments ?? "",
       status: detail?.status ?? "",
       statusInfo: detail?.statusInfo ?? "",
     });
-  }, [detail]);
+  }, [detail, showChangeStatusPopup]);
+
+  useEffect(() => {
+    if (!showChangeStatusPopup && !statusSubmissionBusy.current)
+      statusSaveProgress.current = {};
+  }, [showChangeStatusPopup]);
 
   const [isMailAvail, setIsMailAvail] = useState(false);
 
@@ -328,7 +395,10 @@ const LeadsDetails = () => {
 
   const [noteUpdate, setNoteUpdate] = useState<any>(null);
 
-  const [tdForFUT, setTdForFUT] = useState({
+  const [tdForFUT, setTdForFUT] = useState<{
+    date: string | null;
+    time: string | null;
+  }>({
     date: null,
     time: null,
   });
@@ -530,7 +600,11 @@ const LeadsDetails = () => {
       );
       // Pass completed timestamps directly: React state is asynchronous, and
       // this path intentionally never mounts the status form.
-      void hitCreateCallLog(undefined, { initiatedAt, finishedAt: endTime }, false);
+      void hitCreateCallLog(
+        undefined,
+        { initiatedAt, finishedAt: endTime },
+        false,
+      );
       return;
     }
 
@@ -710,8 +784,6 @@ const LeadsDetails = () => {
       // App moved to background AFTER user clicked CALL
       if (isDialerOpenedRef.current && nextAppState === "background") {
         // console.log("✅ CALL START DETECTED");
-
-        isCallLogSentRef.current = false;
 
         const startTime = Date.now() - TEST_CALL_INITIATED_AT_OFFSET_MS;
 
@@ -903,31 +975,40 @@ const LeadsDetails = () => {
     statusAfterCall?: string,
     completedCall = callMeta,
     showSuccessToast = true,
+    options: {
+      interactionId?: string;
+      deferRefresh?: boolean;
+      propagateError?: boolean;
+    } = {},
   ) => {
-    console.log("hitcreatecalllogs");
-
-    // ✅ STOP duplicate calls
-    if (isCallLogSentRef.current) return;
-
+    const interactionId = options.interactionId || newLeadInteractionId();
     try {
-      if (!completedCall?.initiatedAt || !completedCall?.finishedAt) return;
-
+      if (!completedCall?.initiatedAt || !completedCall?.finishedAt) {
+        recordLeadSaveTiming({
+          interactionId,
+          stage: "call_write",
+          durationMs: 0,
+          outcome: "skipped",
+        });
+        return;
+      }
       const durationInSec = Math.floor(
         (completedCall.finishedAt - completedCall.initiatedAt) / 1000,
       );
-
-      if (isIgnoredCallDuration(durationInSec)) {
-        setCallMeta(null);
-        setShowChangeStatusPopup(false);
-        setIsStatusPopupFromCall(false);
+      if (
+        isIgnoredCallDuration(durationInSec) ||
+        durationInSec > DURATION_THRESHOLD_SEC
+      ) {
+        if (screenMounted.current && completedCall === callMetaRef.current)
+          setCallMeta(null);
+        recordLeadSaveTiming({
+          interactionId,
+          stage: "call_write",
+          durationMs: 0,
+          outcome: "skipped",
+        });
         return;
       }
-
-      if (durationInSec > DURATION_THRESHOLD_SEC) {
-        setCallMeta(null);
-        return;
-      }
-
       let callType: "not_connected" | "positive" | "negative" | "connected" =
         "connected";
 
@@ -993,52 +1074,53 @@ const LeadsDetails = () => {
         callType = "not_connected";
       }
 
-      isCallLogSentRef.current = true; // ✅ lock
-
-      const res = await createCallLog({
-        userId: user?._id,
-        leadId: detail?._id,
-        type: callType,
-        initiatedAt: new Date(completedCall.initiatedAt).toISOString(),
-        finishedAt: new Date(completedCall.finishedAt).toISOString(),
-        ...(statusAfterCall && { leadStatusAfterCall: statusAfterCall }),
-      });
-
-      // myConsole("ressssssss", res);
-
-      if (res?.success) {
-        if (showSuccessToast) {
-          toast.success(res?.message || "Call log created successfully");
-        }
-
-        queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
+      const leadId = detail?._id;
+      const callKey = JSON.stringify([
+        user?._id,
+        leadId,
+        completedCall.initiatedAt,
+        completedCall.finishedAt,
+      ]);
+      let pending = callLogWrites.current.get(callKey);
+      if (!pending) {
+        pending = createCallLog(
+          {
+            userId: user?._id,
+            leadId,
+            type: callType,
+            initiatedAt: new Date(completedCall.initiatedAt).toISOString(),
+            finishedAt: new Date(completedCall.finishedAt).toISOString(),
+            ...(statusAfterCall && { leadStatusAfterCall: statusAfterCall }),
+          },
+          { interactionId, stage: "call_write", deferActivityRefresh: true },
+        ).then((response) => {
+          if (!response?.success)
+            throw new Error(response?.message || "Failed to save call log.");
+          return response;
         });
-
-        queryClient.invalidateQueries({
-          queryKey: [queryKeyCRM.getLead],
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ["getLeadCallReports"],
-        });
-
-        refetchLeadDetail();
-      } else {
-        toast.error(res?.message || "Failed to create call log");
+        callLogWrites.current.set(callKey, pending);
       }
-
-      // A background short-call save must not clear a newer call's state.
-      if (completedCall === callMeta) setCallMeta(null);
-    } catch (err: any) {
-      console.log("❌ createCallLog error", err);
-
-      const errMsg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Something went wrong while creating call log";
-
-      toast.error(errMsg);
+      let result;
+      try {
+        result = await pending;
+      } catch (error) {
+        callLogWrites.current.delete(callKey);
+        throw error;
+      }
+      if (screenMounted.current) {
+        if (showSuccessToast)
+          toast.success(result.message || "Call log created successfully.");
+        if (completedCall === callMetaRef.current) setCallMeta(null);
+      }
+      if (!options.deferRefresh)
+        void refreshLeadSaveViews(queryClient, leadId, interactionId);
+    } catch (error: any) {
+      if (options.propagateError) throw error;
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Could not save the call log.",
+      );
     }
   };
 
@@ -1056,16 +1138,20 @@ const LeadsDetails = () => {
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
 
   const closeAllModalsSafely = () => {
-    // ✅ Pehle inner modal close karo
-    FUTModal.closeModal();
-
-    // ✅ Thodi delay dekar outer modal close karo — taaki dono
-    // native Modals ek saath dismiss na ho (Android freeze fix)
-    setTimeout(() => {
+    if (closeStatusTimer.current) clearTimeout(closeStatusTimer.current);
+    const closeOuter = () => {
+      closeStatusTimer.current = null;
       setShowActionsMenu(false);
       setShowChangeStatusPopup(false);
       setIsStatusPopupFromCall(false);
-    }, 150);
+    };
+    if (FUTModal.visible) {
+      FUTModal.closeModal();
+      // Dismiss nested native modals in order on Android.
+      closeStatusTimer.current = setTimeout(closeOuter, 150);
+    } else {
+      closeOuter();
+    }
   };
 
   const handleSubmit = async () => {
@@ -1114,9 +1200,10 @@ const LeadsDetails = () => {
   };
 
   const handleChangeStatusSubmit = async () => {
+    if (statusSubmissionBusy.current) return;
     try {
       if (!fields?.status) {
-        toast.error("Please select status.");
+        toast.error("Please select status.", {}, statusToastHost.current);
         return;
       }
 
@@ -1126,6 +1213,8 @@ const LeadsDetails = () => {
       ) {
         toast.error(
           "Positive outcomes are available after a meaningful conversation. Please choose the outcome that best matches this brief interaction.",
+          {},
+          statusToastHost.current,
         );
         return;
       }
@@ -1135,7 +1224,11 @@ const LeadsDetails = () => {
           NOTE_REQUIRED_STATUSES.includes(fields.status) &&
           !formik.values.note?.trim()
         ) {
-          toast.error("Note is required for this status.");
+          toast.error(
+            "Note is required for this status.",
+            {},
+            statusToastHost.current,
+          );
           return;
         }
 
@@ -1144,13 +1237,20 @@ const LeadsDetails = () => {
           FOLLOWUP_REQUIRED_STATUSES.includes(fields.status) &&
           (!tdForFUT?.date || !tdForFUT?.time)
         ) {
-          toast.error("Follow up time is required for this status.");
+          toast.error(
+            "Follow up time is required for this status.",
+            {},
+            statusToastHost.current,
+          );
           return;
         }
       }
 
+      statusSubmissionBusy.current = true;
       setStatusLoading(true);
-
+      Keyboard.dismiss();
+      const leadId = detail?._id;
+      const completedCall = callMeta;
       const payload = {
         status: fields.status,
         ...(fields.statusInfo && { statusInfo: fields.statusInfo }),
@@ -1160,70 +1260,72 @@ const LeadsDetails = () => {
             followUpTime: combineDateAndTime(tdForFUT.date, tdForFUT.time),
           }),
       };
-      // myConsole("payloadddd", payload);
-      const res = await leadStatusUpdate({
-        id: detail?._id,
-        data: payload,
+      await saveLeadInteraction({
+        progress: statusSaveProgress.current,
+        fingerprint: JSON.stringify([
+          leadId,
+          payload,
+          completedCall?.initiatedAt,
+          completedCall?.finishedAt,
+        ]),
+        status: fields.status,
+        writeStatus: (interactionId) =>
+          leadStatusUpdate({
+            id: leadId,
+            data: payload,
+            timing: {
+              interactionId,
+              stage: "status_write",
+              deferActivityRefresh: true,
+            },
+          }),
+        writeCall: (interactionId) =>
+          hitCreateCallLog(fields.status, completedCall, false, {
+            interactionId,
+            deferRefresh: true,
+            propagateError: true,
+          }),
+        onSaved: (response) => {
+          if (!screenMounted.current) return;
+          closeAllModalsSafely();
+          setTdForFUT({ date: null, time: null });
+          formik.resetForm();
+          setFields((prev) => ({ ...prev, statusInfo: "" }));
+          toast.success(
+            typeof response === "string"
+              ? response
+              : response?.message || "Status updated successfully.",
+          );
+          if (
+            fields.status === "meeting_scheduled" ||
+            fields.status === "meeting_done"
+          ) {
+            setTimeout(() => {
+              if (!screenMounted.current) return;
+              setCelebrationStatus(fields.status);
+              setShowCelebration(true);
+            }, 250);
+          }
+        },
+        refresh: (interactionId) =>
+          refreshLeadSaveViews(queryClient, leadId, interactionId),
       });
-      // myConsole("ressssss", res);
-      setTdForFUT({ date: null, time: null });
-      formik.resetForm();
-      setFields((prev) => ({
-        ...prev,
-        statusInfo: "",
-      }));
-
-      toast.success(res?.data?.message || "Status updated successfully");
-
-      const celebrationStatusAfterUpdate =
-        fields.status === "meeting_scheduled" ||
-        fields.status === "meeting_done"
-          ? fields.status
-          : null;
-
-      await hitCreateCallLog(fields.status);
-      queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLeadDetailById, detail?._id],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLead],
-      });
-
-      await queryClient.refetchQueries({ queryKey: ["all-reminders"] });
-
-      closeAllModalsSafely();
-
-      // The celebration modal is a native Modal too. Open it only after the
-      // status modal has completely dismissed, otherwise Android can freeze.
-      if (celebrationStatusAfterUpdate) {
-        setTimeout(() => {
-          setCelebrationStatus(celebrationStatusAfterUpdate);
-          setShowCelebration(true);
-        }, 250);
-      }
-      setStatusLoading(false);
-    } catch (err: any) {
-      myConsole("errrrrr", err);
-      toast.error(err?.response?.data?.message || "Failed to update status");
-      closeAllModalsSafely();
-      setStatusLoading(false);
-      setTdForFUT({ date: null, time: null });
-      formik.resetForm();
-      setFields((prev) => ({
-        ...prev,
-        statusInfo: "",
-      }));
+    } catch (error: any) {
+      const body = error?.response?.data;
+      const message =
+        (typeof body === "string" ? body : body?.message) ||
+        error?.message ||
+        "Could not save. Please try again.";
+      toast.error(
+        statusSaveProgress.current.statusSaved
+          ? `Status saved. Call log failed. Tap Submit to retry. ${message}`
+          : message,
+        {},
+        statusToastHost.current,
+      );
     } finally {
-      closeAllModalsSafely();
-      setStatusLoading(false);
-      setIsStatusPopupFromCall(false);
-      setTdForFUT({ date: null, time: null });
-      formik.resetForm();
-      setFields((prev) => ({
-        ...prev,
-        statusInfo: "",
-      }));
+      statusSubmissionBusy.current = false;
+      if (screenMounted.current) setStatusLoading(false);
     }
   };
 
@@ -1312,8 +1414,8 @@ const LeadsDetails = () => {
   const lastActivityTime = detail?.updatedAt || detail?.createdAt;
 
   const totalCalls = detail?.callCount || 0;
-  const totalNotes = detail?.notes?.length || 0;
-  const totalStatusChanges = detail?.statusHistory?.length || 0;
+  const totalNotes = detail?.historyCounts?.notes ?? 0;
+  const totalStatusChanges = detail?.historyCounts?.statusChanges ?? 0;
 
   const filteredLeadStatus = inLeadStatus
     .filter(
@@ -1372,14 +1474,24 @@ const LeadsDetails = () => {
     }
   }, [showChangeStatusPopup, endCallUi]);
 
-  useEffect(() => {
-    return () => {
-      // ✅ app unmount / kill
-      if (callMeta?.initiatedAt && callMeta?.finishedAt) {
-        hitCreateCallLog();
-      }
-    };
-  }, [callMeta]);
+  const pendingCallOnUnmount = useRef<() => void>(() => {});
+  pendingCallOnUnmount.current = () => {
+    if (
+      !statusSubmissionBusy.current &&
+      callMeta?.initiatedAt &&
+      callMeta?.finishedAt
+    ) {
+      void hitCreateCallLog(
+        statusSaveProgress.current.statusSaved
+          ? statusSaveProgress.current.status
+          : undefined,
+        callMeta,
+        false,
+      );
+    }
+  };
+  useEffect(() => () => pendingCallOnUnmount.current(), []);
+
   const hasValidAdditionalQuestionsV2 =
     Array.isArray(detail?.additionalQuestionsV2) &&
     detail.additionalQuestionsV2.some(
@@ -1685,19 +1797,27 @@ const LeadsDetails = () => {
           {callModalReady && showChangeStatusPopup && (
             <ModalWithBlur
               visible={showChangeStatusPopup}
+              overlay={<AppToastHost ref={statusToastHost} />}
               onClose={
                 // ✅ canShowCancelBtn sirf call ke baad apply hoga
-                isStatusPopupFromCall && !canShowCancelBtn
+                statusLoading || (isStatusPopupFromCall && !canShowCancelBtn)
                   ? undefined
                   : () => {
                       setShowChangeStatusPopup(false);
-                      hitCreateCallLog();
+                      void hitCreateCallLog(
+                        statusSaveProgress.current.statusSaved
+                          ? statusSaveProgress.current.status
+                          : undefined,
+                      );
                       FUTModal.closeModal();
                     }
               }
               minHeight={"55%"}
             >
-              <View style={styles.modalContent}>
+              <View
+                style={styles.modalContent}
+                pointerEvents={statusLoading ? "none" : "auto"}
+              >
                 <CustomText style={styles.title}>Change Status</CustomText>
 
                 {/* <TouchableOpacity
@@ -2160,8 +2280,12 @@ const LeadsDetails = () => {
                   icon="user"
                   label="Assigned By"
                   value={
-                    detail?.assignedUsers?.[detail.assignedUsers.length - 1]
-                      ?.assignByName || "-"
+                    [
+                      detail?.latestAssignment?.assignedBy?.name,
+                      detail?.latestAssignment?.assignedBy?.lastName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || "-"
                   }
                 />
                 <AssignmentRow
@@ -2210,6 +2334,16 @@ const LeadsDetails = () => {
                           // },
                         ]}
                       >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontWeight: "600",
+                            color: "#475569",
+                            marginBottom: 8,
+                          }}
+                        >
+                          {getSubmissionProject(detail, item)}
+                        </Text>
                         {!!(
                           item?.createdAt ||
                           item?.submittedAt ||
@@ -2335,26 +2469,6 @@ const LeadsDetails = () => {
                 />
               </View>
 
-              {detail?.callLogs?.length > 0 && (
-                <MainTitle
-                  title="Call logs"
-                  containerStyle={{ marginBottom: 20 }}
-                />
-              )}
-              {detail?.callLogs?.length > 0 &&
-                detail?.callLogs?.map((el, i) => {
-                  const duration = moment.duration(el?.duration, "seconds");
-                  return (
-                    <RowItem
-                      key={el?._id || i}
-                      title={`Call Info ${i + 1}`}
-                      value={`${duration.hours()}:${duration.minutes()}:${duration.seconds()} , ${moment(
-                        el?.callTime,
-                      ).format("MM-DD-YYYY HH:mm")}`}
-                      containerStyle={{ marginBottom: 10 }}
-                    />
-                  );
-                })}
             </View>
           </ScrollView>
         </Container>
@@ -2403,20 +2517,23 @@ const LeadsDetails = () => {
               />
             }
           >
-            {/* notes */}
-            <NotesCard
-              focusNoteId={followupNoteId}
-              noteArr={detail?.notes}
-              onEdit={(v) => {
-                setNoteUpdate(v);
-                modalNote.openModal();
-              }}
-              onDelete={(i) => {
-                myConsole("iddd", i);
-                deleteNotes(i);
-              }}
-              isLoadingDelete={isLoadingDelete}
-            />
+            {historyFooter(notesHistory)}
+            {((!notesHistory.isPending && !notesHistory.isError) ||
+              noteItems.length > 0) && (
+              <NotesCard
+                focusNoteId={followupNoteId}
+                noteArr={noteItems}
+                onEdit={(v) => {
+                  setNoteUpdate(v);
+                  modalNote.openModal();
+                }}
+                onDelete={(i) => {
+                  myConsole("iddd", i);
+                  deleteNotes(i);
+                }}
+                isLoadingDelete={isLoadingDelete}
+              />
+            )}
           </ScrollView>
           <TouchableOpacity
             onPress={() => {
@@ -2475,21 +2592,40 @@ const LeadsDetails = () => {
         <Container>
           <Header title="Lead Details" onBack={handleLeadDetailsBack} />
           <TabButton activeTab={activeTab} setActiveTab={setActiveTab} />
-          <LeadFollowups key={`${user?._id}:${detail?._id || details?._id}`} leadId={detail?._id || details?._id} onOpenUser={
-            user?.role === roleEnum.sup_admin || user?.role === roleEnum.sub_admin
-              ? (userId) => navigate(routeUser.UserDetailHRMAgent, { item: { _id: userId } })
-              : undefined
-          } onOpen={async (target) => {
-            if (target.type === "note") {
-              const response = await axiosInstance.get(`/api/lead/getLeadById/${detail?._id || details?._id}`);
-              const lead = response.data;
-              if (!lead?.notes?.some((note: any) => String(note._id) === target.id)) throw new Error("Note is no longer available");
-              await refetchLeadDetail();
-              setFollowupNoteId(target.id); setActiveTab(2);
-            } else if (target.type === "meeting") {
-              navigate(routeMeeting.MeetingsNavigator, { screen: routeMeeting.MeetingDetails, params: { item: { _id: target.id }, entryId: target.entryId } });
+          <LeadFollowups
+            key={`${user?._id}:${detail?._id || details?._id}`}
+            leadId={detail?._id || details?._id}
+            onOpenUser={
+              user?.role === roleEnum.sup_admin ||
+              user?.role === roleEnum.sub_admin
+                ? (userId) =>
+                    navigate(routeUser.UserDetailHRMAgent, {
+                      item: { _id: userId },
+                    })
+                : undefined
             }
-          }} />
+            onOpen={async (target) => {
+              if (target.type === "note") {
+                const response = await axiosInstance.get(
+                  `/api/lead/${detail?._id || details?._id}/history/notes`,
+                  { params: { entryId: target.id } },
+                );
+                const note = response.data?.data?.find(
+                  (item: any) => String(item._id) === target.id,
+                );
+                if (!note) throw new Error("Note is no longer available");
+                setFocusedNote(note);
+                await refetchLeadDetail();
+                setFollowupNoteId(target.id);
+                setActiveTab(2);
+              } else if (target.type === "meeting") {
+                navigate(routeMeeting.MeetingsNavigator, {
+                  screen: routeMeeting.MeetingDetails,
+                  params: { item: { _id: target.id }, entryId: target.entryId },
+                });
+              }
+            }}
+          />
         </Container>
       )}
 

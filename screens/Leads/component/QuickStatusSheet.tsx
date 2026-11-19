@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, TouchableOpacity, ActivityIndicator, Keyboard } from "react-native";
 import moment from "moment";
 import { useQueryClient } from "@tanstack/react-query";
 import ModalWithBlur from "../../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
@@ -11,14 +11,16 @@ import CustomText from "../../../myComponents/CustomText/CustomText";
 import MainTitle from "../../../myComponents/MainTitle/MainTitle";
 import DatePickerExpo from "../../../myComponents/DatePickerExpo/DatePickerExpo";
 import useModal from "../../../hooks/useModal";
-import { useAppToast } from "../../../components/AppToast";
+import { AppToastHost, useAppToast } from "../../../components/AppToast";
+import type { AppToastHostHandle } from "../../../components/AppToast";
+import { newLeadInteractionId } from "../../../utils/leadSavePerformance";
+import { refreshLeadSaveViews } from "../../../utils/leadSaveFlow";
 import { leadStatusUpdate } from "../../../services/rootApi/leadApi";
 import {
   FOLLOWUP_REQUIRED_STATUSES,
   inLeadStatus,
   NOTE_REQUIRED_STATUSES,
 } from "../../../utils/data";
-import { queryKeyCRM } from "../../../utils/queryKeys";
 import { color } from "../../../const/color";
 
 interface TQuickStatusSheet {
@@ -72,6 +74,8 @@ const QuickStatusSheet = ({
 }: TQuickStatusSheet) => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
+  const submitting = useRef(false);
+  const toastHost = useRef<AppToastHostHandle>(null);
   const FUTModal = useModal();
 
   const [status, setStatus] = useState(initialStatus || "");
@@ -98,27 +102,30 @@ const QuickStatusSheet = ({
   };
 
   const handleSubmit = async () => {
+    if (submitting.current) return;
     if (!status) {
-      toast.error("Please select status.");
+      toast.error("Please select status.", {}, toastHost.current);
       return;
     }
 
     if (selectLeadType !== "calling_data") {
       if (NOTE_REQUIRED_STATUSES.includes(status) && !note.trim()) {
-        toast.error("Note is required for this status.");
+        toast.error("Note is required for this status.", {}, toastHost.current);
         return;
       }
       if (
         FOLLOWUP_REQUIRED_STATUSES.includes(status) &&
         (!tdForFUT?.date || !tdForFUT?.time)
       ) {
-        toast.error("Follow up time is required for this status.");
+        toast.error("Follow up time is required for this status.", {}, toastHost.current);
         return;
       }
     }
 
     try {
+      submitting.current = true;
       setSubmitLoading(true);
+      Keyboard.dismiss();
 
       const payload = {
         status,
@@ -129,24 +136,27 @@ const QuickStatusSheet = ({
           }),
       };
 
-      const res = await leadStatusUpdate({ id: leadId, data: payload });
-
-      toast.success(res?.data?.message || "Status updated successfully");
-
-      queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLead] });
-      queryClient.invalidateQueries({ queryKey: ["all-reminders"] });
+      const interactionId = newLeadInteractionId();
+      const res = await leadStatusUpdate({
+        id: leadId, data: payload,
+        timing: { interactionId, stage: "status_write", deferActivityRefresh: true },
+      });
 
       handleClose();
+      toast.success(typeof res === "string" ? res : res?.message || "Status updated successfully");
+      void refreshLeadSaveViews(queryClient, leadId, interactionId);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update status");
+      const body = err?.response?.data;
+      toast.error((typeof body === "string" ? body : body?.message) || "Failed to update status", {}, toastHost.current);
     } finally {
+      submitting.current = false;
       setSubmitLoading(false);
     }
   };
 
   return (
-    <ModalWithBlur visible={visible} onClose={handleClose} minHeight="55%">
-      <View style={{ paddingBottom: 10 }}>
+    <ModalWithBlur visible={visible} overlay={<AppToastHost ref={toastHost} />} onClose={submitLoading ? undefined : handleClose} minHeight="55%">
+      <View style={{ paddingBottom: 10 }} pointerEvents={submitLoading ? "none" : "auto"}>
         <View
           style={{
             flexDirection: "row",
