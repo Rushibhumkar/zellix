@@ -140,7 +140,7 @@ export const getMeetingForBooking = async ({
     pageParam = 1,
 }) => {
     try {
-        const response = await axiosInstance.get(`api/meeting/getMeetingForBooking`, {
+        const response = await axiosInstance.get(`api/booking/source-options`, {
             params: {
                 page: pageParam,
                 search

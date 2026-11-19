@@ -1,3 +1,6 @@
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { setBookingQueryKey } from "../../redux/userSlice";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { BarChart } from "react-native-gifted-charts";
@@ -11,6 +14,16 @@ import { color } from "../../const/color";
 import SlideFadeIn from "../../utils/animations/SlideFadeIn";
 
 const CommissionGraph = ({ isLoading, item }) => {
+  const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
+  const openPeriod = (row) => {
+    if (!row.startDate) return;
+    dispatch(setBookingQueryKey({
+      ...item.filters, startDate: row.startDate, endDate: row.endDate, asOf: row.asOf,
+      status: "approved", businessStatus: "confirm_business",
+    }));
+    navigation.navigate("BookingNavigator");
+  };
   const [chart, setChart] = useState([]);
 
   useEffect(() => {
@@ -19,6 +32,7 @@ const CommissionGraph = ({ isLoading, item }) => {
         value: el?.totalCommission / 100000,
         label: el?.dayOfWeek,
         frontColor: "#177AD5",
+        onPress: () => openPeriod(el),
         topLabelComponent: () => (
           <CustomText style={styles.topLabel}>
             {el?.totalCommission / 100000}
@@ -29,7 +43,7 @@ const CommissionGraph = ({ isLoading, item }) => {
     } else {
       setChart([]);
     }
-  }, [isLoading]);
+  }, [isLoading, item]);
 
   const handleSelect = (type) => {
     let source = item?.[type] || [];
@@ -42,6 +56,7 @@ const CommissionGraph = ({ isLoading, item }) => {
           ? el?.month
           : el?.year,
       frontColor: "#177AD5",
+        onPress: () => openPeriod(el),
       topLabelComponent: () => (
         <CustomText style={styles.topLabel}>
           {el?.totalCommission / 100000}
@@ -58,7 +73,7 @@ const CommissionGraph = ({ isLoading, item }) => {
           {/* ---------- Header ---------- */}
           <View style={styles.headerRow}>
             <SlideFadeIn>
-              <CustomText style={styles.title}>Commission</CustomText>
+              <CustomText style={styles.title}>{item?.revenueMetric === "grossRevenue" ? "Gross Revenue" : "Employee Payouts"}</CustomText>
             </SlideFadeIn>
             <SlideFadeIn>
               <View style={styles.dropdownBox}>

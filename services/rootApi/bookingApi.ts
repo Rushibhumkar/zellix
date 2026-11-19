@@ -39,7 +39,7 @@ export const updateBooking = async ({ id, data, onSuccess }) => {
   }
 };
 
-export const deleteBookings = (data: [string]) => {
+export const deleteBookings = (data: { ids: Array<{ _id: string; expectedVersion: number }>; requestId: string }) => {
   return axiosInstance
     .post("/api/booking/deleteBookingsById", data)
     .then((res) => res);
@@ -65,12 +65,12 @@ export const updateCase = (id: string, data: any) => {
       },
     })
     .then((res) => {
-      popUpConfToast.successMessage(res?.data);
+      popUpConfToast.successMessage(res?.data?.message || "Case file saved.");
       return res?.data;
     })
     .catch((err) => {
       myConsole("errUpdateCaser", err?.response?.data);
-      popUpConfToast.errorMessage("Server error");
+      throw err;
     });
 };
 
@@ -100,6 +100,9 @@ export const getBooking = async ({
   paymentMode,
   token,
   businessStatus,
+  asOf = "",
+  teamId = "",
+  reportMetric = "",
 }) => {
   try {
     const response = await axiosInstance.get("api/booking", {
@@ -130,11 +133,14 @@ export const getBooking = async ({
         ...(paymentMode && { paymentMode }),
         ...(token && { token }),
         ...(businessStatus && { businessStatus }),
+        ...(asOf && { asOf }),
+        ...(teamId && { teamId }),
+        ...(reportMetric && { reportMetric }),
       },
     });
     return response.data;
   } catch (err) {
-    console.log("getBookingErrPag", err);
+    throw err;
   }
 };
 
@@ -145,6 +151,6 @@ export const getBookingById = async (id) => {
     );
     return response.data;
   } catch (err) {
-    console.log("getBookingByIdErrPag", err);
+    throw err;
   }
 };

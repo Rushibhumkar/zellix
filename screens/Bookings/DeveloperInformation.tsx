@@ -52,6 +52,9 @@ function initialValues(data) {
     developer: data?.developer?._id ?? "",
     relationshipManager: data?.relationshipManager ?? "",
     meeting: data?.meeting?._id ?? "",
+    meetingEntryId: data?.meetingEntryId ?? "",
+    appointmentId: data?.appointmentId ?? "",
+    date: data?.date ?? new Date().toISOString(),
     projectName: data?.projectName ?? "",
     unit: data?.unit ?? "",
     areaSQFT: data?.areaSQFT ?? "",
@@ -124,7 +127,7 @@ const DeveloperInformation = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
-  const [isUpdateFrom, setIsUpdateFrom] = useState(!!data);
+  const [isUpdateFrom, setIsUpdateFrom] = useState(Boolean(data?._id && data?.meetingEntryId));
   const {
     values,
     errors,
@@ -133,10 +136,15 @@ const DeveloperInformation = () => {
     handleChange,
     handleSubmit,
     setFieldValue,
+    setFieldError,
   } = useFormik({
     validationSchema: addBookingSchema,
     initialValues: initialValues(data),
     onSubmit: (values) => {
+      if (!values.meetingEntryId) {
+        setFieldError("meeting", "Select an exact conducted appointment.");
+        return;
+      }
       const passData = {
         ...values,
         // paymentProof,
@@ -286,6 +294,12 @@ const DeveloperInformation = () => {
             )}
 
             {/* Unit Information */}
+            <DatePickerExpo
+              title="Booking Date"
+              initialValue={values.date}
+              maximumDate={new Date()}
+              onSelect={(date) => setFieldValue("date", date)}
+            />
             <MainTitle
               title="Unit Information"
               containerStyle={{ marginBottom: 20, marginTop: 15 }}
@@ -297,8 +311,14 @@ const DeveloperInformation = () => {
                 arrOfObj={meetingList || []}
                 keyValueShowInBox="name"
                 keyValueGetOnSelect="_id"
-                onChange={(a) => setFieldValue("meeting", a)}
-                initialValue={values?.meeting}
+                onChange={(entryId) => {
+                  const source = meetingList?.find(item => item._id === entryId);
+                  setFieldValue("meeting", source?.meetingId || "");
+                  setFieldValue("meetingEntryId", source?.meetingEntryId || "");
+                  setFieldValue("appointmentId", source?.appointmentId || "");
+                  setFieldValue("sourceResponsibleUserId", source?.responsibleUserId?._id || source?.responsibleUserId || "");
+                }}
+                initialValue={values?.meetingEntryId}
                 onBlur={handleBlur("meeting")}
                 isSearch
                 mode="modal"

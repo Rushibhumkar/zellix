@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -14,10 +14,13 @@ import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
 import { selectUser, setBookingQueryKey } from "../../redux/userSlice";
+import { bookingCommand, refreshBookingQueries } from "../../utils/bookingWorkflow";
 import { deleteBookings } from "../../services/rootApi/bookingApi";
+import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { color } from "../../const/color";
+import RevenueShareSettings from "./component/RevenueShareSettings";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import NoDataFound from "../../myComponents/NoDataFound/NoDataFound";
 import DeleteModel from "../../myComponents/DeleteModel";
@@ -56,6 +59,7 @@ const AllBookings = () => {
   const { user, bookingQueryKey } = useSelector(selectUser);
   const dispatch = useDispatch();
   const toast = useAppToast();
+  const deleteCommand = useRef({});
   const { pinnedItems, isPinned, togglePin, unpin } = usePinnedItems("booking");
   const [searchValue, setSearchValue] = useState("");
 
@@ -83,6 +87,8 @@ const AllBookings = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
+    isError: loadError,
+    refetch,
   } = useGetBooking({
     search: debouncedSearch,
     businessStatus,
@@ -137,23 +143,24 @@ const AllBookings = () => {
   const handleDeleteBooking = async () => {
     setIsLoading(true);
     try {
-      let res = await deleteBookings(selectedBookings);
+      let res = await deleteBookings(bookingCommand(deleteCommand.current, "archive", { ids: selectedBookings.map(id => { const booking = bookingData.find(item => item._id === id); return { _id: id, expectedVersion: booking?.__v ?? 0 }; }) }));
       // await dispatch(getAllBookingFunc()); //editkaro
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getBooking],
       });
+      refreshBookingQueries(queryClient);
       setSelectedBookings([]);
       toggleModalClose();
       setSnackBar({
         visible: true,
-        text: res?.data,
+        text: res?.data?.message || "Bookings archived.",
         error: false,
       });
     } catch (error) {
       //myConsole("error", error);
       setSnackBar({
         visible: true,
-        text: error?.response?.data,
+        text: error?.response?.data?.message || "Could not archive bookings.",
         error: false,
       });
     } finally {
@@ -375,6 +382,11 @@ const AllBookings = () => {
           contentContainerStyle={{ paddingBottom: 100 }}
           ListHeaderComponent={
             <>
+              <RevenueShareSettings canManage={checkPermission(permission, "Bookings", "update", user?.role)} />
+              {loadError && <View style={{ margin: 12, padding: 16, gap: 12 }}>
+                <CustomText>Could not load bookings. Please try again.</CustomText>
+                <CustomBtn title="Retry" onPress={() => refetch()} />
+              </View>}
               <Animated.View
                 entering={FadeInDown.duration(180)}
                 exiting={FadeOutUp.duration(150)}
@@ -413,7 +425,7 @@ const AllBookings = () => {
           ListEmptyComponent={
             loading ? (
               <SkeletonLoadingBooking />
-            ) : (
+            ) : loadError ? null : (
               <NoDataFound style={{ marginTop: sizes.height / 5 }} showTxt />
             )
           }

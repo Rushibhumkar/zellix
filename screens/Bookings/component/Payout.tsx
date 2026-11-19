@@ -1,5 +1,7 @@
-import { View } from "react-native";
-import React from "react";
+import { Text, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { bookingCommand, bookingError, refreshBookingQueries } from "../../../utils/bookingWorkflow";
+import { useAppToast } from "../../../components/AppToast";
 import CustomBtn from "../../../myComponents/CustomBtn/CustomBtn";
 import CustomModal from "../../../myComponents/CustomModal/CustomModal";
 import DropdownRNE from "../../../myComponents/DropdownRNE/DropdownRNE";
@@ -11,7 +13,10 @@ import { myConsole } from "../../../hooks/useConsole";
 import { popUpConfToast } from "../../../utils/toastModalByFunction";
 import { useQueryClient } from "@tanstack/react-query";
 
-const Payout = ({ id }) => {
+const Payout = ({ id, expectedVersion }: { id: string; expectedVersion: number }) => {
+  const commands = useRef({});
+  const [errorMessage, setErrorMessage] = useState("");
+  const toast = useAppToast();
   const modal = useModal();
   const queryClient = useQueryClient();
   const formik = useFormik({
@@ -20,10 +25,11 @@ const Payout = ({ id }) => {
       paymentStatus: "",
     },
     onSubmit: async (v) => {
+      setErrorMessage("");
       try {
         let res = await axiosInstance.post(
           `/api/booking/updatePayment/${id}`,
-          v,
+          bookingCommand(commands.current, "payment", { ...v, expectedVersion }),
         );
         queryClient.invalidateQueries({
           queryKey: ["getBookingById", id],
@@ -31,12 +37,12 @@ const Payout = ({ id }) => {
         queryClient.invalidateQueries({
           queryKey: ["getBooking"],
         });
-        popUpConfToast.successMessage(res?.data || "Successfully");
+        refreshBookingQueries(queryClient);
+        toast.success(res?.data?.message || "Payment updated.");
         modal.closeModal();
       } catch (error) {
-        myConsole("errorBookingPayout", error);
-      } finally {
-        modal.closeModal();
+        setErrorMessage(bookingError(error));
+        refreshBookingQueries(queryClient);
       }
     },
   });
@@ -66,6 +72,7 @@ const Payout = ({ id }) => {
             padding: 20,
           }}
         >
+          {!!errorMessage && <Text style={{ color: "#BE123C", marginBottom: 12 }}>{errorMessage}</Text>}
           <DropdownRNE
             label="Payment Update"
             arrOfObj={[

@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import * as MailComposer from "expo-mail-composer";
 import Header from "../../components/Header";
 import Container from "../../myComponents/Container/Container";
@@ -30,7 +30,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { getAllBookingFunc } from "../../redux/action";
 import { selectUser, setCallDetect } from "../../redux/userSlice";
-import { developerOptions, roleEnum, statusEnum } from "../../utils/data";
+import { developerOptions, roleEnum } from "../../utils/data";
 import EditIcon from "../../assets/svg/EditIcon";
 import { routeBooking } from "../../utils/routes";
 import CustomText from "../../myComponents/CustomText/CustomText";
@@ -52,12 +52,14 @@ import { queryKeyCRM } from "../../utils/queryKeys";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import Payout from "./component/Payout";
+import BookingReview from "./component/BookingReview";
 import { shadow1, shadowPrimaryColor } from "../../const/globalStyle";
 import useModal from "../../hooks/useModal";
 import ThreeDotVerSvg from "../../assets/svg/ThreeDotVerSvg";
 import { checkPermission } from "../../utils/commonFunctions";
 import { useGetUserPermission } from "../../services/rootApi/permissionApi";
 import * as Clipboard from "expo-clipboard";
+import { bookingCommand, bookingError, refreshBookingQueries } from "../../utils/bookingWorkflow";
 import { useAppToast } from "../../components/AppToast";
 
 const approvalStatus = {
@@ -90,11 +92,13 @@ const inputStatusKey = {
 
 const BookingDetail = () => {
   const toast = useAppToast();
+  const commands = useRef({});
+  const mutationBusy = useRef(false);
   const queryClient = useQueryClient();
   const { params } = useRoute();
   const { navigate, goBack } = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
-  const { data, isLoading } = useGetBookingById(params?.item?._id);
+  const { data, isLoading, isError, refetch } = useGetBookingById(params?.item?._id);
 
   const dispatch = useDispatch();
   const { user, lead, allUsers } = useSelector(selectUser);
@@ -133,6 +137,7 @@ const BookingDetail = () => {
     file: {},
   });
   const [updateCaseLoading, setUpdateCaseLoading] = useState(false);
+  const [caseError, setCaseError] = useState("");
   const [ownerInfo, setOwnerInfo] = useState({});
   const ownerInfoModal = useModal();
   const { data: permission = {} } = useGetUserPermission(user?._id);
@@ -156,31 +161,25 @@ const BookingDetail = () => {
     user?.role,
   );
 
-  const isUpdateBooking =
-    user?.role === roleEnum?.sup_admin ||
-    ((data?.createdBy === user?._id ||
-      user?.role === roleEnum?.sub_admin ||
-      user?.role === roleEnum?.sr_manager) &&
-      data?.status !== statusEnum.approved);
-
   const handleAcceptRejectBooking = async (key: "approve" | "reject") => {
+    if (mutationBusy.current) return;
+    mutationBusy.current = true;
     setIsLoadingStatus(true);
     try {
-      if (key === "reject") {
-        let a = await rejectBooking(data?._id, { remarks: appRejRemarks });
-        await dispatch(getAllBookingFunc());
-        setIsHideBtn(false);
-      }
-      if (key === "approve") {
-        let a = await approvedBooking(data?._id, { remarks: appRejRemarks });
-        await dispatch(getAllBookingFunc());
-        setIsHideBtn(false);
-      }
-    } catch (err) {
-      myConsole("err HandleAcceptRejectBooking", err);
+      const payload = bookingCommand(commands.current, key, {
+        expectedVersion: data.__v ?? 0, remarks: appRejRemarks,
+        ...(data.pendingRevision && { revisionId: data.pendingRevision._id }),
+      });
+      await (key === "reject" ? rejectBooking : approvedBooking)(data._id, payload);
+      refreshBookingQueries(queryClient);
+      toast.success(key === "approve" ? "Booking approved." : "Booking rejected.");
+      setModalApproveReject(false);
+    } catch (error) {
+      toast.error(bookingError(error));
+      refreshBookingQueries(queryClient);
     } finally {
+      mutationBusy.current = false;
       setIsLoadingStatus(false);
-      goBack();
     }
   };
 
@@ -209,11 +208,18 @@ const BookingDetail = () => {
   };
 
   const submitUpdateCase = async () => {
+    if (updateCaseLoading) return;
+    setCaseError("");
     setUpdateCaseLoading(true);
     let formData = new FormData();
     let ios = Platform.OS === "ios";
     let { file, remarks } = updateCaseData;
+    const command = bookingCommand(commands.current, "case-file", {
+      expectedVersion: data.__v ?? 0, remarks, fileUri: file?.uri || "",
+    });
     formData.append("remarks", remarks);
+    formData.append("expectedVersion", String(command.expectedVersion));
+    formData.append("requestId", command.requestId);
     if (!!file?.uri) {
       formData.append("caseFile", {
         uri: ios ? file?.uri : file?.uri,
@@ -229,10 +235,10 @@ const BookingDetail = () => {
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getBooking],
       });
-    } catch (err) {
-      console.log("err in update case", err);
-    } finally {
       setIsModalUpdateCase(false);
+    } catch (err) {
+      setCaseError(bookingError(err));
+    } finally {
       setUpdateCaseLoading(false);
     }
   };
@@ -362,7 +368,13 @@ const BookingDetail = () => {
             }}
           >
             {isLoading && <ActivityIndicator />}
+            {isError && <View style={{ gap: 12, paddingVertical: 24 }}>
+              <CustomText>Could not load booking details.</CustomText>
+              <CustomBtn title="Retry" onPress={() => refetch()} />
+            </View>}
 
+            <BookingReview booking={data} role={user?.role} canUpdate={canUpdateBooking}
+              canFinance={canChangePaymentStatus} canApprove={canApproveRejectBooking} />
             {/* Ownership Details Card */}
             {data?.ownerShipDetails?.length > 0 && (
               <View style={styles.card}>
@@ -449,7 +461,7 @@ const BookingDetail = () => {
                 <CustomText style={styles.sectionTitle}>
                   Other Details
                 </CustomText>
-                {canUpdateBooking && (
+                {canUpdateBooking && data?.capabilities?.edit && (
                   <TouchableOpacity
                     onPress={() =>
                       navigate(routeBooking?.DeveloperInformation, { data })
@@ -643,7 +655,9 @@ const BookingDetail = () => {
                 Commission Information
               </CustomText>
               <View style={styles.divider} />
-              {renderRow("Total Commission", data?.commission?.toString())}
+              {renderRow("Gross Revenue", data?.commission?.toString())}
+              {renderRow("Employee Payouts", data?.allocatedRevenue?.toString() || "—")}
+              {renderRow("Company Remainder", data?.companyRevenue?.toString() || "—")}
               {renderRow(
                 "Net Commission",
                 (
@@ -670,7 +684,7 @@ const BookingDetail = () => {
                         "Agent"}
                     </CustomText>
                     <CustomText style={styles.value}>
-                      {agent?.commission.toString()}
+                      {agent?.commission?.toString() || "0"} AED · {agent?.creditPerc == null ? "Credit pending review" : `${agent.creditPerc}% sales credit`}
                     </CustomText>
                   </View>
                 ))}
@@ -706,15 +720,11 @@ const BookingDetail = () => {
             )}
 
             {/* Payout Section */}
-            {user?.role === roleEnum.sup_admin &&
-              canChangePaymentStatus &&
-              data?.status === "approved" && <Payout id={data?._id} />}
+            {canChangePaymentStatus && !data?.pendingRevision &&
+              data?.status === "approved" && <Payout id={data?._id} expectedVersion={data?.__v ?? 0} />}
 
             {/* Approve/Reject Buttons */}
-            {(user?.role === roleEnum.sup_admin ||
-              user?.role === roleEnum.sub_admin ||
-              user?.role === roleEnum.sr_manager) &&
-              canApproveRejectBooking &&
+            {canApproveRejectBooking &&
               isHideBtn &&
               data?.status === "pending" && (
                 <View style={styles.buttonRow}>
@@ -825,6 +835,7 @@ const BookingDetail = () => {
               setUpdateCaseData((prev) => ({ ...prev, file: v?.assets[0] }))
             }
           />
+          {!!caseError && <CustomText style={{ color: "#BE123C", marginBottom: 12 }}>{caseError}</CustomText>}
           <CustomBtn
             title="Submit"
             onPress={submitUpdateCase}

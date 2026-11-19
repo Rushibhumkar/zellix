@@ -114,6 +114,7 @@ const ClientInfoNewForm = ({ params }: any) => {
     onSubmit: (values) => {
       // const passData = { ...params, ...values }
       const passData = {
+        ...params,
         clients: values.clients,
         ownership: values.ownership,
         paymentProofArr: values?.paymentProofArr?.filter((el) => el),
@@ -126,7 +127,6 @@ const ClientInfoNewForm = ({ params }: any) => {
         bookingForm: values?.bookingForm,
         inputStatus: values?.inputStatus || "",
         remarks: values?.remarks || "",
-        ...params,
       };
       myConsole("passData", passData);
       nav.navigate(routeBooking?.Agents, { data: passData });
