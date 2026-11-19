@@ -139,9 +139,9 @@ export default function DashboardCard({ title = "", onRefresh }: any) {
       </View>
       {/* Summary Cards */}
       {summaryData?.data?.length > 0 ? (
-        summaryData?.data?.map((item) => (
+        summaryData?.data?.map((item, index) => (
           <LinearGradient
-            key={item?._id}
+            key={item?._id ?? `summary-${index}`}
             colors={["#FFFFFF", "#F8FAFC"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
