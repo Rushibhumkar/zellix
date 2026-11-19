@@ -178,6 +178,7 @@ const CallListing = () => {
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const appState = useRef(AppState.currentState);
   const [showLeadModal, setShowLeadModal] = useState(false);
+  const leadSubmitInFlightRef = useRef(false);
   const [shortCallInfo, setShortCallInfo] = useState("");
   const [calledNumber, setCalledNumber] = useState("");
   const isCallingRef = useRef(false);
@@ -1220,7 +1221,7 @@ const CallListing = () => {
   });
 
   const closeLeadModalAndOpenDialPad = async () => {
-    if (isClosingLeadModalRef.current) return;
+    if (isClosingLeadModalRef.current || leadSubmitInFlightRef.current) return;
     isClosingLeadModalRef.current = true;
 
     await hitCreateCallLog();
@@ -1905,7 +1906,10 @@ const CallListing = () => {
                       Lead Details
                     </Text>
                     {canShowCancelBtn && (
-                      <TouchableOpacity onPress={closeLeadModalAndOpenDialPad}>
+                      <TouchableOpacity
+                        disabled={formik.isSubmitting}
+                        onPress={closeLeadModalAndOpenDialPad}
+                      >
                         <Feather
                           name="x"
                           size={24}
@@ -2380,6 +2384,7 @@ const CallListing = () => {
                     {canShowCancelBtn && (
                       <CustomBtn
                         title="Cancel"
+                        disabled={formik.isSubmitting}
                         containerStyle={{
                           flex: 1,
                         }}
@@ -2388,25 +2393,27 @@ const CallListing = () => {
                     )}
 
                     <CustomBtn
-                      title="Submit"
+                      title={formik.isSubmitting ? "" : "Submit"}
+                      isLoading={formik.isSubmitting}
+                      textStyle={formik.isSubmitting ? { display: "none" } : undefined}
+                      gradientContStyle={{ minHeight: Platform.OS === "ios" ? 50 : 42 }}
                       containerStyle={{
                         flex: 1,
                       }}
                       onPress={async () => {
-                        formik.setTouched({
-                          clientName: true,
-                          clientMobile: true,
-                          clientEmail: true,
-                          status: true,
-                        });
-
-                        formik.handleSubmit();
-                        // myConsole(
-                        //   "FORMIK validatiaonnn =>",
-                        //   await formik.validateForm(),
-                        // );
-                        // myConsole("FORMIK ERRORS =>", formik.errors);
-                        // myConsole("FORMIK Valuesss =>", formik.values);
+                        if (leadSubmitInFlightRef.current || isClosingLeadModalRef.current) return;
+                        leadSubmitInFlightRef.current = true;
+                        try {
+                          formik.setTouched({
+                            clientName: true,
+                            clientMobile: true,
+                            clientEmail: true,
+                            status: true,
+                          }, false);
+                          await formik.submitForm();
+                        } finally {
+                          leadSubmitInFlightRef.current = false;
+                        }
                       }}
                     />
                   </View>
