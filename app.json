@@ -3,7 +3,7 @@
     "name": "zellix",
     "scheme": "zellix",
     "slug": "zellix",
-    "version": "2.3.5",
+    "version": "2.3.7",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -13,7 +13,7 @@
     "ios": {
       "bundleIdentifier": "com.skg.zellix",
       "supportsTablet": true,
-      "buildNumber": "192",
+      "buildNumber": "194",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow Zellix to access your location for scheduling and attending meetings efficiently.",
         "NSLocationAlwaysUsageDescription": "Allow Zellix to access your location in the background to support location-based meeting features.",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 171,
+      "versionCode": 173,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -82,10 +82,11 @@
       "expo-mail-composer",
       "expo-notifications",
       "expo-updates",
-      "expo-font"
+      "expo-font",
+      "./plugins/withOptionalAndroidHardware"
     ],
     "owner": "rushibhumkar14",
-    "runtimeVersion": "2.3.5-sdk58",
+    "runtimeVersion": "2.3.7-sdk58",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
@@ -96,7 +97,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "2.3.5"
+      "appVersion": "2.3.7"
     }
   }
 }
