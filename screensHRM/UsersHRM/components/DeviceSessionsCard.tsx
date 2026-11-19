@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../../redux/userSlice";
 import { axiosInstance } from "../../../services/authApi/axiosInstance";
 
-type Session = { _id: string; deviceName: string; platform: string; loginTime: string; lastActivity: string; logoutTime: string; status: string; logoutReason?: string };
+type Session = { _id: string; deviceName: string; platform: string; loginTime: string; lastActivity: string; logoutTime: string; status: string; logoutReason?: string; loginLocation?: { city?: string; country?: string; source?: "ip" } };
 type HistoryPage = { data: Session[]; total: number; page: number; pageSize: number; activeCounts: { Web: number; Mobile: number }; allowMultipleDeviceLogins: boolean; sessionLimitExempt?: boolean; timezone: string };
 
 export default function DeviceSessionsCard({ userId }: { userId: string }) {
@@ -71,20 +71,31 @@ export default function DeviceSessionsCard({ userId }: { userId: string }) {
       </>}
       {!!error && <View style={styles.error}><Text style={styles.errorText}>Unable to load device history. Check your connection.</Text><TouchableOpacity accessibilityRole="button" onPress={() => refetch()} style={styles.retry}><Text style={styles.errorText}>Retry</Text></TouchableOpacity></View>}
     </>}
-    ListEmptyComponent={isPending ? <View style={styles.empty}><ActivityIndicator color="#2E67BE" /><Text style={styles.subtitle}>Loading devices…</Text></View> : !error ? <View style={styles.empty}><View style={styles.icon}><Feather name="smartphone" size={26} color="#739FE1" /></View><Text style={styles.emptyTitle}>No login history yet</Text><Text style={styles.emptyNote}>Device sessions will appear here when this user logs in.</Text></View> : null}
+    ListEmptyComponent={isPending ? <View style={styles.empty}><ActivityIndicator color="#2E67BE" /><Text style={styles.subtitle}>Loading devices…</Text></View> : !error ? <View style={styles.empty}><View style={styles.icon}><Feather name="smartphone" size={26} color="#739FE1" /></View><Text style={styles.emptyTitle}>No login history yet</Text><Text style={styles.emptyNote}>Device sessions will appear here when this user logs in.</Text></View> : undefined}
     renderItem={({ item }) => {
       const active = item.status === "active";
       return <View style={styles.card}>
         <View style={styles.cardHeader}><View style={styles.icon}><Feather name={item.platform === "Web" ? "monitor" : "smartphone"} size={20} color="#2E67BE" /></View><View style={styles.grow}><Text style={styles.deviceName}>{item.deviceName || "Unknown device"}</Text><Text style={styles.subtitle}>{item.platform === "Web" ? "Web browser" : `Mobile · ${item.platform}`}</Text></View><View style={[styles.badge, !active && styles.inactiveBadge]}><Text style={[styles.badgeText, !active && styles.inactiveText]}>{active ? "Active" : "Logged Out"}</Text></View></View>
-        <View style={styles.cardBody}>{[["Login time", item.loginTime], ["Last activity", item.lastActivity], ["Logout time", item.logoutTime]].map(([label, value]) => <View key={label} style={styles.detailRow}><Text style={styles.detailLabel}>{label}</Text><Text style={styles.detailValue}>{value || "—"}</Text></View>)}</View>
+        <View style={styles.cardBody}>
+          {[["Login time", item.loginTime], ["Last activity", item.lastActivity], ["Logout time", item.logoutTime]].map(([label, value]) => <View key={label} style={styles.detailRow}><Text style={styles.detailLabel}>{label}</Text><Text style={styles.detailValue}>{value || "—"}</Text></View>)}
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Approx. location</Text>
+            <View style={styles.locationValue}>
+              <Feather name="map-pin" size={13} color="#739FE1" />
+              <Text style={styles.locationText}>{[...new Set([item.loginLocation?.city, item.loginLocation?.country].filter(Boolean))].join(", ") || "Unavailable"}</Text>
+            </View>
+          </View>
+        </View>
         {(active || item.logoutReason) && <View style={styles.cardFooter}>{active ? <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Log out ${item.deviceName}`} disabled={busy !== null} onPress={() => logOut(item)} style={[styles.logout, busy !== null && { opacity: 0.5 }]}>{busy === item._id ? <ActivityIndicator size="small" color="#DC4343" /> : <Feather name="log-out" size={14} color="#DC4343" />}<Text style={styles.logoutText}>Log out device</Text></TouchableOpacity> : <Text style={styles.note}>{item.logoutReason}</Text>}</View>}
       </View>;
     }}
-    ListFooterComponent={isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: 18 }} color="#2E67BE" /> : summary && sessions.length > 0 && !hasNextPage ? <Text style={styles.endText}>All sessions shown</Text> : null}
+    ListFooterComponent={isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: 18 }} color="#2E67BE" /> : summary && sessions.length > 0 && !hasNextPage ? <Text style={styles.endText}>All sessions shown</Text> : undefined}
   />;
 }
 
 const styles = StyleSheet.create({
+  locationValue: { flex: 1, minWidth: 120, flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  locationText: { flex: 1, fontSize: 12, color: "#334155" },
   content: { padding: 16, paddingTop: 22 }, grow: { flex: 1, gap: 4 },
   headingRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 20 }, icon: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#EDF4FF", alignItems: "center", justifyContent: "center" },
   title: { fontSize: 17, fontWeight: "700", color: "#1E293B" }, subtitle: { fontSize: 12, color: "#7D8CA3" },
