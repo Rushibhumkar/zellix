@@ -31,7 +31,7 @@ import BookingMeetingLoader from "../../myComponents/Loader/BookingMeetingLoader
 import { baseURL } from "../../services/authApi/axiosInstance";
 // import CallDetectorManager from "react-native-call-detection";
 import * as Device from "expo-device";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { CommonActions, StackActions, useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { userDetailHRM } from "../../services/hrmApi/userHrmApi";
 import { logOut } from "../../services/authApi/auth";
@@ -55,7 +55,6 @@ import BookingStatusScroller from "../../components/Dashboard/BookingStatusScrol
 import FollowUpsCard from "../../components/Dashboard/FollowUpsCard";
 import { myConsole } from "../../hooks/useConsole";
 import BookingCard from "../../components/Dashboard/BookingCard";
-import AttendancePunchActions from "../../components/Dashboard/AttendancePunchActions";
 
 // export const socket = io("https://axproperty-backend.onrender.com");
 export const socket = io(baseURL, {
@@ -569,15 +568,9 @@ const Dashboard = () => {
     "callingDataQuality",
     user?.role,
   );
-  const canViewLeaderboard = [
-    "sup_admin",
-    "sub_admin",
-    "sr_manager",
-    "manager",
-    "assistant_manager",
-    "team_lead",
-    "agent",
-  ].includes(user?.role);
+  const canViewAttendance = checkPermission(
+    permission, "Attendance", "sidebar", reduxUser.user?.role,
+  );
 
   return (
     <Container>
@@ -602,8 +595,6 @@ const Dashboard = () => {
             >
               <Card item={dashboardCount} loading={loadingDashboardCount} />
             </View>
-
-            <AttendancePunchActions refreshing={refreshing} />
 
             <FollowUpsCard onRefresh={refreshing} />
 
@@ -685,11 +676,15 @@ const Dashboard = () => {
       >
         <Feather name="search" size={24} color="#FFFFFF" />
       </TouchableOpacity>
-      {/* {canViewLeaderboard && ( */}
-      {canViewLeaderboard && (
+      {canViewAttendance && (
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Open attendance"
           activeOpacity={0.85}
-          onPress={() => navigate("Leaderboard")}
+          onPress={() => dispatchNav(StackActions.push("HRManagementStack", {
+            screen: "AttendanceStack",
+            params: { screen: "AllAttendance", params: { entrySource: "crm-dashboard-shortcut" } },
+          }))}
           style={{
             position: "absolute",
             right: 20,
@@ -707,7 +702,7 @@ const Dashboard = () => {
             shadowOffset: { width: 0, height: 4 },
           }}
         >
-          <Feather name="bar-chart-2" size={24} color="#FFFFFF" />
+          <Feather name="calendar" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       )}
     </Container>

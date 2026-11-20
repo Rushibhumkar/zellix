@@ -3,6 +3,7 @@ import React, { useCallback, useRef, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   FlatList,
   Pressable,
   RefreshControl,
@@ -10,10 +11,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import ContainerHRM from "../../myComponentsHRM/ContainerHRM/ContainerHRM";
+import CheckInOut from "../DashboardHRM/CheckInOut";
 import CardHRM from "../../myComponentsHRM/CardHRM/CardHRM";
 import RowAttendance from "../../myComponentsHRM/Row/RowAttendance";
 import RowSingleUserAtt from "../../myComponentsHRM/Row/RowSingleUserAtt";
@@ -44,6 +46,8 @@ const AllAttendance = () => {
   const { user } = useSelector(selectUser);
   const { data: permission = {} } = useGetUserPermission(user?._id);
   const isAgent = user?.role === "agent";
+  const canPunch = Boolean(user?._id && user?.role) &&
+    !["sup_admin", "sub_admin", "office_admin"].includes(user.role);
   const showAttendanceSummary = canViewAttendanceSummary(
     permission,
     user?.role,
@@ -53,7 +57,23 @@ const AllAttendance = () => {
   const activeTab = tabs.some((tab) => tab.key === selectedTab)
     ? selectedTab
     : "all";
-  const { navigate } = useNavigation<any>();
+  const navigation = useNavigation<any>();
+  const { navigate } = navigation;
+  const route = useRoute<any>();
+  const fromDashboard = route.params?.entrySource === "crm-dashboard-shortcut";
+  const returnToDashboard = useCallback(() => {
+    const root = navigation.getParent()?.getParent();
+    if (root?.canGoBack()) root.goBack();
+    else navigate("Dashboard", { screen: "dashboard" });
+  }, [navigation, navigate]);
+  useFocusEffect(useCallback(() => {
+    if (!fromDashboard) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      returnToDashboard();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [fromDashboard, returnToDashboard]));
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<HRMFilterValues>({});
   const filterValues = useMemo(
@@ -68,6 +88,8 @@ const AllAttendance = () => {
     endDate: "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  const [punchLoadFailed, setPunchLoadFailed] = useState(false);
+  const [punchRetryVersion, setPunchRetryVersion] = useState(0);
   const approvalLock = useRef(false);
   const updateSearch = useCallback(
     (search: string) =>
@@ -161,6 +183,7 @@ const AllAttendance = () => {
   );
   const onRefresh = async () => {
     setRefreshing(true);
+    if (canPunch) setPunchRetryVersion((version) => version + 1);
     try {
       await refetch();
       if (canManageAttendanceAutoApproval(user?.role))
@@ -189,11 +212,12 @@ const AllAttendance = () => {
       { item },
     );
   };
-  const showLoadError = isError;
+  const showLoadError = isError || (canPunch && punchLoadFailed);
 
   return (
     <ContainerHRM
       headingTitle="Attendance"
+      onPressBack={fromDashboard ? returnToDashboard : undefined}
       totalCount={totalCount}
       onPressFilter={() => setFiltersOpen(true)}
       filterCount={hrmFilterCount(filters) + Number(activeTab !== "all")}
@@ -220,14 +244,19 @@ const AllAttendance = () => {
           onClose={search.closeSearch}
         />
       )}
+      {canPunch && (
+        <CheckInOut key={user._id} showInitialLoader={!isLoading && !showLoadError}
+          onLoadError={setPunchLoadFailed} retryVersion={punchRetryVersion} />
+      )}
       {showLoadError && (
         <View style={styles.errorCard} accessibilityLiveRegion="polite">
           <View style={styles.errorCopy}>
-            <Text style={styles.errorTitle}>Attendance couldn’t load</Text>
+            <Text style={styles.errorTitle}>{isError ? "Attendance couldn’t load" : "Attendance actions couldn’t refresh"}</Text>
             <Text style={styles.errorDescription}>Check your connection and try again.</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Retry loading attendance" disabled={isFetching}
             style={[styles.retry, isFetching && { opacity: 0.6 }]} onPress={() => {
+              if (canPunch && punchLoadFailed) setPunchRetryVersion((version) => version + 1);
               if (isError) void refetch();
             }}>
             {isFetching ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.approveText}>Retry</Text>}

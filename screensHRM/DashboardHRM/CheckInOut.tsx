@@ -37,7 +37,11 @@ const visitActions: Action[] = ["VISIT_IN", "VISIT_OUT"];
 const officeActions: Action[] = ["CHECK_IN", "CHECK_OUT"];
 const endpoint = "/api/hrms/att/remotePunch";
 
-export default function CheckInOut({ showInitialLoader = true, onLoadError, retryVersion }: {
+export default function CheckInOut({
+  showInitialLoader = true,
+  onLoadError,
+  retryVersion,
+}: {
   showInitialLoader?: boolean;
   onLoadError: (failed: boolean) => void;
   retryVersion: number;
@@ -49,6 +53,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   const [selected, setSelected] = useState<Action>();
   const [siteVisitAvailable, setSiteVisitAvailable] = useState(false);
   const [activeSiteVisitName, setActiveSiteVisitName] = useState<string>();
+  const [activeVisitAt, setActiveVisitAt] = useState<string | null>(null);
   const [siteId, setSiteId] = useState<string>();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const { height: windowHeight } = useWindowDimensions();
@@ -66,7 +71,10 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   const [loadFailed, setLoadFailed] = useState(false);
   const toast = useAppToast();
   const visitToastHost = useRef<AppToastHostHandle>(null);
-  const request = useRef<{ action: Action; id: string; siteId?: string } | undefined>(undefined);
+  const request = useRef<
+    | { action: Action; id: string; siteId?: string; endWorkday: boolean }
+    | undefined
+  >(undefined);
   const submitting = useRef(false);
   const refreshVersion = useRef(0);
   const refreshing = useRef(false);
@@ -82,6 +90,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       setOfficePunchEnabled(data.mobileOfficePunchEnabled === true);
       setSiteVisitAvailable(data.siteVisitAvailable === true);
       setActiveSiteVisitName(data.activeSiteVisitName);
+      setActiveVisitAt(data.activeVisitAt || null);
       setCanEndWithVisit(data.canEndWorkdayWithVisit === true);
       setLoadFailed(false);
       onLoadError(false);
@@ -106,8 +115,16 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   );
 
   async function submit(action: Action, endWorkday = false) {
-    if (submitting.current || (officeActions.includes(action) ? !officePunchEnabled : !siteVisitAvailable) ||
-        (action === "VISIT_IN" && !sites.data?.some(site => site._id === siteId))) return;
+    if (endWorkday && (action !== "VISIT_OUT" || !canEndWithVisit)) return;
+    if (
+      submitting.current ||
+      (officeActions.includes(action)
+        ? !officePunchEnabled
+        : !siteVisitAvailable) ||
+      (action === "VISIT_IN" &&
+        !sites.data?.some((site) => site._id === siteId))
+    )
+      return;
     submitting.current = true;
     setLoadingButton(
       endWorkday
@@ -136,22 +153,35 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
         );
         return;
       }
-      if (!await Location.hasServicesEnabledAsync()) {
-        Alert.alert("Turn on location", "Enable location services on your phone and try again.");
+      if (!(await Location.hasServicesEnabledAsync())) {
+        Alert.alert(
+          "Turn on location",
+          "Enable location services on your phone and try again.",
+        );
         return;
       }
       let coords: Location.LocationObjectCoords;
       try {
-        ({ coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }));
+        ({ coords } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        }));
       } catch {
-        toast.error("Could not get your location. Move to an open area and try again.", {},
-          officeActions.includes(action) ? null : visitToastHost.current);
+        toast.error(
+          "Could not get your location. Move to an open area and try again.",
+          {},
+          officeActions.includes(action) ? null : visitToastHost.current,
+        );
         return;
       }
-      if (request.current?.action !== action || request.current.siteId !== siteId)
+      if (
+        request.current?.action !== action ||
+        request.current.siteId !== siteId ||
+        request.current.endWorkday !== endWorkday
+      )
         request.current = {
           action,
           siteId,
+          endWorkday,
           id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         };
       const { data } = await axiosInstance.post(endpoint, {
@@ -172,6 +202,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       setOfficePunchEnabled(data.mobileOfficePunchEnabled === true);
       setSiteVisitAvailable(data.siteVisitAvailable === true);
       setActiveSiteVisitName(data.activeSiteVisitName);
+      setActiveVisitAt(data.activeVisitAt || null);
       setCanEndWithVisit(data.canEndWorkdayWithVisit === true);
       setSelected(undefined);
       setRemarks("");
@@ -202,7 +233,10 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
           ? message
           : `Could not complete ${labels[action]}. Check your connection and location, then retry.`,
         {},
-        officeActions.includes(action) || body?.code === "SITE_VISIT_WEEKEND_ONLY" ? null : visitToastHost.current,
+        officeActions.includes(action) ||
+          body?.code === "SITE_VISIT_WEEKEND_ONLY"
+          ? null
+          : visitToastHost.current,
       );
       void refresh();
     } finally {
@@ -211,26 +245,44 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
     }
   }
 
-  const needsVisitLocation = selected === "VISIT_IN" && !sites.data?.some(site => site._id === siteId);
+  const needsVisitLocation =
+    selected === "VISIT_IN" && !sites.data?.some((site) => site._id === siteId);
 
   const renderAction = (action: Action) => {
     const reason = availability?.[action];
+    const visitStarted = action === "VISIT_IN" && Boolean(activeVisitAt);
+    const visitStartDate = activeVisitAt ? new Date(activeVisitAt) : null;
+    const startedAt =
+      visitStartDate && Number.isFinite(visitStartDate.getTime())
+        ? new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }).format(visitStartDate)
+        : null;
+    const label = visitStarted
+      ? startedAt
+        ? `Started at\n${startedAt}`
+        : "Visit started"
+      : labels[action];
     return (
       <Pressable
         key={action}
         accessibilityRole="button"
-        accessibilityLabel={labels[action]}
+        accessibilityLabel={
+          visitStarted
+            ? startedAt
+              ? `Visit started at ${startedAt}`
+              : "Visit started"
+            : labels[action]
+        }
         accessibilityState={{
           busy: loadingButton === action,
-          disabled: busy || !availability,
+          disabled: busy || !availability || visitStarted,
         }}
         accessibilityHint={reason || undefined}
-        disabled={busy || !availability}
-        style={[
-          styles.button,
-          styles.actionButton,
-          !!reason && styles.blocked,
-        ]}
+        disabled={busy || !availability || visitStarted}
+        style={[styles.button, styles.actionButton, !!reason && styles.blocked]}
         onPress={() => {
           if (reason) toast.error(reason);
           else if (!officeActions.includes(action)) {
@@ -238,8 +290,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
             setSiteId(undefined);
             setRemarks("");
             setSelected(action);
-          }
-          else void submit(action);
+          } else void submit(action);
         }}
       >
         {loadingButton === action ? (
@@ -252,7 +303,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
               !!reason && styles.blockedText,
             ]}
           >
-            {labels[action]}
+            {label}
           </Text>
         )}
       </Pressable>
@@ -262,7 +313,10 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   return (
     <View style={styles.wrapper}>
       {!availability && !loadFailed && showInitialLoader && (
-        <ActivityIndicator color="#2E67BE" accessibilityLabel="Loading attendance actions" />
+        <ActivityIndicator
+          color="#2E67BE"
+          accessibilityLabel="Loading attendance actions"
+        />
       )}
       {(officePunchEnabled || siteVisitAvailable) && (
         <View style={styles.actionRow}>
@@ -273,7 +327,9 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       <ModalWithBlur
         visible={!!selected && siteVisitAvailable}
         overlay={<AppToastHost ref={visitToastHost} />}
-        contentHeight={selected === "VISIT_IN" && locationPickerOpen ? "75%" : undefined}
+        contentHeight={
+          selected === "VISIT_IN" && locationPickerOpen ? "75%" : undefined
+        }
         onClose={() => {
           if (!busy) {
             setLocationPickerOpen(false);
@@ -282,35 +338,48 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
         }}
       >
         <Text style={styles.title}>{selected ? labels[selected] : ""}</Text>
-        {selected === "VISIT_IN" && (
-          sites.isError ? (
-            <Pressable accessibilityRole="button" onPress={() => void sites.refetch()}>
-              <Text style={styles.siteHelp}>Could not load visit locations. Tap to retry.</Text>
+        {selected === "VISIT_IN" &&
+          (sites.isError ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void sites.refetch()}
+            >
+              <Text style={styles.siteHelp}>
+                Could not load visit locations. Tap to retry.
+              </Text>
             </Pressable>
-          ) : sites.isPending ? <ActivityIndicator accessibilityLabel="Loading visit locations" /> :
-          !sites.data?.length ? <Text style={styles.siteHelp}>No developer locations or sales centers with coordinates are available.</Text> :
-          <Dropdown
-            style={[styles.input, styles.locationPicker]}
-            containerStyle={styles.locationMenu}
-            placeholderStyle={styles.sitePlaceholder}
-            selectedTextStyle={styles.siteSelection}
-            data={sites.data}
-            labelField="name"
-            valueField="_id"
-            value={siteId}
-            mode="modal"
-            onFocus={() => setLocationPickerOpen(true)}
-            onBlur={() => setLocationPickerOpen(false)}
-            onChange={site => setSiteId(site._id)}
-            placeholder="Select a visit location"
-            accessibilityLabel="Select a developer location or sales center"
-            disable={busy}
-            search
-            searchPlaceholder="Search developers or sales centers"
-            maxHeight={Math.min(280, Math.round(windowHeight * 0.4))}
-          />
+          ) : sites.isPending ? (
+            <ActivityIndicator accessibilityLabel="Loading visit locations" />
+          ) : !sites.data?.length ? (
+            <Text style={styles.siteHelp}>
+              No developer locations or sales centers with coordinates are
+              available.
+            </Text>
+          ) : (
+            <Dropdown
+              style={[styles.input, styles.locationPicker]}
+              containerStyle={styles.locationMenu}
+              placeholderStyle={styles.sitePlaceholder}
+              selectedTextStyle={styles.siteSelection}
+              data={sites.data}
+              labelField="name"
+              valueField="_id"
+              value={siteId}
+              mode="modal"
+              onFocus={() => setLocationPickerOpen(true)}
+              onBlur={() => setLocationPickerOpen(false)}
+              onChange={(site) => setSiteId(site._id)}
+              placeholder="Select a visit location"
+              accessibilityLabel="Select a developer location or sales center"
+              disable={busy}
+              search
+              searchPlaceholder="Search developers or sales centers"
+              maxHeight={Math.min(280, Math.round(windowHeight * 0.4))}
+            />
+          ))}
+        {selected === "VISIT_OUT" && activeSiteVisitName && (
+          <Text style={styles.siteHelp}>{activeSiteVisitName}</Text>
         )}
-        {selected === "VISIT_OUT" && activeSiteVisitName && <Text style={styles.siteHelp}>{activeSiteVisitName}</Text>}
         <TextInput
           editable={!busy}
           style={styles.input}
@@ -348,7 +417,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
               }}
               disabled={busy}
               style={styles.button}
-              onPress={() => void submit(selected, true)}
+              onPress={() => void submit("VISIT_OUT", true)}
             >
               {loadingButton === "endWorkday" ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -364,7 +433,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 0, marginBottom: 16 },
+  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 12, marginBottom: 4 },
   actionRow: { flexDirection: "row", alignItems: "stretch", gap: 6 },
   actionButton: {
     flex: 1,
@@ -375,7 +444,11 @@ const styles = StyleSheet.create({
     borderColor: "#2E67BE",
   },
   siteHelp: { color: "#475569", marginBottom: 8 },
-  locationPicker: { minHeight: 48, borderRadius: 12, backgroundColor: "#F8FAFC" },
+  locationPicker: {
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+  },
   locationMenu: { borderRadius: 12, borderColor: "#CBD5E1" },
   sitePlaceholder: { color: "#475569", fontSize: 14 },
   siteSelection: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
