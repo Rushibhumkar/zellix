@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import { Dropdown } from "react-native-element-dropdown";
@@ -411,6 +412,7 @@ export default function CheckInOut({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="End workday too"
+              accessibilityHint="Ends this visit and checks you out for the day."
               accessibilityState={{
                 busy: loadingButton === "endWorkday",
                 disabled: busy,
@@ -427,6 +429,25 @@ export default function CheckInOut({
             </Pressable>
           )}
         </View>
+        {selected === "VISIT_OUT" && canEndWithVisit && (
+          <View style={styles.workdayHelp}>
+            <Feather name="info" size={18} color="#2E67BE" style={styles.workdayHelpIcon} />
+            <View style={styles.workdayHelpCopy}>
+              <View style={styles.workdayHelpPoint}>
+                <Text style={styles.workdayHelpBullet}>•</Text>
+                <Text style={styles.workdayHelpText}>
+                  <Text style={styles.workdayHelpLabel}>Confirm:</Text> Ends only this visit and keeps your workday open.
+                </Text>
+              </View>
+              <View style={styles.workdayHelpPoint}>
+                <Text style={styles.workdayHelpBullet}>•</Text>
+                <Text style={styles.workdayHelpText}>
+                  <Text style={styles.workdayHelpLabel}>End workday too:</Text> Ends this visit and checks you out for the day.
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
       </ModalWithBlur>
     </View>
   );
@@ -454,6 +475,23 @@ const styles = StyleSheet.create({
   siteSelection: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
   actionText: { fontSize: 13, textAlign: "center" },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  workdayHelp: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+  },
+  workdayHelpIcon: { marginTop: 2 },
+  workdayHelpCopy: { flex: 1, minWidth: 0, gap: 8 },
+  workdayHelpPoint: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  workdayHelpBullet: { color: "#2E67BE", fontSize: 12, lineHeight: 18 },
+  workdayHelpLabel: { color: "#1E3A5F", fontWeight: "600" },
+  workdayHelpText: { flex: 1, color: "#475569", fontSize: 12, lineHeight: 18 },
   button: {
     flexGrow: 1,
     alignItems: "center",
