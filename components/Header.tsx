@@ -175,12 +175,13 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               <AnimatedView
+                style={{ flex: 1, minWidth: 0 }}
               // entering={
               //   isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
               // }
               // exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
               >
-                <CustomText style={styles.titleText}>{title}</CustomText>
+                <CustomText numberOfLines={1} ellipsizeMode="tail" style={styles.titleText}>{title}</CustomText>
                 {totalCount > 0 && (
                   <CustomText
                     style={{
@@ -420,11 +421,15 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 12 : 12,
   },
   container: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
   backButton: {
+    flexShrink: 0,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 12,
     padding: 8,
@@ -436,6 +441,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   iconWrapper: {
+    flexShrink: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
