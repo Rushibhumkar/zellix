@@ -120,6 +120,55 @@ for (const os of ['android', 'ios']) {
   assert.equal(module.exports.position, os === 'android' ? undefined : 'absolute');
   assert.equal(module.exports.height, os === 'android' ? 104 : 88);
 }
+// Exercise the actual HRMS navigator with native support and restricted permissions.
+const hrmAst = ts.createSourceFile('HRManagementStack.tsx', fs.readFileSync('navigation/HRManagementStack.tsx', 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+let hrmInitializer;
+function locateHrm(node) {
+  if (ts.isVariableDeclaration(node) && node.name.getText(hrmAst) === 'HRManagementStack') hrmInitializer = node.initializer;
+  ts.forEachChild(node, locateHrm);
+}
+locateHrm(hrmAst);
+assert.ok(hrmInitializer);
+const hrmCode = ts.transpileModule('module.exports = (' + hrmInitializer.getText(hrmAst) + ')();', {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React },
+}).outputText;
+for (const os of ['ios', 'android']) {
+  for (const native of [true, false]) {
+    for (const agent of [false, true]) {
+      const module = { exports: {} };
+      vm.runInNewContext(hrmCode, {
+        module, React: { createElement: (type, props, ...children) => ({ type, props, children }) },
+        Tab: { Navigator: 'Navigator', Screen: 'Screen' }, CRMGlassTabBar: 'NativeBar',
+        useSelector: () => ({ user: { _id: 'user', role: agent ? 'agent' : 'admin' } }), selectUser: {},
+        roleEnum: { agent: 'agent', team_lead: 'team_lead' },
+        useGetUserPermission: () => ({ data: {}, isLoading: false }),
+        checkPermission: (_, name) => !agent || name === 'Attendance',
+        useSafeAreaInsets: () => ({ bottom: 24 }), Platform: { OS: os }, hasCRMGlassTabs: native,
+        crmGlassTabHeight: inset => (os === 'android' ? 80 : 64) + inset,
+        DashboardHRMStack: 'Dashboard', AllUsersHRMStack: 'Users', AttendanceStack: 'Attendance',
+        AllLeaveStack: 'Leave', InterviewStack: 'Interviews',
+      });
+      const nav = module.exports;
+      assert.equal(nav.type, 'Navigator');
+      assert.deepEqual(Array.from(nav.children.filter(Boolean), child => child.props.name), agent
+        ? ['AttendanceStack'] : ['DashboardHRMStack', 'AllUsersHRMStack', 'AttendanceStack', 'AllLeaveStack', 'InterviewStack']);
+      assert.equal(typeof nav.props.tabBar, native ? 'function' : 'undefined');
+      if (native) {
+        const bar = nav.props.tabBar({ state: 'state' });
+        assert.equal(bar.type, 'NativeBar');
+        assert.equal(bar.props.floating, false);
+        assert.equal(bar.props.state, 'state');
+        assert.equal(nav.props.screenOptions.tabBarStyle.height, os === 'ios' ? 88 : 104);
+      }
+    }
+  }
+}
+h = harness('ios'); h.setFloating(false);
+assert.equal(h.native().props.style[0].position, undefined);
+h.setState({ key: 'hrm', index: 0, routes: [{ key: 'attendance', name: 'AttendanceStack' }] });
+assert.equal(h.native().props.tabs[0].symbol, 'calendar');
+h.press('attendance', 1); h.flush();
+assert.equal(h.emitted.at(-1).type, 'tabPress');
 const config = JSON.parse(fs.readFileSync('app.json')).expo;
 assert.ok(config.android.runtimeVersion.endsWith('-android-tabs-v2'));
 assert.ok(fs.readFileSync('android/app/src/main/res/values/strings.xml', 'utf8').includes(config.android.runtimeVersion));

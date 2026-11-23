@@ -1,4 +1,4 @@
-import CRMGlassTabBar, { hasAndroidNativeTabs, crmGlassTabHeight } from "./CRMGlassTabBar";
+import CRMGlassTabBar, { hasCRMGlassTabs, crmGlassTabHeight } from "./CRMGlassTabBar";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ActivityIndicator, Platform, View } from "react-native";
 import DashboardIconFocus from "../assets/svg/Dashboard";
@@ -92,12 +92,12 @@ export const HRManagementStack = () => {
 
   return (
     <Tab.Navigator
-      tabBar={hasAndroidNativeTabs ? props => <CRMGlassTabBar {...props} floating={false} /> : undefined}
+      tabBar={hasCRMGlassTabs ? props => <CRMGlassTabBar {...props} floating={false} /> : undefined}
       screenOptions={{
         tabBarHideOnKeyboard: true,
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: hasAndroidNativeTabs ? { height: crmGlassTabHeight(insets.bottom) } : {
+        tabBarStyle: hasCRMGlassTabs ? { height: crmGlassTabHeight(insets.bottom) } : {
           height: 84 + insets.bottom / 2,
           paddingBottom: insets.bottom + 6,
           paddingTop: Platform.OS === "ios" ? 20 : 20,

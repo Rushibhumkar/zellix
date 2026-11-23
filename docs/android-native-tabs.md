@@ -1,8 +1,8 @@
 # Android native bottom tabs
 
 Android CRM and HRMS tabs use standard Material 3 BottomNavigationView through the local
-`zellix-glass-tabs` Expo module. iOS CRM keeps its existing Liquid Glass module;
-iOS HRMS remains unchanged. React Navigation 6 still owns all screen stacks,
+`zellix-glass-tabs` Expo module. iOS CRM and HRMS use the existing Liquid Glass module
+on supported iPhones. React Navigation 6 still owns all screen stacks,
 permissions, deep links, back behavior and preventable tab-press events.
 
 Native selection responds on the UI thread. The key/requestId acknowledgement
