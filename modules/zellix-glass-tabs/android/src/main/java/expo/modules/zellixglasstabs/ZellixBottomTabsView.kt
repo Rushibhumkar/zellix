@@ -123,7 +123,8 @@ class ZellixBottomTabsView(context: Context, appContext: AppContext) : ExpoView(
     val resource = when (symbol) {
       "square.grid.2x2" -> R.drawable.zellix_tab_dashboard
       "person.2" -> R.drawable.zellix_tab_people
-      "calendar", "calendar.badge.clock" -> R.drawable.zellix_tab_calendar
+      "calendar" -> R.drawable.zellix_tab_calendar
+      "calendar.badge.clock" -> R.drawable.zellix_tab_event
       "chart.bar" -> R.drawable.zellix_tab_report
       "calendar.badge.checkmark" -> R.drawable.zellix_tab_leave
       "video" -> R.drawable.zellix_tab_interview
