@@ -64,6 +64,7 @@ interface TContainerHRM {
   onPressFilter?: () => void;
   filterCount?: number;
   onPressSearch?: () => void;
+  onPressBack?: () => void;
   showSearch?: boolean;
 }
 const ContainerHRM = ({
@@ -81,6 +82,7 @@ const ContainerHRM = ({
   onPressFilter,
   filterCount = 0,
   onPressSearch,
+  onPressBack,
   showSearch = false,
 }: TContainerHRM) => {
   const { navigate, goBack } = useNavigation();
@@ -129,9 +131,15 @@ const ContainerHRM = ({
           paddingBottom: Platform.OS === "ios" ? 16 : 10,
         }}
       >
+        {onPressBack && (
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to dashboard"
+            onPress={onPressBack} style={[styles.backButton, { marginRight: 12 }]}>
+            <Feather name="arrow-left" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
         {!!headingTitle ? (
-          <View style={totalCount !== undefined || onPressFilter ? { flex: 1, minWidth: 0, marginRight: 12 } : undefined}>
-            <CustomText fontWeight="700" fontSize={20} color={color.white}>
+          <View style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+            <CustomText numberOfLines={1} ellipsizeMode="tail" fontWeight="700" fontSize={20} color={color.white}>
               {headingTitle}
             </CustomText>
             {typeof totalCount === "number" && Number.isFinite(totalCount) && totalCount >= 0 && (
@@ -145,11 +153,11 @@ const ContainerHRM = ({
             )}
           </View>
         ) : (
-          <View>
-            <CustomText fontSize={20} fontWeight="400" color={color.white}>
+          <View style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+            <CustomText numberOfLines={1} ellipsizeMode="tail" fontSize={20} fontWeight="400" color={color.white}>
               {user?.name}
             </CustomText>
-            <CustomText fontSize={14} fontWeight="400" color={color.white}>
+            <CustomText numberOfLines={1} ellipsizeMode="tail" fontSize={14} fontWeight="400" color={color.white}>
               {user?.email}
             </CustomText>
           </View>
@@ -208,7 +216,7 @@ const ContainerHRM = ({
             justifyContent: "flex-end",
             alignItems: "center",
             gap: 12,
-            ...(onPressFilter ? { flex: 1, minWidth: 0, marginRight: 12 } : {}),
+            flex: 1, minWidth: 0, marginRight: 12,
             paddingTop: Platform.OS === "ios" ? 24 : 12,
             paddingBlock: 12,
           }}
@@ -228,8 +236,10 @@ const ContainerHRM = ({
             />
           </AnimatedTouchableOpacity>
 
-          <View style={onPressFilter ? { flex: 1, minWidth: 0 } : undefined}>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <CustomText
+              numberOfLines={1}
+              ellipsizeMode="tail"
               fontSize={18}
               fontWeight="700"
               style={{

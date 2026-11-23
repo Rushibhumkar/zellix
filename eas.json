@@ -31,6 +31,10 @@
         "buildType": "app-bundle",
         "credentialsSource": "remote"
       }
+    },
+    "release": {
+      "extends": "production",
+      "autoIncrement": false
     }
   },
   "submit": {

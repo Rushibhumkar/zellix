@@ -47,7 +47,7 @@
 
 // CustomText.tsx
 import React, { ReactNode } from "react";
-import { Text, StyleProp, TextStyle } from "react-native";
+import { Text, StyleProp, TextStyle, TextProps } from "react-native";
 
 interface CustomTextProps {
   fontSize?: number;
@@ -56,6 +56,7 @@ interface CustomTextProps {
   fontWeight?: string;
   children: ReactNode;
   numberOfLines?: number;
+  ellipsizeMode?: TextProps["ellipsizeMode"];
   style?: StyleProp<TextStyle>;
 }
 
@@ -66,6 +67,7 @@ const CustomText: React.FC<CustomTextProps> = ({
   color = "black",
   marginBottom,
   numberOfLines,
+  ellipsizeMode,
   style,
 }) => {
   const textStyle = [
@@ -79,7 +81,7 @@ const CustomText: React.FC<CustomTextProps> = ({
   ];
 
   return (
-    <Text style={textStyle} numberOfLines={numberOfLines}>
+    <Text style={textStyle} numberOfLines={numberOfLines} ellipsizeMode={ellipsizeMode}>
       {children}
     </Text>
   );

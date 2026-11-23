@@ -1,3 +1,4 @@
+import { attendanceUserName } from "../../utils/attendanceDisplay";
 import HRMFilters, {
   HRMFilterValues,
   hrmFilterCount,
@@ -104,7 +105,7 @@ const UserAttendanceList = () => {
         }}
       >
         <TitleHRM
-          title={`${params?.item?.name} (${roleHRM[params?.item?.role]})`}
+          title={[attendanceUserName(params?.item), roleHRM[params?.item?.role] ? `(${roleHRM[params.item.role]})` : ""].filter(Boolean).join(" ")}
         />
         {/* <HeaderRowUserAtt /> */}
       </View>

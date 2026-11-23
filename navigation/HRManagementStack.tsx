@@ -1,3 +1,6 @@
+import AttendancePermissionsScreen from "../screensHRM/AttendanceHRM/AttendancePermissionsScreen";
+import HRMSAccessNotice from "../components/HRMSAccessNotice";
+import { useNavigation } from "@react-navigation/native";
 import CRMGlassTabBar, { hasCRMGlassTabs, crmGlassTabHeight } from "./CRMGlassTabBar";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ActivityIndicator, Platform, View } from "react-native";
@@ -43,11 +46,12 @@ const Tab = createBottomTabNavigator();
 
 //Main stack (HRManagementStack)
 export const HRManagementStack = () => {
+  const navigation = useNavigation();
   const { user } = useSelector(selectUser);
   const isAgent = user?.role === roleEnum.agent;
   const isRecruitmentRestricted =
     user?.role === roleEnum.agent || user?.role === roleEnum.team_lead;
-  const { data: permission = {}, isLoading: permissionsLoading } =
+  const { data: permission = {}, isLoading: permissionsLoading, isError: permissionsFailed, isFetching: permissionsFetching, refetch: retryPermissions } =
     useGetUserPermission(user?._id);
   const canViewDashboard = checkPermission(
     permission,
@@ -87,7 +91,14 @@ export const HRManagementStack = () => {
     canViewLeaves ||
     canViewInterview;
   if (!hasVisibleModule) {
-    return <View style={{ flex: 1, backgroundColor: "#F6F8FC" }} />;
+    return (
+      <HRMSAccessNotice
+        loadFailed={permissionsFailed}
+        retrying={permissionsFetching}
+        onRetry={() => { void retryPermissions(); }}
+        onBack={() => navigation.goBack()}
+      />
+    );
   }
 
   return (
@@ -216,7 +227,7 @@ const AllUsersHRMStack = () => {
 //AttendanceNavigator
 const AttendanceStack = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName="AllAttendance">
       <Stack.Screen
         name="AllAttendance"
         component={AllAttendance}
@@ -224,6 +235,7 @@ const AttendanceStack = () => {
           headerShown: false,
         }}
       />
+      <Stack.Screen name="AttendancePermissions" component={AttendancePermissionsScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="AttendanceDetail"
         component={AttendanceDetail}

@@ -137,7 +137,7 @@ for (const os of ['ios', 'android']) {
     for (const agent of [false, true]) {
       const module = { exports: {} };
       vm.runInNewContext(hrmCode, {
-        module, React: { createElement: (type, props, ...children) => ({ type, props, children }) },
+        useNavigation: () => ({ goBack() {} }), module, React: { createElement: (type, props, ...children) => ({ type, props, children }) },
         Tab: { Navigator: 'Navigator', Screen: 'Screen' }, CRMGlassTabBar: 'NativeBar',
         useSelector: () => ({ user: { _id: 'user', role: agent ? 'agent' : 'admin' } }), selectUser: {},
         roleEnum: { agent: 'agent', team_lead: 'team_lead' },

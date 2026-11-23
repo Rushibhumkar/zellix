@@ -159,11 +159,17 @@ const AllLeads = () => {
     ...leadQueryKey,
     type: selectLeadType,
     folderId: selectedFolderId,
+    comingSoon: selectedFolder?.state === "coming_soon",
     // ✅ dashboard filters
     ...(dashboardFilterStatus && { status: [dashboardFilterStatus] }),
     ...(dashboardDateKey && { dateKey: dashboardDateKey }),
     ...(dashboardMyLeads && { individual: true }),
   });
+
+  const todaysTasksComingSoon = selectedFolderId === "todays-tasks" && (
+    selectedFolder?.state === "coming_soon" ||
+    (leadError as any)?.response?.data?.code === "TODAY_TASKS_COMING_SOON"
+  );
 
   const hasActiveFilter =
     !!leadQueryKey ||
@@ -263,6 +269,7 @@ const AllLeads = () => {
   };
 
   const onEndReach = () => {
+    if (todaysTasksComingSoon) return;
     if (hasNextPage && !leadsFetching && !leadLoadError && leadData?.length > 0) {
       fetchNextPage && fetchNextPage();
     }
@@ -459,7 +466,7 @@ const AllLeads = () => {
   // console.log("selectleadtypeseuseeffecrt", selectLeadType);
 
   const filteredLeadData =
-    selectedStatus === "all"
+    todaysTasksComingSoon ? [] : selectedStatus === "all"
       ? leadData
       : leadData?.filter((item) => item?.status === selectedStatus);
   const visibleLeadIds: string[] = (filteredLeadData || []).map((lead: any) => lead._id);
@@ -768,7 +775,7 @@ const AllLeads = () => {
                 <LeadFolderBar
                   type={selectLeadType}
                   selectedFolderId={selectedFolderId}
-                  selectedFolderLeadCount={totalCount}
+                  selectedFolderLeadCount={todaysTasksComingSoon ? null : totalCount}
                   onChangeFolder={handleFolderChange}
                   onManage={() => setFolderModalVisible(true)}
                 />
@@ -859,14 +866,24 @@ const AllLeads = () => {
             }
             ListHeaderComponentStyle={{ paddingTop: 5 }}
             ListEmptyComponent={
-              loading ? <SkeletonLoadingLead /> : leadLoadError ? (
+              todaysTasksComingSoon ? (
+                <View accessibilityLiveRegion="polite" style={styles.comingSoonCard}>
+                  <View style={styles.comingSoonIcon}>
+                    <Feather name="clock" size={28} color="#2E67BE" />
+                  </View>
+                  <CustomText style={styles.comingSoonTitle}>Coming soon</CustomText>
+                  <CustomText style={styles.comingSoonDescription}>
+                    Today’s Tasks will be available soon.
+                  </CustomText>
+                </View>
+              ) : loading ? <SkeletonLoadingLead /> : leadLoadError ? (
                 <LeadReadRetry error={leadError} busy={leadsFetching} message="Leads couldn’t load. Please retry." onRetry={() => { void refetchLeads(); }} />
               ) : <NoDataFound />
             }
             onEndReached={onEndReach}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              leadData?.length > 0 && (isFetchNextPageError || isRefetchError) ? (
+              todaysTasksComingSoon ? null : leadData?.length > 0 && (isFetchNextPageError || isRefetchError) ? (
                 <LeadReadRetry error={leadError} busy={leadsFetching} message={isFetchNextPageError ? "More leads couldn’t load. Please retry." : "Leads couldn’t refresh. Your loaded leads are still available."}
                   onRetry={() => { if (isFetchNextPageError) void fetchNextPage(); else void refetchLeads(); }} />
               ) : isFetchingNextPage && (
@@ -1210,6 +1227,11 @@ const LeadRowItem = React.memo(
 );
 
 const styles = StyleSheet.create({
+  comingSoonCard: { minHeight: 250, margin: 16, padding: 24, alignItems: "center", justifyContent: "center",
+    borderRadius: 18, borderWidth: 1, borderColor: "#E2E8F0", backgroundColor: "#F8FAFC", gap: 12 },
+  comingSoonIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#E8F0FC", alignItems: "center", justifyContent: "center" },
+  comingSoonTitle: { fontSize: 20, fontWeight: "700", color: "#1E293B", textAlign: "center" },
+  comingSoonDescription: { fontSize: 14, lineHeight: 21, color: "#64748B", textAlign: "center" },
   selectionBar: {
     flexDirection: "row",
     alignItems: "center",

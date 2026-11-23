@@ -1,3 +1,4 @@
+import { attendanceUserName, attendanceSummary, attendanceProgressLabel, AttendanceDisplaySummary, formatAttendanceDuration, attendanceSourceIcon, attendanceSourceLabel } from "../../utils/attendanceDisplay";
 import {
   StyleProp,
   StyleSheet,
@@ -27,7 +28,9 @@ export interface TRowAttendance {
   onPress: () => void;
 
   item: {
+    displaySummary?: AttendanceDisplaySummary;
     name?: string;
+    lastName?: string;
     role?: string;
     punchedInType?: string;
     punchedOutType?: string;
@@ -46,6 +49,8 @@ export interface TRowAttendance {
 }
 
 const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRowAttendance) => {
+  const summary = attendanceSummary(item);
+  const progressLabel = attendanceProgressLabel(summary);
   const attendanceDate = item.workDate || item.createdAt;
   const date = attendanceDate ? moment(attendanceDate) : null;
   const dateLabel = date?.isValid() ? date.locale("en").format("D MMM YYYY") : "—";
@@ -82,7 +87,7 @@ const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRow
 
             <View style={{ flex: 1 }}>
               <CustomText numberOfLines={1} style={styles.userName}>
-                {item?.name || "N/A"}
+                {attendanceUserName(item)}
               </CustomText>
 
             </View>
@@ -109,7 +114,7 @@ const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRow
               </View>
               {item.status === "present" && (item.lateMinutes ?? 0) > 0 && (
                 <View style={[styles.statusBadge, { backgroundColor: "#FEF3C7" }]}>
-                  <CustomText style={[styles.statusText, { color: "#92400E" }]}>Late</CustomText>
+                  <CustomText style={[styles.statusText, { color: "#92400E" }]}>Late · {formatAttendanceDuration(item.lateMinutes)}</CustomText>
                 </View>
               )}
               {needsReview && (
@@ -123,18 +128,26 @@ const RowAttendance = ({ containerStyle, onPress, item, action, personal }: TRow
 
         <View style={styles.middleRow}>
           {([
-            ["log-in", "Check In", item.punchedIn],
-            ["log-out", "Check Out", item.punchedOut],
-          ] as const).map(([icon, label, value]) => (
+            ["log-in", "Check In", summary.checkInAt, summary.checkInSource],
+            ["log-out", "Check Out", summary.checkOutAt, summary.checkOutSource],
+          ] as const).map(([icon, label, value, source]) => (
             <View key={label} style={styles.infoItem}>
               <Feather name={icon} size={14} color="#2D67C6" />
               <View style={styles.punchDetails}>
+                {!!value && <View accessible accessibilityLabel={source} style={styles.sourceBadge}>
+                  <Feather name={attendanceSourceIcon(source)} size={11} color="#245AA9" />
+                  <CustomText numberOfLines={1} style={styles.sourceBadgeText}>{attendanceSourceLabel(source)}</CustomText>
+                </View>}
                 <CustomText style={styles.roleText}>{label}</CustomText>
                 <CustomText style={styles.infoText}>{formatTime(value)}</CustomText>
+
               </View>
             </View>
           ))}
         </View>
+        {progressLabel && <CustomText style={{ color: "#245AA9", fontSize: 11 }}>{progressLabel}</CustomText>}
+        {summary.state === "needs_review" && <CustomText style={{ color: "#92400E", fontSize: 11 }}>Needs review</CustomText>}
+        {summary.checkOutDerived && <CustomText style={{ color: "#92400E", fontSize: 11 }}>{summary.checkOutExplanation || "Last Visit Out used as checkout"}</CustomText>}
         {item.issue && (
           <CustomText style={[styles.issueText, { color: item.resolve ? "#15803D" : "#B91C1C" }]}>
             {item.resolve ? "Issue resolved" : "Issue open"}
@@ -212,6 +225,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  sourceBadge: { flexDirection: "row", alignItems: "center", gap: 3, alignSelf: "flex-end", maxWidth: "100%", backgroundColor: "#E0EDFF", paddingHorizontal: 5, paddingVertical: 2, borderRadius: 7 },
+  sourceBadgeText: { fontSize: 10, fontWeight: "600", color: "#245AA9", flexShrink: 1 },
   punchDetails: { flex: 1, gap: 2 },
   issueText: { fontSize: 11, marginTop: 6 },
   middleRow: {

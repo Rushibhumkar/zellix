@@ -16,6 +16,7 @@ export const routeLeave = {
 }
 
 export const routeAttendance = {
+    AttendancePermissions: 'AttendancePermissions',
     AttendanceStack: 'AttendanceStack',
     AllAttendance: 'AllAttendance',
     AttendanceDetail: 'AttendanceDetail',

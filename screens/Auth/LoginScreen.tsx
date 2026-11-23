@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { isAxiosError } from "axios";
 import {
   ImageBackground,
   Image,
@@ -22,7 +23,6 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { roleEnum } from "../../utils/data";
 import CustomSnackBar from "../../myComponents/CustomSnackBar/CustomSnackBar";
 import CustomInput from "../../myComponents/CustomInput/CustomInput";
-import { myConsole } from "../../hooks/useConsole";
 import CustomText from "../../myComponents/CustomText/CustomText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color } from "../../const/color";
@@ -30,60 +30,51 @@ import { Entypo, Feather } from "@expo/vector-icons";
 import { iconWrapperStyle } from "../../const/globalStyle";
 import * as LocalAuthentication from "expo-local-authentication";
 
+function loginErrorMessage(error: unknown) {
+  if (!isAxiosError(error)) return "Unable to sign in. Please try again.";
+
+  if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+    return "The login request timed out. Please try again.";
+  }
+  if (!error.response) {
+    return __DEV__
+      ? "Cannot reach the dev API from this phone. Check the backend URL and network."
+      : "Cannot reach the server. Check your connection and try again.";
+  }
+
+  const { data, status } = error.response;
+  const candidates =
+    typeof data === "string" ? [data] : [data?.message, data?.error];
+  const message = candidates.find(
+    (value) =>
+      typeof value === "string" &&
+      value.trim() &&
+      !value.trimStart().startsWith("<"),
+  );
+  return message?.trim() || `Login failed (${status}). Please try again.`;
+}
+
 const LoginScreen = () => {
   const navigation = useNavigation();
   const initialValues = {
-    // email: "vishal@skgestates.com",
-    // password: "Application@2025*!",
-    // email: "suurajkummargupta@gmail.com",
-    // password: "123456789",
-    // email: "kashif22@mailinator.com",
-    // password: "123456789",
     // dev : agent
-    // email: "dev1@swavishtek.com",
-    // password: "",
     // dev : agent
-    // email: "abhishek@swavishsoftware.com",
-    // password: "",
     // dev : agent dev ( Test Agent 8 )
-    // email: "karenma.v.e.r.ic.k.6@gmail.com",
-    // password: "",
     // dev : agent ( Rushikesh Bhumkar )
-    // email: "test1@swavishtek.com",
-    // password: "",
-    // email: "shubhangi@swavishsoftware.com",
-    // password: "",
+    // <----------------->
+    // dev : hr ( Pavan Jape )
     // dev :
-    // email: "test@test.com",
-    // password: "123456789",
     // dev : super admin
-    // email: "rushibhumkar11@gmail.com",
-    // password: "",
     // dev  : sr manager ( Rohit Barate )
-    // email: "dev20@swavishtek.com",
-    // password: "",
     // dev  : team lead( Shubham Raut )
-    // email: "shubhamraut987654321@gmail.com",
-    // password: "",
     // dev PNL
-    // email: "ramshelke987654321@gmail.com",
-    // password: "",
     // <=========== LIVE =============>
     // live : seo
-    // email: "marketing@skgestates.com",
-    // password: "1234567890",
     // live : sr manager
-    // email: "amit.singh@skgestates.com",
-    // password: "",
     // live : Team lead
-    // email: "shivam.sourabh@skgestates.com",
-    // password: "",
     // live : Agent
-    // email: "farakhuddin.khan@skgestatesmail.com",
-    // password: "",
     // live : super admin
-    // email: "tech@skgestates.com",
-    // password: "Rohit@311001",
+    // live : agent
     email: "",
     password: "",
   };
@@ -168,10 +159,22 @@ const LoginScreen = () => {
         );
       })
       .catch((err) => {
-        myConsole("errssss", err);
+        const message = loginErrorMessage(err);
+        if (__DEV__) {
+          const requestError = isAxiosError(err) ? err : undefined;
+          console.warn("[Login] sign-in failed", {
+            name: err instanceof Error ? err.name : typeof err,
+            status: requestError?.response?.status,
+            code: requestError?.code,
+            apiHost: requestError?.config?.baseURL?.match(
+              /^https?:\/\/([^/@?#]+)(?:[/?#]|$)/i,
+            )?.[1],
+            message,
+          });
+        }
         setSnackBar({
           visible: true,
-          text: err?.response?.data,
+          text: message,
           error: true,
         });
       })

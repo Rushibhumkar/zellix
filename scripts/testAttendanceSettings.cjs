@@ -16,8 +16,8 @@ function load(file, imports = {}) {
   return mod.exports;
 }
 const policy = load('utils/attendanceAutoApproval.ts');
-for (const role of ['sup_admin', 'sub_admin', 'developer']) assert.equal(policy.canManageAttendanceAutoApproval(role), true);
-for (const role of ['agent', 'hr', 'office_admin', 'manager', 'sr_manager', 'recruiter', 'admin', undefined, '']) assert.equal(policy.canManageAttendanceAutoApproval(role), false);
+for (const role of ['sup_admin', 'sub_admin']) assert.equal(policy.canManageAttendanceAutoApproval(role), true);
+for (const role of ['agent', 'hr', 'office_admin', 'developer', 'manager', 'sr_manager', 'recruiter', 'admin', undefined, '']) assert.equal(policy.canManageAttendanceAutoApproval(role), false);
 assert.equal(policy.isAutoApprovalEnabled(false), true);
 assert.equal(policy.isAutoApprovalEnabled(true), false);
 const charts = load('utils/hrmChartData.ts');
@@ -88,7 +88,7 @@ const api = load('services/hrmApi/attendanceSettingsApi.ts', {
   await toggle.props.onValueChange(false);
   assert.equal(submissions, 1); // Synchronous duplicate-tap guard.
   pendingResolve(); await first;
-  mutationOptions.onSuccess({ approveBasedAttendance: true });
+  mutationOptions.onSuccess({ approveBasedAttendance: true }, { setting: "approval" });
   assert.equal(cached.length, 1);
   assert.equal(invalidations.length, 3);
   queryState = { ...queryState, isFetching: true };
@@ -97,8 +97,9 @@ const api = load('services/hrmApi/attendanceSettingsApi.ts', {
   await toggle.props.onValueChange(false);
   assert.equal(submissions, 1);
   queryState = { data: undefined, isFetching: false, isError: true, refetch() {} };
-  tree = component({ role: 'developer', userId: 'dev' });
-  assert.equal(find(tree, 'Switch'), undefined);
+  assert.equal(component({ role: 'developer', userId: 'dev' }), null);
+  tree = component({ role: 'sub_admin', userId: 'sub' });
+  assert.equal(find(tree, 'Switch').props.disabled, true);
   assert.equal(find(tree, 'Pressable').props.accessibilityRole, 'button');
   let chartCounts;
   let userChartState = {};

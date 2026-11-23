@@ -104,8 +104,8 @@ const ModalWithBlur = ({
               </Pressable>
             </Pressable>
           )}
-          {overlay}
         </BlurView>
+        {overlay}
       </KeyboardAvoidingView>
     </Modal>
   );

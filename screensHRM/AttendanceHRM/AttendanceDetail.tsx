@@ -1,3 +1,4 @@
+import { attendanceUserName, attendanceSummary, attendanceProgressLabel, formatAttendanceDuration, attendanceSourceIcon, attendanceSourceLabel } from "../../utils/attendanceDisplay";
 import { Feather } from "@expo/vector-icons";
 import { Linking, Pressable } from "react-native";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
@@ -9,7 +10,7 @@ import { useGetAttendanceDetail } from "../../hooks/useGetQuerryHRM";
 import OutlineBtn from "../../myComponents/OutlineBtn/OutlineBtn";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 import LeaveAppRemark from "../LeaveHRM/components/LeaveAppRemark";
-import { attendanceStatus, punchType, roleHRM, statusAttend, statusColorAttend } from "../../utils/hrmKeysMatchToBE";
+import { attendanceStatus, roleHRM, statusAttend, statusColorAttend } from "../../utils/hrmKeysMatchToBE";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/userSlice";
 import {
@@ -33,8 +34,8 @@ const attendanceEventLabels: Record<string, string> = {
   CORRECTION: "Attendance corrected",
 };
 
-const timelineDateTime = (value: string) =>
-  moment(value).locale("en").format("D MMM YYYY · hh:mm A");
+const timelineDateTime = (value?: string) =>
+  value && moment(value).isValid() ? moment(value).locale("en").format("D MMM YYYY · hh:mm A") : "—";
 
 const AttendanceDetail = () => {
   const { params } = useRoute();
@@ -130,14 +131,19 @@ const AttendanceDetail = () => {
     if (punch.isSame(workDate, "day")) return punch.format("hh:mm A");
     return punch.format(punch.isSame(workDate, "year") ? "D MMM · hh:mm A" : "D MMM YYYY · hh:mm A");
   };
+  const summary = attendanceSummary(data);
+  const progressLabel = attendanceProgressLabel(summary);
+  const sessions = data?.sessions || [];
+  const timelineEvents = (data?.events || []).filter(event => !sessions.length ||
+    !["CHECK_IN", "CHECK_OUT", "VISIT_IN", "VISIT_OUT", "SITE_IN", "SITE_OUT"].includes(event.action));
   const status = data?.status;
   const statusTint = status === "present" ? "#15803D" : statusColorAttend[status] || "#475569";
   const punches = [
-    { label: "Check In", icon: "log-in" as const, time: data?.punchedIn, type: data?.punchedInType },
-    { label: "Check Out", icon: "log-out" as const, time: data?.punchedOut, type: data?.punchedOutType },
+    { label: "Check In", icon: "log-in" as const, time: summary.checkInAt, type: summary.checkInSource },
+    { label: "Check Out", icon: "log-out" as const, time: summary.checkOutAt, type: summary.checkOutSource },
   ];
-  const nameParts = [data?.name, data?.lastName].filter(Boolean);
-  const employeeName = nameParts.join(" ");
+  const employeeName = attendanceUserName(data);
+  const nameParts = employeeName.split(/\s+/).slice(0, 2);
   const initials = nameParts.map((part) => part.trim().charAt(0)).join("").toUpperCase();
   const employeeRole = roleHRM[data?.role] || data?.role;
   const sections = [
@@ -193,7 +199,7 @@ const AttendanceDetail = () => {
               )}
               {item.kind === "attendance" && status === "present" && data?.lateMinutes > 0 && (
                 <View style={[styles.detailBadge, { backgroundColor: "#FEF3C7" }]}>
-                  <CustomText style={[styles.detailBadgeText, { color: "#92400E" }]}>Late · {data.lateMinutes} min</CustomText>
+                  <CustomText style={[styles.detailBadgeText, { color: "#92400E" }]}>Late · {formatAttendanceDuration(data.lateMinutes)}</CustomText>
                 </View>
               )}
             </View>
@@ -234,17 +240,16 @@ const AttendanceDetail = () => {
               <View style={styles.punchGrid}>
                 {punches.map(({ label, icon, time, type }) => (
                   <View key={label} style={styles.punchTile}>
+                    {!!type && <View accessible accessibilityLabel={type} style={styles.sourceBadge}>
+                      <Feather name={attendanceSourceIcon(type)} size={12} color="#245AA9" />
+                      <CustomText numberOfLines={1} style={styles.sourceBadgeText}>{attendanceSourceLabel(type)}</CustomText>
+                    </View>}
                     <View style={styles.punchLabelGroup}>
                       <Feather name={icon} size={15} color="#2E67BE" />
                       <CustomText style={styles.detailLabel}>{label}</CustomText>
                     </View>
                     <CustomText style={styles.punchTime}>{formatPunchTime(time)}</CustomText>
-                    {!!type && (
-                      <View style={[styles.detailBadge, styles.punchTypeBadge]}>
-                        <Feather name={type === "office" ? "home" : type === "leave" ? "calendar" : "map-pin"} size={12} color="#245AA9" />
-                        <CustomText style={[styles.detailBadgeText, styles.punchTypeText]}>{punchType[type] || type}</CustomText>
-                      </View>
-                    )}
+
                   </View>
                 ))}
               </View>
@@ -262,15 +267,43 @@ const AttendanceDetail = () => {
             {!!data?.reviewFlags?.length && (
               <CustomText style={{ color: "#92400E" }}>{data.reviewFlags.join(" · ")}</CustomText>
             )}
-            {!!data?.events?.length && (
+            {!!data && <View style={styles.infoCard}>
+              <CustomText>Work time {formatAttendanceDuration(summary.workMinutes)}{summary.checkOutDerived ? " (estimated)" : ""}</CustomText>
+              {progressLabel && <CustomText style={{ color: "#245AA9" }}>{progressLabel}{progressLabel === "Day in progress" ? " · duration is provisional" : ""}</CustomText>}
+              {summary.state === "needs_review" && <CustomText style={{ color: "#92400E" }}>Attendance needs review</CustomText>}
+              {summary.checkOutDerived && <CustomText style={{ color: "#92400E" }}>{summary.checkOutExplanation || "Last Visit Out used as checkout"}</CustomText>}
+            </View>}
+            {!!sessions.length && <View style={styles.timeline}>
+              <CustomText style={styles.headingText}>Attendance sessions</CustomText>
+              {sessions.map((session, index) => <View key={session.id} style={[styles.timelineCard, { marginBottom: 12 }]}>
+                <CustomText style={styles.timelineAction}>{session.kind === "visit" ? (session.in?.siteVisit?.kind === "office" ? "Office visit" : "Field visit") : "Check-in session"} · {index + 1}</CustomText>
+                {!!(session.in?.siteVisit?.name || session.out?.siteVisit?.name) && <CustomText>{session.in?.siteVisit?.name || session.out?.siteVisit?.name}</CustomText>}
+                {([['In', session.in], ['Out', session.out]] as const).map(([side, event]) => <View key={side} style={{ paddingTop: 12 }}>
+                  <View style={styles.timelineHeader}>
+                    <CustomText style={styles.timelineAction}>{session.kind === "visit" ? "Visit" : "Check"} {side}</CustomText>
+                    {!!event && <View accessible accessibilityLabel={event.displaySource || event.source} style={styles.sourceBadge}>
+                      <Feather name={attendanceSourceIcon(event.source || event.displaySource)} size={12} color="#245AA9" />
+                      <CustomText numberOfLines={1} style={styles.sourceBadgeText}>{attendanceSourceLabel(event.source || event.displaySource)}</CustomText>
+                    </View>}
+                  </View>
+                  <CustomText>{event ? timelineDateTime(event.effectiveAt || event.recordedAt) : side === "In" ? (session.kind === "visit" ? "Visit In missing" : "Check In missing") : session.kind === "visit" ? "Visit Out pending" : "Check Out missing"}</CustomText>
+                  {!!event?.recordedAt && timelineDateTime(event.recordedAt) !== timelineDateTime(event.effectiveAt) && <CustomText style={styles.timelineDate}>Recorded {timelineDateTime(event.recordedAt)}</CustomText>}
+                  {!!event?.remarks && <CustomText>{event.remarks}</CustomText>}
+                  {!!event?.location && <Pressable accessibilityRole="link" onPress={() => {
+                    void Linking.openURL(`https://www.google.com/maps?q=${encodeURIComponent(`${event.location.lat},${event.location.lng}`)}`).catch(() => popUpConfToast.errorMessage("Could not open Google Maps."));
+                  }}><CustomText style={styles.timelineLink}>View location</CustomText></Pressable>}
+                </View>)}
+              </View>)}
+            </View>}
+            {!!timelineEvents.length && (
               <View style={styles.timeline}>
                 <CustomText style={styles.headingText}>Attendance timeline</CustomText>
-                {data.events.map((event, index) => {
+                {timelineEvents.map((event, index) => {
                   const effective = event.effectiveAt ? timelineDateTime(event.effectiveAt) : null;
                   const recorded = event.recordedAt ? timelineDateTime(event.recordedAt) : null;
                   return (
                     <View key={event.requestId || event.machineEventId || index} style={styles.timelineItem}>
-                      {index < data.events.length - 1 && <View style={styles.timelineLine} />}
+                      {index < timelineEvents.length - 1 && <View style={styles.timelineLine} />}
                       <View style={styles.timelineDot} />
                       <View style={styles.timelineCard}>
                         <View style={styles.timelineHeader}>
@@ -278,7 +311,7 @@ const AttendanceDetail = () => {
                             {attendanceEventLabels[event.action] || event.action?.replace(/_/g, " ")}
                           </CustomText>
                           {!!event.source && (
-                            <CustomText style={styles.timelineSource}>{event.source.replace(/_/g, " ")}</CustomText>
+                            <View accessible accessibilityLabel={event.source.replace(/_/g, " ")} style={styles.sourceBadge}><Feather name={attendanceSourceIcon(event.source)} size={12} color="#245AA9" /><CustomText numberOfLines={1} style={styles.sourceBadgeText}>{attendanceSourceLabel(event.source)}</CustomText></View>
                           )}
                         </View>
                         {!!effective && <CustomText style={styles.timelineDate}>{effective}</CustomText>}
@@ -462,6 +495,8 @@ const styles = StyleSheet.create({
   timelineCard: { gap: 5, padding: 10, borderRadius: 12, borderWidth: 1, borderColor: "#E2E8F0", backgroundColor: "#F8FAFC" },
   timelineHeader: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 6 },
   timelineAction: { fontSize: 14, fontWeight: "700", color: "#1E293B" },
+  sourceBadge: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-end", marginLeft: "auto", maxWidth: "100%", flexShrink: 0, backgroundColor: "#E0EDFF", paddingHorizontal: 6, paddingVertical: 3, borderRadius: 8 },
+  sourceBadgeText: { fontSize: 10, fontWeight: "600", color: "#245AA9", flexShrink: 1 },
   timelineSource: { fontSize: 10, color: "#1E40AF", backgroundColor: "#EAF2FF", borderRadius: 8, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   timelineDate: { fontSize: 12, color: "#475569" },
   timelineLink: { color: "#2E67BE", textDecorationLine: "underline", fontSize: 12 },
@@ -486,8 +521,8 @@ const styles = StyleSheet.create({
   punchTile: { flex: 1, minWidth: 0, gap: 6, padding: 10, borderRadius: 12, backgroundColor: "#F1F5F9" },
   punchLabelGroup: { flexDirection: "row", alignItems: "center", gap: 6 },
   punchTime: { fontSize: 13, fontWeight: "600", color: "#2F3A4A" },
-  punchTypeBadge: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#E0EDFF" },
-  punchTypeText: { color: "#245AA9" },
+  punchTypeBadge: { maxWidth: "100%", flexShrink: 1, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#E0EDFF" },
+  punchTypeText: { flexShrink: 1, color: "#245AA9" },
   detailCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,

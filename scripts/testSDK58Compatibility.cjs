@@ -41,9 +41,9 @@ vm.runInNewContext(`(function(require,module,exports){${compiled}})`, { console 
   modal.componentWillUnmount();
   assert.equal(removed, 2);
   const config = JSON.parse(read('app.json')).expo;
-  assert.equal(config.runtimeVersion, '2.3.0-sdk58');
-  assert.match(read('android/app/src/main/res/values/strings.xml'), /2\.3\.0-sdk58/);
-  assert.match(read('ios/zellix/Supporting/Expo.plist'), /2\.3\.0-sdk58/);
+  assert.equal(config.runtimeVersion, config.version + '-sdk58');
+  assert.ok(read('android/app/src/main/res/values/strings.xml').includes(config.android.runtimeVersion));
+  assert.ok(read('ios/zellix/Supporting/Expo.plist').includes(config.runtimeVersion));
   assert.match(read('ios/zellix/Info.plist'), /UIApplicationSceneManifest/);
   assert.match(read('ios/zellix.xcodeproj/project.pbxproj'), /SceneDelegate.swift in Sources/);
   assert.equal(require('react/package.json').version, '19.3.0');

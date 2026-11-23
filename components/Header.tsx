@@ -138,17 +138,24 @@ const Header: React.FC<HeaderProps> = ({
         style={styles.gradientBackground}
       >
         <StatusBar translucent backgroundColor="transparent" style="light" />
-        <SafeAreaView style={{ backgroundColor: "transparent" }}>
+        <SafeAreaView
+          edges={Platform.OS === "android" ? ["top", "left", "right"] : undefined}
+          style={{ backgroundColor: "transparent" }}
+        >
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: showHeadrActionButtons
+              // Android navigation-bar insets must not shrink the header row.
+              marginBottom: Platform.OS === "android"
+                ? 0
+                : showHeadrActionButtons
                 ? -30
                 : insets?.bottom !== 0
                   ? -20
                   : insets.top - 8,
+              ...(Platform.OS === "android" && { minHeight: 44, paddingBottom: 12 }),
               paddingHorizontal: 20,
             }}
           >
@@ -175,12 +182,13 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               <AnimatedView
+                style={{ flex: 1, minWidth: 0 }}
               // entering={
               //   isWithAnimation ? FadeIn.duration(300).delay(100) : undefined
               // }
               // exiting={isWithAnimation ? FadeOut.duration(200) : undefined}
               >
-                <CustomText style={styles.titleText}>{title}</CustomText>
+                <CustomText numberOfLines={1} ellipsizeMode="tail" style={styles.titleText}>{title}</CustomText>
                 {totalCount > 0 && (
                   <CustomText
                     style={{
@@ -420,11 +428,15 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 12 : 12,
   },
   container: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
   backButton: {
+    flexShrink: 0,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 12,
     padding: 8,
@@ -436,6 +448,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   iconWrapper: {
+    flexShrink: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

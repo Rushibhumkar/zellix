@@ -13,11 +13,12 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { axiosInstance } from "../../services/authApi/axiosInstance";
 import { Dropdown } from "react-native-element-dropdown";
 import { useQuery } from "@tanstack/react-query";
-import { getVisitPunchLocations } from "../../services/hrmApi/siteVisitLocationsApi";
+import { getAttendancePunchLocations } from "../../services/hrmApi/siteVisitLocationsApi";
 import ModalWithBlur from "../../myComponentsHRM/ModalWithBlur/ModalWithBlur";
 
 const labels = {
@@ -37,7 +38,11 @@ const visitActions: Action[] = ["VISIT_IN", "VISIT_OUT"];
 const officeActions: Action[] = ["CHECK_IN", "CHECK_OUT"];
 const endpoint = "/api/hrms/att/remotePunch";
 
-export default function CheckInOut({ showInitialLoader = true, onLoadError, retryVersion }: {
+export default function CheckInOut({
+  showInitialLoader = true,
+  onLoadError,
+  retryVersion,
+}: {
   showInitialLoader?: boolean;
   onLoadError: (failed: boolean) => void;
   retryVersion: number;
@@ -47,18 +52,23 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   const [officePunchEnabled, setOfficePunchEnabled] = useState(false);
   const [canEndWithVisit, setCanEndWithVisit] = useState(false);
   const [selected, setSelected] = useState<Action>();
+  const [policyRevision, setPolicyRevision] = useState(0);
   const [siteVisitAvailable, setSiteVisitAvailable] = useState(false);
   const [activeSiteVisitName, setActiveSiteVisitName] = useState<string>();
+  const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
+  const [checkInTime, setCheckInTime] = useState<string | null>(null);
+  const [activeVisitAt, setActiveVisitAt] = useState<string | null>(null);
   const [siteId, setSiteId] = useState<string>();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const { height: windowHeight } = useWindowDimensions();
   const sites = useQuery({
-    queryKey: ["visitPunchLocations"],
-    queryFn: getVisitPunchLocations,
-    staleTime: 60_000,
-    enabled: selected === "VISIT_IN" && siteVisitAvailable,
+    queryKey: ["attendancePunchLocations", selected, policyRevision],
+    queryFn: ({ signal }) => getAttendancePunchLocations(selected as "CHECK_IN" | "VISIT_IN", signal),
+    staleTime: 0,
+    enabled: (selected === "CHECK_IN" || selected === "VISIT_IN") && availability?.[selected] === null,
   });
   const [remarks, setRemarks] = useState("");
+  const [remarksRequired, setRemarksRequired] = useState(false);
   const [loadingButton, setLoadingButton] = useState<
     Action | "confirmVisit" | "endWorkday"
   >();
@@ -66,7 +76,10 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   const [loadFailed, setLoadFailed] = useState(false);
   const toast = useAppToast();
   const visitToastHost = useRef<AppToastHostHandle>(null);
-  const request = useRef<{ action: Action; id: string; siteId?: string } | undefined>(undefined);
+  const request = useRef<
+    | { action: Action; id: string; siteId?: string; endWorkday: boolean }
+    | undefined
+  >(undefined);
   const submitting = useRef(false);
   const refreshVersion = useRef(0);
   const refreshing = useRef(false);
@@ -79,9 +92,14 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       const { data } = await axiosInstance.get(endpoint);
       if (version !== refreshVersion.current) return;
       setAvailability(data.actions);
+      setPolicyRevision(data.attendancePolicyRevision || 0);
+      setRemarksRequired(data.visitOutRemarksRequired === true);
       setOfficePunchEnabled(data.mobileOfficePunchEnabled === true);
       setSiteVisitAvailable(data.siteVisitAvailable === true);
       setActiveSiteVisitName(data.activeSiteVisitName);
+      setActiveVisitAt(data.activeVisitAt || null);
+      setCheckedInAt(data.punchedIn || null);
+      setCheckInTime(data.checkInAt || null);
       setCanEndWithVisit(data.canEndWorkdayWithVisit === true);
       setLoadFailed(false);
       onLoadError(false);
@@ -106,15 +124,26 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   );
 
   async function submit(action: Action, endWorkday = false) {
-    if (submitting.current || (officeActions.includes(action) ? !officePunchEnabled : !siteVisitAvailable) ||
-        (action === "VISIT_IN" && !sites.data?.some(site => site._id === siteId))) return;
+    if (submitting.current) return;
+    if (action === "VISIT_OUT" && remarksRequired && !remarks.trim()) {
+      toast.error("Enter remarks before ending this visit.", {}, visitToastHost.current);
+      return;
+    }
+    if (endWorkday && (action !== "VISIT_OUT" || !canEndWithVisit)) return;
+    if (availability?.[action] || (officeActions.includes(action) ? !officePunchEnabled : !siteVisitAvailable)) {
+      toast.error(availability?.[action] || "This attendance action is no longer available. Close this dialog and try again.", {}, selected ? visitToastHost.current : null);
+      return;
+    }
+    if (
+      (["CHECK_IN", "VISIT_IN"].includes(action) &&
+        (sites.isFetching || sites.isError || !sites.data?.some((site) => site._id === siteId)))
+    )
+      return;
     submitting.current = true;
     setLoadingButton(
       endWorkday
         ? "endWorkday"
-        : !officeActions.includes(action)
-          ? "confirmVisit"
-          : action,
+        : action === "CHECK_OUT" ? action : "confirmVisit",
     );
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
@@ -136,27 +165,40 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
         );
         return;
       }
-      if (!await Location.hasServicesEnabledAsync()) {
-        Alert.alert("Turn on location", "Enable location services on your phone and try again.");
+      if (!(await Location.hasServicesEnabledAsync())) {
+        Alert.alert(
+          "Turn on location",
+          "Enable location services on your phone and try again.",
+        );
         return;
       }
       let coords: Location.LocationObjectCoords;
       try {
-        ({ coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }));
+        ({ coords } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        }));
       } catch {
-        toast.error("Could not get your location. Move to an open area and try again.", {},
-          officeActions.includes(action) ? null : visitToastHost.current);
+        toast.error(
+          "Could not get your location. Move to an open area and try again.",
+          {},
+          selected ? visitToastHost.current : null,
+        );
         return;
       }
-      if (request.current?.action !== action || request.current.siteId !== siteId)
+      if (
+        request.current?.action !== action ||
+        request.current.siteId !== siteId ||
+        request.current.endWorkday !== endWorkday
+      )
         request.current = {
           action,
           siteId,
+          endWorkday,
           id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         };
       const { data } = await axiosInstance.post(endpoint, {
         action,
-        ...(action === "VISIT_IN" && { siteId }),
+        ...(["CHECK_IN", "VISIT_IN"].includes(action) && { siteId }),
         endWorkday,
         remarks: !officeActions.includes(action) ? remarks : undefined,
         requestId: request.current.id,
@@ -169,9 +211,14 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       request.current = undefined;
       refreshVersion.current++;
       setAvailability(data.actions);
+      setPolicyRevision(data.attendancePolicyRevision || 0);
+      setRemarksRequired(data.visitOutRemarksRequired === true);
       setOfficePunchEnabled(data.mobileOfficePunchEnabled === true);
       setSiteVisitAvailable(data.siteVisitAvailable === true);
       setActiveSiteVisitName(data.activeSiteVisitName);
+      setActiveVisitAt(data.activeVisitAt || null);
+      setCheckedInAt(data.punchedIn || null);
+      setCheckInTime(data.checkInAt || null);
       setCanEndWithVisit(data.canEndWorkdayWithVisit === true);
       setSelected(undefined);
       setRemarks("");
@@ -191,7 +238,6 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
       if (body?.code === "SITE_VISIT_WEEKEND_ONLY") {
         refreshVersion.current++;
         setSiteVisitAvailable(false);
-        setSelected(undefined);
       }
       if (body?.code === "SITE_NOT_FOUND") {
         setSiteId(undefined);
@@ -202,7 +248,7 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
           ? message
           : `Could not complete ${labels[action]}. Check your connection and location, then retry.`,
         {},
-        officeActions.includes(action) || body?.code === "SITE_VISIT_WEEKEND_ONLY" ? null : visitToastHost.current,
+        selected ? visitToastHost.current : null,
       );
       void refresh();
     } finally {
@@ -211,48 +257,73 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
     }
   }
 
-  const needsVisitLocation = selected === "VISIT_IN" && !sites.data?.some(site => site._id === siteId);
+  const needsVisitLocation =
+    (selected === "CHECK_IN" || selected === "VISIT_IN") && (sites.isFetching || sites.isError || !sites.data?.some((site) => site._id === siteId));
 
   const renderAction = (action: Action) => {
     const reason = availability?.[action];
+    const alreadyCheckedIn = action === "CHECK_IN" && Boolean(checkedInAt);
+    const visitStarted = action === "VISIT_IN" && Boolean(activeVisitAt);
+    const startTime = visitStarted ? activeVisitAt : alreadyCheckedIn ? checkInTime : null;
+    const startDate = startTime ? new Date(startTime) : null;
+    const startedAt =
+      startDate && Number.isFinite(startDate.getTime())
+        ? new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }).format(startDate)
+        : null;
+    const label = visitStarted
+      ? startedAt
+        ? `Started at\n${startedAt}`
+        : "Visit started"
+      : alreadyCheckedIn
+        ? startedAt ? `Checked in at\n${startedAt}` : "Day started"
+        : labels[action];
     return (
       <Pressable
         key={action}
         accessibilityRole="button"
-        accessibilityLabel={labels[action]}
+        accessibilityLabel={
+          visitStarted
+            ? startedAt
+              ? `Visit started at ${startedAt}`
+              : "Visit started"
+            : labels[action]
+        }
         accessibilityState={{
           busy: loadingButton === action,
-          disabled: busy || !availability,
+          disabled: busy || !availability || visitStarted || alreadyCheckedIn,
         }}
         accessibilityHint={reason || undefined}
-        disabled={busy || !availability}
-        style={[
-          styles.button,
-          styles.actionButton,
-          !!reason && styles.blocked,
-        ]}
+        accessibilityValue={alreadyCheckedIn ? { text: label.replace("\n", " ") } : undefined}
+        disabled={busy || !availability || visitStarted || alreadyCheckedIn}
+        style={[styles.button, styles.actionButton, (!!reason || alreadyCheckedIn) && styles.blocked]}
         onPress={() => {
           if (reason) toast.error(reason);
-          else if (!officeActions.includes(action)) {
+          else if (action !== "CHECK_OUT") {
             setLocationPickerOpen(false);
             setSiteId(undefined);
             setRemarks("");
             setSelected(action);
-          }
-          else void submit(action);
+          } else void submit(action);
         }}
       >
         {loadingButton === action ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={[styles.buttonText, styles.actionText]}>Checking out…</Text>
+          </>
         ) : (
           <Text
             style={[
               styles.buttonText,
               styles.actionText,
-              !!reason && styles.blockedText,
+              (!!reason || alreadyCheckedIn) && styles.blockedText,
             ]}
           >
-            {labels[action]}
+            {label}
           </Text>
         )}
       </Pressable>
@@ -262,18 +333,49 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
   return (
     <View style={styles.wrapper}>
       {!availability && !loadFailed && showInitialLoader && (
-        <ActivityIndicator color="#2E67BE" accessibilityLabel="Loading attendance actions" />
+        <ActivityIndicator
+          color="#2E67BE"
+          accessibilityLabel="Loading attendance actions"
+        />
       )}
       {(officePunchEnabled || siteVisitAvailable) && (
-        <View style={styles.actionRow}>
-          {officePunchEnabled && officeActions.map(renderAction)}
-          {siteVisitAvailable && visitActions.map(renderAction)}
+        <View style={styles.actionGroups}>
+          {officePunchEnabled && (
+            <View style={styles.actionCard}>
+              <View style={styles.actionCardHeading}>
+                <Feather name="clock" size={18} color="#2E67BE" />
+                <Text style={styles.actionCardTitle}>Daily attendance</Text>
+              </View>
+              <Text style={styles.actionCardHelp}>
+                Record your workday with Check In and Check Out.
+              </Text>
+              <View style={styles.actionRow}>
+                {officeActions.map(renderAction)}
+              </View>
+            </View>
+          )}
+          {siteVisitAvailable && (
+            <View style={styles.actionCard}>
+              <View style={styles.actionCardHeading}>
+                <Feather name="map-pin" size={18} color="#2E67BE" />
+                <Text style={styles.actionCardTitle}>Visits</Text>
+              </View>
+              <Text style={styles.actionCardHelp}>
+                Start a visit with Visit In. Use Visit Out when it ends.
+              </Text>
+              <View style={styles.actionRow}>
+                {visitActions.map(renderAction)}
+              </View>
+            </View>
+          )}
         </View>
       )}
       <ModalWithBlur
-        visible={!!selected && siteVisitAvailable}
+        visible={!!selected}
         overlay={<AppToastHost ref={visitToastHost} />}
-        contentHeight={selected === "VISIT_IN" && locationPickerOpen ? "75%" : undefined}
+        contentHeight={
+          (selected === "CHECK_IN" || selected === "VISIT_IN") && locationPickerOpen ? "75%" : undefined
+        }
         onClose={() => {
           if (!busy) {
             setLocationPickerOpen(false);
@@ -282,44 +384,56 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
         }}
       >
         <Text style={styles.title}>{selected ? labels[selected] : ""}</Text>
-        {selected === "VISIT_IN" && (
-          sites.isError ? (
-            <Pressable accessibilityRole="button" onPress={() => void sites.refetch()}>
-              <Text style={styles.siteHelp}>Could not load visit locations. Tap to retry.</Text>
+        {(selected === "CHECK_IN" || selected === "VISIT_IN") &&
+          (sites.isError ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void sites.refetch()}
+            >
+              <Text style={styles.siteHelp}>
+                {(sites.error as any)?.response?.data?.message || "Could not load attendance locations."} Tap to retry.
+              </Text>
             </Pressable>
-          ) : sites.isPending ? <ActivityIndicator accessibilityLabel="Loading visit locations" /> :
-          !sites.data?.length ? <Text style={styles.siteHelp}>No developer locations or sales centers with coordinates are available.</Text> :
-          <Dropdown
-            style={[styles.input, styles.locationPicker]}
-            containerStyle={styles.locationMenu}
-            placeholderStyle={styles.sitePlaceholder}
-            selectedTextStyle={styles.siteSelection}
-            data={sites.data}
-            labelField="name"
-            valueField="_id"
-            value={siteId}
-            mode="modal"
-            onFocus={() => setLocationPickerOpen(true)}
-            onBlur={() => setLocationPickerOpen(false)}
-            onChange={site => setSiteId(site._id)}
-            placeholder="Select a visit location"
-            accessibilityLabel="Select a developer location or sales center"
-            disable={busy}
-            search
-            searchPlaceholder="Search developers or sales centers"
-            maxHeight={Math.min(280, Math.round(windowHeight * 0.4))}
-          />
+          ) : sites.isPending ? (
+            <ActivityIndicator accessibilityLabel="Loading attendance locations" />
+          ) : !sites.data?.length ? (
+            <Text style={styles.siteHelp}>
+              No allowed attendance locations are configured. Contact your administrator.
+            </Text>
+          ) : (
+            <Dropdown
+              style={[styles.input, styles.locationPicker]}
+              containerStyle={styles.locationMenu}
+              placeholderStyle={styles.sitePlaceholder}
+              selectedTextStyle={styles.siteSelection}
+              data={sites.data}
+              labelField="displayName"
+              valueField="_id"
+              value={siteId}
+              mode="modal"
+              onFocus={() => setLocationPickerOpen(true)}
+              onBlur={() => setLocationPickerOpen(false)}
+              onChange={(site) => setSiteId(site._id)}
+              placeholder="Select attendance location"
+              accessibilityLabel="Select attendance location"
+              disable={busy}
+              search
+              searchPlaceholder="Search sales centers or office"
+              maxHeight={Math.min(280, Math.round(windowHeight * 0.4))}
+            />
+          ))}
+        {selected === "VISIT_OUT" && activeSiteVisitName && (
+          <Text style={styles.siteHelp}>{activeSiteVisitName}</Text>
         )}
-        {selected === "VISIT_OUT" && activeSiteVisitName && <Text style={styles.siteHelp}>{activeSiteVisitName}</Text>}
-        <TextInput
+        {!officeActions.includes(selected as Action) && <TextInput
           editable={!busy}
           style={styles.input}
+          placeholder={selected === "VISIT_OUT" && remarksRequired ? "Visit Out remarks (required)" : "Remarks (optional)"}
           value={remarks}
           onChangeText={setRemarks}
-          placeholder="Remark (optional)"
           placeholderTextColor="#94A3B8"
           maxLength={1000}
-        />
+        />}
         <View style={styles.row}>
           <Pressable
             accessibilityRole="button"
@@ -333,7 +447,10 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
             onPress={() => selected && void submit(selected)}
           >
             {loadingButton === "confirmVisit" ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.buttonText}>Submitting…</Text>
+              </>
             ) : (
               <Text style={styles.buttonText}>Confirm</Text>
             )}
@@ -342,30 +459,64 @@ export default function CheckInOut({ showInitialLoader = true, onLoadError, retr
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="End workday too"
+              accessibilityHint="Ends this visit and checks you out for the day."
               accessibilityState={{
                 busy: loadingButton === "endWorkday",
                 disabled: busy,
               }}
               disabled={busy}
               style={styles.button}
-              onPress={() => void submit(selected, true)}
+              onPress={() => void submit("VISIT_OUT", true)}
             >
               {loadingButton === "endWorkday" ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <>
+                  <ActivityIndicator size="small" color="#fff" />
+                  <Text style={styles.buttonText}>Ending workday…</Text>
+                </>
               ) : (
                 <Text style={styles.buttonText}>End workday too</Text>
               )}
             </Pressable>
           )}
         </View>
+        {selected === "VISIT_OUT" && canEndWithVisit && (
+          <View style={styles.workdayHelp}>
+            <Feather name="info" size={18} color="#2E67BE" style={styles.workdayHelpIcon} />
+            <View style={styles.workdayHelpCopy}>
+              <View style={styles.workdayHelpPoint}>
+                <Text style={styles.workdayHelpBullet}>•</Text>
+                <Text style={styles.workdayHelpText}>
+                  <Text style={styles.workdayHelpLabel}>Confirm:</Text> Ends only this visit and keeps your workday open.
+                </Text>
+              </View>
+              <View style={styles.workdayHelpPoint}>
+                <Text style={styles.workdayHelpBullet}>•</Text>
+                <Text style={styles.workdayHelpText}>
+                  <Text style={styles.workdayHelpLabel}>End workday too:</Text> Ends this visit and checks you out for the day.
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
       </ModalWithBlur>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 0, marginBottom: 16 },
-  actionRow: { flexDirection: "row", alignItems: "stretch", gap: 6 },
+  wrapper: { gap: 8, marginHorizontal: 12, marginTop: 12, marginBottom: 4 },
+  actionGroups: { gap: 12 },
+  actionCard: {
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#DBE5F2",
+    backgroundColor: "#FFFFFF",
+  },
+  actionCardHeading: { flexDirection: "row", alignItems: "center", gap: 8 },
+  actionCardTitle: { flex: 1, color: "#1E3A5F", fontSize: 15, fontWeight: "700" },
+  actionCardHelp: { color: "#64748B", fontSize: 12, lineHeight: 18, marginTop: 6, marginBottom: 12 },
+  actionRow: { flexDirection: "row", alignItems: "stretch", gap: 10 },
   actionButton: {
     flex: 1,
     minWidth: 0,
@@ -375,14 +526,37 @@ const styles = StyleSheet.create({
     borderColor: "#2E67BE",
   },
   siteHelp: { color: "#475569", marginBottom: 8 },
-  locationPicker: { minHeight: 48, borderRadius: 12, backgroundColor: "#F8FAFC" },
+  locationPicker: {
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+  },
   locationMenu: { borderRadius: 12, borderColor: "#CBD5E1" },
   sitePlaceholder: { color: "#475569", fontSize: 14 },
   siteSelection: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
   actionText: { fontSize: 13, textAlign: "center" },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  workdayHelp: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+  },
+  workdayHelpIcon: { marginTop: 2 },
+  workdayHelpCopy: { flex: 1, minWidth: 0, gap: 8 },
+  workdayHelpPoint: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
+  workdayHelpBullet: { color: "#2E67BE", fontSize: 12, lineHeight: 18 },
+  workdayHelpLabel: { color: "#1E3A5F", fontWeight: "600" },
+  workdayHelpText: { flex: 1, color: "#475569", fontSize: 12, lineHeight: 18 },
   button: {
     flexGrow: 1,
+    flexDirection: "row",
+    gap: 8,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
@@ -392,7 +566,7 @@ const styles = StyleSheet.create({
   },
   blocked: { backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" },
   blockedText: { color: "#475569" },
-  buttonText: { color: "#FFFFFF", fontWeight: "600" },
+  buttonText: { color: "#FFFFFF", fontWeight: "600", flexShrink: 1, textAlign: "center" },
   title: { fontSize: 18, fontWeight: "700" },
   input: {
     borderWidth: 1,

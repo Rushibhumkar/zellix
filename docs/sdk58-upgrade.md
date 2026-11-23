@@ -29,7 +29,7 @@ Expo Go; old SDK 57 development clients must be rebuilt before using this bundle
 - Expo Doctor's non-CNG warning remains intentional: tracked android/ios folders
   mean app.json plugins are NOT automatically applied to native builds. Review
   future config changes in native files too; do not delete these custom projects.
-- Runtime `2.3.7-sdk58` is isolated from old SDK 57 runtime `2.3.7`. Never publish
+- Runtime `2.3.8-sdk58` is isolated from old SDK 57 runtime `2.3.7`. Never publish
   SDK 58 JS against the old runtime. No OTA or store release was published here.
 - The repository-wide TypeScript check still reports numerous typing errors;
   it is not a passing release gate for this upgrade.

@@ -7,6 +7,11 @@ import store from "../../redux/store";
 import { CommonActions } from "@react-navigation/native";
 import { navigationRef } from "../../navigation/navigationRef";
 import { myConsole } from "../../hooks/useConsole";
+import {
+  performanceNow,
+  recordLeadRequestTiming,
+  recordLeadSaveTiming,
+} from "../../utils/leadSavePerformance";
 
 //  ipconfig getifaddr en0
 
@@ -35,6 +40,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   async (request: any) => {
+    const authStartedAt = performanceNow();
     const token = await getData("token");
 
     // myConsole("Bearer", token);
@@ -43,6 +49,18 @@ axiosInstance.interceptors.request.use(
       if (token !== "null") {
         request.headers.token = `Bearer ${token}`;
         // request.headers.token = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTNmMzhmNDViY2EzOWJlZDk0ZDdhNTkiLCJyb2xlIjoic3VwX2FkbWluIiwibmFtZSI6Ik5hZGVlbSBBaG1lZCIsImlhdCI6MTcwMjU1MDMwMX0.iuYMA5rYhZ8p_-hUx7IgK-Pm8BGSOJQYZ0_by7_kXTU`,
+      }
+      if (request.leadSaveTiming) {
+        request.headers["X-Zellix-Interaction"] =
+          request.leadSaveTiming.interactionId;
+        recordLeadSaveTiming({
+          interactionId: request.leadSaveTiming.interactionId,
+          stage: "authentication",
+          requestStage: request.leadSaveTiming.stage,
+          durationMs: performanceNow() - authStartedAt,
+          outcome: "success",
+        });
+        request.leadSaveTiming.requestStartedAt = performanceNow();
       }
       return request;
     }
@@ -61,7 +79,14 @@ axiosInstance.interceptors.request.use(
 myConsole("axiosInstance.interceptors", axiosInstance);
 axiosInstance.interceptors.response.use(
   (response) => {
+    recordLeadRequestTiming(
+      response.config,
+      response.status,
+      false,
+      response.headers["server-timing"],
+    );
     if (
+      !response.config.leadSaveTiming?.deferActivityRefresh &&
       String(response.config.method).toLowerCase() !== "get" &&
       /\/(lead|meeting|reminders)(\/|$)/.test(response.config.url || "")
     )
@@ -69,6 +94,12 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
+    recordLeadRequestTiming(
+      error.config,
+      error.response?.status,
+      true,
+      error.response?.headers?.["server-timing"],
+    );
     const status = error?.response?.status;
     const message = error?.response?.data;
     if (

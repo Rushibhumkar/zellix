@@ -76,6 +76,7 @@ export const useGetLead = ({
   source,
   teamId,
   folderId,
+  comingSoon = false,
 }) => {
   const { user } = useSelector(selectUser);
   const focused = useIsFocused();
@@ -109,8 +110,8 @@ export const useGetLead = ({
       folderId,
       folderId === "todays-tasks" ? user?._id : undefined,
     ],
-    enabled: focused && Boolean(user?._id),
-    refetchInterval: focused && folderId === "todays-tasks" ? 60_000 : false,
+    enabled: focused && Boolean(user?._id) && !comingSoon,
+    refetchInterval: focused && !comingSoon && folderId === "todays-tasks" ? 60_000 : false,
     initialPageParam: 1,
     queryFn: async ({ pageParam = 1, signal }) =>
       getLead({
