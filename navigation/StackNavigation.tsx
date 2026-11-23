@@ -38,7 +38,7 @@ import SendLeadRSVPInvitation from "../screens/Leads/SendLeadRSVPInvitation";
 
 /*****Meatings ******************************/
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import CRMGlassTabBar, { crmGlassTabHeight, hasCRMGlassTabs } from "./CRMGlassTabBar";
+import CRMGlassTabBar, { crmGlassTabHeight, hasCRMGlassTabs, hasAndroidNativeTabs } from "./CRMGlassTabBar";
 import BookingIcon from "../assets/svg/Booking";
 import BookingFocus from "../assets/svg/BookingFocus";
 import DashboardIconFocus from "../assets/svg/Dashboard";
@@ -186,7 +186,7 @@ const BottomTabs = () => {
         tabBarHideOnKeyboard: true,
         headerShown: false,
         tableBarShowLable: false,
-        tabBarStyle: hasCRMGlassTabs ? { position: "absolute", height: crmGlassTabHeight(insets.bottom) } : {
+        tabBarStyle: hasCRMGlassTabs ? { position: hasAndroidNativeTabs ? undefined : "absolute", height: crmGlassTabHeight(insets.bottom) } : {
           backgroundColor: color.white,
           position: "absolute",
           // bottom: Platform.OS === "ios" ? 20 : 10,

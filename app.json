@@ -3,7 +3,7 @@
     "name": "zellix",
     "scheme": "zellix",
     "slug": "zellix",
-    "version": "2.3.7",
+    "version": "2.3.9",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.skg.zellix",
-      "versionCode": 173,
+      "versionCode": 175,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon1.png",
@@ -37,7 +37,8 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
-      ]
+      ],
+      "runtimeVersion": "2.3.9-sdk58-android-tabs-v2"
     },
     "web": {
       "favicon": "./assets/favicon1.png"
@@ -97,7 +98,7 @@
       "eas": {
         "projectId": "e53c2c8e-81e7-4fb9-acf7-3913c9ee6ee8"
       },
-      "appVersion": "2.3.7"
+      "appVersion": "2.3.9"
     }
   }
 }
