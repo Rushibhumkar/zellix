@@ -1,3 +1,4 @@
+import { getAttendanceList } from "../services/hrmApi/attendanceListApi";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   getAllCandidates,
@@ -230,18 +231,20 @@ export const useGetSingleUserAttList = ({
   endDate,
   userId,
   status = "",
-}) => {
+  accountId = "",
+}: { search: string; startDate: string; endDate: string; userId: string; status?: string; accountId?: string }) => {
   let res = useInfiniteQuery<any, any>({
-    queryKey: ["getSingleUserAttList", userId, search, startDate, endDate, status],
+    queryKey: ["getSingleUserAttList", userId, search, startDate, endDate, status, accountId],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) =>
-      getAllAttendance({ search, pageParam, startDate, endDate, userId, status }),
+    queryFn: ({ pageParam, signal }) =>
+      getAttendanceList({ tab: "all", search, pageParam: Number(pageParam), startDate, endDate, userId, status, signal }),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage?.pagination?.isNextPage
         ? parseInt(lastPage.pagination.currentPage) + 1
         : null;
     },
-    enabled: !!userId,
+    enabled: !!userId && !!accountId,
+    retry: (count, error: any) => ![401, 403].includes(error?.response?.status) && count < 1,
   });
   let data: any = [];
   if (res) {

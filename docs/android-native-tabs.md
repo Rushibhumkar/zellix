@@ -24,8 +24,8 @@ A new Android development/store binary is required. Rebuild locally with
 `eas build --profile development --platform android` for a development client.
 This module cannot be installed with an OTA update.
 
-For the combined release, Android's runtime is `2.4.0-sdk58-android-tabs-v2`, synchronized between app.json
-and Android strings.xml. The shared/iOS runtime is `2.4.0-sdk58`. Use the `release` profile described in [combined-mobile-release.md](combined-mobile-release.md).
+For the combined release, Android's runtime is `2.4.1-sdk58-android-tabs-v2`, synchronized between app.json
+and Android strings.xml. The shared/iOS runtime is `2.4.1-sdk58`. Use the `release` profile described in [combined-mobile-release.md](combined-mobile-release.md).
 For later native changes, update the appropriate runtime alongside native config.
 Do not retarget this bundle to an incompatible installed native runtime.
 

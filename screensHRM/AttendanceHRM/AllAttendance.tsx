@@ -200,7 +200,9 @@ const AllAttendance = () => {
   };
   const openAttendance = (item: any) => {
     if (
-      !checkPermission(permission, "HRMS", "viewAttendanceDetails", user?.role)
+      !checkPermission(permission, "Attendance", "sidebar", user?.role) &&
+      !checkPermission(permission, "HRMS", "viewAttendanceDetails", user?.role) &&
+      String(typeof item.user === "object" ? item.user?._id : item.user) !== String(user?._id)
     ) {
       toast.error("You are not authorized to view attendance details.");
       return;
