@@ -5,6 +5,7 @@ import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import { myConsole } from "../../hooks/useConsole";
 import { status } from "../../utils/data";
 import { addLead } from "../../services/rootApi/leadApi";
+import { createCallingData } from "../../services/rootApi/callingDataApi";
 import { getAllLeadFunc } from "../../redux/action";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -183,7 +184,7 @@ const mapBulkLeadRows = (rows: any[], mapping: Record<string, string>) =>
     return normalizeBulkLead(mapped);
   });
 
-const AddBulkLead = () => {
+const AddBulkLead = ({ tabType = "lead" }: { tabType?: string }) => {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const { navigate } = useNavigation();
@@ -244,11 +245,11 @@ const AddBulkLead = () => {
         setLoading(true);
         try {
           let sendData = {
-            data: bulkLead,
+            data: bulkLead.map((item) => ({ ...item, type: tabType })),
             srManager: value?.srManager,
             assign: value?.srManager,
           };
-          let addLeadRes = await addLead(sendData, toast);
+          let addLeadRes = await (tabType === "calling_data" ? createCallingData : addLead)(sendData, toast);
           // await dispatch(getAllLeadFunc());
           queryClient.invalidateQueries({
             queryKey: [queryKeyCRM.getLead],

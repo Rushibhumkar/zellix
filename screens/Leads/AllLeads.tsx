@@ -26,6 +26,7 @@ import { selectUser, setLeadQueryKey } from "../../redux/userSlice";
 import Container from "../../myComponents/Container/Container";
 import TitleWithAddDelete from "../../myComponents/TitleWithAddDelete/TitleWithAddDelete";
 import { deleteLead, leadStatusUpdate } from "../../services/rootApi/leadApi";
+import { deleteCallingData } from "../../services/rootApi/callingDataApi";
 import * as reduxAction from "../../redux/action";
 import { shadowPrimaryColor } from "../../const/globalStyle";
 import { myConsole } from "../../hooks/useConsole";
@@ -73,7 +74,8 @@ const AllLeads = () => {
   const queryClient = useQueryClient();
   const toast = useAppToast();
   const [showSearch, setShowSearch] = useState(false);
-  const [statusChangeLoad, setStatusChangeLoad] = useState(false);
+  const pendingClaims = React.useRef(new Set<string>());
+  const [claimingLeadIds, setClaimingLeadIds] = useState<ReadonlySet<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [quickActionLead, setQuickActionLead] = useState<any>(null);
 
@@ -95,6 +97,9 @@ const AllLeads = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const params: any = route?.params;
+  const { data: permission = {}, isLoading: permissionLoading } = useGetUserPermission(user?._id);
+  const canViewLeads = checkPermission(permission, "Leads", "sidebar", user?.role);
+  const canViewCallingData = checkPermission(permission, "CallingData", "sidebar", user?.role);
 
   const isFocused = useIsFocused();
 
@@ -119,13 +124,16 @@ const AllLeads = () => {
     error: false,
   });
   const [assignLeadModal, setAssignLeadModal] = useState(false);
-  const [selectLeadType, setSelectLeadType] = useState("lead");
+  const [selectLeadType, setSelectLeadType] = useState(
+    params?.tabType ?? params?.item?.type ?? "lead",
+  );
+  const canViewSelectedCollection = selectLeadType === "calling_data" ? canViewCallingData : canViewLeads;
   const [openLeadTypeModal, setOpenLeadTypeModal] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [folderModalVisible, setFolderModalVisible] = useState(false);
-  const { data: leadFolders = [], isSuccess: foldersLoaded } = useLeadFolders(selectLeadType);
+  const { data: leadFolders = [], isSuccess: foldersLoaded } = useLeadFolders(selectLeadType, canViewSelectedCollection);
   const selectedFolder = leadFolders.find(
     (folder: any) => folder._id === selectedFolderId,
   );
@@ -160,6 +168,7 @@ const AllLeads = () => {
     type: selectLeadType,
     folderId: selectedFolderId,
     comingSoon: selectedFolder?.state === "coming_soon",
+    enabled: canViewSelectedCollection,
     // ✅ dashboard filters
     ...(dashboardFilterStatus && { status: [dashboardFilterStatus] }),
     ...(dashboardDateKey && { dateKey: dashboardDateKey }),
@@ -204,7 +213,9 @@ const AllLeads = () => {
   const handleDeleteLead = async () => {
     setIsLoading(true);
     try {
-      let res = await deleteLead(selected);
+      let res = selectLeadType === "calling_data"
+        ? await deleteCallingData(selected)
+        : await deleteLead(selected, "lead");
       // await dispatch(getAllLeadFunc());
       queryClient.invalidateQueries({
         queryKey: [queryKeyCRM.getLead],
@@ -264,6 +275,8 @@ const AllLeads = () => {
   };
 
   const handleLeadTypeSelect = (key, shouldToggle = true) => {
+    if (key === "calling_data" && !canViewCallingData) return;
+    if (key === "lead" && !canViewLeads) return;
     setSelectLeadType(key);
     if (shouldToggle) toggleLeadTypeModal();
   };
@@ -287,22 +300,22 @@ const AllLeads = () => {
       setRefreshing(false);
     }
   };
-  const { data: permission = {} } = useGetUserPermission(user?._id);
-  const canAddLead = checkPermission(permission, "Leads", "add", user?.role);
+  const permissionModule = selectLeadType === "calling_data" ? "CallingData" : "Leads";
+  const canAddLead = checkPermission(permission, permissionModule, "add", user?.role);
 
   const canDeleteLead = checkPermission(
     permission,
-    "Leads",
+    permissionModule,
     "delete",
     user?.role,
   );
   const canAssignLead = checkPermission(
     permission,
-    "Leads",
+    permissionModule,
     "assign",
     user?.role,
   );
-  const canLeadPoolManagement = checkPermission(
+  const canLeadPoolManagement = selectLeadType === "lead" && checkPermission(
     permission,
     "Leads",
     "leadPoolManagement",
@@ -310,7 +323,7 @@ const AllLeads = () => {
   );
   const canViewProjects = checkPermission(
     permission,
-    "Leads",
+    permissionModule,
     "viewProjects",
     user?.role,
   );
@@ -359,6 +372,8 @@ const AllLeads = () => {
     isAgent || user?.role === roleEnum.team_lead || canManageLeadSelection;
 
   const handleTab = (tab: any) => {
+    if (tab === "calling_data" && !canViewCallingData) return;
+    if (tab === "lead" && !canViewLeads) return;
     setSelectionMode(false);
     setSelectedFolderId("");
     setSelected([]);
@@ -378,10 +393,12 @@ const AllLeads = () => {
     setSelected([]);
   };
 
-  const handleChangeStatusSubmit = async (id: any) => {
-    try {
-      setStatusChangeLoad(true);
+  const handleChangeStatusSubmit = async (id: string) => {
+    if (!id || pendingClaims.current.has(id)) return;
+    pendingClaims.current.add(id);
+    setClaimingLeadIds(new Set(pendingClaims.current));
 
+    try {
       const payload = {
         status: "claimed",
       };
@@ -393,16 +410,15 @@ const AllLeads = () => {
 
       toast.success(res?.data?.message || "Status updated successfully");
 
-      queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLeadDetailById, id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [queryKeyCRM.getLead],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLeadDetailById, id] }),
+        queryClient.invalidateQueries({ queryKey: [queryKeyCRM.getLead] }),
+      ]);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to update status");
     } finally {
-      setStatusChangeLoad(false);
+      pendingClaims.current.delete(id);
+      setClaimingLeadIds(new Set(pendingClaims.current));
     }
   };
 
@@ -462,6 +478,14 @@ const AllLeads = () => {
       setDashboardMyLeads(false);
     }
   }, [route?.params]);
+
+  useEffect(() => {
+    if (permissionLoading) return;
+    if (selectLeadType === "calling_data" && canViewCallingData) return;
+    if (selectLeadType === "lead" && canViewLeads) return;
+    if (canViewLeads) setSelectLeadType("lead");
+    else if (canViewCallingData) setSelectLeadType("calling_data");
+  }, [permissionLoading, selectLeadType, canViewLeads, canViewCallingData]);
 
   // console.log("selectleadtypeseuseeffecrt", selectLeadType);
 
@@ -581,18 +605,22 @@ const AllLeads = () => {
               marginRight: -10,
             }}
           >
-            <Pressable
-              onPress={() => navigation.navigate("Reminders")}
-              style={styles.reminderIconBtn}
-            >
-              <Feather name="clock" size={18} color="#fff" />
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate("CallListing")}
-              style={styles.reminderIconBtn}
-            >
-              <Feather name="phone-call" size={18} color="#fff" />
-            </Pressable>
+            {selectLeadType === "lead" && (
+              <>
+                <Pressable
+                  onPress={() => navigation.navigate("Reminders")}
+                  style={styles.reminderIconBtn}
+                >
+                  <Feather name="clock" size={18} color="#fff" />
+                </Pressable>
+                <Pressable
+                  onPress={() => navigation.navigate("CallListing")}
+                  style={styles.reminderIconBtn}
+                >
+                  <Feather name="phone-call" size={18} color="#fff" />
+                </Pressable>
+              </>
+            )}
           </View>
         }
         onPressAdd={() => {
@@ -602,7 +630,7 @@ const AllLeads = () => {
         }}
       />
       <CustomSnackBar snackbar={snackBar} setSnackbar={setSnackBar} />
-      {true ? (
+      {!permissionLoading && canViewSelectedCollection ? (
         <Container>
           {!showHeaderActions && (
             <TitleWithAddDelete
@@ -624,7 +652,9 @@ const AllLeads = () => {
                   : false
               }
               onPressToInvite={
-                selected?.length ? openLeadRSVPInvitation : undefined
+                selectLeadType === "lead" && selected?.length
+                  ? openLeadRSVPInvitation
+                  : undefined
               }
               onPressToFolder={
                 selected?.length ? () => setFolderModalVisible(true) : undefined
@@ -680,6 +710,7 @@ const AllLeads = () => {
                 user={user}
                 selected={selected.indexOf(item?._id) !== -1}
                 isSelectionMode={selectionMode}
+                isCallingData={selectLeadType === "calling_data"}
                 bgColor={bgByStatus[item?.status]}
                 onPress={() => {
                   !selectionMode
@@ -708,7 +739,7 @@ const AllLeads = () => {
                 onWhatsappIconPress={() => openWhatsApp(item?.whatsapp)}
                 onEmailPress={() => onEmailPress(item?.clientEmail)}
                 handleChangeStatus={handleChangeStatusSubmit}
-                statusChangeLoad={statusChangeLoad}
+                isClaiming={claimingLeadIds.has(item?._id)}
               />
             )}
             keyExtractor={(item) => item?._id}
@@ -738,7 +769,7 @@ const AllLeads = () => {
                 </Animated.View>
 
                 <View style={styles.container}>
-                  <TouchableOpacity
+                  {canViewLeads && <TouchableOpacity
                     style={[
                       styles.tab,
                       selectLeadType === "lead" && styles.activeTab,
@@ -753,8 +784,8 @@ const AllLeads = () => {
                     >
                       Leads
                     </CustomText>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </TouchableOpacity>}
+                  {canViewCallingData && <TouchableOpacity
                     style={[
                       styles.tab,
                       selectLeadType === "calling_data" && styles.activeTab,
@@ -769,7 +800,7 @@ const AllLeads = () => {
                     >
                       Calling Data
                     </CustomText>
-                  </TouchableOpacity>
+                  </TouchableOpacity>}
                 </View>
 
                 <LeadFolderBar
@@ -925,7 +956,11 @@ const AllLeads = () => {
           />
         </Container>
       ) : (
-        <NoDataFound style={{ marginTop: sizes.height / 4 }} showTxt />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+          <CustomText style={{ textAlign: "center", color: color.mainTxtColor }}>
+            {permissionLoading ? "Loading access…" : "You don’t have permission to view this data."}
+          </CustomText>
+        </View>
       )}
 
       <DeleteModel
@@ -943,7 +978,7 @@ const AllLeads = () => {
         toast={toast}
       />
       <QuickStatusSheet
-        visible={!!quickActionLead}
+        visible={selectLeadType === "lead" && !!quickActionLead}
         leadId={quickActionLead?._id}
         initialStatus={quickActionLead?.status}
         selectLeadType={selectLeadType}
@@ -975,6 +1010,7 @@ const LeadRowItem = React.memo(
     onLongPress,
     selected,
     isSelectionMode,
+    isCallingData,
     bgColor,
     onCallPress,
     onWhatsappIconPress,
@@ -982,7 +1018,7 @@ const LeadRowItem = React.memo(
     isAgent,
     user,
     handleChangeStatus,
-    statusChangeLoad,
+    isClaiming,
   }: any) => {
     const hasDisplayValue = (value: unknown) => {
       if (value === null || value === undefined || value === false || value === 0)
@@ -1156,7 +1192,7 @@ const LeadRowItem = React.memo(
               </CustomText>
             </View>
 
-            {isSelectionMode ? null : statusKey === "assign" || statusKey === "re_assigned" ? (
+            {isSelectionMode || isCallingData ? null : statusKey === "assign" || statusKey === "re_assigned" ? (
               <TouchableOpacity
                 style={{
                   borderRadius: 8,
@@ -1173,8 +1209,10 @@ const LeadRowItem = React.memo(
                   ...shadowPrimaryColor,
                 }}
                 onPress={() => handleChangeStatus(item?._id)}
+                disabled={isClaiming}
+                accessibilityState={{ disabled: isClaiming, busy: isClaiming }}
               >
-                {statusChangeLoad ? (
+                {isClaiming ? (
                   <ActivityIndicator size="small" color="#4985F2" />
                 ) : (
                   <CustomText style={{ fontSize: 12, color: "#fff" }}>

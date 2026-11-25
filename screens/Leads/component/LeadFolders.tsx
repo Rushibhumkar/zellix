@@ -26,6 +26,14 @@ import {
   removeLeadsFromFolder,
   updateLeadFolder,
 } from "../../../services/rootApi/leadApi";
+import {
+  addCallingDataToFolder,
+  createCallingDataFolder,
+  deleteCallingDataFolder,
+  getCallingDataFolders,
+  removeCallingDataFromFolder,
+  updateCallingDataFolder,
+} from "../../../services/rootApi/callingDataApi";
 import { queryKeyCRM } from "../../../utils/queryKeys";
 import { retryLeadRead } from "../../../utils/leadReadRetry";
 import LeadReadRetry from "./LeadReadRetry";
@@ -48,12 +56,14 @@ const getError = (error: any, fallback: string) =>
   error?.message ||
   fallback;
 
-export const useLeadFolders = (type = "lead") => {
+export const useLeadFolders = (type = "lead", enabled = true) => {
   const { user } = useSelector(selectUser);
   return useQuery({
     queryKey: ["leadFolders", user?._id, type],
-    queryFn: ({ signal }) => getLeadFolders(type, signal),
-    enabled: Boolean(user?._id),
+    queryFn: ({ signal }) => type === "calling_data"
+      ? getCallingDataFolders(signal)
+      : getLeadFolders("lead", signal),
+    enabled: enabled && Boolean(user?._id),
     staleTime: 0,
     refetchInterval: 60_000,
     retry: retryLeadRead,
@@ -178,9 +188,16 @@ export const LeadFoldersModal = ({
     if (!name.trim()) return toast.error("Please enter a folder name");
     setLoading(true);
     try {
-      if (editingFolder)
-        await updateLeadFolder(editingFolder._id, { name: name.trim(), color });
-      else await createLeadFolder({ name: name.trim(), color, type });
+      if (editingFolder) {
+        if (type === "calling_data")
+          await updateCallingDataFolder(editingFolder._id, { name: name.trim(), color });
+        else
+          await updateLeadFolder(editingFolder._id, { name: name.trim(), color }, "lead");
+      } else if (type === "calling_data") {
+        await createCallingDataFolder({ name: name.trim(), color });
+      } else {
+        await createLeadFolder({ name: name.trim(), color, type: "lead" });
+      }
       toast.success(editingFolder ? "Folder updated" : "Folder created");
       setFormVisible(false);
       await refresh();
@@ -194,7 +211,9 @@ export const LeadFoldersModal = ({
     if (!leadIds.length) return;
     setLoading(true);
     try {
-      const result = await addLeadsToFolder(folderId, leadIds);
+      const result = type === "calling_data"
+        ? await addCallingDataToFolder(folderId, leadIds)
+        : await addLeadsToFolder(folderId, leadIds, "lead");
       toast.success(result?.message || "Leads added to folder");
       await refresh();
       onClose();
@@ -208,7 +227,9 @@ export const LeadFoldersModal = ({
     if (!selectedFolderId || !leadIds.length) return;
     setLoading(true);
     try {
-      const result = await removeLeadsFromFolder(selectedFolderId, leadIds);
+      const result = type === "calling_data"
+        ? await removeCallingDataFromFolder(selectedFolderId, leadIds)
+        : await removeLeadsFromFolder(selectedFolderId, leadIds, "lead");
       toast.success(result?.message || "Leads removed from folder");
       await refresh();
       onClose();
@@ -230,7 +251,8 @@ export const LeadFoldersModal = ({
           onPress: async () => {
             setLoading(true);
             try {
-              await deleteLeadFolder(folder._id);
+              if (type === "calling_data") await deleteCallingDataFolder(folder._id);
+              else await deleteLeadFolder(folder._id, "lead");
               toast.success("Folder deleted");
               await refresh();
             } catch (error) {

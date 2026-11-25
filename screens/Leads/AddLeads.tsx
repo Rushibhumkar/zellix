@@ -74,7 +74,7 @@ const AddLeads = () => {
                   />
                   {openLeadField.bulk && (
                     <View style={{ minHeight: 100 }}>
-                      <AddBulkLead />
+                    <AddBulkLead tabType={params?.tabType} />
                     </View>
                   )}
                 </>

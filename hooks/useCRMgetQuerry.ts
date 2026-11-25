@@ -13,6 +13,7 @@ import {
   getLogsInfoLeadDeatil,
   getUserInfoLeadDeatil,
 } from "../services/rootApi/leadApi";
+import { getCallingData } from "../services/rootApi/callingDataApi";
 import {
   getMeeting,
   getMeetingById,
@@ -77,6 +78,7 @@ export const useGetLead = ({
   teamId,
   folderId,
   comingSoon = false,
+  enabled = true,
 }) => {
   const { user } = useSelector(selectUser);
   const focused = useIsFocused();
@@ -110,11 +112,11 @@ export const useGetLead = ({
       folderId,
       folderId === "todays-tasks" ? user?._id : undefined,
     ],
-    enabled: focused && Boolean(user?._id) && !comingSoon,
+    enabled: enabled && focused && Boolean(user?._id) && !comingSoon,
     refetchInterval: focused && !comingSoon && folderId === "todays-tasks" ? 60_000 : false,
     initialPageParam: 1,
     queryFn: async ({ pageParam = 1, signal }) =>
-      getLead({
+      (type === "calling_data" ? getCallingData : getLead)({
         signal,
         search,
         pageParam,
@@ -186,11 +188,11 @@ export const useGetLeadInAddMeeting = ({
   return { ...res, data };
 };
 
-export const useGetLeadById = (id, summary = false) => {
+export const useGetLeadById = (id, summary = false, type = "lead") => {
   const { user } = useSelector(selectUser);
   let res = useQuery({
-    queryKey: ["getLeadDetailById", id, user?._id, summary],
-    queryFn: () => getLeadDetailById(id, summary),
+    queryKey: ["getLeadDetailById", id, user?._id, summary, type],
+    queryFn: () => getLeadDetailById(id, summary, type),
     staleTime: 0,
     refetchOnMount: "always",
     enabled: !!id,

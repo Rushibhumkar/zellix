@@ -294,7 +294,7 @@ const LeadsDetails = () => {
     isError: isLeadDetailError,
     error: leadDetailError,
     refetch: refetchLeadDetail,
-  } = useGetLeadById(params?.item?._id, true);
+  } = useGetLeadById(params?.item?._id, true, params?.selectLeadType ?? params?.item?.type);
   const notesHistory = useLeadHistory(
     details?._id,
     user?._id,
@@ -1364,7 +1364,7 @@ const LeadsDetails = () => {
 
   const { data: permission = {} } = useGetUserPermission(user?._id);
 
-  const canEditLead = checkPermission(permission, "Leads", "edit", user?.role);
+  const canEditLead = checkPermission(permission, selectLeadType === "calling_data" ? "CallingData" : "Leads", "edit", user?.role);
 
   const handleCall = async (leadId: any) => {
     try {

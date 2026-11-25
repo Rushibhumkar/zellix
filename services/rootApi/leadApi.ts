@@ -2,7 +2,6 @@ import { fetchPreparedLeads } from "../../utils/todayTasksPreparation";
 import { readLeadData } from "../../utils/leadReadRetry";
 import { isCancel } from "axios";
 import type { LeadRequestTiming } from "../../utils/leadSavePerformance";
-import { err } from "react-native-svg/lib/typescript/xml";
 import { axiosInstance } from "../authApi/axiosInstance";
 import { myConsole } from "../../hooks/useConsole";
 import { popUpConfToast } from "../../utils/toastModalByFunction";
@@ -21,10 +20,13 @@ let a = {
   srManager: "654cd54188f83cd465c9e39d",
 };
 
+const collectionApi = (type: string = "lead") =>
+  type === "calling_data" ? "/api/calling-data" : "/api/lead";
+
 export const addLead = (data, toast) => {
   return (
     axiosInstance
-      .post("/api/lead", data)
+      .post(collectionApi(Array.isArray(data?.data) ? data.data[0]?.type : data?.data?.type), data)
       // .then((res) => res?.data)
       .then((res) => {
         // popUpConfToast.successMessage(res?.data)
@@ -52,7 +54,7 @@ export const createLeadFromCalling = (data) => {
 export const updateLead = ({ id, data }, toast) => {
   return (
     axiosInstance
-      .put(`/api/lead/leadUpdateById/${id}`, data)
+      .put(`${collectionApi(data?.data?.type)}/leadUpdateById/${id}`, data)
       // .then((res) => res?.data)
       .then((res) => {
         // popUpConfToast.successMessage(res?.data)
@@ -65,10 +67,10 @@ export const updateLead = ({ id, data }, toast) => {
   );
 };
 
-export const deleteLead = (data: [string]) => {
+export const deleteLead = (data: string[], type: string = "lead") => {
   return (
     axiosInstance
-      .post("/api/lead/deleteLeadsByIds", data)
+      .post(`${collectionApi(type)}/deleteLeadsByIds`, data)
       // .then((res) => res)
       .then((res) => {
         // popUpConfToast.successMessage(res?.data);
@@ -106,9 +108,9 @@ export const leadCallTrack = ({ id, data }: any) => {
   return axiosInstance.post(`/api/lead/updateCallLogById/${id}`, data);
 };
 
-export const getLeadDetailById = (id: string, summary = false) => {
+export const getLeadDetailById = (id: string, summary = false, type = "lead") => {
   return axiosInstance
-    .get(`/api/lead/getLeadById/${id}`, { params: summary ? { view: "summary" } : undefined })
+    .get(`${collectionApi(type)}/getLeadById/${id}`, { params: summary ? { view: "summary" } : undefined })
     .then((res) => res?.data);
 };
 
@@ -138,25 +140,26 @@ export const searchLeadOptions = async ({
 };
 
 export const getLeadFolders = (type = "lead", signal?: AbortSignal) =>
-  readLeadData("folders", () => axiosInstance.get("/api/lead/folders", { params: { type }, signal }), signal)
+  readLeadData("folders", () => axiosInstance.get(`${collectionApi(type)}/folders`, { params: { type }, signal }), signal)
     .then((res) => res?.data?.data || []);
 
 export const createLeadFolder = (data: { name: string; color: string; type?: string }) =>
-  axiosInstance.post("/api/lead/folders", data).then((res) => res?.data);
+  axiosInstance.post(`${collectionApi(data?.type)}/folders`, data).then((res) => res?.data);
 
 export const updateLeadFolder = (
   folderId: string,
   data: { name?: string; color?: string },
-) => axiosInstance.patch(`/api/lead/folders/${folderId}`, data).then((res) => res?.data);
+  type: string = "lead",
+) => axiosInstance.patch(`${collectionApi(type)}/folders/${folderId}`, data).then((res) => res?.data);
 
-export const deleteLeadFolder = (folderId: string) =>
-  axiosInstance.delete(`/api/lead/folders/${folderId}`).then((res) => res?.data);
+export const deleteLeadFolder = (folderId: string, type: string = "lead") =>
+  axiosInstance.delete(`${collectionApi(type)}/folders/${folderId}`).then((res) => res?.data);
 
-export const addLeadsToFolder = (folderId: string, leadIds: string[]) =>
-  axiosInstance.post(`/api/lead/folders/${folderId}/leads`, { leadIds }).then((res) => res?.data);
+export const addLeadsToFolder = (folderId: string, leadIds: string[], type: string = "lead") =>
+  axiosInstance.post(`${collectionApi(type)}/folders/${folderId}/leads`, { leadIds }).then((res) => res?.data);
 
-export const removeLeadsFromFolder = (folderId: string, leadIds: string[]) =>
-  axiosInstance.delete(`/api/lead/folders/${folderId}/leads`, { data: { leadIds } }).then((res) => res?.data);
+export const removeLeadsFromFolder = (folderId: string, leadIds: string[], type: string = "lead") =>
+  axiosInstance.delete(`${collectionApi(type)}/folders/${folderId}/leads`, { data: { leadIds } }).then((res) => res?.data);
 
 export const getLead = async ({
   search = null,
@@ -208,7 +211,7 @@ export const getLead = async ({
       signal,
     };
     if (folderId === "todays-tasks") return await fetchPreparedLeads(request.params, signal);
-    const response = await readLeadData("leads", () => axiosInstance.get("api/lead", request), signal);
+    const response = await readLeadData("leads", () => axiosInstance.get(collectionApi(type), request), signal);
     return response.data;
   } catch (err) {
     if (!signal?.aborted && !isCancel(err) && (err as any)?.name !== "AbortError") {

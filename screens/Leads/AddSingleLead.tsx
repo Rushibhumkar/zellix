@@ -6,6 +6,7 @@ import * as Yup from "yup";
 import CustomBtn from "../../myComponents/CustomBtn/CustomBtn";
 import DropdownRNE from "../../myComponents/DropdownRNE/DropdownRNE";
 import { addLead, updateLead } from "../../services/rootApi/leadApi";
+import { createCallingData, updateCallingData } from "../../services/rootApi/callingDataApi";
 import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -111,6 +112,7 @@ const AddSingleLead = ({
       setLoading(true);
       try {
         let { whatsapp, srManager, ...restData } = values;
+        const isCallingData = restData.type === "calling_data" || tabType === "calling_data";
         const normalizedWhatsapp = String(whatsapp || "").trim();
         const sendData = {
           ...restData,
@@ -122,7 +124,7 @@ const AddSingleLead = ({
             : "",
         };
         if (isUpdate) {
-          let updateLeadRes = await updateLead(
+          let updateLeadRes = await (isCallingData ? updateCallingData : updateLead)(
             {
               id: data?._id,
               data: {
@@ -146,7 +148,7 @@ const AddSingleLead = ({
           toast.success(updateLeadRes);
           goBack();
         } else {
-          let addLeadRes = await addLead(
+          let addLeadRes = await (isCallingData ? createCallingData : addLead)(
             {
               data: sendData,
               srManager,
